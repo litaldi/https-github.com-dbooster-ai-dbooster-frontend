@@ -9,7 +9,172 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      queries: {
+        Row: {
+          context_after: string | null
+          context_before: string | null
+          created_at: string
+          file_path: string
+          id: string
+          line_number: number
+          optimization_suggestion: string | null
+          performance_impact: string | null
+          query_content: string
+          query_type: string
+          repository_id: string
+          status: string
+          time_saved_ms: number | null
+          updated_at: string
+        }
+        Insert: {
+          context_after?: string | null
+          context_before?: string | null
+          created_at?: string
+          file_path: string
+          id?: string
+          line_number: number
+          optimization_suggestion?: string | null
+          performance_impact?: string | null
+          query_content: string
+          query_type: string
+          repository_id: string
+          status?: string
+          time_saved_ms?: number | null
+          updated_at?: string
+        }
+        Update: {
+          context_after?: string | null
+          context_before?: string | null
+          created_at?: string
+          file_path?: string
+          id?: string
+          line_number?: number
+          optimization_suggestion?: string | null
+          performance_impact?: string | null
+          query_content?: string
+          query_type?: string
+          repository_id?: string
+          status?: string
+          time_saved_ms?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queries_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repositories: {
+        Row: {
+          clone_url: string
+          created_at: string
+          default_branch: string
+          description: string | null
+          full_name: string
+          github_id: number
+          html_url: string
+          id: string
+          language: string | null
+          last_scan_at: string | null
+          name: string
+          optimizations_count: number
+          queries_count: number
+          scan_error: string | null
+          scan_status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clone_url: string
+          created_at?: string
+          default_branch?: string
+          description?: string | null
+          full_name: string
+          github_id: number
+          html_url: string
+          id?: string
+          language?: string | null
+          last_scan_at?: string | null
+          name: string
+          optimizations_count?: number
+          queries_count?: number
+          scan_error?: string | null
+          scan_status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clone_url?: string
+          created_at?: string
+          default_branch?: string
+          description?: string | null
+          full_name?: string
+          github_id?: number
+          html_url?: string
+          id?: string
+          language?: string | null
+          last_scan_at?: string | null
+          name?: string
+          optimizations_count?: number
+          queries_count?: number
+          scan_error?: string | null
+          scan_status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      scan_logs: {
+        Row: {
+          completed_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          files_scanned: number | null
+          id: string
+          queries_found: number | null
+          repository_id: string
+          scan_type: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          files_scanned?: number | null
+          id?: string
+          queries_found?: number | null
+          repository_id: string
+          scan_type?: string
+          started_at?: string
+          status: string
+        }
+        Update: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          files_scanned?: number | null
+          id?: string
+          queries_found?: number | null
+          repository_id?: string
+          scan_type?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scan_logs_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

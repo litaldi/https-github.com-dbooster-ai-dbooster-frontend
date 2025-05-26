@@ -5,9 +5,25 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { AlertCircle, CheckCircle, Clock, Database, GitBranch, Plus, TrendingUp, Github } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { repositoryService } from '@/services/repository';
+import { queryService } from '@/services/query';
 
 export default function Dashboard() {
   const { user, githubAccessToken } = useAuth();
+
+  // Fetch repositories and queries data
+  const { data: repositories = [] } = useQuery({
+    queryKey: ['repositories'],
+    queryFn: repositoryService.getRepositories,
+    enabled: !!user
+  });
+
+  const { data: queries = [] } = useQuery({
+    queryKey: ['queries'],
+    queryFn: () => queryService.getQueries(),
+    enabled: !!user
+  });
 
   // Extract name from user metadata or email
   const userName = user?.user_metadata?.full_name || 
@@ -18,63 +34,56 @@ export default function Dashboard() {
   const isGitHubConnected = !!githubAccessToken;
   const githubUsername = user?.user_metadata?.user_name || user?.user_metadata?.preferred_username;
 
+  // Calculate stats from real data
+  const totalQueries = queries.length;
+  const pendingApprovals = queries.filter(q => q.status === 'optimized').length;
+  const errorAlerts = repositories.filter(r => r.scan_status === 'error').length;
+  const totalTimeSaved = queries.reduce((sum, q) => sum + (q.time_saved_ms || 0), 0);
+  const timeSavedHours = (totalTimeSaved / (1000 * 60 * 60)).toFixed(1);
+
   const stats = [
     {
       title: 'Total Queries',
-      value: isGitHubConnected ? '2,847' : '0',
+      value: isGitHubConnected ? totalQueries.toString() : '0',
       change: isGitHubConnected ? '+12%' : 'N/A',
       icon: Database,
       color: 'text-blue-600',
     },
     {
       title: 'Pending Approvals',
-      value: isGitHubConnected ? '24' : '0',
+      value: isGitHubConnected ? pendingApprovals.toString() : '0',
       change: isGitHubConnected ? '+5%' : 'N/A',
       icon: Clock,
       color: 'text-yellow-600',
     },
     {
       title: 'Error Alerts',
-      value: isGitHubConnected ? '3' : '0',
+      value: isGitHubConnected ? errorAlerts.toString() : '0',
       change: isGitHubConnected ? '-50%' : 'N/A',
       icon: AlertCircle,
       color: 'text-red-600',
     },
     {
       title: 'Time Saved',
-      value: isGitHubConnected ? '47.2h' : '0h',
+      value: isGitHubConnected ? `${timeSavedHours}h` : '0h',
       change: isGitHubConnected ? '+23%' : 'N/A',
       icon: TrendingUp,
       color: 'text-green-600',
     },
   ];
 
-  const recentImprovements = isGitHubConnected ? [
-    {
-      id: 1,
-      query: 'SELECT * FROM users WHERE status = active',
-      file: 'user-service.ts',
-      improvement: 'Added index on status column',
-      timeSaved: '2.3s',
-      status: 'approved',
-    },
-    {
-      id: 2,
-      query: 'JOIN query on orders table',
-      file: 'order-controller.js',
-      improvement: 'Optimized JOIN order',
-      timeSaved: '1.8s',
-      status: 'pending',
-    },
-    {
-      id: 3,
-      query: 'COUNT query with GROUP BY',
-      file: 'analytics.py',
-      improvement: 'Added covering index',
-      timeSaved: '4.1s',
-      status: 'approved',
-    },
-  ] : [];
+  // Get recent improvements from queries
+  const recentImprovements = queries
+    .filter(q => q.optimization_suggestion)
+    .slice(0, 3)
+    .map(q => ({
+      id: q.id,
+      query: q.query_content.substring(0, 50) + '...',
+      file: q.file_path,
+      improvement: q.optimization_suggestion || 'No suggestion',
+      timeSaved: q.time_saved_ms ? `${(q.time_saved_ms / 1000).toFixed(1)}s` : '0s',
+      status: q.status === 'approved' ? 'approved' : 'pending',
+    }));
 
   return (
     <div className="space-y-6">
@@ -130,7 +139,7 @@ export default function Dashboard() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {isGitHubConnected 
-                    ? 'Ready to scan repositories for database queries'
+                    ? `${repositories.length} repositories connected`
                     : 'Connect your GitHub account to start analyzing your code'
                   }
                 </p>
@@ -175,14 +184,14 @@ export default function Dashboard() {
               }
             </CardDescription>
           </div>
-          {isGitHubConnected && (
+          {isGitHubConnected && recentImprovements.length > 0 && (
             <Button variant="outline" asChild>
               <Link to="/queries">View All</Link>
             </Button>
           )}
         </CardHeader>
         <CardContent>
-          {isGitHubConnected ? (
+          {isGitHubConnected && recentImprovements.length > 0 ? (
             <div className="space-y-4">
               {recentImprovements.map((improvement) => (
                 <div key={improvement.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -208,14 +217,19 @@ export default function Dashboard() {
           ) : (
             <div className="text-center py-8">
               <Github className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No GitHub Connection</h3>
+              <h3 className="text-lg font-medium mb-2">
+                {isGitHubConnected ? 'No Optimizations Yet' : 'No GitHub Connection'}
+              </h3>
               <p className="text-muted-foreground mb-4">
-                Connect your GitHub account to start analyzing database queries in your repositories.
+                {isGitHubConnected 
+                  ? 'Scan your repositories to start finding optimization opportunities.'
+                  : 'Connect your GitHub account to start analyzing database queries in your repositories.'
+                }
               </p>
               <Button asChild>
                 <Link to="/repositories">
                   <Github className="w-4 h-4 mr-2" />
-                  Connect GitHub
+                  {isGitHubConnected ? 'Scan Repositories' : 'Connect GitHub'}
                 </Link>
               </Button>
             </div>
