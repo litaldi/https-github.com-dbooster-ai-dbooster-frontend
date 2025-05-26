@@ -179,7 +179,7 @@ export default function Sandbox() {
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <Badge variant="outline">Filter</Badge>
-                      <span className="text-sm">created_at > (now() - '7 days'::interval)</span>
+                      <span className="text-sm">created_at &gt; (now() - &apos;7 days&apos;::interval)</span>
                     </div>
                     <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
                       <p className="text-sm text-amber-800 dark:text-amber-200">
@@ -224,7 +224,7 @@ export default function Sandbox() {
                       Using a more specific date range can help the query planner choose better execution strategies.
                     </p>
                     <code className="text-xs bg-muted p-2 rounded block">
-                      SELECT * FROM users WHERE created_at >= '2024-01-08'::date;
+                      SELECT * FROM users WHERE created_at &gt;= &apos;2024-01-08&apos;::date;
                     </code>
                   </div>
                 </CardContent>
