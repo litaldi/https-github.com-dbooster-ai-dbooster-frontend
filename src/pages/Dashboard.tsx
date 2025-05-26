@@ -2,235 +2,292 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { BarChart3, GitBranch, Search, TrendingUp, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { BarChart3, Database, GitBranch, TrendingUp, AlertTriangle, CheckCircle, Clock, Shield } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { demoData, isDemoMode } from '@/services/demo';
+import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
-  // Mock data for dashboard - in a real app, this would come from your API
+  const { isDemo } = useAuth();
+
+  // Use demo data when in demo mode
+  const repositories = isDemo ? demoData.repositories : [];
+  const queries = isDemo ? demoData.queries : [];
+  const improvements = isDemo ? demoData.improvements : [];
+  const alerts = isDemo ? demoData.alerts : [];
+
   const stats = {
-    totalRepositories: 5,
-    totalQueries: 147,
-    optimizationsApplied: 23,
-    timeSaved: 2840, // in milliseconds
+    totalRepositories: repositories.length,
+    totalQueries: queries.length,
+    optimizedQueries: queries.filter(q => q.status === 'optimized').length,
+    totalTimeSaved: queries.reduce((sum, query) => sum + (query.time_saved_ms || 0), 0),
+    criticalIssues: improvements.filter(i => i.severity === 'critical').length,
+    securityAlerts: alerts.filter(a => a.type === 'security').length,
   };
 
-  const recentQueries = [
-    {
-      id: '1',
-      repository_id: 'repo-1',
-      file_path: 'src/services/user.js',
-      line_number: 45,
-      query_content: "SELECT * FROM users WHERE created_at > '2023-01-01'",
-      status: 'optimized',
-      optimization_suggestion: 'Add index on created_at column',
-      performance_impact: '85% faster',
-      time_saved_ms: 1200,
-      created_at: '2024-01-15T10:30:00Z',
-      updated_at: '2024-01-15T11:00:00Z'
-    },
-    {
-      id: '2',
-      repository_id: 'repo-1',
-      file_path: 'src/controllers/order.py',
-      line_number: 78,
-      query_content: "SELECT COUNT(*) FROM orders WHERE status = 'pending'",
-      status: 'review',
-      optimization_suggestion: 'Replace COUNT(*) with EXISTS for better performance',
-      performance_impact: '60% faster',
-      time_saved_ms: 800,
-      created_at: '2024-01-15T09:15:00Z',
-      updated_at: '2024-01-15T09:45:00Z'
-    },
-    {
-      id: '3',
-      repository_id: 'repo-2',
-      file_path: 'src/models/product.rb',
-      line_number: 23,
-      query_content: "SELECT p.*, c.name FROM products p JOIN categories c ON p.category_id = c.id",
-      status: 'pending',
-      optimization_suggestion: null,
-      performance_impact: null,
-      time_saved_ms: null,
-      created_at: '2024-01-15T08:00:00Z',
-      updated_at: '2024-01-15T08:00:00Z'
-    }
-  ];
+  const formatTimeSaved = (ms: number) => {
+    if (ms < 1000) return `${ms}ms`;
+    const seconds = ms / 1000;
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const minutes = seconds / 60;
+    return `${minutes.toFixed(1)}m`;
+  };
 
-  const recentRepositories = [
-    { id: '1', name: 'my-awesome-app', language: 'JavaScript', queries_count: 45, optimizations_count: 12 },
-    { id: '2', name: 'backend-service', language: 'Python', queries_count: 78, optimizations_count: 8 },
-    { id: '3', name: 'mobile-api', language: 'Ruby', queries_count: 24, optimizations_count: 3 }
-  ];
-
-  const getStatusIcon = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'optimized':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'review':
-        return <Clock className="w-4 h-4 text-orange-600" />;
+        return (
+          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Optimized
+          </Badge>
+        );
       case 'pending':
-        return <AlertCircle className="w-4 h-4 text-blue-600" />;
+        return (
+          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+            <Clock className="w-3 h-3 mr-1" />
+            Pending
+          </Badge>
+        );
+      case 'review':
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+            <AlertTriangle className="w-3 h-3 mr-1" />
+            Review
+          </Badge>
+        );
       default:
-        return <Clock className="w-4 h-4 text-gray-600" />;
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'optimized':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'review':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
-      case 'pending':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+  const getSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return <Badge variant="destructive">Critical</Badge>;
+      case 'high':
+        return <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">High</Badge>;
+      case 'medium':
+        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Medium</Badge>;
+      case 'low':
+        return <Badge variant="secondary">Low</Badge>;
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        return <Badge variant="outline">{severity}</Badge>;
     }
   };
-
-  const totalTimeSaved = recentQueries.reduce((total, query) => {
-    return total + (query.time_saved_ms || 0);
-  }, 0);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome to DBooster. Monitor your database optimization progress.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            {isDemo 
+              ? "Welcome to the DBooster demo! Explore AI-powered database optimization." 
+              : "Monitor your database performance and optimization opportunities."}
+          </p>
+        </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{stats.totalRepositories}</p>
-                <p className="text-sm text-muted-foreground">Repositories</p>
-              </div>
-              <GitBranch className="w-8 h-8 text-blue-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Repositories</CardTitle>
+            <GitBranch className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalRepositories}</div>
+            <p className="text-xs text-muted-foreground">Connected repositories</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{stats.totalQueries}</p>
-                <p className="text-sm text-muted-foreground">Queries Analyzed</p>
-              </div>
-              <Search className="w-8 h-8 text-green-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Queries Analyzed</CardTitle>
+            <Database className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalQueries}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.optimizedQueries} optimized
+            </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{stats.optimizationsApplied}</p>
-                <p className="text-sm text-muted-foreground">Optimizations Applied</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Time Saved</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatTimeSaved(stats.totalTimeSaved)}</div>
+            <p className="text-xs text-muted-foreground">Total optimization impact</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{totalTimeSaved}ms</p>
-                <p className="text-sm text-muted-foreground">Time Saved</p>
-              </div>
-              <BarChart3 className="w-8 h-8 text-orange-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Critical Issues</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{stats.criticalIssues}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.securityAlerts} security alerts
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Recent Queries */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Queries</CardTitle>
-            <CardDescription>Latest queries analyzed for optimization</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="w-5 h-5" />
+              Recent Query Analysis
+            </CardTitle>
+            <CardDescription>Latest database queries and their optimization status</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentQueries.map((query) => (
-                <div key={query.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {getStatusIcon(query.status)}
-                      <p className="text-sm font-medium truncate">{query.file_path}</p>
+              {queries.slice(0, 5).map((query) => (
+                <div key={query.id} className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <code className="text-sm bg-muted px-2 py-1 rounded">{query.file_path}</code>
+                      <span className="text-sm text-muted-foreground">:{query.line_number}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Line {query.line_number}
-                    </p>
-                    <code className="text-xs bg-muted p-1 rounded block truncate">
+                    <p className="text-sm text-muted-foreground mt-1 truncate">
                       {query.query_content}
-                    </code>
-                    {query.optimization_suggestion && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        💡 {query.optimization_suggestion}
+                    </p>
+                    {query.time_saved_ms > 0 && (
+                      <p className="text-sm text-green-600 font-medium mt-1">
+                        Saved: {formatTimeSaved(query.time_saved_ms)}
                       </p>
                     )}
                   </div>
-                  <div className="ml-4 flex flex-col items-end gap-1">
-                    <Badge className={getStatusColor(query.status)}>
-                      {query.status}
-                    </Badge>
-                    {query.performance_impact && (
-                      <span className="text-xs text-green-600 font-medium">
-                        {query.performance_impact}
-                      </span>
-                    )}
+                  <div className="ml-4">
+                    {getStatusBadge(query.status)}
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="mt-4">
-              <Button variant="outline" className="w-full">
-                View All Queries
-              </Button>
+              {queries.length === 0 && (
+                <div className="text-center py-8">
+                  <Database className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No queries analyzed yet</h3>
+                  <p className="text-muted-foreground">
+                    Connect a repository to start analyzing your database queries.
+                  </p>
+                </div>
+              )}
+              {queries.length > 0 && (
+                <div className="pt-4">
+                  <Button variant="outline" asChild className="w-full">
+                    <Link to="/queries">View All Queries</Link>
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent Repositories */}
+        {/* Security & Performance Alerts */}
         <Card>
           <CardHeader>
-            <CardTitle>Connected Repositories</CardTitle>
-            <CardDescription>Your active repositories and their optimization status</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              Security & Performance Alerts
+            </CardTitle>
+            <CardDescription>Critical issues requiring immediate attention</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentRepositories.map((repo) => (
-                <div key={repo.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{repo.name}</p>
-                    <p className="text-sm text-muted-foreground">{repo.language}</p>
+              {alerts.slice(0, 5).map((alert) => (
+                <div key={alert.id} className="flex items-start gap-3 p-3 rounded-lg border">
+                  <div className="mt-1">
+                    {alert.type === 'security' && <Shield className="w-4 h-4 text-red-500" />}
+                    {alert.type === 'performance' && <BarChart3 className="w-4 h-4 text-orange-500" />}
+                    {alert.type === 'maintenance' && <AlertTriangle className="w-4 h-4 text-yellow-500" />}
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{repo.queries_count} queries</p>
-                    <p className="text-xs text-muted-foreground">
-                      {repo.optimizations_count} optimized
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">{alert.title}</h4>
+                      {getSeverityBadge(alert.severity)}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">{alert.description}</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {new Date(alert.created_at).toLocaleString()}
                     </p>
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="mt-4">
-              <Button variant="outline" className="w-full">
-                Connect Repository
-              </Button>
+              {alerts.length === 0 && (
+                <div className="text-center py-8">
+                  <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No alerts</h3>
+                  <p className="text-muted-foreground">
+                    Your database is looking good! No critical issues detected.
+                  </p>
+                </div>
+              )}
+              {alerts.length > 0 && (
+                <div className="pt-4">
+                  <Button variant="outline" asChild className="w-full">
+                    <Link to="/reports">View All Alerts</Link>
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>
+            {isDemo 
+              ? "Explore these demo features to see how DBooster can help optimize your database."
+              : "Get started with database optimization"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Button variant="outline" asChild className="h-auto p-4">
+              <Link to="/repositories" className="flex flex-col items-center gap-2">
+                <GitBranch className="w-6 h-6" />
+                <div className="text-center">
+                  <div className="font-medium">Connect Repository</div>
+                  <div className="text-sm text-muted-foreground">Start analyzing your code</div>
+                </div>
+              </Link>
+            </Button>
+            
+            <Button variant="outline" asChild className="h-auto p-4">
+              <Link to="/queries" className="flex flex-col items-center gap-2">
+                <Database className="w-6 h-6" />
+                <div className="text-center">
+                  <div className="font-medium">View Queries</div>
+                  <div className="text-sm text-muted-foreground">Analyze database queries</div>
+                </div>
+              </Link>
+            </Button>
+            
+            <Button variant="outline" asChild className="h-auto p-4">
+              <Link to="/sandbox" className="flex flex-col items-center gap-2">
+                <BarChart3 className="w-6 h-6" />
+                <div className="text-center">
+                  <div className="font-medium">Test Optimizations</div>
+                  <div className="text-sm text-muted-foreground">Safe testing environment</div>
+                </div>
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

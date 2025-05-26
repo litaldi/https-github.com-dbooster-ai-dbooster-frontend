@@ -5,10 +5,11 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Database, Github, AlertCircle } from 'lucide-react';
+import { Database, Github, AlertCircle, TestTube } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function Login() {
-  const { user, login, isLoading } = useAuth();
+  const { user, login, loginDemo, isLoading } = useAuth();
   const [loginLoading, setLoginLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,6 +52,21 @@ export default function Login() {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setLoginLoading(true);
+    setError(null);
+    
+    try {
+      await loginDemo();
+      // Navigate will happen automatically via the auth context
+    } catch (error: any) {
+      console.error('Demo login error:', error);
+      setError(error.message || 'Failed to start demo mode. Please try again.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <div className="w-full max-w-md px-6">
@@ -79,11 +95,39 @@ export default function Login() {
               </Alert>
             )}
 
+            {/* Demo Mode Option */}
+            <div className="space-y-3">
+              <Button
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                onClick={handleDemoLogin}
+                disabled={isLoading || loginLoading}
+                aria-label="Try Demo Mode"
+              >
+                <TestTube className="w-4 h-4 mr-2" />
+                {loginLoading ? 'Starting Demo...' : 'Try Demo Mode'}
+              </Button>
+              <p className="text-xs text-center text-muted-foreground">
+                Explore with preloaded demo data • No signup required
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
             <Button
               className="w-full"
               onClick={handleGitHubLogin}
               disabled={isLoading || loginLoading}
               aria-label="Sign in with GitHub"
+              variant="outline"
             >
               <Github className="w-4 h-4 mr-2" />
               {loginLoading ? 'Connecting to GitHub...' : 'Continue with GitHub'}

@@ -2,14 +2,17 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { isDemoMode, getDemoUser, getDemoSession, loginDemoUser, logoutDemoUser } from '@/services/demo';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   login: (provider: 'github' | 'google') => Promise<void>;
+  loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
   githubAccessToken: string | null;
+  isDemo: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,14 +22,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [githubAccessToken, setGithubAccessToken] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Check for demo mode first
+    if (isDemoMode()) {
+      const demoSession = getDemoSession();
+      if (demoSession) {
+        setUser(demoSession.user);
+        setSession(demoSession);
+        setIsDemo(true);
+        setIsLoading(false);
+        return;
+      } else {
+        // Demo session expired, clear demo data
+        logoutDemoUser();
+      }
+    }
+
+    // Set up auth state listener for regular auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth event:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
+        setIsDemo(false);
         
         // Extract GitHub access token if available
         if (session?.provider_token && session.user?.app_metadata?.provider === 'github') {
@@ -50,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -59,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setSession(session);
           setUser(session?.user ?? null);
+          setIsDemo(false);
           
           // Check for GitHub token in existing session
           if (session?.provider_token && session.user?.app_metadata?.provider === 'github') {
@@ -72,7 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    getInitialSession();
+    if (!isDemoMode()) {
+      getInitialSession();
+    }
 
     return () => {
       subscription.unsubscribe();
@@ -105,9 +128,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginDemo = async () => {
+    try {
+      setIsLoading(true);
+      const { user, session } = await loginDemoUser();
+      setUser(user);
+      setSession(session);
+      setIsDemo(true);
+      console.log('Demo user logged in');
+    } catch (error) {
+      console.error('Demo login failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
       setIsLoading(true);
+      
+      if (isDemo) {
+        logoutDemoUser();
+        setUser(null);
+        setSession(null);
+        setIsDemo(false);
+        setGithubAccessToken(null);
+        console.log('Demo user logged out');
+        return;
+      }
+
       console.log('Signing out...');
       
       const { error } = await supabase.auth.signOut();
@@ -121,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Clear local state
       setUser(null);
       setSession(null);
+      setIsDemo(false);
       setGithubAccessToken(null);
     } catch (error) {
       console.error('Logout failed:', error);
@@ -135,9 +186,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user, 
       session, 
       login, 
+      loginDemo,
       logout, 
       isLoading, 
-      githubAccessToken 
+      githubAccessToken,
+      isDemo
     }}>
       {children}
     </AuthContext.Provider>

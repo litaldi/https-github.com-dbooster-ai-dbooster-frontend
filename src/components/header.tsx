@@ -13,9 +13,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from '@/components/ui/use-toast';
+import { DemoBadge } from '@/components/demo-badge';
 
 export function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, isDemo } = useAuth();
   const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
@@ -23,7 +24,7 @@ export function Header() {
       await logout();
       toast({
         title: "Signed out successfully",
-        description: "You have been logged out of your account.",
+        description: isDemo ? "Demo session ended." : "You have been logged out of your account.",
       });
     } catch (error: any) {
       console.error('Logout error:', error);
@@ -48,7 +49,9 @@ export function Header() {
       <div className="flex h-14 items-center px-6 gap-4">
         <SidebarTrigger aria-label="Toggle sidebar" />
         
-        <div className="flex-1" />
+        <div className="flex-1 flex items-center gap-3">
+          <DemoBadge />
+        </div>
         
         <div className="flex items-center gap-2">
           <Button
@@ -91,7 +94,7 @@ export function Header() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Log out
+                {isDemo ? 'Exit Demo' : 'Log out'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
