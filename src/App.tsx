@@ -15,6 +15,12 @@ import Account from "./pages/Account";
 import Settings from "./pages/Settings";
 import Reports from "./pages/Reports";
 import Teams from "./pages/Teams";
+import Support from "./pages/Support";
+import DbImport from "./pages/DbImport";
+import Approvals from "./pages/Approvals";
+import AuditLog from "./pages/AuditLog";
+import DocsHelp from "./pages/DocsHelp";
+import Sandbox from "./pages/Sandbox";
 import ProtectedRoute from "./components/protected-route";
 import Layout from "./components/layout";
 import NotFound from "./pages/NotFound";
@@ -47,6 +53,12 @@ const App = () => (
                 <Route path="settings" element={<Settings />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="teams" element={<Teams />} />
+                <Route path="support" element={<Support />} />
+                <Route path="db-import" element={<DbImport />} />
+                <Route path="approvals" element={<Approvals />} />
+                <Route path="audit-log" element={<AuditLog />} />
+                <Route path="docs-help" element={<DocsHelp />} />
+                <Route path="sandbox" element={<Sandbox />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -11,7 +11,21 @@ import {
   SidebarMenuItem,
   SidebarHeader,
 } from '@/components/ui/sidebar';
-import { Database, GitBranch, Search, Settings, BarChart3, Users, User } from 'lucide-react';
+import { 
+  Database, 
+  GitBranch, 
+  Search, 
+  Settings, 
+  BarChart3, 
+  Users, 
+  User, 
+  HelpCircle, 
+  Upload, 
+  CheckSquare, 
+  FileText, 
+  BookOpen, 
+  TestTube 
+} from 'lucide-react';
 
 const menuItems = [
   {
@@ -35,9 +49,39 @@ const menuItems = [
     icon: BarChart3,
   },
   {
+    title: 'Approvals',
+    url: '/approvals',
+    icon: CheckSquare,
+  },
+  {
     title: 'Teams',
     url: '/teams',
     icon: Users,
+  },
+  {
+    title: 'DB Import',
+    url: '/db-import',
+    icon: Upload,
+  },
+  {
+    title: 'Sandbox',
+    url: '/sandbox',
+    icon: TestTube,
+  },
+  {
+    title: 'Audit Log',
+    url: '/audit-log',
+    icon: FileText,
+  },
+  {
+    title: 'Support',
+    url: '/support',
+    icon: HelpCircle,
+  },
+  {
+    title: 'Docs & Help',
+    url: '/docs-help',
+    icon: BookOpen,
   },
   {
     title: 'Settings',
