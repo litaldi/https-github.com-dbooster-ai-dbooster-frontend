@@ -11,6 +11,7 @@ type Query = {
   status: string;
   optimization_suggestion: string | null;
   performance_impact: string | null;
+  time_saved_ms: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -23,6 +24,7 @@ type QueryInsert = {
   status?: string;
   optimization_suggestion?: string | null;
   performance_impact?: string | null;
+  time_saved_ms?: number | null;
 };
 
 export type { Query, QueryInsert };
