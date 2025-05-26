@@ -9,6 +9,12 @@ import { Link } from 'react-router-dom';
 export default function Dashboard() {
   const { user } = useAuth();
 
+  // Extract name from user metadata or email
+  const userName = user?.user_metadata?.full_name || 
+                   user?.user_metadata?.name || 
+                   user?.email?.split('@')[0] || 
+                   'User';
+
   const stats = [
     {
       title: 'Total Queries',
@@ -71,7 +77,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name}!</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {userName}!</h1>
           <p className="text-muted-foreground">
             Here's what's happening with your database optimizations today.
           </p>

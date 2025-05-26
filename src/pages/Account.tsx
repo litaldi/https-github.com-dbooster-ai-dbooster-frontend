@@ -5,9 +5,32 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CreditCard, Github, LogOut, Crown } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 export default function Account() {
   const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account.",
+      });
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout failed",
+        description: error.message || "An error occurred while signing out.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Extract user information from Supabase user object
+  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'User';
+  const userEmail = user?.email || '';
+  const userAvatar = user?.user_metadata?.avatar_url;
 
   return (
     <div className="space-y-6">
@@ -28,12 +51,15 @@ export default function Account() {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={user?.avatar} alt={user?.name} />
-                <AvatarFallback className="text-lg">{user?.name?.charAt(0)}</AvatarFallback>
+                <AvatarImage src={userAvatar} alt={userName} />
+                <AvatarFallback className="text-lg">{userName.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="text-lg font-medium">{user?.name}</h3>
-                <p className="text-muted-foreground">{user?.email}</p>
+                <h3 className="text-lg font-medium">{userName}</h3>
+                <p className="text-muted-foreground">{userEmail}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  User ID: {user?.id}
+                </p>
               </div>
             </div>
 
@@ -42,15 +68,19 @@ export default function Account() {
                 <Github className="w-5 h-5" />
                 <div>
                   <p className="font-medium">GitHub</p>
-                  <p className="text-sm text-muted-foreground">Connected</p>
+                  <p className="text-sm text-muted-foreground">
+                    {user?.app_metadata?.provider === 'github' ? 'Connected' : 'Not Connected'}
+                  </p>
                 </div>
               </div>
-              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                Active
+              <Badge className={user?.app_metadata?.provider === 'github' ? 
+                "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : 
+                "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"}>
+                {user?.app_metadata?.provider === 'github' ? 'Active' : 'Inactive'}
               </Badge>
             </div>
 
-            <Button variant="destructive" onClick={logout}>
+            <Button variant="destructive" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
