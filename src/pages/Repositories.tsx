@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,7 +56,6 @@ export default function Repositories() {
     }
   });
 
-  // Mutation for scanning repository
   const scanRepositoryMutation = useMutation({
     mutationFn: repositoryService.scanRepository,
     onSuccess: () => {
@@ -76,7 +74,6 @@ export default function Repositories() {
     }
   });
 
-  // Mutation for removing repository
   const removeRepositoryMutation = useMutation({
     mutationFn: repositoryService.deleteRepository,
     onSuccess: () => {

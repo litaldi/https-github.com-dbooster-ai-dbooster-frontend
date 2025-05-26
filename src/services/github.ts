@@ -52,6 +52,15 @@ export class GitHubService {
     return this.makeRequest(`/user/repos?page=${page}&per_page=${perPage}&sort=updated`);
   }
 
+  async getUserRepositories(accessToken?: string): Promise<GitHubRepository[]> {
+    if (accessToken && accessToken !== this.accessToken) {
+      // Create a temporary instance with the provided token
+      const tempService = new GitHubService(accessToken);
+      return tempService.getRepositories();
+    }
+    return this.getRepositories();
+  }
+
   async getRepository(owner: string, repo: string): Promise<GitHubRepository> {
     return this.makeRequest(`/repos/${owner}/${repo}`);
   }
@@ -70,3 +79,12 @@ export class GitHubService {
     return atob(content.content.replace(/\s/g, ''));
   }
 }
+
+// Export a default instance that can be used when no token is available
+// This will be recreated with the actual token when needed
+export const githubService = {
+  getUserRepositories: async (accessToken: string): Promise<GitHubRepository[]> => {
+    const service = new GitHubService(accessToken);
+    return service.getRepositories();
+  }
+};
