@@ -29,6 +29,7 @@ export default function Login() {
       await login('github');
       // Note: The actual redirect will be handled by Supabase OAuth flow
     } catch (error: any) {
+      console.error('GitHub login error:', error);
       setError(error.message || 'Failed to sign in with GitHub. Please try again.');
     } finally {
       setLoginLoading(false);
@@ -43,6 +44,7 @@ export default function Login() {
       await login('google');
       // Note: The actual redirect will be handled by Supabase OAuth flow
     } catch (error: any) {
+      console.error('Google login error:', error);
       setError(error.message || 'Failed to sign in with Google. Please try again.');
     } finally {
       setLoginLoading(false);

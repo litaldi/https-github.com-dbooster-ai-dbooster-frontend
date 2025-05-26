@@ -12,7 +12,7 @@ const NotFound = () => {
       <Card className="w-full max-w-md">
         <CardContent className="p-8 text-center">
           <div className="mb-6">
-            <h1 className="text-6xl font-bold text-muted-foreground mb-2">404</h1>
+            <h1 className="text-6xl font-bold text-muted-foreground mb-2" aria-label="Error 404">404</h1>
             <h2 className="text-xl font-semibold mb-2">Page Not Found</h2>
             <p className="text-muted-foreground mb-6">
               The page you're looking for doesn't exist or has been moved.
@@ -21,20 +21,23 @@ const NotFound = () => {
           
           <div className="space-y-3">
             <Button asChild className="w-full">
-              <Link to="/">
-                <Home className="w-4 h-4 mr-2" />
+              <Link to="/" aria-label="Return to Dashboard">
+                <Home className="w-4 h-4 mr-2" aria-hidden="true" />
                 Return to Dashboard
               </Link>
             </Button>
-            <Button variant="outline" asChild className="w-full">
-              <button onClick={() => window.history.back()}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Go Back
-              </button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => window.history.back()}
+              aria-label="Go back to previous page"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
+              Go Back
             </Button>
           </div>
           
-          <p className="text-xs text-muted-foreground mt-6">
+          <p className="text-xs text-muted-foreground mt-6" aria-label={`Current path: ${location.pathname}`}>
             Path: {location.pathname}
           </p>
         </CardContent>

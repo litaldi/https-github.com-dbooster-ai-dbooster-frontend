@@ -102,7 +102,10 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-6 border-b">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div 
+            className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"
+            aria-hidden="true"
+          >
             <Database className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -119,8 +122,11 @@ export function AppSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location.pathname === item.url}>
-                    <Link to={item.url}>
-                      <item.icon className="w-4 h-4" />
+                    <Link 
+                      to={item.url}
+                      aria-label={`Navigate to ${item.title}`}
+                    >
+                      <item.icon className="w-4 h-4" aria-hidden="true" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>

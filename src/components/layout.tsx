@@ -11,7 +11,7 @@ export default function Layout() {
         <AppSidebar />
         <div className="flex-1 flex flex-col">
           <Header />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6" role="main">
             <Outlet />
           </main>
         </div>
