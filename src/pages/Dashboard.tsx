@@ -3,11 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
-import { AlertCircle, CheckCircle, Clock, Database, GitBranch, Plus, TrendingUp } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Database, GitBranch, Plus, TrendingUp, Github } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, githubAccessToken } = useAuth();
 
   // Extract name from user metadata or email
   const userName = user?.user_metadata?.full_name || 
@@ -15,38 +15,41 @@ export default function Dashboard() {
                    user?.email?.split('@')[0] || 
                    'User';
 
+  const isGitHubConnected = !!githubAccessToken;
+  const githubUsername = user?.user_metadata?.user_name || user?.user_metadata?.preferred_username;
+
   const stats = [
     {
       title: 'Total Queries',
-      value: '2,847',
-      change: '+12%',
+      value: isGitHubConnected ? '2,847' : '0',
+      change: isGitHubConnected ? '+12%' : 'N/A',
       icon: Database,
       color: 'text-blue-600',
     },
     {
       title: 'Pending Approvals',
-      value: '24',
-      change: '+5%',
+      value: isGitHubConnected ? '24' : '0',
+      change: isGitHubConnected ? '+5%' : 'N/A',
       icon: Clock,
       color: 'text-yellow-600',
     },
     {
       title: 'Error Alerts',
-      value: '3',
-      change: '-50%',
+      value: isGitHubConnected ? '3' : '0',
+      change: isGitHubConnected ? '-50%' : 'N/A',
       icon: AlertCircle,
       color: 'text-red-600',
     },
     {
       title: 'Time Saved',
-      value: '47.2h',
-      change: '+23%',
+      value: isGitHubConnected ? '47.2h' : '0h',
+      change: isGitHubConnected ? '+23%' : 'N/A',
       icon: TrendingUp,
       color: 'text-green-600',
     },
   ];
 
-  const recentImprovements = [
+  const recentImprovements = isGitHubConnected ? [
     {
       id: 1,
       query: 'SELECT * FROM users WHERE status = active',
@@ -71,7 +74,7 @@ export default function Dashboard() {
       timeSaved: '4.1s',
       status: 'approved',
     },
-  ];
+  ] : [];
 
   return (
     <div className="space-y-6">
@@ -79,16 +82,66 @@ export default function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Welcome back, {userName}!</h1>
           <p className="text-muted-foreground">
-            Here's what's happening with your database optimizations today.
+            {isGitHubConnected 
+              ? "Here's what's happening with your database optimizations today."
+              : "Connect your GitHub repositories to start optimizing your database queries."
+            }
           </p>
         </div>
         <Button asChild>
           <Link to="/repositories">
             <Plus className="w-4 h-4 mr-2" />
-            Add Repository
+            {isGitHubConnected ? 'Add Repository' : 'Connect GitHub'}
           </Link>
         </Button>
       </div>
+
+      {/* GitHub Connection Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Github className="w-5 h-5" />
+            GitHub Integration
+          </CardTitle>
+          <CardDescription>
+            Your GitHub connection status and repository access
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                isGitHubConnected 
+                  ? 'bg-green-100 dark:bg-green-900' 
+                  : 'bg-gray-100 dark:bg-gray-800'
+              }`}>
+                {isGitHubConnected ? (
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                ) : (
+                  <Github className="w-5 h-5 text-gray-600" />
+                )}
+              </div>
+              <div>
+                <p className="font-medium">
+                  {isGitHubConnected 
+                    ? `Connected as ${githubUsername || 'GitHub User'}`
+                    : 'GitHub Not Connected'
+                  }
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {isGitHubConnected 
+                    ? 'Ready to scan repositories for database queries'
+                    : 'Connect your GitHub account to start analyzing your code'
+                  }
+                </p>
+              </div>
+            </div>
+            <Badge variant={isGitHubConnected ? 'default' : 'secondary'}>
+              {isGitHubConnected ? 'Connected' : 'Disconnected'}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -101,39 +154,14 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">{stat.change}</span> from last month
+                <span className={stat.change !== 'N/A' ? "text-green-600" : "text-gray-500"}>
+                  {stat.change}
+                </span> from last month
               </p>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Repository Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GitBranch className="w-5 h-5" />
-            Repository Status
-          </CardTitle>
-          <CardDescription>
-            Current status of your connected repositories
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="font-medium">my-awesome-app</p>
-                <p className="text-sm text-muted-foreground">Connected • Last scan: 2 hours ago</p>
-              </div>
-            </div>
-            <Badge variant="secondary">Active</Badge>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Recent Improvements */}
       <Card>
@@ -141,36 +169,57 @@ export default function Dashboard() {
           <div>
             <CardTitle>Recent Improvements</CardTitle>
             <CardDescription>
-              Latest query optimizations and their performance impact
+              {isGitHubConnected 
+                ? 'Latest query optimizations and their performance impact'
+                : 'Query optimizations will appear here once you connect GitHub'
+              }
             </CardDescription>
           </div>
-          <Button variant="outline" asChild>
-            <Link to="/queries">View All</Link>
-          </Button>
+          {isGitHubConnected && (
+            <Button variant="outline" asChild>
+              <Link to="/queries">View All</Link>
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentImprovements.map((improvement) => (
-              <div key={improvement.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <p className="font-medium">{improvement.query}</p>
-                  <p className="text-sm text-muted-foreground">{improvement.file}</p>
-                  <p className="text-sm text-blue-600">{improvement.improvement}</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium">+{improvement.timeSaved}</p>
-                    <p className="text-xs text-muted-foreground">saved</p>
+          {isGitHubConnected ? (
+            <div className="space-y-4">
+              {recentImprovements.map((improvement) => (
+                <div key={improvement.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <p className="font-medium">{improvement.query}</p>
+                    <p className="text-sm text-muted-foreground">{improvement.file}</p>
+                    <p className="text-sm text-blue-600">{improvement.improvement}</p>
                   </div>
-                  <Badge 
-                    variant={improvement.status === 'approved' ? 'default' : 'secondary'}
-                  >
-                    {improvement.status}
-                  </Badge>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium">+{improvement.timeSaved}</p>
+                      <p className="text-xs text-muted-foreground">saved</p>
+                    </div>
+                    <Badge 
+                      variant={improvement.status === 'approved' ? 'default' : 'secondary'}
+                    >
+                      {improvement.status}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Github className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No GitHub Connection</h3>
+              <p className="text-muted-foreground mb-4">
+                Connect your GitHub account to start analyzing database queries in your repositories.
+              </p>
+              <Button asChild>
+                <Link to="/repositories">
+                  <Github className="w-4 h-4 mr-2" />
+                  Connect GitHub
+                </Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

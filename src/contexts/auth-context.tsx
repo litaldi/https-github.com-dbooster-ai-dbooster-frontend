@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (provider: 'github' | 'google') => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
+  githubAccessToken: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [githubAccessToken, setGithubAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -26,12 +28,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Extract GitHub access token if available
+        if (session?.provider_token && session.user?.app_metadata?.provider === 'github') {
+          setGithubAccessToken(session.provider_token);
+          console.log('GitHub access token obtained');
+        } else {
+          setGithubAccessToken(null);
+        }
+        
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('User signed in:', session.user);
+          console.log('Provider:', session.user.app_metadata?.provider);
         }
         
         if (event === 'SIGNED_OUT') {
           console.log('User signed out');
+          setGithubAccessToken(null);
         }
         
         setIsLoading(false);
@@ -47,6 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setSession(session);
           setUser(session?.user ?? null);
+          
+          // Check for GitHub token in existing session
+          if (session?.provider_token && session.user?.app_metadata?.provider === 'github') {
+            setGithubAccessToken(session.provider_token);
+          }
         }
       } catch (error) {
         console.error('Error in getSession:', error);
@@ -71,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         provider: provider,
         options: {
           redirectTo: `${window.location.origin}/`,
+          scopes: provider === 'github' ? 'repo read:user user:email' : undefined,
         },
       });
 
@@ -103,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Clear local state
       setUser(null);
       setSession(null);
+      setGithubAccessToken(null);
     } catch (error) {
       console.error('Logout failed:', error);
       throw error;
@@ -112,7 +131,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      login, 
+      logout, 
+      isLoading, 
+      githubAccessToken 
+    }}>
       {children}
     </AuthContext.Provider>
   );

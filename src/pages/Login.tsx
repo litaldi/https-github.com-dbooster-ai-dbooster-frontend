@@ -21,16 +21,31 @@ export default function Login() {
     return <Navigate to="/" replace />;
   }
 
-  const handleLogin = async (provider: 'github' | 'google') => {
+  const handleGitHubLogin = async () => {
     setLoginLoading(true);
     setError(null);
     
     try {
-      await login(provider);
+      await login('github');
       // Note: The actual redirect will be handled by Supabase OAuth flow
     } catch (error: any) {
-      console.error('Login failed:', error);
-      setError(error.message || `Failed to sign in with ${provider}. Please try again.`);
+      console.error('GitHub login failed:', error);
+      setError(error.message || 'Failed to sign in with GitHub. Please try again.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoginLoading(true);
+    setError(null);
+    
+    try {
+      await login('google');
+      // Note: The actual redirect will be handled by Supabase OAuth flow
+    } catch (error: any) {
+      console.error('Google login failed:', error);
+      setError(error.message || 'Failed to sign in with Google. Please try again.');
     } finally {
       setLoginLoading(false);
     }
@@ -51,9 +66,9 @@ export default function Login() {
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Welcome back</CardTitle>
+            <CardTitle>Welcome to DBooster</CardTitle>
             <CardDescription>
-              Sign in to your account to continue optimizing your database performance
+              Connect your GitHub account to start optimizing your database queries
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -66,17 +81,17 @@ export default function Login() {
 
             <Button
               className="w-full"
-              variant="outline"
-              onClick={() => handleLogin('github')}
+              onClick={handleGitHubLogin}
               disabled={isLoading || loginLoading}
             >
               <Github className="w-4 h-4 mr-2" />
-              {loginLoading ? 'Signing in...' : 'Continue with GitHub'}
+              {loginLoading ? 'Connecting to GitHub...' : 'Continue with GitHub'}
             </Button>
             
             <Button
               className="w-full"
-              onClick={() => handleLogin('google')}
+              variant="outline"
+              onClick={handleGoogleLogin}
               disabled={isLoading || loginLoading}
             >
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
@@ -97,7 +112,7 @@ export default function Login() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              {loginLoading ? 'Signing in...' : 'Continue with Google'}
+              {loginLoading ? 'Connecting to Google...' : 'Continue with Google'}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
