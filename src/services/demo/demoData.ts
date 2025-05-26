@@ -6,45 +6,38 @@ export interface DemoData {
     full_name: string;
     description: string;
     language: string;
-    queries_count: number;
-    optimizations_count: number;
-    scan_status: 'completed' | 'pending' | 'error';
-    last_scan: string;
+    stars: number;
+    forks: number;
+    updated_at: string;
+    status: 'connected' | 'analyzing' | 'optimized';
+    queries_found: number;
+    optimizations_applied: number;
   }>;
   queries: Array<{
-    id: string;
+    id: number;
     file_path: string;
     line_number: number;
     query_content: string;
     status: 'optimized' | 'pending' | 'review' | 'error';
-    optimization_suggestion: string;
-    performance_impact: string;
     time_saved_ms: number;
+    improvement: string;
   }>;
   improvements: Array<{
     id: string;
-    title: string;
-    description: string;
+    query_id: number;
+    type: 'index' | 'query_rewrite' | 'schema_change';
     severity: 'critical' | 'high' | 'medium' | 'low';
-    status: 'pending' | 'approved' | 'rejected';
-    estimated_savings: string;
+    description: string;
+    estimated_improvement: string;
     created_at: string;
   }>;
   alerts: Array<{
     id: string;
     type: 'security' | 'performance' | 'maintenance';
+    severity: 'critical' | 'high' | 'medium' | 'low';
     title: string;
     description: string;
-    severity: 'critical' | 'high' | 'medium' | 'low';
     created_at: string;
-  }>;
-  teamMembers: Array<{
-    id: string;
-    name: string;
-    email: string;
-    role: 'admin' | 'developer' | 'viewer';
-    avatar: string;
-    last_active: string;
   }>;
 }
 
@@ -52,173 +45,152 @@ export const demoData: DemoData = {
   repositories: [
     {
       id: 'demo-repo-1',
-      name: 'user-service-api',
-      full_name: 'dbooster-demo/user-service-api',
-      description: 'Main user authentication and profile service',
+      name: 'e-commerce-api',
+      full_name: 'demo-user/e-commerce-api',
+      description: 'A scalable e-commerce API built with Node.js and PostgreSQL',
       language: 'TypeScript',
-      queries_count: 24,
-      optimizations_count: 8,
-      scan_status: 'completed',
-      last_scan: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      stars: 234,
+      forks: 45,
+      updated_at: '2024-01-15T10:30:00Z',
+      status: 'optimized',
+      queries_found: 23,
+      optimizations_applied: 18
     },
     {
       id: 'demo-repo-2',
-      name: 'order-processing',
-      full_name: 'dbooster-demo/order-processing',
-      description: 'E-commerce order processing and inventory management',
+      name: 'user-management-service',
+      full_name: 'demo-user/user-management-service',
+      description: 'Microservice for user authentication and profile management',
       language: 'Python',
-      queries_count: 31,
-      optimizations_count: 12,
-      scan_status: 'completed',
-      last_scan: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+      stars: 156,
+      forks: 28,
+      updated_at: '2024-01-12T14:20:00Z',
+      status: 'analyzing',
+      queries_found: 15,
+      optimizations_applied: 8
     },
     {
       id: 'demo-repo-3',
       name: 'analytics-dashboard',
-      full_name: 'dbooster-demo/analytics-dashboard',
-      description: 'Real-time analytics and reporting dashboard',
+      full_name: 'demo-user/analytics-dashboard',
+      description: 'Real-time analytics dashboard with complex queries',
       language: 'JavaScript',
-      queries_count: 18,
-      optimizations_count: 5,
-      scan_status: 'pending',
-      last_scan: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 'demo-repo-4',
-      name: 'payment-gateway',
-      full_name: 'dbooster-demo/payment-gateway',
-      description: 'Payment processing and transaction management',
-      language: 'Java',
-      queries_count: 15,
-      optimizations_count: 3,
-      scan_status: 'error',
-      last_scan: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 'demo-repo-5',
-      name: 'notification-service',
-      full_name: 'dbooster-demo/notification-service',
-      description: 'Email and push notification delivery service',
-      language: 'Go',
-      queries_count: 9,
-      optimizations_count: 2,
-      scan_status: 'completed',
-      last_scan: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-    },
+      stars: 89,
+      forks: 12,
+      updated_at: '2024-01-10T09:15:00Z',
+      status: 'connected',
+      queries_found: 0,
+      optimizations_applied: 0
+    }
   ],
   queries: [
     {
-      id: 'demo-query-1',
-      file_path: 'src/services/user.ts',
+      id: 1,
+      file_path: 'src/services/user-service.ts',
       line_number: 45,
-      query_content: 'SELECT * FROM users WHERE email = ? AND status = ?',
+      query_content: 'SELECT * FROM users WHERE status = ? AND created_at > ?',
       status: 'optimized',
-      optimization_suggestion: 'Added composite index on (email, status) columns',
-      performance_impact: 'Query execution time reduced by 85%',
       time_saved_ms: 2300,
+      improvement: 'Added composite index on (status, created_at)'
     },
     {
-      id: 'demo-query-2',
-      file_path: 'src/controllers/order.js',
+      id: 2,
+      file_path: 'src/controllers/order-controller.js',
       line_number: 123,
-      query_content: 'SELECT o.*, u.name FROM orders o JOIN users u ON o.user_id = u.id WHERE o.status IN (?)',
+      query_content: 'SELECT o.*, u.name, u.email FROM orders o JOIN users u ON o.user_id = u.id WHERE o.status = ?',
       status: 'pending',
-      optimization_suggestion: 'Optimize JOIN order and add covering index',
-      performance_impact: 'Estimated 70% performance improvement',
       time_saved_ms: 1800,
+      improvement: 'Optimize JOIN order and add covering index'
     },
     {
-      id: 'demo-query-3',
+      id: 3,
       file_path: 'src/analytics/reports.py',
       line_number: 67,
-      query_content: 'SELECT COUNT(*) FROM events WHERE date >= ? GROUP BY user_id',
+      query_content: 'SELECT COUNT(*), DATE(created_at) FROM events GROUP BY DATE(created_at) ORDER BY DATE(created_at)',
       status: 'review',
-      optimization_suggestion: 'Add covering index on (date, user_id) with COUNT optimization',
-      performance_impact: 'Significant reduction in full table scans',
       time_saved_ms: 4100,
+      improvement: 'Add covering index on (created_at, event_type)'
     },
     {
-      id: 'demo-query-4',
-      file_path: 'src/services/payment.java',
+      id: 4,
+      file_path: 'src/services/product-service.ts',
       line_number: 89,
-      query_content: 'SELECT * FROM transactions WHERE amount > ? AND status = ?',
+      query_content: 'SELECT * FROM products WHERE category IN (SELECT id FROM categories WHERE active = true)',
       status: 'error',
-      optimization_suggestion: 'Query analysis failed due to missing schema information',
-      performance_impact: 'Unable to determine',
       time_saved_ms: 0,
+      improvement: 'Query analysis failed - subquery too complex'
     },
+    {
+      id: 5,
+      file_path: 'src/models/inventory.js',
+      line_number: 156,
+      query_content: 'UPDATE inventory SET quantity = quantity - ? WHERE product_id = ? AND quantity >= ?',
+      status: 'optimized',
+      time_saved_ms: 950,
+      improvement: 'Added partial index for active inventory'
+    }
   ],
   improvements: [
     {
-      id: 'demo-improvement-1',
-      title: 'Optimize User Login Query',
-      description: 'The user authentication query can be optimized by adding a composite index on email and password_hash columns.',
+      id: 'imp-1',
+      query_id: 1,
+      type: 'index',
       severity: 'high',
-      status: 'pending',
-      estimated_savings: '2.3s per query',
-      created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+      description: 'Missing index on frequently queried columns',
+      estimated_improvement: '85% query time reduction',
+      created_at: '2024-01-15T08:30:00Z'
     },
     {
-      id: 'demo-improvement-2',
-      title: 'Database Connection Pooling',
-      description: 'Implement connection pooling to reduce database connection overhead and improve overall performance.',
+      id: 'imp-2',
+      query_id: 2,
+      type: 'query_rewrite',
       severity: 'medium',
-      status: 'approved',
-      estimated_savings: '15% overall performance',
-      created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+      description: 'JOIN order can be optimized for better performance',
+      estimated_improvement: '45% query time reduction',
+      created_at: '2024-01-14T16:45:00Z'
     },
     {
-      id: 'demo-improvement-3',
-      title: 'Critical Index Missing',
-      description: 'Orders table is missing a critical index on the created_at column, causing slow dashboard queries.',
+      id: 'imp-3',
+      query_id: 3,
+      type: 'index',
       severity: 'critical',
-      status: 'pending',
-      estimated_savings: '5.2s per dashboard load',
-      created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    },
+      description: 'Table scan on large events table',
+      estimated_improvement: '92% query time reduction',
+      created_at: '2024-01-13T11:20:00Z'
+    }
   ],
   alerts: [
     {
-      id: 'demo-alert-1',
+      id: 'alert-1',
       type: 'security',
-      title: 'Potential SQL Injection Risk',
-      description: 'Found queries with string concatenation instead of parameterized queries in payment-gateway repository.',
       severity: 'critical',
-      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      title: 'SQL Injection Vulnerability Detected',
+      description: 'Potential SQL injection in user-service.ts line 67. String concatenation used instead of parameterized queries.',
+      created_at: '2024-01-15T09:15:00Z'
     },
     {
-      id: 'demo-alert-2',
+      id: 'alert-2',
       type: 'performance',
-      title: 'Slow Query Detected',
-      description: 'Query in analytics dashboard taking over 10 seconds to execute during peak hours.',
       severity: 'high',
-      created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+      title: 'Slow Query Performance',
+      description: 'Query in analytics/reports.py taking over 5 seconds to execute during peak hours.',
+      created_at: '2024-01-14T14:30:00Z'
     },
     {
-      id: 'demo-alert-3',
+      id: 'alert-3',
       type: 'maintenance',
-      title: 'Database Statistics Outdated',
-      description: 'Table statistics haven\'t been updated in over 30 days, affecting query optimizer performance.',
       severity: 'medium',
-      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ],
-  teamMembers: [
-    {
-      id: 'demo-user-1',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@dbooster-demo.com',
-      role: 'admin',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face',
-      last_active: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      title: 'Unused Index Detected',
+      description: 'Index idx_products_legacy is no longer used and can be dropped to save storage.',
+      created_at: '2024-01-12T10:45:00Z'
     },
     {
-      id: 'demo-user-2',
-      name: 'Michael Chen',
-      email: 'michael.chen@dbooster-demo.com',
-      role: 'developer',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      last_active: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    },
-  ],
+      id: 'alert-4',
+      type: 'security',
+      severity: 'high',
+      title: 'Excessive Permissions',
+      description: 'Database user has unnecessary DELETE permissions on audit_logs table.',
+      created_at: '2024-01-11T16:20:00Z'
+    }
+  ]
 };
