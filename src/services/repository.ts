@@ -1,111 +1,107 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Tables, TablesInsert } from '@/integrations/supabase/types';
 
-export type Repository = Tables<'repositories'>;
-export type RepositoryInsert = TablesInsert<'repositories'>;
+export interface Repository {
+  id: string;
+  user_id: string;
+  github_id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  clone_url: string;
+  language: string | null;
+  default_branch: string;
+  scan_status: 'pending' | 'scanning' | 'completed' | 'error';
+  last_scan: string | null;
+  queries_count: number;
+  optimizations_count: number;
+  created_at: string;
+  updated_at: string;
+}
 
-export const repositoryService = {
+export interface CreateRepositoryData {
+  user_id: string;
+  github_id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  clone_url: string;
+  language: string | null;
+  default_branch: string;
+}
+
+class RepositoryService {
   async getRepositories(): Promise<Repository[]> {
     const { data, error } = await supabase
       .from('repositories')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('updated_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching repositories:', error);
-      throw error;
+      throw new Error(`Failed to fetch repositories: ${error.message}`);
     }
 
     return data || [];
-  },
+  }
 
-  async getRepository(id: string): Promise<Repository | null> {
+  async createRepository(repositoryData: CreateRepositoryData): Promise<Repository> {
     const { data, error } = await supabase
       .from('repositories')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error fetching repository:', error);
-      throw error;
-    }
-
-    return data;
-  },
-
-  async createRepository(repository: RepositoryInsert): Promise<Repository> {
-    const { data, error } = await supabase
-      .from('repositories')
-      .insert(repository)
+      .insert([repositoryData])
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating repository:', error);
-      throw error;
+      throw new Error(`Failed to create repository: ${error.message}`);
     }
 
     return data;
-  },
+  }
 
-  async updateRepository(id: string, updates: Partial<Repository>): Promise<Repository> {
-    const { data, error } = await supabase
+  async scanRepository(repositoryId: string): Promise<void> {
+    const { error } = await supabase
       .from('repositories')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
+      .update({ 
+        scan_status: 'scanning',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', repositoryId);
 
     if (error) {
-      console.error('Error updating repository:', error);
-      throw error;
+      throw new Error(`Failed to start repository scan: ${error.message}`);
     }
 
-    return data;
-  },
+    // TODO: Trigger actual scanning process
+    // This would typically call an edge function or background job
+  }
 
-  async deleteRepository(id: string): Promise<void> {
+  async deleteRepository(repositoryId: string): Promise<void> {
     const { error } = await supabase
       .from('repositories')
       .delete()
-      .eq('id', id);
+      .eq('id', repositoryId);
 
     if (error) {
-      console.error('Error deleting repository:', error);
-      throw error;
-    }
-  },
-
-  async scanRepository(repositoryId: string): Promise<void> {
-    // Update repository status to scanning
-    await this.updateRepository(repositoryId, { 
-      scan_status: 'scanning',
-      last_scan_at: new Date().toISOString()
-    });
-
-    try {
-      // Call the scanning edge function
-      const { data, error } = await supabase.functions.invoke('scan-repository', {
-        body: { repositoryId }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      console.log('Repository scan initiated:', data);
-    } catch (error) {
-      console.error('Error initiating repository scan:', error);
-      
-      // Update repository with error status
-      await this.updateRepository(repositoryId, { 
-        scan_status: 'error',
-        scan_error: error instanceof Error ? error.message : 'Unknown error occurred'
-      });
-      
-      throw error;
+      throw new Error(`Failed to delete repository: ${error.message}`);
     }
   }
-};
+
+  async updateRepositoryStatus(repositoryId: string, status: Repository['scan_status']): Promise<void> {
+    const { error } = await supabase
+      .from('repositories')
+      .update({ 
+        scan_status: status,
+        last_scan: status === 'completed' ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', repositoryId);
+
+    if (error) {
+      throw new Error(`Failed to update repository status: ${error.message}`);
+    }
+  }
+}
+
+export const repositoryService = new RepositoryService();

@@ -29,7 +29,6 @@ export default function Login() {
       await login('github');
       // Note: The actual redirect will be handled by Supabase OAuth flow
     } catch (error: any) {
-      console.error('GitHub login failed:', error);
       setError(error.message || 'Failed to sign in with GitHub. Please try again.');
     } finally {
       setLoginLoading(false);
@@ -44,7 +43,6 @@ export default function Login() {
       await login('google');
       // Note: The actual redirect will be handled by Supabase OAuth flow
     } catch (error: any) {
-      console.error('Google login failed:', error);
       setError(error.message || 'Failed to sign in with Google. Please try again.');
     } finally {
       setLoginLoading(false);
@@ -83,6 +81,7 @@ export default function Login() {
               className="w-full"
               onClick={handleGitHubLogin}
               disabled={isLoading || loginLoading}
+              aria-label="Sign in with GitHub"
             >
               <Github className="w-4 h-4 mr-2" />
               {loginLoading ? 'Connecting to GitHub...' : 'Continue with GitHub'}
@@ -93,8 +92,9 @@ export default function Login() {
               variant="outline"
               onClick={handleGoogleLogin}
               disabled={isLoading || loginLoading}
+              aria-label="Sign in with Google"
             >
-              <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="currentColor"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -117,11 +117,11 @@ export default function Login() {
 
             <div className="text-center text-sm text-muted-foreground">
               By continuing, you agree to our{' '}
-              <a href="#" className="underline hover:text-primary">
+              <a href="#" className="underline hover:text-primary focus:text-primary focus:outline-none">
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="#" className="underline hover:text-primary">
+              <a href="#" className="underline hover:text-primary focus:text-primary focus:outline-none">
                 Privacy Policy
               </a>
             </div>
