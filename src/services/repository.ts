@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
+// Temporary type definitions until Supabase types refresh
 export interface Repository {
   id: string;
   user_id: string;
@@ -43,7 +44,7 @@ class RepositoryService {
       throw new Error(`Failed to fetch repositories: ${error.message}`);
     }
 
-    return data || [];
+    return (data as Repository[]) || [];
   }
 
   async createRepository(repositoryData: CreateRepositoryData): Promise<Repository> {
@@ -57,7 +58,7 @@ class RepositoryService {
       throw new Error(`Failed to create repository: ${error.message}`);
     }
 
-    return data;
+    return data as Repository;
   }
 
   async scanRepository(repositoryId: string): Promise<void> {

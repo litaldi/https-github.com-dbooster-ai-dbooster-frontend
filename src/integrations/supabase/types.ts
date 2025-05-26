@@ -9,7 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      queries: {
+        Row: {
+          created_at: string
+          file_path: string
+          id: string
+          line_number: number
+          optimization_suggestion: string | null
+          performance_impact: string | null
+          query_content: string
+          repository_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          id?: string
+          line_number: number
+          optimization_suggestion?: string | null
+          performance_impact?: string | null
+          query_content: string
+          repository_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          id?: string
+          line_number?: number
+          optimization_suggestion?: string | null
+          performance_impact?: string | null
+          query_content?: string
+          repository_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queries_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repositories: {
+        Row: {
+          clone_url: string
+          created_at: string
+          default_branch: string
+          description: string | null
+          full_name: string
+          github_id: number
+          html_url: string
+          id: string
+          language: string | null
+          last_scan: string | null
+          name: string
+          optimizations_count: number
+          queries_count: number
+          scan_status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clone_url: string
+          created_at?: string
+          default_branch?: string
+          description?: string | null
+          full_name: string
+          github_id: number
+          html_url: string
+          id?: string
+          language?: string | null
+          last_scan?: string | null
+          name: string
+          optimizations_count?: number
+          queries_count?: number
+          scan_status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clone_url?: string
+          created_at?: string
+          default_branch?: string
+          description?: string | null
+          full_name?: string
+          github_id?: number
+          html_url?: string
+          id?: string
+          language?: string | null
+          last_scan?: string | null
+          name?: string
+          optimizations_count?: number
+          queries_count?: number
+          scan_status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,9 +1,31 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Tables, TablesInsert } from '@/integrations/supabase/types';
 
-export type Query = Tables<'queries'>;
-export type QueryInsert = TablesInsert<'queries'>;
+// Temporary type definitions until Supabase types refresh
+type Query = {
+  id: string;
+  repository_id: string;
+  file_path: string;
+  line_number: number;
+  query_content: string;
+  status: string;
+  optimization_suggestion: string | null;
+  performance_impact: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type QueryInsert = {
+  repository_id: string;
+  file_path: string;
+  line_number: number;
+  query_content: string;
+  status?: string;
+  optimization_suggestion?: string | null;
+  performance_impact?: string | null;
+};
+
+export type { Query, QueryInsert };
 
 export const queryService = {
   async getQueries(repositoryId?: string): Promise<Query[]> {
@@ -23,7 +45,7 @@ export const queryService = {
       throw error;
     }
 
-    return data || [];
+    return (data as Query[]) || [];
   },
 
   async getQuery(id: string): Promise<Query | null> {
@@ -38,7 +60,7 @@ export const queryService = {
       throw error;
     }
 
-    return data;
+    return data as Query | null;
   },
 
   async updateQueryStatus(id: string, status: string, optimization?: string): Promise<Query> {
@@ -63,7 +85,7 @@ export const queryService = {
       throw error;
     }
 
-    return data;
+    return data as Query;
   },
 
   async searchQueries(searchTerm: string, repositoryId?: string): Promise<Query[]> {
@@ -84,6 +106,6 @@ export const queryService = {
       throw error;
     }
 
-    return data || [];
+    return (data as Query[]) || [];
   }
 };
