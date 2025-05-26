@@ -1,4 +1,5 @@
 
+
 // Re-export all demo functionality from dedicated modules
 export { demoData } from './demo/demoData';
 export type { DemoData } from './demo/demoData';
@@ -15,5 +16,3 @@ export {
   clearDemoData 
 } from './demo/demoUtils';
 
-// For backward compatibility, also export logoutDemoUser as the old function name
-export { logoutDemoUser } from './demo/demoAuth';
