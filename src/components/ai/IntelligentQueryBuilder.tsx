@@ -11,7 +11,7 @@ import {
   X,
   Database,
   Filter,
-  Sort,
+  ArrowUpDown,
   Play,
   Code
 } from 'lucide-react';
@@ -330,7 +330,7 @@ export function IntelligentQueryBuilder() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-lg">
                 <div className="flex items-center gap-2">
-                  <Sort className="h-5 w-5" />
+                  <ArrowUpDown className="h-5 w-5" />
                   ORDER BY
                 </div>
                 <Button size="sm" onClick={addSort} disabled={!selectedTable}>
