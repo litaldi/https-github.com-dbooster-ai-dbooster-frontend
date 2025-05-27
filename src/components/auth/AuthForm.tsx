@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Mail, Phone, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PasswordReset } from './PasswordReset';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -19,6 +19,8 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
   const { loginWithEmail, loginWithPhone, signupWithEmail, signupWithPhone, isLoading } = useAuth();
   const [loginType, setLoginType] = useState<'email' | 'phone'>('email');
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
@@ -95,6 +97,15 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
     setIsSubmitting(true);
     
     try {
+      // Store remember me preference
+      if (rememberMe) {
+        localStorage.setItem('dbooster_remember_me', 'true');
+        localStorage.setItem('dbooster_email', formData.email);
+      } else {
+        localStorage.removeItem('dbooster_remember_me');
+        localStorage.removeItem('dbooster_email');
+      }
+
       if (mode === 'login') {
         if (loginType === 'email') {
           await loginWithEmail(formData.email, formData.password);
@@ -118,6 +129,20 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  // Load remembered email on component mount
+  useState(() => {
+    const remembered = localStorage.getItem('dbooster_remember_me');
+    const savedEmail = localStorage.getItem('dbooster_email');
+    if (remembered && savedEmail) {
+      setRememberMe(true);
+      setFormData(prev => ({ ...prev, email: savedEmail }));
+    }
+  });
+
+  if (showPasswordReset) {
+    return <PasswordReset onBack={() => setShowPasswordReset(false)} />;
+  }
 
   return (
     <Card className="w-full max-w-md">
@@ -265,6 +290,29 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
                     {errors.confirmPassword}
                   </p>
                 )}
+              </div>
+            )}
+
+            {mode === 'login' && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="remember"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor="remember" className="text-sm">Remember me</Label>
+                </div>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 h-auto text-sm"
+                  onClick={() => setShowPasswordReset(true)}
+                >
+                  Forgot password?
+                </Button>
               </div>
             )}
 
