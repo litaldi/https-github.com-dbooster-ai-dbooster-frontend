@@ -1,12 +1,14 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Wand2, TrendingUp, User, Zap, Target } from 'lucide-react';
+import { Brain, Wand2, TrendingUp, User, Zap, Target, Database } from 'lucide-react';
 import { SmartQueryAnalyzer } from '@/components/ai/SmartQueryAnalyzer';
 import { PersonalizedRecommendations } from '@/components/ai/PersonalizedRecommendations';
 import { PredictivePerformanceMonitor } from '@/components/ai/PredictivePerformanceMonitor';
 import { AIQueryGenerator } from '@/components/ai/AIQueryGenerator';
+import { AICodeReview } from '@/components/ai/AICodeReview';
+import { SmartSchemaAnalyzer } from '@/components/ai/SmartSchemaAnalyzer';
+import { IntelligentQueryBuilder } from '@/components/ai/IntelligentQueryBuilder';
 
 export default function AIFeatures() {
   const features = [
@@ -75,7 +77,7 @@ export default function AIFeatures() {
 
       {/* AI Features Tabs */}
       <Tabs defaultValue="analyzer" className="space-y-6">
-        <TabsList className="grid w-full lg:w-auto grid-cols-2 lg:grid-cols-4">
+        <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:grid-cols-7">
           <TabsTrigger value="analyzer" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
             <span className="hidden sm:inline">Query Analyzer</span>
@@ -96,6 +98,21 @@ export default function AIFeatures() {
             <span className="hidden sm:inline">Recommendations</span>
             <span className="sm:hidden">Personal</span>
           </TabsTrigger>
+          <TabsTrigger value="code-review" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            <span className="hidden sm:inline">Code Review</span>
+            <span className="sm:hidden">Review</span>
+          </TabsTrigger>
+          <TabsTrigger value="schema" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            <span className="hidden sm:inline">Schema Analyzer</span>
+            <span className="sm:hidden">Schema</span>
+          </TabsTrigger>
+          <TabsTrigger value="builder" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            <span className="hidden sm:inline">Query Builder</span>
+            <span className="sm:hidden">Builder</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analyzer">
@@ -112,6 +129,18 @@ export default function AIFeatures() {
 
         <TabsContent value="recommendations">
           <PersonalizedRecommendations />
+        </TabsContent>
+
+        <TabsContent value="code-review">
+          <AICodeReview />
+        </TabsContent>
+
+        <TabsContent value="schema">
+          <SmartSchemaAnalyzer />
+        </TabsContent>
+
+        <TabsContent value="builder">
+          <IntelligentQueryBuilder />
         </TabsContent>
       </Tabs>
 
