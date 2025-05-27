@@ -44,6 +44,11 @@ const menuItems = [
     icon: Search,
   },
   {
+    title: 'AI Features',
+    url: '/ai-features',
+    icon: TestTube,
+  },
+  {
     title: 'Reports',
     url: '/reports',
     icon: BarChart3,
@@ -101,7 +106,10 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-6 border-b">
-        <div className="flex items-center gap-3">
+        <Link 
+          to="/" 
+          className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+        >
           <div 
             className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"
             aria-hidden="true"
@@ -112,7 +120,7 @@ export function AppSidebar() {
             <h1 className="text-xl font-bold">DBooster</h1>
             <p className="text-xs text-muted-foreground">Database Optimizer</p>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -125,6 +133,7 @@ export function AppSidebar() {
                     <Link 
                       to={item.url}
                       aria-label={`Navigate to ${item.title}`}
+                      aria-current={location.pathname === item.url ? 'page' : undefined}
                     >
                       <item.icon className="w-4 h-4" aria-hidden="true" />
                       <span>{item.title}</span>

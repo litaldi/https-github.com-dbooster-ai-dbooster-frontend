@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from '@/components/ui/use-toast';
 import { DemoBadge } from '@/components/demo-badge';
+import { Link } from 'react-router-dom';
 
 export function Header() {
   const { user, logout, isDemo } = useAuth();
@@ -91,6 +92,17 @@ export function Header() {
                   {userEmail}
                 </p>
               </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/account" className="cursor-pointer">
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/settings" className="cursor-pointer">
+                  Settings
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
