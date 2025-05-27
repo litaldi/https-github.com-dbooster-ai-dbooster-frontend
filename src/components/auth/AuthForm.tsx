@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -5,10 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Mail, Phone, AlertCircle, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Tabs } from '@/components/ui/tabs';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { PasswordReset } from './PasswordReset';
+import { LoginTypeSelector } from './LoginTypeSelector';
+import { LoginTypeFields } from './LoginTypeFields';
+import { PasswordField } from './PasswordField';
+import { AuthFormFooter } from './AuthFormFooter';
+import { useAuthForm } from '@/hooks/useAuthForm';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -17,94 +22,31 @@ interface AuthFormProps {
 
 export function AuthForm({ mode, onModeChange }: AuthFormProps) {
   const { loginWithEmail, loginWithPhone, signupWithEmail, signupWithPhone, isLoading } = useAuth();
-  const [loginType, setLoginType] = useState<'email' | 'phone'>('email');
-  const [showPassword, setShowPassword] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-    name: ''
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone: string): boolean => {
-    const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
-    return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10;
-  };
-
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password);
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (loginType === 'email') {
-      if (!formData.email) {
-        newErrors.email = 'Email is required';
-      } else if (!validateEmail(formData.email)) {
-        newErrors.email = 'Please enter a valid email address';
-      }
-    } else {
-      if (!formData.phone) {
-        newErrors.phone = 'Phone number is required';
-      } else if (!validatePhone(formData.phone)) {
-        newErrors.phone = 'Please enter a valid phone number';
-      }
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (mode === 'signup' && !validatePassword(formData.password)) {
-      newErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number';
-    }
-
-    if (mode === 'signup') {
-      if (!formData.name) {
-        newErrors.name = 'Name is required';
-      }
-      if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const {
+    loginType,
+    setLoginType,
+    rememberMe,
+    setRememberMe,
+    formData,
+    errors,
+    setErrors,
+    handleInputChange,
+    validate,
+    handleRememberMe
+  } = useAuthForm(mode);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validate()) return;
 
     setIsSubmitting(true);
     
     try {
-      // Store remember me preference
-      if (rememberMe) {
-        localStorage.setItem('dbooster_remember_me', 'true');
-        localStorage.setItem('dbooster_email', formData.email);
-      } else {
-        localStorage.removeItem('dbooster_remember_me');
-        localStorage.removeItem('dbooster_email');
-      }
+      handleRememberMe();
 
       if (mode === 'login') {
         if (loginType === 'email') {
@@ -125,20 +67,6 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
       setIsSubmitting(false);
     }
   };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  // Load remembered email on component mount
-  useState(() => {
-    const remembered = localStorage.getItem('dbooster_remember_me');
-    const savedEmail = localStorage.getItem('dbooster_email');
-    if (remembered && savedEmail) {
-      setRememberMe(true);
-      setFormData(prev => ({ ...prev, email: savedEmail }));
-    }
-  });
 
   if (showPasswordReset) {
     return <PasswordReset onBack={() => setShowPasswordReset(false)} />;
@@ -165,17 +93,8 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
           </Alert>
         )}
 
-        <Tabs value={loginType} onValueChange={(value) => setLoginType(value as 'email' | 'phone')}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="email" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              Email
-            </TabsTrigger>
-            <TabsTrigger value="phone" className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              Phone
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={loginType}>
+          <LoginTypeSelector loginType={loginType} onTypeChange={setLoginType} />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
@@ -187,7 +106,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
                   placeholder="Enter your full name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={cn(errors.name && "border-destructive")}
+                  className={errors.name ? "border-destructive" : ""}
                   aria-describedby={errors.name ? "name-error" : undefined}
                   autoComplete="name"
                 />
@@ -199,122 +118,42 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
               </div>
             )}
 
-            <TabsContent value="email" className="space-y-2 mt-4">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className={cn(errors.email && "border-destructive")}
-                aria-describedby={errors.email ? "email-error" : undefined}
-                autoComplete="email"
-              />
-              {errors.email && (
-                <p id="email-error" className="text-sm text-destructive" role="alert">
-                  {errors.email}
-                </p>
-              )}
-            </TabsContent>
+            <LoginTypeFields
+              loginType={loginType}
+              formData={formData}
+              errors={errors}
+              onInputChange={handleInputChange}
+            />
 
-            <TabsContent value="phone" className="space-y-2 mt-4">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 (555) 123-4567"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                className={cn(errors.phone && "border-destructive")}
-                aria-describedby={errors.phone ? "phone-error" : undefined}
-                autoComplete="tel"
-              />
-              {errors.phone && (
-                <p id="phone-error" className="text-sm text-destructive" role="alert">
-                  {errors.phone}
-                </p>
-              )}
-            </TabsContent>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={cn(errors.password && "border-destructive", "pr-10")}
-                  aria-describedby={errors.password ? "password-error" : undefined}
-                  autoComplete={mode === 'login' ? "current-password" : "new-password"}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={togglePasswordVisibility}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              {errors.password && (
-                <p id="password-error" className="text-sm text-destructive" role="alert">
-                  {errors.password}
-                </p>
-              )}
-            </div>
+            <PasswordField
+              id="password"
+              label="Password"
+              value={formData.password}
+              onChange={(value) => handleInputChange('password', value)}
+              placeholder="Enter your password"
+              error={errors.password}
+              autoComplete={mode === 'login' ? "current-password" : "new-password"}
+            />
 
             {mode === 'signup' && (
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className={cn(errors.confirmPassword && "border-destructive")}
-                  aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
-                  autoComplete="new-password"
-                />
-                {errors.confirmPassword && (
-                  <p id="confirm-password-error" className="text-sm text-destructive" role="alert">
-                    {errors.confirmPassword}
-                  </p>
-                )}
-              </div>
+              <PasswordField
+                id="confirmPassword"
+                label="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={(value) => handleInputChange('confirmPassword', value)}
+                placeholder="Confirm your password"
+                error={errors.confirmPassword}
+                autoComplete="new-password"
+              />
             )}
 
-            {mode === 'login' && (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="remember" className="text-sm">Remember me</Label>
-                </div>
-                <Button
-                  type="button"
-                  variant="link"
-                  className="p-0 h-auto text-sm"
-                  onClick={() => setShowPasswordReset(true)}
-                >
-                  Forgot password?
-                </Button>
-              </div>
-            )}
+            <AuthFormFooter
+              mode={mode}
+              onModeChange={onModeChange}
+              rememberMe={rememberMe}
+              onRememberMeChange={setRememberMe}
+              onPasswordReset={() => setShowPasswordReset(true)}
+            />
 
             <Button 
               type="submit" 
@@ -327,19 +166,6 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
             </Button>
           </form>
         </Tabs>
-
-        <div className="text-center text-sm">
-          <span className="text-muted-foreground">
-            {mode === 'login' ? "Don't have an account?" : "Already have an account?"}
-          </span>{' '}
-          <Button
-            variant="link"
-            className="p-0 h-auto font-semibold"
-            onClick={() => onModeChange(mode === 'login' ? 'signup' : 'login')}
-          >
-            {mode === 'login' ? 'Sign up' : 'Sign in'}
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );
