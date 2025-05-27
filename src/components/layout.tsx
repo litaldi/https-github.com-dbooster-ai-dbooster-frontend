@@ -4,6 +4,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Header } from '@/components/header';
 import { DemoWalkthrough } from '@/components/demo-walkthrough';
+import { Footer } from '@/components/navigation/Footer';
 
 export default function Layout() {
   return (
@@ -15,6 +16,7 @@ export default function Layout() {
           <main className="flex-1 p-6" role="main">
             <Outlet />
           </main>
+          <Footer />
         </div>
       </div>
       <DemoWalkthrough />

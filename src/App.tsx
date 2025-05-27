@@ -6,7 +6,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/contexts/auth-context";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Dashboard from "./pages/Dashboard";
 import Repositories from "./pages/Repositories";
 import Queries from "./pages/Queries";
@@ -36,7 +42,19 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Public routes with public layout */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route path="home" element={<Home />} />
+                <Route path="about" element={<About />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="privacy" element={<Privacy />} />
+                <Route path="terms" element={<Terms />} />
+              </Route>
+              
+              {/* Auth route without layout */}
               <Route path="/login" element={<Login />} />
+              
+              {/* Protected routes with authenticated layout */}
               <Route
                 path="/"
                 element={
@@ -60,6 +78,8 @@ const App = () => (
                 <Route path="docs-help" element={<DocsHelp />} />
                 <Route path="sandbox" element={<Sandbox />} />
               </Route>
+              
+              {/* 404 route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
