@@ -7,14 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { Database, Zap, Shield, TrendingUp, Users, Code } from 'lucide-react';
 
 export default function Home() {
-  const { user, startDemo } = useAuth();
+  const { user, loginDemo } = useAuth();
   const navigate = useNavigate();
 
   const handleGetStarted = async () => {
     if (user) {
       navigate('/');
     } else {
-      await startDemo();
+      await loginDemo();
       navigate('/');
     }
   };
