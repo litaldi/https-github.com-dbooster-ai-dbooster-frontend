@@ -17,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import Repositories from "./pages/Repositories";
 import Queries from "./pages/Queries";
 import QueryOptimization from "./pages/QueryOptimization";
+import AIFeatures from "./pages/AIFeatures";
 import Account from "./pages/Account";
 import Settings from "./pages/Settings";
 import Reports from "./pages/Reports";
@@ -67,6 +68,7 @@ const App = () => (
                 <Route path="repositories" element={<Repositories />} />
                 <Route path="queries" element={<Queries />} />
                 <Route path="queries/:id" element={<QueryOptimization />} />
+                <Route path="ai-features" element={<AIFeatures />} />
                 <Route path="account" element={<Account />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="reports" element={<Reports />} />
