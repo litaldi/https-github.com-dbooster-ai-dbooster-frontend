@@ -2,7 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Wand2, TrendingUp, User, Zap, Target, Database, Activity, Wrench, MessageSquare } from 'lucide-react';
+import { Brain, Wand2, TrendingUp, User, Zap, Target, Database, Activity, Wrench, MessageSquare, BarChart3, Shield, BookOpen } from 'lucide-react';
 import { SmartQueryAnalyzer } from '@/components/ai/SmartQueryAnalyzer';
 import { PersonalizedRecommendations } from '@/components/ai/PersonalizedRecommendations';
 import { PredictivePerformanceMonitor } from '@/components/ai/PredictivePerformanceMonitor';
@@ -14,6 +14,10 @@ import { AIPerformancePredictor } from '@/components/ai/AIPerformancePredictor';
 import { SmartIndexAdvisor } from '@/components/ai/SmartIndexAdvisor';
 import { AutomatedQueryFixer } from '@/components/ai/AutomatedQueryFixer';
 import { NaturalLanguageQuery } from '@/components/ai/NaturalLanguageQuery';
+import { QueryComplexityAnalyzer } from '@/components/ai/QueryComplexityAnalyzer';
+import { SmartSchemaValidator } from '@/components/ai/SmartSchemaValidator';
+import { QueryExplainer } from '@/components/ai/QueryExplainer';
+import { PerformanceBenchmarker } from '@/components/ai/PerformanceBenchmarker';
 
 export default function AIFeatures() {
   const features = [
@@ -48,6 +52,30 @@ export default function AIFeatures() {
       count: "Auto-Fix"
     },
     {
+      icon: BarChart3,
+      title: "Complexity Analyzer",
+      description: "Analyze query complexity, readability, and maintainability scores",
+      count: "Deep Insights"
+    },
+    {
+      icon: Shield,
+      title: "Schema Validator",
+      description: "Validate database schemas for best practices, security, and compliance",
+      count: "Security First"
+    },
+    {
+      icon: BookOpen,
+      title: "Query Explainer",
+      description: "Get detailed, step-by-step explanations of complex SQL queries",
+      count: "Learn & Grow"
+    },
+    {
+      icon: Target,
+      title: "Performance Benchmarker",
+      description: "Compare your queries against industry standards and benchmarks",
+      count: "Industry Standards"
+    },
+    {
       icon: User,
       title: "Personalized Recommendations",
       description: "Tailored suggestions based on your query patterns and skill level",
@@ -74,7 +102,7 @@ export default function AIFeatures() {
       </div>
 
       {/* Feature Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {features.map((feature, index) => (
           <Card key={index} className="relative overflow-hidden">
             <CardHeader className="pb-2">
@@ -94,7 +122,7 @@ export default function AIFeatures() {
 
       {/* AI Features Tabs */}
       <Tabs defaultValue="natural-language" className="space-y-6">
-        <TabsList className="grid w-full lg:w-auto grid-cols-2 lg:grid-cols-5 xl:grid-cols-10">
+        <TabsList className="grid w-full lg:w-auto grid-cols-2 lg:grid-cols-6 xl:grid-cols-12">
           <TabsTrigger value="natural-language" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             <span className="hidden sm:inline">Natural Language</span>
@@ -114,6 +142,26 @@ export default function AIFeatures() {
             <Database className="h-4 w-4" />
             <span className="hidden sm:inline">Index Advisor</span>
             <span className="sm:hidden">Indexes</span>
+          </TabsTrigger>
+          <TabsTrigger value="complexity-analyzer" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Complexity</span>
+            <span className="sm:hidden">Complex</span>
+          </TabsTrigger>
+          <TabsTrigger value="schema-validator" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Schema Validator</span>
+            <span className="sm:hidden">Schema</span>
+          </TabsTrigger>
+          <TabsTrigger value="query-explainer" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            <span className="hidden sm:inline">Query Explainer</span>
+            <span className="sm:hidden">Explainer</span>
+          </TabsTrigger>
+          <TabsTrigger value="benchmarker" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            <span className="hidden sm:inline">Benchmarker</span>
+            <span className="sm:hidden">Bench</span>
           </TabsTrigger>
           <TabsTrigger value="analyzer" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
@@ -135,16 +183,6 @@ export default function AIFeatures() {
             <span className="hidden sm:inline">Personal</span>
             <span className="sm:hidden">Rec</span>
           </TabsTrigger>
-          <TabsTrigger value="code-review" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            <span className="hidden sm:inline">Review</span>
-            <span className="sm:hidden">Rev</span>
-          </TabsTrigger>
-          <TabsTrigger value="builder" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            <span className="hidden sm:inline">Builder</span>
-            <span className="sm:hidden">Build</span>
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="natural-language">
@@ -163,6 +201,22 @@ export default function AIFeatures() {
           <SmartIndexAdvisor />
         </TabsContent>
 
+        <TabsContent value="complexity-analyzer">
+          <QueryComplexityAnalyzer />
+        </TabsContent>
+
+        <TabsContent value="schema-validator">
+          <SmartSchemaValidator />
+        </TabsContent>
+
+        <TabsContent value="query-explainer">
+          <QueryExplainer />
+        </TabsContent>
+
+        <TabsContent value="benchmarker">
+          <PerformanceBenchmarker />
+        </TabsContent>
+
         <TabsContent value="analyzer">
           <SmartQueryAnalyzer />
         </TabsContent>
@@ -177,14 +231,6 @@ export default function AIFeatures() {
 
         <TabsContent value="recommendations">
           <PersonalizedRecommendations />
-        </TabsContent>
-
-        <TabsContent value="code-review">
-          <AICodeReview />
-        </TabsContent>
-
-        <TabsContent value="builder">
-          <IntelligentQueryBuilder />
         </TabsContent>
       </Tabs>
 
@@ -224,9 +270,9 @@ export default function AIFeatures() {
             </div>
             <div className="text-center p-4 border rounded-lg">
               <Database className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h3 className="font-medium mb-2">4. Optimize Indexes</h3>
+              <h3 className="font-medium mb-2">4. Optimize Everything</h3>
               <p className="text-sm text-muted-foreground">
-                Get intelligent index recommendations to maximize your database performance
+                Get intelligent recommendations for indexes, schemas, and overall database performance
               </p>
             </div>
           </div>
