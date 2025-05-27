@@ -45,8 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authMethods.loginWithOAuth(provider);
     } catch (error) {
       console.error('Login failed:', error);
-      setIsLoading(false);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,8 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       rateLimiter.resetAttempts();
     } catch (error) {
       console.error('Email login failed:', error);
-      setIsLoading(false);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,8 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       rateLimiter.resetAttempts();
     } catch (error) {
       console.error('Phone login failed:', error);
-      setIsLoading(false);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -82,8 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authMethods.signupWithEmail(email, password, name);
     } catch (error) {
       console.error('Email signup failed:', error);
-      setIsLoading(false);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -93,8 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authMethods.signupWithPhone(phone, password, name);
     } catch (error) {
       console.error('Phone signup failed:', error);
-      setIsLoading(false);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const { user, session } = await loginDemoUser();
       updateAuthState(user, session, true);
-      console.log('Demo user logged in');
+      console.log('Demo user logged in successfully');
     } catch (error) {
       console.error('Demo login failed:', error);
       throw error;
