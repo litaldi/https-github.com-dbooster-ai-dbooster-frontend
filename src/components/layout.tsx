@@ -4,6 +4,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Header } from '@/components/header';
 import { DemoWalkthrough } from '@/components/demo-walkthrough';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { Footer } from '@/components/navigation/Footer';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 
@@ -24,6 +25,7 @@ export default function Layout() {
         </div>
       </div>
       <DemoWalkthrough />
+      <OnboardingTour />
     </SidebarProvider>
   );
 }
