@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
-import { Database, Zap, Shield, TrendingUp, Users, Code, ArrowRight, Star, HelpCircle } from 'lucide-react';
+import { Database, Zap, Shield, TrendingUp, Users, Code, ArrowRight, Star, HelpCircle, PlayCircle, BookOpen, DollarSign } from 'lucide-react';
 import { showSuccess } from '@/components/ui/feedback-toast';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/enhanced-animations';
@@ -89,6 +89,30 @@ export default function Home() {
     }
   ];
 
+  const quickActions = [
+    {
+      icon: PlayCircle,
+      title: "How It Works",
+      description: "Learn how DBooster optimizes your database queries in 4 simple steps.",
+      action: () => navigate('/how-it-works'),
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: BookOpen,
+      title: "Learning Hub",
+      description: "Master database optimization with our comprehensive guides and tutorials.",
+      action: () => navigate('/learn'),
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      icon: DollarSign,
+      title: "View Pricing",
+      description: "Choose the perfect plan for your team and scale as you grow.",
+      action: () => navigate('/pricing'),
+      color: "from-purple-500 to-pink-500"
+    }
+  ];
+
   const guidanceSteps = [
     {
       id: 'welcome',
@@ -154,7 +178,7 @@ export default function Home() {
               </FadeIn>
               
               <FadeIn delay={0.8}>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                   <TooltipGuidance content="Start exploring DBooster with our interactive demo">
                     <HoverScale>
                       <EnhancedButton 
@@ -193,6 +217,30 @@ export default function Home() {
                       </TooltipGuidance>
                     }
                   />
+                </div>
+              </FadeIn>
+
+              {/* Quick Actions */}
+              <FadeIn delay={1.0}>
+                <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                  {quickActions.map((action, index) => (
+                    <HoverScale key={index}>
+                      <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20 group"
+                            onClick={action.action}>
+                        <CardContent className="p-6 text-center">
+                          <div className={`w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-r ${action.color} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+                            <action.icon className="h-6 w-6 text-white" />
+                          </div>
+                          <Text className="font-semibold mb-2 group-hover:text-primary transition-colors duration-300">
+                            {action.title}
+                          </Text>
+                          <Text size="sm" variant="muted" className="leading-relaxed">
+                            {action.description}
+                          </Text>
+                        </CardContent>
+                      </Card>
+                    </HoverScale>
+                  ))}
                 </div>
               </FadeIn>
             </Container>
@@ -260,6 +308,20 @@ export default function Home() {
                   </StaggerItem>
                 ))}
               </StaggerContainer>
+
+              <div className="text-center mt-12">
+                <HoverScale>
+                  <EnhancedButton 
+                    size="lg" 
+                    variant="outline" 
+                    onClick={() => navigate('/features')} 
+                    className="text-lg px-8"
+                  >
+                    View All Features
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </EnhancedButton>
+                </HoverScale>
+              </div>
             </Container>
           </Section>
 

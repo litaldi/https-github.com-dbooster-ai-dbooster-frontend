@@ -26,12 +26,30 @@ import {
   TestTube,
   FileText,
   HelpCircle,
-  BookOpen
+  BookOpen,
+  Zap,
+  DollarSign,
+  Briefcase,
+  Mail,
+  Shield,
+  FileCheck,
+  ChevronDown
 } from 'lucide-react';
 import { DemoBadge } from '@/components/demo-badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const publicNavItems = [
   { href: '/home', label: 'Home', icon: Home },
+  { href: '/features', label: 'Features', icon: Zap },
+  { href: '/learn', label: 'Learn', icon: BookOpen },
+  { href: '/how-it-works', label: 'How It Works', icon: TrendingUp },
+  { href: '/pricing', label: 'Pricing', icon: DollarSign },
+  { href: '/blog', label: 'Blog', icon: FileText },
 ];
 
 const authenticatedNavItems = [
@@ -52,6 +70,13 @@ const authenticatedNavItems = [
 const userMenuItems = [
   { href: '/account', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
+];
+
+const moreMenuItems = [
+  { href: '/about', label: 'About', icon: Briefcase },
+  { href: '/contact', label: 'Contact', icon: Mail },
+  { href: '/privacy', label: 'Privacy', icon: Shield },
+  { href: '/terms', label: 'Terms', icon: FileCheck },
 ];
 
 export function MainNav() {
@@ -76,7 +101,7 @@ export function MainNav() {
       "flex gap-1",
       mobile ? "flex-col space-y-1" : "items-center"
     )}>
-      {navItems.map((item) => (
+      {navItems.slice(0, mobile ? navItems.length : 5).map((item) => (
         <Link
           key={item.href}
           to={item.href}
@@ -96,6 +121,89 @@ export function MainNav() {
           {item.label}
         </Link>
       ))}
+      
+      {/* More Menu for Desktop */}
+      {!mobile && !user && navItems.length > 5 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="flex items-center gap-1">
+              More
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {navItems.slice(5).map((item) => (
+              <DropdownMenuItem key={item.href} asChild>
+                <Link to={item.href} className="flex items-center gap-2">
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem asChild>
+              <hr className="my-1" />
+            </DropdownMenuItem>
+            {moreMenuItems.map((item) => (
+              <DropdownMenuItem key={item.href} asChild>
+                <Link to={item.href} className="flex items-center gap-2">
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+      
+      {/* Show remaining items on mobile */}
+      {mobile && navItems.length > 5 && (
+        <>
+          {navItems.slice(5).map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md",
+                "hover:bg-accent hover:text-accent-foreground",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                location.pathname === item.href 
+                  ? "bg-accent text-accent-foreground" 
+                  : "text-muted-foreground hover:text-foreground",
+                "justify-start w-full"
+              )}
+              onClick={closeMenu}
+              aria-current={location.pathname === item.href ? 'page' : undefined}
+            >
+              <item.icon className="h-4 w-4" aria-hidden="true" />
+              {item.label}
+            </Link>
+          ))}
+          
+          {/* Additional pages on mobile */}
+          <div className="border-t pt-2 mt-2">
+            {moreMenuItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  location.pathname === item.href 
+                    ? "bg-accent text-accent-foreground" 
+                    : "text-muted-foreground hover:text-foreground",
+                  "justify-start w-full"
+                )}
+                onClick={closeMenu}
+                aria-current={location.pathname === item.href ? 'page' : undefined}
+              >
+                <item.icon className="h-4 w-4" aria-hidden="true" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 
@@ -188,12 +296,14 @@ export function MainNav() {
             to={user ? "/" : "/home"} 
             className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
           >
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Database className="h-5 w-5 text-primary-foreground" />
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Database className="h-5 w-5 text-white" />
             </div>
             <div>
-              <span className="text-xl font-bold">DBooster</span>
-              <p className="text-xs text-muted-foreground hidden sm:block">Database Optimizer</p>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                DBooster
+              </span>
+              <p className="text-xs text-muted-foreground hidden sm:block">AI Database Optimizer</p>
             </div>
           </Link>
 
@@ -225,12 +335,14 @@ export function MainNav() {
               <SheetContent side="right" className="w-80 p-6">
                 <div className="flex flex-col space-y-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                      <Database className="h-5 w-5 text-primary-foreground" />
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Database className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <span className="text-lg font-bold">DBooster</span>
-                      <p className="text-xs text-muted-foreground">Database Optimizer</p>
+                      <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        DBooster
+                      </span>
+                      <p className="text-xs text-muted-foreground">AI Database Optimizer</p>
                     </div>
                   </div>
                   
