@@ -9,9 +9,9 @@ import { Database, Zap, Shield, TrendingUp, Users, Code, ArrowRight, Star, HelpC
 import { showSuccess } from '@/components/ui/feedback-toast';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/enhanced-animations';
-import { Section, Container, Heading, Text, ProgressiveDisclosure } from '@/components/ui/visual-hierarchy';
-import { SkipLink, TooltipGuidance } from '@/components/ui/accessibility-helpers';
-import { UserGuidance } from '@/components/ui/user-guidance';
+import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
+import { SkipLink, ProgressiveDisclosure } from '@/components/ui/accessibility-helpers';
+import { UserGuidance, TooltipGuidance } from '@/components/ui/user-guidance';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 export default function Home() {
