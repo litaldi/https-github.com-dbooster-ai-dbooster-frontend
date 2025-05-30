@@ -9,6 +9,7 @@ import { Footer } from '@/components/navigation/Footer';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { SkipLink } from '@/components/ui/accessibility-helpers';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { ScrollToTop } from '@/components/ui/scroll-to-top';
 
 export default function Layout() {
   return (
@@ -29,6 +30,7 @@ export default function Layout() {
             </main>
             <Footer />
           </div>
+          <ScrollToTop />
         </div>
         <DemoWalkthrough />
         <OnboardingTour />
