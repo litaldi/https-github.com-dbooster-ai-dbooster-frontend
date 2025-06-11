@@ -1,47 +1,92 @@
 
-import { toast } from '@/hooks/use-toast';
-import { CheckCircle, AlertCircle, XCircle, Info } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from './button';
 
-type FeedbackType = 'success' | 'error' | 'warning' | 'info';
-
-interface FeedbackOptions {
+interface FeedbackToastProps {
+  type: 'success' | 'error' | 'warning' | 'info';
   title: string;
   description?: string;
-  duration?: number;
+  onClose?: () => void;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+  className?: string;
 }
 
-const feedbackIcons = {
-  success: CheckCircle,
-  error: XCircle,
-  warning: AlertCircle,
-  info: Info,
-};
+export function FeedbackToast({ 
+  type, 
+  title, 
+  description, 
+  onClose, 
+  action,
+  className 
+}: FeedbackToastProps) {
+  const icons = {
+    success: CheckCircle,
+    error: XCircle,
+    warning: AlertTriangle,
+    info: Info
+  };
 
-const feedbackStyles = {
-  success: 'text-green-600',
-  error: 'text-red-600',
-  warning: 'text-yellow-600',
-  info: 'text-blue-600',
-};
+  const colors = {
+    success: 'border-green-200 bg-green-50 text-green-800',
+    error: 'border-red-200 bg-red-50 text-red-800',
+    warning: 'border-yellow-200 bg-yellow-50 text-yellow-800',
+    info: 'border-blue-200 bg-blue-50 text-blue-800'
+  };
 
-export function showFeedback(type: FeedbackType, options: FeedbackOptions) {
-  const Icon = feedbackIcons[type];
-  
-  toast({
-    title: (
-      <div className="flex items-center gap-2">
-        <Icon className={`h-4 w-4 ${feedbackStyles[type]}`} />
-        {options.title}
+  const iconColors = {
+    success: 'text-green-500',
+    error: 'text-red-500',
+    warning: 'text-yellow-500',
+    info: 'text-blue-500'
+  };
+
+  const Icon = icons[type];
+
+  return (
+    <div className={cn(
+      'relative rounded-lg border p-4 shadow-sm',
+      colors[type],
+      className
+    )}>
+      <div className="flex">
+        <div className="flex-shrink-0">
+          <Icon className={cn('h-5 w-5', iconColors[type])} />
+        </div>
+        <div className="ml-3 flex-1">
+          <h3 className="text-sm font-medium">{title}</h3>
+          {description && (
+            <p className="mt-1 text-sm opacity-90">{description}</p>
+          )}
+          {action && (
+            <div className="mt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={action.onClick}
+                className="text-xs"
+              >
+                {action.label}
+              </Button>
+            </div>
+          )}
+        </div>
+        {onClose && (
+          <div className="ml-auto pl-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
-    ) as any,
-    description: options.description,
-    duration: options.duration || 3000,
-    variant: type === 'error' ? 'destructive' : 'default',
-  });
+    </div>
+  );
 }
-
-// Convenience functions
-export const showSuccess = (options: FeedbackOptions) => showFeedback('success', options);
-export const showError = (options: FeedbackOptions) => showFeedback('error', options);
-export const showWarning = (options: FeedbackOptions) => showFeedback('warning', options);
-export const showInfo = (options: FeedbackOptions) => showFeedback('info', options);

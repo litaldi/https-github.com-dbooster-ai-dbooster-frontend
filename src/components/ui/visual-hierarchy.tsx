@@ -1,19 +1,18 @@
 
 import { cn } from '@/lib/utils';
-import { ReactNode } from 'react';
 
 interface SectionProps {
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
   spacing?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export function Section({ children, className, spacing = 'md' }: SectionProps) {
   const spacingClasses = {
-    sm: 'py-8',
-    md: 'py-12 md:py-16',
-    lg: 'py-16 md:py-20',
-    xl: 'py-20 md:py-24'
+    sm: 'py-4',
+    md: 'py-8',
+    lg: 'py-12',
+    xl: 'py-16'
   };
 
   return (
@@ -24,12 +23,12 @@ export function Section({ children, className, spacing = 'md' }: SectionProps) {
 }
 
 interface ContainerProps {
-  children: ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  children: React.ReactNode;
   className?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
-export function Container({ children, size = 'lg', className }: ContainerProps) {
+export function Container({ children, className, size = 'lg' }: ContainerProps) {
   const sizeClasses = {
     sm: 'max-w-2xl',
     md: 'max-w-4xl',
@@ -39,101 +38,77 @@ export function Container({ children, size = 'lg', className }: ContainerProps) 
   };
 
   return (
-    <div className={cn('mx-auto w-full px-4 md:px-6', sizeClasses[size], className)}>
+    <div className={cn('mx-auto px-4 sm:px-6 lg:px-8', sizeClasses[size], className)}>
       {children}
     </div>
   );
 }
 
-interface HeadingProps {
-  children: ReactNode;
-  level?: 1 | 2 | 3 | 4;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
-  weight?: 'normal' | 'medium' | 'semibold' | 'bold';
+interface GridProps {
+  children: React.ReactNode;
   className?: string;
+  cols?: 1 | 2 | 3 | 4 | 6 | 12;
+  gap?: 'sm' | 'md' | 'lg';
 }
 
-export function Heading({ children, level = 2, size = 'lg', weight = 'bold', className }: HeadingProps) {
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
+export function Grid({ children, className, cols = 1, gap = 'md' }: GridProps) {
+  const colsClasses = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-1 md:grid-cols-2',
+    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+    6: 'grid-cols-1 md:grid-cols-3 lg:grid-cols-6',
+    12: 'grid-cols-12'
+  };
+
+  const gapClasses = {
+    sm: 'gap-2',
+    md: 'gap-4',
+    lg: 'gap-6'
+  };
+
+  return (
+    <div className={cn('grid', colsClasses[cols], gapClasses[gap], className)}>
+      {children}
+    </div>
+  );
+}
+
+interface StackProps {
+  children: React.ReactNode;
+  className?: string;
+  direction?: 'vertical' | 'horizontal';
+  spacing?: 'sm' | 'md' | 'lg';
+  align?: 'start' | 'center' | 'end';
+}
+
+export function Stack({ 
+  children, 
+  className, 
+  direction = 'vertical', 
+  spacing = 'md',
+  align = 'start'
+}: StackProps) {
+  const directionClasses = direction === 'vertical' ? 'flex-col' : 'flex-row';
   
-  const sizeClasses = {
-    sm: 'text-lg md:text-xl',
-    md: 'text-xl md:text-2xl',
-    lg: 'text-2xl md:text-3xl',
-    xl: 'text-3xl md:text-4xl',
-    '2xl': 'text-4xl md:text-5xl lg:text-6xl'
+  const spacingClasses = {
+    sm: direction === 'vertical' ? 'space-y-2' : 'space-x-2',
+    md: direction === 'vertical' ? 'space-y-4' : 'space-x-4',
+    lg: direction === 'vertical' ? 'space-y-6' : 'space-x-6'
   };
 
-  const weightClasses = {
-    normal: 'font-normal',
-    medium: 'font-medium',
-    semibold: 'font-semibold',
-    bold: 'font-bold'
-  };
-
-  return (
-    <Tag className={cn(sizeClasses[size], weightClasses[weight], className)}>
-      {children}
-    </Tag>
-  );
-}
-
-interface TextProps {
-  children: ReactNode;
-  size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
-  variant?: 'default' | 'muted' | 'emphasis';
-  className?: string;
-}
-
-export function Text({ children, size = 'base', variant = 'default', className }: TextProps) {
-  const sizeClasses = {
-    xs: 'text-xs',
-    sm: 'text-sm',
-    base: 'text-base',
-    lg: 'text-lg',
-    xl: 'text-xl'
-  };
-
-  const variantClasses = {
-    default: 'text-foreground',
-    muted: 'text-muted-foreground',
-    emphasis: 'text-foreground font-medium'
-  };
-
-  return (
-    <p className={cn(sizeClasses[size], variantClasses[variant], className)}>
-      {children}
-    </p>
-  );
-}
-
-interface CalloutProps {
-  children: ReactNode;
-  variant?: 'default' | 'primary' | 'success' | 'warning' | 'error';
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
-export function Callout({ children, variant = 'default', size = 'md', className }: CalloutProps) {
-  const variantClasses = {
-    default: 'bg-muted border-border',
-    primary: 'bg-primary/10 border-primary/20 text-primary-foreground',
-    success: 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950/30 dark:border-green-800 dark:text-green-200',
-    warning: 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950/30 dark:border-yellow-800 dark:text-yellow-200',
-    error: 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/30 dark:border-red-800 dark:text-red-200'
-  };
-
-  const sizeClasses = {
-    sm: 'p-3 text-sm',
-    md: 'p-4 text-base',
-    lg: 'p-6 text-lg'
+  const alignClasses = {
+    start: 'items-start',
+    center: 'items-center',
+    end: 'items-end'
   };
 
   return (
     <div className={cn(
-      'border rounded-lg',
-      variantClasses[variant],
-      sizeClasses[size],
+      'flex',
+      directionClasses,
+      spacingClasses[spacing],
+      alignClasses[align],
       className
     )}>
       {children}

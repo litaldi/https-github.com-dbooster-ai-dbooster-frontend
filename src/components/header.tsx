@@ -1,120 +1,104 @@
 
 import { useAuth } from '@/contexts/auth-context';
-import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { MoonIcon, SunIcon, LogOut } from 'lucide-react';
-import { useTheme } from '@/components/theme-provider';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
+import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { showSuccess, showError } from '@/components/ui/feedback-toast';
-import { DemoBadge } from '@/components/demo-badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { LogOut, Settings, User, Database } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageSelector } from '@/components/language-selector';
+import { AccessibilityMenu } from '@/components/accessibility-menu';
 import { Link } from 'react-router-dom';
+import { useI18n } from '@/hooks/useI18n';
 
 export function Header() {
   const { user, logout, isDemo } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { t } = useI18n();
 
   const handleLogout = async () => {
     try {
       await logout();
-      showSuccess({
-        title: "Signed out successfully",
-        description: isDemo ? "Demo session ended." : "You have been logged out of your account.",
-      });
-    } catch (error: any) {
-      console.error('Logout error:', error);
-      showError({
-        title: "Logout failed",
-        description: error.message || "An error occurred while signing out.",
-      });
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
-
-  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'User';
-  const userEmail = user?.email || '';
-  const userAvatar = user?.user_metadata?.avatar_url;
+  const userInitials = user?.user_metadata?.full_name
+    ?.split(' ')
+    .map((name: string) => name[0])
+    .join('')
+    .toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U';
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-      <div className="flex h-14 items-center px-4 md:px-6 gap-4">
-        <SidebarTrigger 
-          aria-label="Toggle sidebar"
-          className="hover:bg-accent hover:text-accent-foreground transition-colors min-h-[44px] min-w-[44px]"
-        />
-        
-        <div className="flex-1 flex items-center gap-3">
-          <DemoBadge />
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link to="/" className="flex items-center space-x-2">
+            <Database className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              DBooster
+            </span>
+          </Link>
+          {isDemo && (
+            <Badge variant="secondary" className="text-xs">
+              Demo Mode
+            </Badge>
+          )}
         </div>
-        
-        <div className="flex items-center gap-2">
-          <EnhancedButton
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            className="min-h-[44px] min-w-[44px]"
-          >
-            <SunIcon className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <MoonIcon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          </EnhancedButton>
+
+        <div className="flex items-center space-x-2">
+          <AccessibilityMenu />
+          <LanguageSelector />
+          <ThemeToggle />
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <EnhancedButton 
-                variant="ghost" 
-                className="relative h-8 w-8 rounded-full min-h-[44px] min-w-[44px] p-0"
-                aria-label="User menu"
-              >
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarImage 
-                    src={userAvatar} 
-                    alt={`${userName}'s avatar`} 
+                    src={user?.user_metadata?.avatar_url} 
+                    alt={user?.user_metadata?.full_name || user?.email || 'User'}
                   />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {userName.charAt(0).toUpperCase()}
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                    {userInitials}
                   </AvatarFallback>
                 </Avatar>
-              </EnhancedButton>
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              className="w-56 bg-background border shadow-lg" 
-              align="end" 
-              forceMount
-              sideOffset={8}
-            >
-              <div className="flex flex-col space-y-1 p-2">
-                <p className="text-sm font-medium leading-none">
-                  {userName}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {userEmail}
-                </p>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <div className="flex items-center justify-start gap-2 p-2">
+                <div className="flex flex-col space-y-1 leading-none">
+                  {user?.user_metadata?.full_name && (
+                    <p className="font-medium">{user.user_metadata.full_name}</p>
+                  )}
+                  <p className="w-[200px] truncate text-sm text-muted-foreground">
+                    {user?.email}
+                  </p>
+                </div>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/account" className="cursor-pointer w-full">
-                  Profile
+                <Link to="/account" className="flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  {t('nav.account') || 'Account'}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/settings" className="cursor-pointer w-full">
-                  Settings
+                <Link to="/settings" className="flex items-center">
+                  <Settings className="mr-2 h-4 w-4" />
+                  {t('nav.settings')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-                <LogOut className="w-4 h-4 mr-2" />
-                {isDemo ? 'Exit Demo' : 'Log out'}
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                {t('auth.signOut') || 'Sign out'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

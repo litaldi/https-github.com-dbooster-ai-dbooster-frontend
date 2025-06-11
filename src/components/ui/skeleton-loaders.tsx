@@ -16,51 +16,87 @@ export function Skeleton({ className }: SkeletonProps) {
   );
 }
 
-export function CardSkeleton({ className }: SkeletonProps) {
+export function TableSkeleton() {
   return (
-    <div className={cn("p-6 border rounded-lg space-y-4", className)}>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-9 w-[100px]" />
+      </div>
+      <div className="rounded-md border">
+        <div className="border-b p-4">
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-4 w-[100px]" />
+            <Skeleton className="h-4 w-[150px]" />
+            <Skeleton className="h-4 w-[100px]" />
+          </div>
+        </div>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="border-b p-4 last:border-0">
+            <div className="flex items-center space-x-4">
+              <Skeleton className="h-4 w-[100px]" />
+              <Skeleton className="h-4 w-[150px]" />
+              <Skeleton className="h-4 w-[100px]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function CardSkeleton() {
+  return (
+    <div className="rounded-lg border bg-card p-6 space-y-3">
       <div className="flex items-center space-x-4">
         <Skeleton className="h-12 w-12 rounded-full" />
-        <div className="space-y-2 flex-1">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[250px]" />
+          <Skeleton className="h-4 w-[200px]" />
         </div>
       </div>
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-5/6" />
-      <Skeleton className="h-4 w-4/6" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
     </div>
   );
 }
 
-export function TableSkeleton({ rows = 5, className }: { rows?: number } & SkeletonProps) {
+export function FormSkeleton() {
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="flex space-x-4">
-        <Skeleton className="h-10 flex-1" />
-        <Skeleton className="h-10 flex-1" />
-        <Skeleton className="h-10 flex-1" />
-        <Skeleton className="h-10 w-20" />
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-[100px]" />
+        <Skeleton className="h-10 w-full" />
       </div>
-      {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex space-x-4">
-          <Skeleton className="h-8 flex-1" />
-          <Skeleton className="h-8 flex-1" />
-          <Skeleton className="h-8 flex-1" />
-          <Skeleton className="h-8 w-20" />
-        </div>
-      ))}
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-[120px]" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-[80px]" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+      <Skeleton className="h-10 w-[120px]" />
     </div>
   );
 }
 
-export function NavigationSkeleton({ className }: SkeletonProps) {
+export function MetricsSkeleton() {
   return (
-    <div className={cn("space-y-2 p-4", className)}>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="flex items-center space-x-3">
-          <Skeleton className="h-5 w-5" />
-          <Skeleton className="h-4 flex-1" />
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="rounded-lg border bg-card p-6">
+          <div className="flex items-center justify-between space-y-0 pb-2">
+            <Skeleton className="h-4 w-[100px]" />
+            <Skeleton className="h-4 w-4" />
+          </div>
+          <div className="space-y-1">
+            <Skeleton className="h-8 w-[80px]" />
+            <Skeleton className="h-3 w-[60px]" />
+          </div>
         </div>
       ))}
     </div>
