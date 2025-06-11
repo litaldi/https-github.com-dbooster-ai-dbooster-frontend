@@ -90,3 +90,25 @@ export function FeedbackToast({
     </div>
   );
 }
+
+// Helper function for showing success messages
+export function showSuccess(title: string, description?: string) {
+  // This is a utility function that can be used to programmatically show success messages
+  // For actual toast implementation, you would typically integrate with a toast library
+  console.log(`Success: ${title}`, description);
+}
+
+// Helper function for showing error messages  
+export function showError(title: string, description?: string) {
+  console.log(`Error: ${title}`, description);
+}
+
+// Helper function for showing warning messages
+export function showWarning(title: string, description?: string) {
+  console.log(`Warning: ${title}`, description);
+}
+
+// Helper function for showing info messages
+export function showInfo(title: string, description?: string) {
+  console.log(`Info: ${title}`, description);
+}

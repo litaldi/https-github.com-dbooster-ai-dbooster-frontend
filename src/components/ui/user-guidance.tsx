@@ -187,3 +187,31 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
     </div>
   );
 }
+
+// Additional components that were being imported
+interface UserGuidanceProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function UserGuidance({ children, className }: UserGuidanceProps) {
+  return (
+    <div className={cn("space-y-4", className)}>
+      {children}
+    </div>
+  );
+}
+
+interface TooltipGuidanceProps {
+  children: React.ReactNode;
+  tooltip: string;
+  className?: string;
+}
+
+export function TooltipGuidance({ children, tooltip, className }: TooltipGuidanceProps) {
+  return (
+    <Tooltip content={tooltip} className={className}>
+      {children}
+    </Tooltip>
+  );
+}

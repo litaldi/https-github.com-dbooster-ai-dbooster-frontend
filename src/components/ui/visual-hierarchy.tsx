@@ -115,3 +115,49 @@ export function Stack({
     </div>
   );
 }
+
+interface HeadingProps {
+  children: React.ReactNode;
+  level?: 1 | 2 | 3 | 4 | 5 | 6;
+  className?: string;
+}
+
+export function Heading({ children, level = 1, className }: HeadingProps) {
+  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
+  
+  const headingClasses = {
+    1: 'text-4xl font-bold tracking-tight lg:text-5xl',
+    2: 'text-3xl font-semibold tracking-tight',
+    3: 'text-2xl font-semibold tracking-tight',
+    4: 'text-xl font-semibold tracking-tight',
+    5: 'text-lg font-semibold tracking-tight',
+    6: 'text-base font-semibold tracking-tight'
+  };
+
+  return (
+    <Tag className={cn(headingClasses[level], className)}>
+      {children}
+    </Tag>
+  );
+}
+
+interface TextProps {
+  children: React.ReactNode;
+  variant?: 'body' | 'small' | 'large' | 'muted';
+  className?: string;
+}
+
+export function Text({ children, variant = 'body', className }: TextProps) {
+  const variantClasses = {
+    body: 'text-base leading-7',
+    small: 'text-sm leading-6',
+    large: 'text-lg leading-8',
+    muted: 'text-sm text-muted-foreground leading-6'
+  };
+
+  return (
+    <p className={cn(variantClasses[variant], className)}>
+      {children}
+    </p>
+  );
+}
