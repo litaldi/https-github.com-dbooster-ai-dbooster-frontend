@@ -1,8 +1,7 @@
 
-import { TabsContent } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { formatPhoneNumber } from '@/utils/authValidation';
 
 interface LoginTypeFieldsProps {
   loginType: 'email' | 'phone';
@@ -14,46 +13,60 @@ interface LoginTypeFieldsProps {
   onInputChange: (field: string, value: string) => void;
 }
 
-export function LoginTypeFields({ loginType, formData, errors, onInputChange }: LoginTypeFieldsProps) {
-  return (
-    <>
-      <TabsContent value="email" className="space-y-2 mt-4">
+export function LoginTypeFields({ 
+  loginType, 
+  formData, 
+  errors, 
+  onInputChange 
+}: LoginTypeFieldsProps) {
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value);
+    onInputChange('phone', formatted);
+  };
+
+  if (loginType === 'email') {
+    return (
+      <div className="space-y-2">
         <Label htmlFor="email">Email Address</Label>
         <Input
           id="email"
           type="email"
-          placeholder="Enter your email"
+          placeholder="Enter your email address"
           value={formData.email}
           onChange={(e) => onInputChange('email', e.target.value)}
-          className={cn(errors.email && "border-destructive")}
+          className={errors.email ? "border-destructive" : ""}
           aria-describedby={errors.email ? "email-error" : undefined}
           autoComplete="email"
+          required
         />
         {errors.email && (
           <p id="email-error" className="text-sm text-destructive" role="alert">
             {errors.email}
           </p>
         )}
-      </TabsContent>
+      </div>
+    );
+  }
 
-      <TabsContent value="phone" className="space-y-2 mt-4">
-        <Label htmlFor="phone">Phone Number</Label>
-        <Input
-          id="phone"
-          type="tel"
-          placeholder="+1 (555) 123-4567"
-          value={formData.phone}
-          onChange={(e) => onInputChange('phone', e.target.value)}
-          className={cn(errors.phone && "border-destructive")}
-          aria-describedby={errors.phone ? "phone-error" : undefined}
-          autoComplete="tel"
-        />
-        {errors.phone && (
-          <p id="phone-error" className="text-sm text-destructive" role="alert">
-            {errors.phone}
-          </p>
-        )}
-      </TabsContent>
-    </>
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="phone">Phone Number</Label>
+      <Input
+        id="phone"
+        type="tel"
+        placeholder="(555) 123-4567"
+        value={formData.phone}
+        onChange={(e) => handlePhoneChange(e.target.value)}
+        className={errors.phone ? "border-destructive" : ""}
+        aria-describedby={errors.phone ? "phone-error" : undefined}
+        autoComplete="tel"
+        required
+      />
+      {errors.phone && (
+        <p id="phone-error" className="text-sm text-destructive" role="alert">
+          {errors.phone}
+        </p>
+      )}
+    </div>
   );
 }

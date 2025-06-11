@@ -133,6 +133,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
               placeholder="Enter your password"
               error={errors.password}
               autoComplete={mode === 'login' ? "current-password" : "new-password"}
+              showStrength={mode === 'signup'}
             />
 
             {mode === 'signup' && (

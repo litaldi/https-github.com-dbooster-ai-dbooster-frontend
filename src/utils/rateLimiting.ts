@@ -1,34 +1,68 @@
 
-interface RateLimitState {
-  attemptCount: number;
-  lastAttempt: number;
-}
-
 export class RateLimiter {
-  private state: RateLimitState = {
-    attemptCount: 0,
-    lastAttempt: 0
-  };
+  private attempts: number = 0;
+  private lastAttempt: number = 0;
+  private readonly maxAttempts: number = 5;
+  private readonly windowMs: number = 15 * 60 * 1000; // 15 minutes
+  private readonly storageKey: string = 'auth_rate_limit';
+
+  constructor() {
+    this.loadFromStorage();
+  }
+
+  private loadFromStorage(): void {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const data = JSON.parse(stored);
+        this.attempts = data.attempts || 0;
+        this.lastAttempt = data.lastAttempt || 0;
+      }
+    } catch (error) {
+      console.warn('Failed to load rate limit data:', error);
+    }
+  }
+
+  private saveToStorage(): void {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify({
+        attempts: this.attempts,
+        lastAttempt: this.lastAttempt
+      }));
+    } catch (error) {
+      console.warn('Failed to save rate limit data:', error);
+    }
+  }
 
   checkRateLimit(): void {
     const now = Date.now();
-    const timeDiff = now - this.state.lastAttempt;
     
-    // Reset attempt count after 15 minutes
-    if (timeDiff > 15 * 60 * 1000) {
-      this.state.attemptCount = 0;
+    // Reset if window has passed
+    if (now - this.lastAttempt > this.windowMs) {
+      this.attempts = 0;
     }
-    
-    // Block if more than 5 attempts in 15 minutes
-    if (this.state.attemptCount >= 5 && timeDiff < 15 * 60 * 1000) {
-      throw new Error('Too many login attempts. Please try again later.');
+
+    if (this.attempts >= this.maxAttempts) {
+      const timeLeft = Math.ceil((this.windowMs - (now - this.lastAttempt)) / 1000 / 60);
+      throw new Error(`Too many attempts. Please try again in ${timeLeft} minutes.`);
     }
-    
-    this.state.attemptCount += 1;
-    this.state.lastAttempt = now;
+
+    this.attempts++;
+    this.lastAttempt = now;
+    this.saveToStorage();
   }
 
   resetAttempts(): void {
-    this.state.attemptCount = 0;
+    this.attempts = 0;
+    this.lastAttempt = 0;
+    this.saveToStorage();
+  }
+
+  getRemainingAttempts(): number {
+    const now = Date.now();
+    if (now - this.lastAttempt > this.windowMs) {
+      return this.maxAttempts;
+    }
+    return Math.max(0, this.maxAttempts - this.attempts);
   }
 }
