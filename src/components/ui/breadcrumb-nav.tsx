@@ -1,4 +1,5 @@
 
+import { Fragment } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -6,78 +7,102 @@ import { cn } from '@/lib/utils';
 interface BreadcrumbItem {
   label: string;
   href: string;
+  icon?: React.ComponentType<{ className?: string }>;
 }
 
-const routeMap: Record<string, string> = {
-  '/': 'Dashboard',
-  '/repositories': 'Repositories',
-  '/queries': 'Queries',
-  '/ai-features': 'AI Features',
-  '/reports': 'Reports',
-  '/approvals': 'Approvals',
-  '/teams': 'Teams',
-  '/db-import': 'DB Import',
-  '/sandbox': 'Sandbox',
-  '/audit-log': 'Audit Log',
-  '/support': 'Support',
-  '/docs-help': 'Docs & Help',
-  '/settings': 'Settings',
-  '/account': 'Account',
-  '/home': 'Home',
-  '/about': 'About',
-  '/contact': 'Contact',
-  '/privacy': 'Privacy',
-  '/terms': 'Terms',
+const routeLabels: Record<string, string> = {
+  '': 'Dashboard',
+  'home': 'Home',
+  'features': 'Features',
+  'learn': 'Learn',
+  'how-it-works': 'How It Works',
+  'pricing': 'Pricing',
+  'blog': 'Blog',
+  'about': 'About',
+  'contact': 'Contact',
+  'repositories': 'Repositories',
+  'queries': 'Queries',
+  'ai-features': 'AI Features',
+  'account': 'Account',
+  'settings': 'Settings',
+  'reports': 'Reports',
+  'teams': 'Teams',
+  'support': 'Support',
+  'db-import': 'DB Import',
+  'approvals': 'Approvals',
+  'audit-log': 'Audit Log',
+  'docs-help': 'Docs & Help',
+  'sandbox': 'Sandbox',
+  'privacy': 'Privacy Policy',
+  'terms': 'Terms of Service'
 };
 
 export function BreadcrumbNav() {
   const location = useLocation();
   const pathSegments = location.pathname.split('/').filter(Boolean);
   
-  const breadcrumbs: BreadcrumbItem[] = [];
-  
-  // Add home/dashboard
-  if (location.pathname !== '/' && location.pathname !== '/home') {
-    breadcrumbs.push({
-      label: location.pathname.startsWith('/home') ? 'Home' : 'Dashboard',
-      href: location.pathname.startsWith('/home') ? '/home' : '/'
-    });
+  if (pathSegments.length === 0) {
+    return null; // Don't show breadcrumbs on root
   }
-  
-  // Build breadcrumb path
-  let currentPath = '';
-  pathSegments.forEach((segment, index) => {
-    currentPath += `/${segment}`;
-    const label = routeMap[currentPath] || segment.charAt(0).toUpperCase() + segment.slice(1);
-    
-    if (index < pathSegments.length - 1) {
-      breadcrumbs.push({
-        label,
-        href: currentPath
-      });
+
+  const breadcrumbs: BreadcrumbItem[] = [
+    {
+      label: 'Home',
+      href: '/',
+      icon: Home
     }
+  ];
+
+  let currentPath = '';
+  pathSegments.forEach((segment) => {
+    currentPath += `/${segment}`;
+    const label = routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+    breadcrumbs.push({
+      label,
+      href: currentPath
+    });
   });
 
-  if (breadcrumbs.length === 0) return null;
-
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center space-x-1 text-sm text-muted-foreground mb-6">
-      <Home className="h-4 w-4" />
-      {breadcrumbs.map((crumb, index) => (
-        <div key={crumb.href} className="flex items-center space-x-1">
-          <ChevronRight className="h-4 w-4" />
-          <Link
-            to={crumb.href}
-            className="hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-1"
-          >
-            {crumb.label}
-          </Link>
-        </div>
-      ))}
-      <ChevronRight className="h-4 w-4" />
-      <span className="font-medium text-foreground">
-        {routeMap[location.pathname] || 'Current Page'}
-      </span>
+    <nav aria-label="Breadcrumb" className="mb-6">
+      <ol className="flex items-center space-x-2 text-sm text-muted-foreground">
+        {breadcrumbs.map((crumb, index) => {
+          const isLast = index === breadcrumbs.length - 1;
+          const Icon = crumb.icon;
+          
+          return (
+            <Fragment key={crumb.href}>
+              <li className="flex items-center">
+                {isLast ? (
+                  <span 
+                    className="flex items-center font-medium text-foreground"
+                    aria-current="page"
+                  >
+                    {Icon && <Icon className="w-4 h-4 mr-1" />}
+                    {crumb.label}
+                  </span>
+                ) : (
+                  <Link
+                    to={crumb.href}
+                    className={cn(
+                      "flex items-center hover:text-foreground transition-colors",
+                      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
+                    )}
+                  >
+                    {Icon && <Icon className="w-4 h-4 mr-1" />}
+                    {crumb.label}
+                  </Link>
+                )}
+              </li>
+              {!isLast && (
+                <li>
+                  <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                </li>
+              )}
+            </Fragment>
+          );
+        })}
+      </ol>
     </nav>
   );
 }
