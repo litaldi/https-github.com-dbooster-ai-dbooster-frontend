@@ -119,13 +119,14 @@ export function Stack({
 interface HeadingProps {
   children: React.ReactNode;
   level?: 1 | 2 | 3 | 4 | 5 | 6;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
 }
 
-export function Heading({ children, level = 1, className }: HeadingProps) {
+export function Heading({ children, level = 1, size, className }: HeadingProps) {
   const Tag = `h${level}` as keyof JSX.IntrinsicElements;
   
-  const headingClasses = {
+  const defaultSizes = {
     1: 'text-4xl font-bold tracking-tight lg:text-5xl',
     2: 'text-3xl font-semibold tracking-tight',
     3: 'text-2xl font-semibold tracking-tight',
@@ -134,8 +135,18 @@ export function Heading({ children, level = 1, className }: HeadingProps) {
     6: 'text-base font-semibold tracking-tight'
   };
 
+  const customSizes = {
+    sm: 'text-sm font-semibold tracking-tight',
+    md: 'text-base font-semibold tracking-tight',
+    lg: 'text-lg font-semibold tracking-tight',
+    xl: 'text-xl font-semibold tracking-tight',
+    '2xl': 'text-2xl font-semibold tracking-tight'
+  };
+
+  const finalClassName = size ? customSizes[size] : defaultSizes[level];
+
   return (
-    <Tag className={cn(headingClasses[level], className)}>
+    <Tag className={cn(finalClassName, className)}>
       {children}
     </Tag>
   );
@@ -144,10 +155,11 @@ export function Heading({ children, level = 1, className }: HeadingProps) {
 interface TextProps {
   children: React.ReactNode;
   variant?: 'body' | 'small' | 'large' | 'muted';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
-export function Text({ children, variant = 'body', className }: TextProps) {
+export function Text({ children, variant = 'body', size, className }: TextProps) {
   const variantClasses = {
     body: 'text-base leading-7',
     small: 'text-sm leading-6',
@@ -155,8 +167,17 @@ export function Text({ children, variant = 'body', className }: TextProps) {
     muted: 'text-sm text-muted-foreground leading-6'
   };
 
+  const sizeClasses = {
+    sm: 'text-sm leading-6',
+    md: 'text-base leading-7',
+    lg: 'text-lg leading-8',
+    xl: 'text-xl leading-9'
+  };
+
+  const finalClassName = size ? sizeClasses[size] : variantClasses[variant];
+
   return (
-    <p className={cn(variantClasses[variant], className)}>
+    <p className={cn(finalClassName, className)}>
       {children}
     </p>
   );

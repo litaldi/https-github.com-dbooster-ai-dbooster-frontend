@@ -188,13 +188,58 @@ export function ProgressIndicator({ steps, currentStep, className }: ProgressInd
   );
 }
 
-// Additional components that were being imported
 interface UserGuidanceProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
+  title?: string;
+  description?: string;
+  steps?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    action: React.ReactNode;
+  }>;
+  trigger?: React.ReactNode;
 }
 
-export function UserGuidance({ children, className }: UserGuidanceProps) {
+export function UserGuidance({ children, className, title, description, steps, trigger }: UserGuidanceProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (trigger) {
+    return (
+      <div className="relative">
+        <div onClick={() => setIsOpen(!isOpen)}>
+          {trigger}
+        </div>
+        {isOpen && (
+          <>
+            <div 
+              className="fixed inset-0 z-40" 
+              onClick={() => setIsOpen(false)}
+            />
+            <Card className="absolute right-0 top-full mt-2 z-50 w-80 shadow-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">{title}</CardTitle>
+                {description && (
+                  <p className="text-sm text-muted-foreground">{description}</p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {steps?.map((step, index) => (
+                  <div key={step.id} className="space-y-2">
+                    <div className="font-medium text-sm">{step.title}</div>
+                    <div className="text-sm text-muted-foreground">{step.description}</div>
+                    {step.action}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={cn("space-y-4", className)}>
       {children}
