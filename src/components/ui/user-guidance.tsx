@@ -249,13 +249,13 @@ export function UserGuidance({ children, className, title, description, steps, t
 
 interface TooltipGuidanceProps {
   children: React.ReactNode;
-  tooltip: string;
+  content: string;
   className?: string;
 }
 
-export function TooltipGuidance({ children, tooltip, className }: TooltipGuidanceProps) {
+export function TooltipGuidance({ children, content, className }: TooltipGuidanceProps) {
   return (
-    <Tooltip content={tooltip} className={className}>
+    <Tooltip content={content} className={className}>
       {children}
     </Tooltip>
   );
