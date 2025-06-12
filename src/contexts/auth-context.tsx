@@ -5,6 +5,8 @@ import { loginDemoUser, logoutDemoUser } from '@/services/demo';
 import { RateLimiter } from '@/utils/rateLimiting';
 import { AuthMethods } from '@/services/authMethods';
 import { useAuthState } from '@/hooks/useAuthState';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { handleApiError } from '@/utils/errorHandling';
 
 interface AuthContextType {
   user: User | null;
@@ -43,8 +45,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       await authMethods.loginWithOAuth(provider);
+      enhancedToast.success({
+        title: 'Signed in successfully',
+        description: `Welcome back! You're now signed in with ${provider}.`
+      });
     } catch (error) {
       console.error('Login failed:', error);
+      enhancedToast.error({
+        title: 'Sign in failed',
+        description: handleApiError(error)
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -57,8 +67,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authMethods.loginWithEmail(email, password);
       // Reset rate limiting on successful login
       rateLimiter.resetAttempts();
+      enhancedToast.success({
+        title: 'Welcome back!',
+        description: 'You have been signed in successfully.'
+      });
     } catch (error) {
       console.error('Email login failed:', error);
+      enhancedToast.error({
+        title: 'Sign in failed',
+        description: handleApiError(error)
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -71,8 +89,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authMethods.loginWithPhone(phone, password);
       // Reset rate limiting on successful login
       rateLimiter.resetAttempts();
+      enhancedToast.success({
+        title: 'Welcome back!',
+        description: 'You have been signed in successfully.'
+      });
     } catch (error) {
       console.error('Phone login failed:', error);
+      enhancedToast.error({
+        title: 'Sign in failed',
+        description: handleApiError(error)
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -83,8 +109,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       await authMethods.signupWithEmail(email, password, name);
+      enhancedToast.success({
+        title: 'Account created!',
+        description: 'Welcome to DBooster! Your account has been created successfully.'
+      });
     } catch (error) {
       console.error('Email signup failed:', error);
+      enhancedToast.error({
+        title: 'Account creation failed',
+        description: handleApiError(error)
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -95,8 +129,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       await authMethods.signupWithPhone(phone, password, name);
+      enhancedToast.success({
+        title: 'Account created!',
+        description: 'Welcome to DBooster! Your account has been created successfully.'
+      });
     } catch (error) {
       console.error('Phone signup failed:', error);
+      enhancedToast.error({
+        title: 'Account creation failed',
+        description: handleApiError(error)
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -108,9 +150,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const { user, session } = await loginDemoUser();
       updateAuthState(user, session, true);
+      enhancedToast.success({
+        title: 'Demo mode activated',
+        description: 'You can now explore DBooster with sample data.'
+      });
       console.log('Demo user logged in successfully');
     } catch (error) {
       console.error('Demo login failed:', error);
+      enhancedToast.error({
+        title: 'Demo mode failed',
+        description: handleApiError(error)
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -124,14 +174,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (isDemo) {
         logoutDemoUser();
         clearAuthState();
+        enhancedToast.info({
+          title: 'Demo session ended',
+          description: 'Thanks for trying DBooster!'
+        });
         console.log('Demo user logged out');
         return;
       }
 
       await authMethods.logout();
       clearAuthState();
+      enhancedToast.success({
+        title: 'Signed out',
+        description: 'You have been signed out successfully.'
+      });
     } catch (error) {
       console.error('Logout failed:', error);
+      enhancedToast.error({
+        title: 'Sign out failed',
+        description: handleApiError(error)
+      });
       throw error;
     } finally {
       setIsLoading(false);

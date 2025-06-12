@@ -5,7 +5,7 @@ import { Button } from './button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
   fallback?: ReactNode;
 }
 
@@ -24,12 +24,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error('Uncaught error:', error, errorInfo);
   }
-
-  private handleReload = () => {
-    window.location.reload();
-  };
 
   private handleReset = () => {
     this.setState({ hasError: false, error: undefined });
@@ -42,40 +38,36 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-          <Card className="w-full max-w-md">
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <Card className="max-w-md w-full">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-destructive" />
+              <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
               </div>
-              <CardTitle className="text-xl">Something went wrong</CardTitle>
+              <CardTitle>Something went wrong</CardTitle>
               <CardDescription>
-                We encountered an unexpected error. This has been logged and we'll look into it.
+                An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="text-xs text-muted-foreground">
-                  <summary className="cursor-pointer font-medium">Error details</summary>
-                  <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto">
-                    {this.state.error.stack}
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <pre className="text-xs text-red-800 whitespace-pre-wrap">
+                    {this.state.error.message}
                   </pre>
-                </details>
+                </div>
               )}
               <div className="flex gap-2">
-                <Button 
-                  onClick={this.handleReset}
-                  variant="outline"
-                  className="flex-1"
-                >
+                <Button onClick={this.handleReset} className="flex-1">
+                  <RefreshCw className="w-4 h-4 mr-2" />
                   Try Again
                 </Button>
                 <Button 
-                  onClick={this.handleReload}
+                  variant="outline" 
+                  onClick={() => window.location.reload()}
                   className="flex-1"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Reload Page
+                  Refresh Page
                 </Button>
               </div>
             </CardContent>
