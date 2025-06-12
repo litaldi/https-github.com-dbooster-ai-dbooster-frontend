@@ -52,11 +52,11 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="dbooster-theme">
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
               <Routes>
                 {/* Public routes with public layout */}
                 <Route path="/" element={<PublicLayout />}>
@@ -72,7 +72,7 @@ const App = () => (
                   <Route path="terms" element={<Terms />} />
                 </Route>
                 
-                {/* Auth route without layout */}
+                {/* Auth route - now wrapped by AuthProvider */}
                 <Route path="/login" element={<Login />} />
                 
                 {/* Protected routes with authenticated layout */}
@@ -104,9 +104,9 @@ const App = () => (
                 {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>
