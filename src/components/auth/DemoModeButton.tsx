@@ -22,14 +22,14 @@ export function DemoModeButton() {
   };
 
   return (
-    <Card className="mt-6 border-dashed border-2 border-primary/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20">
+    <Card className="mt-6 border-dashed border-2 border-primary/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 hover-scale transition-all duration-300">
       <CardHeader className="text-center pb-3">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-2 mx-auto">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-2 mx-auto animate-pulse">
           <TestTube className="w-6 h-6 text-white" />
         </div>
         <CardTitle className="text-lg flex items-center justify-center gap-2">
           Try Demo Mode
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs animate-fade-in">
             <Sparkles className="w-3 h-3 mr-1" />
             No signup needed
           </Badge>
@@ -44,6 +44,7 @@ export function DemoModeButton() {
           disabled={isLoading || isDemoLoading}
           variant="outline"
           className="w-full border-primary/30 hover:bg-primary/5 transition-all duration-200"
+          aria-label="Start demo experience with sample data"
         >
           {isDemoLoading ? (
             <>

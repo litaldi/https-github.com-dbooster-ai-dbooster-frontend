@@ -30,10 +30,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 p-4">
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full max-w-md space-y-6 animate-fade-in">
         {/* Brand Header */}
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4 shadow-lg hover-scale">
             <Database className="w-8 h-8 text-white" />
           </div>
           <div className="space-y-2">
@@ -50,7 +50,7 @@ export default function Login() {
         </div>
 
         {/* Main Authentication Card */}
-        <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+        <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm animate-scale-in">
           <CardHeader className="text-center space-y-1 pb-4">
             <CardTitle className="text-2xl font-bold">
               {authMode === 'login' ? 'Welcome back' : 'Get started today'}
@@ -68,7 +68,7 @@ export default function Login() {
               <Button
                 variant={authMode === 'login' ? 'default' : 'outline'}
                 onClick={() => setAuthMode('login')}
-                className="flex items-center gap-2 transition-all duration-200"
+                className="flex items-center gap-2 transition-all duration-200 hover-scale"
               >
                 <KeyRound className="h-4 w-4" />
                 Sign In
@@ -76,7 +76,7 @@ export default function Login() {
               <Button
                 variant={authMode === 'signup' ? 'default' : 'outline'}
                 onClick={() => setAuthMode('signup')}
-                className="flex items-center gap-2 transition-all duration-200"
+                className="flex items-center gap-2 transition-all duration-200 hover-scale"
               >
                 <UserPlus className="h-4 w-4" />
                 Sign Up
@@ -115,7 +115,7 @@ export default function Login() {
             Want to browse without signing up?
           </p>
           <Link to="/home">
-            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 story-link">
               Continue as Guest
             </Button>
           </Link>
@@ -126,14 +126,14 @@ export default function Login() {
           <div className="flex justify-center space-x-4 text-sm">
             <Link 
               to="/terms" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors story-link"
             >
               Terms of Service
             </Link>
             <span className="text-muted-foreground">•</span>
             <Link 
               to="/privacy" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors story-link"
             >
               Privacy Policy
             </Link>
