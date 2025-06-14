@@ -24,6 +24,17 @@ export function useAuthForm(mode: 'login' | 'signup') {
     confirmPassword: ''
   };
 
+  const {
+    data,
+    errors,
+    handleChange,
+    handleBlur,
+    validateAll,
+    getFieldValidation,
+    setData,
+    setErrors
+  } = useFormValidation(initialData, {});
+
   const validationRules = {
     name: mode === 'signup' ? { required: true, minLength: 2 } : undefined,
     email: loginType === 'email' ? { 
@@ -44,16 +55,6 @@ export function useAuthForm(mode: 'login' | 'signup') {
       custom: confirmPasswordValidator(data.password)
     } : undefined
   };
-
-  const {
-    data,
-    errors,
-    handleChange,
-    handleBlur,
-    validateAll,
-    getFieldValidation,
-    setData
-  } = useFormValidation(initialData, validationRules);
 
   // Load stored auth data on mount
   useEffect(() => {
@@ -81,6 +82,7 @@ export function useAuthForm(mode: 'login' | 'signup') {
     handleBlur,
     validate: validateAll,
     handleRememberMe,
-    getFieldValidation
+    getFieldValidation,
+    setErrors
   };
 }

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { LoginTypeSelector } from '@/components/auth/LoginTypeSelector';
 import { AuthFormFields } from '@/components/auth/AuthFormFields';
 import { AuthFormActions } from '@/components/auth/AuthFormActions';
-import { useAuthForm } from '@/hooks/useAuthForm';
+import { useAuthForm } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -127,6 +127,7 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
       <AuthFormFields
         mode={mode}
         loginType={loginType}
+        setLoginType={setLoginType}
         formData={formData}
         errors={errors}
         onInputChange={handleInputChange}
