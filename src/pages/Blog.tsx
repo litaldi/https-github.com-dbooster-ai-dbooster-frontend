@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { EnhancedButton } from '@/components/ui/enhanced-button';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
@@ -202,10 +201,10 @@ export default function Blog() {
                         </div>
                       </div>
                       
-                      <EnhancedButton variant="ghost" size="sm" className="group">
+                      <Button variant="ghost" size="sm" className="group">
                         Read More
                         <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </EnhancedButton>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -270,9 +269,9 @@ export default function Blog() {
                           </div>
                         </div>
                         
-                        <EnhancedButton variant="ghost" size="sm" className="group p-2">
+                        <Button variant="ghost" size="sm" className="group p-2">
                           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                        </EnhancedButton>
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -303,10 +302,10 @@ export default function Blog() {
                   placeholder="Enter your email"
                   className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <EnhancedButton className="sm:px-6">
+                <Button className="sm:px-6">
                   Subscribe
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </EnhancedButton>
+                </Button>
               </div>
               
               <Text size="sm" variant="muted" className="mt-3">
