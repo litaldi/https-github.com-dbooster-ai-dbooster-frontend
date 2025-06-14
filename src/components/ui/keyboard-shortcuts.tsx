@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog';
 import { Badge } from './badge';
@@ -43,14 +42,6 @@ const shortcutGroups: ShortcutGroup[] = [
     ]
   }
 ];
-
-function Kbd({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-      {children}
-    </kbd>
-  );
-}
 
 export function KeyboardShortcuts() {
   const [isOpen, setIsOpen] = useState(false);
