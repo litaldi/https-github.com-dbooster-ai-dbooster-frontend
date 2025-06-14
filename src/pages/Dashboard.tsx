@@ -1,293 +1,249 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { BarChart3, Database, GitBranch, TrendingUp, AlertTriangle, CheckCircle, Clock, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { demoData, isDemoMode } from '@/services/demo';
-import { Link } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { QuickStartGuide } from '@/components/onboarding/QuickStartGuide';
+import { QuickActions } from '@/components/dashboard/QuickActions';
+import { QueryHistory } from '@/components/queries/QueryHistory';
+import { FeedbackButton } from '@/components/feedback/FeedbackButton';
+import { KeyboardShortcutsHelper } from '@/components/layout/KeyboardShortcutsHelper';
+import { LoadingState, SkeletonCard } from '@/components/ui/enhanced-loading-states';
+import { useSystemStatus } from '@/hooks/useSystemStatus';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { 
+  Database, 
+  Zap, 
+  BarChart3, 
+  TrendingUp, 
+  Users, 
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Activity
+} from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
-  const { isDemo } = useAuth();
+  const { user, isDemo } = useAuth();
+  const { status, overallStatus } = useSystemStatus();
+  const [isLoading, setIsLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<any>(null);
 
-  // Use demo data when in demo mode
-  const repositories = isDemo ? demoData.repositories : [];
-  const queries = isDemo ? demoData.queries : [];
-  const improvements = isDemo ? demoData.improvements : [];
-  const alerts = isDemo ? demoData.alerts : [];
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts();
 
-  const stats = {
-    totalRepositories: repositories.length,
-    totalQueries: queries.length,
-    optimizedQueries: queries.filter(q => q.status === 'optimized').length,
-    totalTimeSaved: queries.reduce((sum, query) => sum + (query.time_saved_ms || 0), 0),
-    criticalIssues: improvements.filter(i => i.severity === 'critical').length,
-    securityAlerts: alerts.filter(a => a.type === 'security').length,
-  };
+  useEffect(() => {
+    // Simulate loading dashboard data
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock dashboard data
+      setDashboardData({
+        totalDatabases: isDemo ? 3 : 0,
+        totalQueries: isDemo ? 42 : 0,
+        avgPerformance: isDemo ? 85 : 0,
+        optimizedQueries: isDemo ? 18 : 0,
+        activeTeamMembers: isDemo ? 5 : 1
+      });
+      setIsLoading(false);
+    };
 
-  const formatTimeSaved = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    const seconds = ms / 1000;
-    if (seconds < 60) return `${seconds.toFixed(1)}s`;
-    const minutes = seconds / 60;
-    return `${minutes.toFixed(1)}m`;
-  };
+    loadDashboardData();
+  }, [isDemo]);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'optimized':
-        return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Optimized
-          </Badge>
-        );
-      case 'pending':
-        return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-            <Clock className="w-3 h-3 mr-1" />
-            Pending
-          </Badge>
-        );
-      case 'review':
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-            <AlertTriangle className="w-3 h-3 mr-1" />
-            Review
-          </Badge>
-        );
+      case 'online':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'degraded':
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+      case 'offline':
+        return <AlertTriangle className="h-4 w-4 text-red-600" />;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Activity className="h-4 w-4 text-gray-600" />;
     }
   };
 
-  const getSeverityBadge = (severity: string) => {
-    switch (severity) {
-      case 'critical':
-        return <Badge variant="destructive">Critical</Badge>;
-      case 'high':
-        return <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">High</Badge>;
-      case 'medium':
-        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Medium</Badge>;
-      case 'low':
-        return <Badge variant="secondary">Low</Badge>;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'online':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'degraded':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'offline':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       default:
-        return <Badge variant="outline">{severity}</Badge>;
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 bg-gray-200 rounded w-48 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-32"></div>
+          </div>
+          <div className="h-8 bg-gray-200 rounded w-24"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+        
+        <LoadingState message="Loading your dashboard..." variant="database" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome back{user?.user_metadata?.name ? `, ${user.user_metadata.name}` : ''}! 👋
+          </h1>
           <p className="text-muted-foreground">
-            {isDemo 
-              ? "Welcome to the DBooster demo! Explore AI-powered database optimization." 
-              : "Monitor your database performance and optimization opportunities."}
+            Here's what's happening with your database optimization today.
           </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* System Status */}
+          <Badge className={getStatusColor(overallStatus)} variant="outline">
+            {getStatusIcon(overallStatus)}
+            System {overallStatus}
+          </Badge>
+          
+          {isDemo && (
+            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+              Demo Mode
+            </Badge>
+          )}
+          
+          <KeyboardShortcutsHelper />
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Repositories</CardTitle>
-            <GitBranch className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalRepositories}</div>
-            <p className="text-xs text-muted-foreground">Connected repositories</p>
-          </CardContent>
-        </Card>
+      {/* Quick Start Guide (for new users) */}
+      {(!isDemo && dashboardData?.totalDatabases === 0) && <QuickStartGuide />}
 
-        <Card>
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Queries Analyzed</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Connected Databases</CardTitle>
+            <Database className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalQueries}</div>
+            <div className="text-2xl font-bold">{dashboardData?.totalDatabases || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.optimizedQueries} optimized
+              {dashboardData?.totalDatabases > 0 ? '+2 from last month' : 'Connect your first database'}
             </p>
           </CardContent>
         </Card>
-
-        <Card>
+        
+        <Card className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Time Saved</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Queries</CardTitle>
+            <Zap className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatTimeSaved(stats.totalTimeSaved)}</div>
-            <p className="text-xs text-muted-foreground">Total optimization impact</p>
+            <div className="text-2xl font-bold">{dashboardData?.totalQueries || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              {dashboardData?.totalQueries > 0 ? '+12% from last week' : 'No queries analyzed yet'}
+            </p>
           </CardContent>
         </Card>
-
-        <Card>
+        
+        <Card className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critical Issues</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Avg Performance</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.criticalIssues}</div>
+            <div className="text-2xl font-bold">{dashboardData?.avgPerformance || 0}%</div>
+            <Progress value={dashboardData?.avgPerformance || 0} className="mt-2" />
+            <p className="text-xs text-muted-foreground mt-1">
+              Performance score
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+            <Users className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardData?.activeTeamMembers || 1}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.securityAlerts} security alerts
+              {dashboardData?.activeTeamMembers > 1 ? 'Active collaborators' : 'Just you for now'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Queries */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="w-5 h-5" />
-              Recent Query Analysis
-            </CardTitle>
-            <CardDescription>Latest database queries and their optimization status</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {queries.slice(0, 5).map((query) => (
-                <div key={query.id} className="flex items-center justify-between p-3 rounded-lg border">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <code className="text-sm bg-muted px-2 py-1 rounded">{query.file_path}</code>
-                      <span className="text-sm text-muted-foreground">:{query.line_number}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1 truncate">
-                      {query.query_content}
-                    </p>
-                    {query.time_saved_ms > 0 && (
-                      <p className="text-sm text-green-600 font-medium mt-1">
-                        Saved: {formatTimeSaved(query.time_saved_ms)}
-                      </p>
-                    )}
-                  </div>
-                  <div className="ml-4">
-                    {getStatusBadge(query.status)}
-                  </div>
-                </div>
-              ))}
-              {queries.length === 0 && (
-                <div className="text-center py-8">
-                  <Database className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No queries analyzed yet</h3>
-                  <p className="text-muted-foreground">
-                    Connect a repository to start analyzing your database queries.
-                  </p>
-                </div>
-              )}
-              {queries.length > 0 && (
-                <div className="pt-4">
-                  <Button variant="outline" asChild className="w-full">
-                    <Link to="/queries">View All Queries</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security & Performance Alerts */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Security & Performance Alerts
-            </CardTitle>
-            <CardDescription>Critical issues requiring immediate attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {alerts.slice(0, 5).map((alert) => (
-                <div key={alert.id} className="flex items-start gap-3 p-3 rounded-lg border">
-                  <div className="mt-1">
-                    {alert.type === 'security' && <Shield className="w-4 h-4 text-red-500" />}
-                    {alert.type === 'performance' && <BarChart3 className="w-4 h-4 text-orange-500" />}
-                    {alert.type === 'maintenance' && <AlertTriangle className="w-4 h-4 text-yellow-500" />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-medium">{alert.title}</h4>
-                      {getSeverityBadge(alert.severity)}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{alert.description}</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {new Date(alert.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {alerts.length === 0 && (
-                <div className="text-center py-8">
-                  <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No alerts</h3>
-                  <p className="text-muted-foreground">
-                    Your database is looking good! No critical issues detected.
-                  </p>
-                </div>
-              )}
-              {alerts.length > 0 && (
-                <div className="pt-4">
-                  <Button variant="outline" asChild className="w-full">
-                    <Link to="/reports">View All Alerts</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Quick Actions */}
+        <div className="lg:col-span-1">
+          <QuickActions />
+        </div>
+        
+        {/* Query History */}
+        <div className="lg:col-span-1">
+          <QueryHistory />
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            {isDemo 
-              ? "Explore these demo features to see how DBooster can help optimize your database."
-              : "Get started with database optimization"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Button variant="outline" asChild className="h-auto p-4">
-              <Link to="/repositories" className="flex flex-col items-center gap-2">
-                <GitBranch className="w-6 h-6" />
-                <div className="text-center">
-                  <div className="font-medium">Connect Repository</div>
-                  <div className="text-sm text-muted-foreground">Start analyzing your code</div>
-                </div>
-              </Link>
-            </Button>
-            
-            <Button variant="outline" asChild className="h-auto p-4">
-              <Link to="/queries" className="flex flex-col items-center gap-2">
-                <Database className="w-6 h-6" />
-                <div className="text-center">
-                  <div className="font-medium">View Queries</div>
-                  <div className="text-sm text-muted-foreground">Analyze database queries</div>
-                </div>
-              </Link>
-            </Button>
-            
-            <Button variant="outline" asChild className="h-auto p-4">
-              <Link to="/sandbox" className="flex flex-col items-center gap-2">
-                <BarChart3 className="w-6 h-6" />
-                <div className="text-center">
-                  <div className="font-medium">Test Optimizations</div>
-                  <div className="text-sm text-muted-foreground">Safe testing environment</div>
-                </div>
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Performance Insights */}
+      {isDemo && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-green-600" />
+              Performance Insights
+            </CardTitle>
+            <CardDescription>
+              AI-powered recommendations to improve your database performance
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="border-l-4 border-blue-500 pl-4 py-2">
+                <h4 className="font-medium text-sm">Query Optimization Opportunity</h4>
+                <p className="text-sm text-muted-foreground">
+                  We found 3 queries that could benefit from indexing. Potential 40% performance improvement.
+                </p>
+                <Button variant="link" size="sm" className="p-0 h-auto text-blue-600">
+                  View recommendations →
+                </Button>
+              </div>
+              
+              <div className="border-l-4 border-green-500 pl-4 py-2">
+                <h4 className="font-medium text-sm">Schema Analysis Complete</h4>
+                <p className="text-sm text-muted-foreground">
+                  Your database schema looks healthy. No critical issues detected.
+                </p>
+                <Button variant="link" size="sm" className="p-0 h-auto text-green-600">
+                  View full report →
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Floating Feedback Button */}
+      <FeedbackButton />
     </div>
   );
 }
