@@ -10,31 +10,40 @@ import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { SkipLink } from '@/components/ui/accessibility-helpers';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import { ScrollToTop } from '@/components/ui/scroll-to-top';
+import { KeyboardShortcuts } from '@/components/ui/keyboard-shortcuts';
+import { NotificationProvider } from '@/components/notifications/SmartNotifications';
+import { TourProvider, TourOverlay } from '@/components/onboarding/InteractiveTour';
 
 export default function Layout() {
   return (
     <EnhancedErrorBoundary>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
-          <SkipLink href="#main-content">Skip to main content</SkipLink>
-          <AppSidebar />
-          <div className="flex-1 flex flex-col min-w-0">
-            <Header />
-            <main id="main-content" className="flex-1 p-4 md:p-6 overflow-auto" role="main">
-              <div className="max-w-7xl mx-auto w-full">
-                <BreadcrumbNav />
-                <EnhancedErrorBoundary>
-                  <Outlet />
-                </EnhancedErrorBoundary>
+      <NotificationProvider>
+        <TourProvider>
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full bg-background">
+              <SkipLink href="#main-content">Skip to main content</SkipLink>
+              <AppSidebar />
+              <div className="flex-1 flex flex-col min-w-0">
+                <Header />
+                <main id="main-content" className="flex-1 p-4 md:p-6 overflow-auto" role="main">
+                  <div className="max-w-7xl mx-auto w-full">
+                    <BreadcrumbNav />
+                    <EnhancedErrorBoundary>
+                      <Outlet />
+                    </EnhancedErrorBoundary>
+                  </div>
+                </main>
+                <Footer />
               </div>
-            </main>
-            <Footer />
-          </div>
-          <ScrollToTop />
-        </div>
-        <DemoWalkthrough />
-        <OnboardingTour />
-      </SidebarProvider>
+              <ScrollToTop />
+            </div>
+            <DemoWalkthrough />
+            <OnboardingTour />
+            <KeyboardShortcuts />
+            <TourOverlay />
+          </SidebarProvider>
+        </TourProvider>
+      </NotificationProvider>
     </EnhancedErrorBoundary>
   );
 }

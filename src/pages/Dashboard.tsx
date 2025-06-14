@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { QuickStartGuide } from '@/components/onboarding/QuickStartGuide';
-import { QuickActions } from '@/components/dashboard/QuickActions';
 import { QueryHistory } from '@/components/queries/QueryHistory';
 import { FeedbackButton } from '@/components/feedback/FeedbackButton';
 import { KeyboardShortcutsHelper } from '@/components/layout/KeyboardShortcutsHelper';
@@ -28,6 +27,80 @@ import { RealTimeMetrics } from '@/components/dashboard/RealTimeMetrics';
 import { DatabaseStatus } from '@/components/dashboard/DatabaseStatus';
 import { QueryAnalytics } from '@/components/dashboard/QueryAnalytics';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
+import { AdvancedQueryBuilder } from '@/components/queries/AdvancedQueryBuilder';
+import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
+import { UniversalSearch } from '@/components/search/UniversalSearch';
+import { NotificationCenter, useNotifications } from '@/components/notifications/SmartNotifications';
+import { TourMenu, useTour } from '@/components/onboarding/InteractiveTour';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// Quick Actions Component
+function QuickActions() {
+  const { addNotification } = useNotifications();
+  const { startTour } = useTour();
+
+  const actions = [
+    {
+      title: 'Connect Database',
+      description: 'Add a new database connection',
+      icon: Database,
+      onClick: () => addNotification({
+        type: 'info',
+        title: 'Database Connection',
+        message: 'Opening database connection wizard...',
+        category: 'system',
+        priority: 'medium'
+      })
+    },
+    {
+      title: 'Optimize Query',
+      description: 'AI-powered query optimization',
+      icon: Zap,
+      onClick: () => addNotification({
+        type: 'performance',
+        title: 'Query Optimization',
+        message: 'Starting AI query analysis...',
+        category: 'performance',
+        priority: 'medium'
+      })
+    },
+    {
+      title: 'Generate Report',
+      description: 'Create performance report',
+      icon: BarChart3,
+      onClick: () => addNotification({
+        type: 'success',
+        title: 'Report Generated',
+        message: 'Performance report is ready for download.',
+        category: 'system',
+        priority: 'low'
+      })
+    },
+    {
+      title: 'Start Tour',
+      description: 'Interactive product tour',
+      icon: Activity,
+      onClick: () => startTour('basic')
+    }
+  ];
+
+  return (
+    <div data-tour="quick-actions" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {actions.map((action, index) => {
+        const Icon = action.icon;
+        return (
+          <Card key={index} className="cursor-pointer hover:shadow-md transition-all hover:scale-105">
+            <CardContent className="p-4 text-center" onClick={action.onClick}>
+              <Icon className="h-8 w-8 mx-auto mb-2 text-primary" />
+              <h3 className="font-medium text-sm">{action.title}</h3>
+              <p className="text-xs text-muted-foreground mt-1">{action.description}</p>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { user, isDemo } = useAuth();
@@ -58,32 +131,6 @@ export default function Dashboard() {
     loadDashboardData();
   }, [isDemo]);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'online':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'degraded':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'offline':
-        return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      default:
-        return <Activity className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'online':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'degraded':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'offline':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="container mx-auto p-6 space-y-6">
@@ -109,21 +156,85 @@ export default function Dashboard() {
   return (
     <EnhancedErrorBoundary>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome to your database optimization center
-          </p>
+        {/* Header with Search and Notifications */}
+        <div className="flex items-center justify-between">
+          <div data-tour="dashboard">
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Welcome to your database optimization center
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <UniversalSearch />
+            <NotificationCenter />
+          </div>
         </div>
 
+        {/* Quick Actions */}
         <QuickActions />
         
-        <RealTimeMetrics />
-        
-        <div className="grid gap-6 lg:grid-cols-1">
-          <DatabaseStatus />
-          <QueryAnalytics />
-        </div>
+        {/* Enhanced Dashboard Tabs */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="query-builder">Query Builder</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="help">Help & Tours</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <RealTimeMetrics />
+            
+            <div className="grid gap-6 lg:grid-cols-1">
+              <DatabaseStatus />
+              <QueryAnalytics />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-6">
+            <PerformanceMonitor />
+          </TabsContent>
+
+          <TabsContent value="query-builder" className="space-y-6">
+            <AdvancedQueryBuilder />
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <QueryAnalytics />
+              <DatabaseStatus />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="help" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Interactive Tours</CardTitle>
+                  <CardDescription>
+                    Learn DBooster with guided interactive tours
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TourMenu />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Getting Started</CardTitle>
+                  <CardDescription>
+                    Quick start guide for new users
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <QuickStartGuide />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </EnhancedErrorBoundary>
   );

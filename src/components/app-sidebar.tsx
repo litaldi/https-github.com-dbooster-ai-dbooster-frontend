@@ -1,143 +1,154 @@
 
-import { Link, useLocation } from 'react-router-dom';
+import { Home, Database, Search, FileText, BarChart3, Settings, Users, Shield, HelpCircle, Zap, BookOpen } from "lucide-react"
+import { NavLink } from "react-router-dom"
+import { cn } from "@/lib/utils"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-} from '@/components/ui/sidebar';
-import { 
-  Database, 
-  GitBranch, 
-  Search, 
-  Settings, 
-  BarChart3, 
-  Users, 
-  User, 
-  HelpCircle, 
-  Upload, 
-  CheckSquare, 
-  FileText, 
-  BookOpen, 
-  TestTube 
-} from 'lucide-react';
+  SidebarRail,
+} from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/auth-context"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { NotificationTrigger } from "@/components/notifications/SmartNotifications"
 
-const menuItems = [
+// Menu items
+const items = [
   {
-    title: 'Dashboard',
-    url: '/',
-    icon: BarChart3,
+    title: "Dashboard",
+    url: "/",
+    icon: Home,
+    description: "Overview and metrics"
   },
   {
-    title: 'Repositories',
-    url: '/repositories',
-    icon: GitBranch,
+    title: "Repositories",
+    url: "/repositories",
+    icon: Database,
+    description: "Database connections"
   },
   {
-    title: 'Queries',
-    url: '/queries',
+    title: "Queries",
+    url: "/queries",
     icon: Search,
+    description: "SQL optimization"
   },
   {
-    title: 'AI Features',
-    url: '/ai-features',
-    icon: TestTube,
+    title: "AI Features",
+    url: "/ai-features",
+    icon: Zap,
+    description: "AI-powered tools",
+    badge: "New"
   },
   {
-    title: 'Reports',
-    url: '/reports',
+    title: "Reports",
+    url: "/reports",
     icon: BarChart3,
+    description: "Performance insights"
   },
+]
+
+const managementItems = [
   {
-    title: 'Approvals',
-    url: '/approvals',
-    icon: CheckSquare,
-  },
-  {
-    title: 'Teams',
-    url: '/teams',
+    title: "Teams",
+    url: "/teams",
     icon: Users,
+    description: "Team management"
   },
   {
-    title: 'DB Import',
-    url: '/db-import',
-    icon: Upload,
-  },
-  {
-    title: 'Sandbox',
-    url: '/sandbox',
-    icon: TestTube,
-  },
-  {
-    title: 'Audit Log',
-    url: '/audit-log',
-    icon: FileText,
-  },
-  {
-    title: 'Support',
-    url: '/support',
-    icon: HelpCircle,
-  },
-  {
-    title: 'Docs & Help',
-    url: '/docs-help',
-    icon: BookOpen,
-  },
-  {
-    title: 'Settings',
-    url: '/settings',
+    title: "Settings",
+    url: "/settings",
     icon: Settings,
+    description: "Configuration"
   },
   {
-    title: 'Account',
-    url: '/account',
-    icon: User,
+    title: "Support",
+    url: "/support",
+    icon: HelpCircle,
+    description: "Help and support"
   },
-];
+]
 
 export function AppSidebar() {
-  const location = useLocation();
+  const { user, isDemo } = useAuth()
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-6 border-b">
-        <Link 
-          to="/" 
-          className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
-        >
-          <div 
-            className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"
-            aria-hidden="true"
-          >
-            <Database className="w-5 h-5 text-white" />
+    <Sidebar data-tour="sidebar" className="border-r">
+      <SidebarHeader className="border-b p-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold">
+            DB
           </div>
-          <div>
-            <h1 className="text-xl font-bold">DBooster</h1>
-            <p className="text-xs text-muted-foreground">Database Optimizer</p>
+          <div className="flex flex-col">
+            <span className="font-semibold">DBooster</span>
+            <span className="text-xs text-muted-foreground">AI Database Optimizer</span>
           </div>
-        </Link>
+        </div>
+        {isDemo && (
+          <Badge variant="secondary" className="mt-2 text-xs">
+            Demo Mode
+          </Badge>
+        )}
       </SidebarHeader>
+      
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Main Features</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
-                    <Link 
+                  <SidebarMenuButton asChild tooltip={item.description}>
+                    <NavLink 
                       to={item.url}
-                      aria-label={`Navigate to ${item.title}`}
-                      aria-current={location.pathname === item.url ? 'page' : undefined}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
+                          isActive && "bg-accent text-accent-foreground"
+                        )
+                      }
                     >
-                      <item.icon className="w-4 h-4" aria-hidden="true" />
+                      <item.icon className="h-4 w-4" />
+                      <span className="flex-1">{item.title}</span>
+                      {item.badge && (
+                        <Badge variant="secondary" className="text-xs">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {managementItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.description}>
+                    <NavLink 
+                      to={item.url}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
+                          isActive && "bg-accent text-accent-foreground"
+                        )
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
-                    </Link>
+                    </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -145,6 +156,39 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      
+      <SidebarFooter className="border-t p-4">
+        <div className="space-y-3">
+          {/* Notification Test Button */}
+          <NotificationTrigger />
+          
+          {/* User Info */}
+          {user && (
+            <div className="flex items-center gap-2 text-sm">
+              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">
+                {user.email?.[0]?.toUpperCase()}
+              </div>
+              <span className="truncate text-muted-foreground">
+                {user.user_metadata?.full_name || user.email}
+              </span>
+            </div>
+          )}
+          
+          {/* Quick Links */}
+          <div className="flex gap-1">
+            <Button variant="ghost" size="sm" className="flex-1 text-xs">
+              <BookOpen className="h-3 w-3 mr-1" />
+              Docs
+            </Button>
+            <Button variant="ghost" size="sm" className="flex-1 text-xs">
+              <Shield className="h-3 w-3 mr-1" />
+              Security
+            </Button>
+          </div>
+        </div>
+      </SidebarFooter>
+      
+      <SidebarRail />
     </Sidebar>
-  );
+  )
 }
