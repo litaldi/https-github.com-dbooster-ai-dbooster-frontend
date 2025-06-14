@@ -166,13 +166,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ 
-      user, session, login, loginWithEmail, loginWithPhone,
-      signupWithEmail, signupWithPhone, signIn, signUp, loginDemo, logout,
-      isLoading, githubAccessToken, isDemo
+      user,
+      session,
+      login,
+      loginWithEmail,
+      loginWithPhone,
+      signupWithEmail,
+      signupWithPhone,
+      signIn,
+      signUp,
+      loginDemo,
+      logout,
+      isLoading,
+      githubAccessToken,
+      isDemo
     }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Export the hook from useAuth.ts!
+// ---- EXPORT THE CONTEXT ----
+export { AuthContext };
