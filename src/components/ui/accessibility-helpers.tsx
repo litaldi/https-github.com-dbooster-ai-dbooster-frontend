@@ -1,10 +1,9 @@
 
 import { cn } from '@/lib/utils';
-import { ReactNode, useEffect, useRef } from 'react';
 
 interface SkipLinkProps {
   href: string;
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
 }
 
@@ -13,9 +12,9 @@ export function SkipLink({ href, children, className }: SkipLinkProps) {
     <a
       href={href}
       className={cn(
-        "sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50",
-        "bg-primary text-primary-foreground px-4 py-2 rounded-md",
-        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        "skip-link",
+        "absolute -top-40 left-6 bg-primary text-primary-foreground px-4 py-2 z-50",
+        "focus:top-6 transition-all duration-200 rounded-md font-medium",
         className
       )}
     >
@@ -24,109 +23,44 @@ export function SkipLink({ href, children, className }: SkipLinkProps) {
   );
 }
 
-interface FocusTrapProps {
-  children: ReactNode;
-  enabled?: boolean;
+interface ScreenReaderOnlyProps {
+  children: React.ReactNode;
+  as?: keyof JSX.IntrinsicElements;
   className?: string;
 }
 
-export function FocusTrap({ children, enabled = true, className }: FocusTrapProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!enabled || !containerRef.current) return;
-
-    const container = containerRef.current;
-    const focusableElements = container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    
-    const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Tab') {
-        if (e.shiftKey) {
-          if (document.activeElement === firstElement) {
-            lastElement?.focus();
-            e.preventDefault();
-          }
-        } else {
-          if (document.activeElement === lastElement) {
-            firstElement?.focus();
-            e.preventDefault();
-          }
-        }
-      }
-    };
-
-    container.addEventListener('keydown', handleKeyDown);
-    firstElement?.focus();
-
-    return () => {
-      container.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [enabled]);
-
+export function ScreenReaderOnly({ 
+  children, 
+  as: Component = 'span', 
+  className 
+}: ScreenReaderOnlyProps) {
   return (
-    <div ref={containerRef} className={className}>
+    <Component className={cn("sr-only", className)}>
       {children}
-    </div>
+    </Component>
   );
 }
 
 interface LiveRegionProps {
-  children: ReactNode;
-  level?: 'polite' | 'assertive';
+  children: React.ReactNode;
+  level?: 'polite' | 'assertive' | 'off';
+  atomic?: boolean;
   className?: string;
 }
 
-export function LiveRegion({ children, level = 'polite', className }: LiveRegionProps) {
+export function LiveRegion({ 
+  children, 
+  level = 'polite', 
+  atomic = false, 
+  className 
+}: LiveRegionProps) {
   return (
     <div
       aria-live={level}
-      aria-atomic="true"
+      aria-atomic={atomic}
       className={cn("sr-only", className)}
     >
       {children}
     </div>
-  );
-}
-
-interface ProgressiveDisclosureProps {
-  summary: ReactNode;
-  children: ReactNode;
-  defaultOpen?: boolean;
-  className?: string;
-}
-
-export function ProgressiveDisclosure({ 
-  summary, 
-  children, 
-  defaultOpen = false, 
-  className 
-}: ProgressiveDisclosureProps) {
-  return (
-    <details className={cn("group", className)} open={defaultOpen}>
-      <summary className="cursor-pointer list-none flex items-center justify-between p-4 hover:bg-muted/50 rounded-lg transition-colors">
-        <span>{summary}</span>
-        <svg
-          className="h-4 w-4 transition-transform group-open:rotate-180"
-          fill="none"
-          height="24"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-          width="24"
-        >
-          <polyline points="6,9 12,15 18,9" />
-        </svg>
-      </summary>
-      <div className="px-4 pb-4 animate-fade-in">
-        {children}
-      </div>
-    </details>
   );
 }

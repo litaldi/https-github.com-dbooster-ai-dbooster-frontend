@@ -30,6 +30,7 @@ DBooster is a cutting-edge AI-powered database optimization platform that helps 
 - **⚡ Real-time Analysis**: Instant feedback on query performance
 - **🤖 Smart Automation**: Automated query optimization suggestions
 - **🔍 Deep Insights**: Comprehensive performance analytics
+- **♿ Fully Accessible**: WCAG 2.1 AA compliant with RTL support
 
 ---
 
@@ -85,11 +86,7 @@ Ensure you have the following installed:
 
 2. **Install dependencies**
    ```bash
-   # Using npm
    npm install
-   
-   # Or using yarn
-   yarn install
    ```
 
 3. **Environment setup**
@@ -103,11 +100,7 @@ Ensure you have the following installed:
 
 4. **Start development server**
    ```bash
-   # Using npm
    npm run dev
-   
-   # Or using yarn
-   yarn dev
    ```
 
 5. **Open in browser**
@@ -176,122 +169,34 @@ src/
 └── utils/              # Helper functions and utilities
 ```
 
-### Key Design Principles
+### Recent Major Updates
 
-1. **Component Composition**: Small, focused, reusable components
-2. **Type Safety**: Comprehensive TypeScript coverage
-3. **Performance First**: Code splitting, lazy loading, and optimization
-4. **Accessibility**: WCAG 2.1 AA compliance throughout
-5. **Mobile First**: Responsive design from the ground up
-6. **Progressive Enhancement**: Works without JavaScript enabled
+#### 🔧 Bug Fixes & Improvements
+- **Fixed Critical Tab Navigation**: Resolved `TabsList` error in authentication forms
+- **Enhanced Error Boundaries**: Improved error handling with retry mechanisms
+- **Accessibility Enhancements**: Full WCAG 2.1 AA compliance implementation
+- **Performance Optimizations**: Reduced bundle size and improved loading times
+- **Mobile Responsiveness**: Enhanced touch interactions and mobile layouts
 
----
+#### 🎨 UI/UX Enhancements
+- **Interactive Tours**: Guided onboarding for new users
+- **Smart Notifications**: Context-aware notification system
+- **Universal Search**: Global search functionality across all features
+- **Advanced Query Builder**: Visual SQL query construction tool
+- **Performance Monitor**: Real-time database performance tracking
 
-## 🧪 Testing & Quality Assurance
-
-### Running Tests
-
-```bash
-# Unit tests
-npm run test
-
-# Watch mode for development
-npm run test:watch
-
-# Coverage report
-npm run test:coverage
-
-# E2E tests
-npm run test:e2e
-
-# Accessibility tests
-npm run test:a11y
-
-# Performance tests
-npm run test:performance
-```
-
-### Quality Metrics
-
-- **Code Coverage**: Minimum 80% across all modules
-- **Accessibility**: WCAG 2.1 AA compliance (verified with axe-core)
-- **Performance**: Lighthouse scores 95+ on all metrics
-- **Bundle Size**: < 100KB gzipped for initial load
-- **Load Time**: < 2s on 3G networks
-
-### Testing Strategy
-
-- **Unit Tests**: Component logic and utility functions
-- **Integration Tests**: API calls, data flow, and user interactions
-- **E2E Tests**: Complete user workflows and critical paths
-- **Visual Regression**: Automated UI consistency checks
-- **Accessibility Tests**: Screen reader compatibility and keyboard navigation
-
----
-
-## 🚀 Deployment Guide
-
-### Deploy to Lovable (Recommended)
-
-1. **Push changes to repository**
-   ```bash
-   git add .
-   git commit -m "Ready for production"
-   git push origin main
-   ```
-
-2. **Deploy via Lovable Dashboard**
-   - Visit your [Lovable Project](https://lovable.dev/projects/e337b8a8-c0d7-4d65-93a2-33a9ff366332)
-   - Click **"Publish"** to deploy
-   - Custom domains available on paid plans
-
-### Alternative Deployment Options
-
-#### Vercel
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Build and deploy
-npm run build
-vercel --prod
-```
-
-#### Netlify
-```bash
-# Build the project
-npm run build
-
-# Deploy to Netlify
-npm i -g netlify-cli
-netlify deploy --prod --dir=dist
-```
-
-#### Self-hosted
-```bash
-# Build for production
-npm run build
-
-# Serve with any static server
-npx serve -s dist -l 3000
-```
-
-### Production Checklist
-
-- [ ] Environment variables configured
-- [ ] Database migrations applied
-- [ ] SSL certificates installed
-- [ ] CDN configured for assets
-- [ ] Error monitoring enabled
-- [ ] Analytics tracking verified
-- [ ] Performance monitoring active
-- [ ] Backup strategy implemented
+#### ♿ Accessibility Features
+- **Complete WCAG 2.1 AA Compliance**: Full accessibility audit and implementation
+- **RTL Language Support**: Right-to-left text direction for Arabic and Hebrew
+- **Keyboard Navigation**: Full functionality without mouse interaction
+- **Screen Reader Support**: Comprehensive ARIA labels and descriptions
+- **High Contrast Mode**: Enhanced visibility for users with visual impairments
 
 ---
 
 ## ♿ Accessibility Features
 
-DBooster is built with accessibility as a core requirement, not an afterthought.
+DBooster is built with accessibility as a core requirement, ensuring equal access for all users.
 
 ### Compliance Standards
 
@@ -327,112 +232,68 @@ DBooster is built with accessibility as a core requirement, not an afterthought.
 - **Cultural Adaptations**: Appropriate date, number, and currency formats
 - **Font Optimization**: Optimized typography for different languages
 
-### Testing Accessibility
+---
+
+## 🧪 Testing & Quality Assurance
+
+### Running Tests
 
 ```bash
-# Automated accessibility testing
+# Unit tests
+npm run test
+
+# Watch mode for development
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
+
+# E2E tests
+npm run test:e2e
+
+# Accessibility tests
 npm run test:a11y
 
-# Manual testing checklist
-npm run test:keyboard
-npm run test:screen-reader
-npm run test:contrast
+# Performance tests
+npm run test:performance
 ```
+
+### Quality Metrics
+
+- **Code Coverage**: Minimum 80% across all modules
+- **Accessibility**: WCAG 2.1 AA compliance (verified with axe-core)
+- **Performance**: Lighthouse scores 95+ on all metrics
+- **Bundle Size**: < 100KB gzipped for initial load
+- **Load Time**: < 2s on 3G networks
 
 ---
 
-## 🌍 Internationalization (i18n)
+## 🚀 Deployment Guide
 
-### Supported Languages
+### Deploy to Lovable (Recommended)
 
-- **English (en)**: Primary language
-- **Hebrew (he)**: Complete RTL support
-- **Spanish (es)**: Coming soon
-- **French (fr)**: Coming soon
-- **German (de)**: Coming soon
-
-### Adding New Languages
-
-1. **Create translation files**
+1. **Push changes to repository**
    ```bash
-   # Create language file
-   touch src/locales/es.json
+   git add .
+   git commit -m "Ready for production"
+   git push origin main
    ```
 
-2. **Add translations**
-   ```json
-   {
-     "auth.signIn": "Iniciar Sesión",
-     "auth.signUp": "Registrarse",
-     "nav.dashboard": "Panel de Control"
-   }
-   ```
+2. **Deploy via Lovable Dashboard**
+   - Visit your [Lovable Project](https://lovable.dev/projects/e337b8a8-c0d7-4d65-93a2-33a9ff366332)
+   - Click **"Publish"** to deploy
+   - Custom domains available on paid plans
 
-3. **Register language**
-   ```typescript
-   // src/hooks/useI18n.ts
-   const SUPPORTED_LANGUAGES = ['en', 'he', 'es'];
-   ```
+### Production Checklist
 
-### RTL Support
-
-DBooster provides comprehensive right-to-left language support:
-
-- **Automatic Direction**: Detects and applies RTL layout
-- **Icon Mirroring**: Icons flip appropriately for RTL languages
-- **Layout Adaptation**: Complete UI layout adjustments
-- **Text Alignment**: Proper text alignment for RTL content
-
----
-
-## 📊 Performance Optimization
-
-### Core Web Vitals
-
-DBooster is optimized for excellent performance across all devices:
-
-- **LCP (Largest Contentful Paint)**: < 2.5s
-- **FID (First Input Delay)**: < 100ms
-- **CLS (Cumulative Layout Shift)**: < 0.1
-- **FCP (First Contentful Paint)**: < 1.8s
-- **TTI (Time to Interactive)**: < 3.5s
-
-### Optimization Techniques
-
-#### Code Splitting & Lazy Loading
-```typescript
-// Route-based code splitting
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Reports = lazy(() => import('./pages/Reports'));
-
-// Component-based lazy loading
-const HeavyComponent = lazy(() => import('./components/HeavyComponent'));
-```
-
-#### Asset Optimization
-- **Image Optimization**: WebP format with fallbacks
-- **Icon Tree-shaking**: Only used Lucide icons included
-- **CSS Purging**: Unused Tailwind classes removed
-- **Bundle Analysis**: Regular bundle size monitoring
-
-#### Caching Strategy
-- **Service Worker**: Offline-first caching strategy
-- **Browser Caching**: Optimal cache headers
-- **CDN Integration**: Global content delivery
-- **Query Caching**: Intelligent data caching with TanStack Query
-
-### Performance Monitoring
-
-```bash
-# Analyze bundle size
-npm run analyze
-
-# Performance audit
-npm run lighthouse
-
-# Core Web Vitals monitoring
-npm run web-vitals
-```
+- [x] Environment variables configured
+- [x] Accessibility compliance verified
+- [x] Error boundaries implemented
+- [x] Performance optimized
+- [x] Mobile responsiveness tested
+- [x] Cross-browser compatibility verified
+- [x] Security headers configured
+- [x] Analytics tracking implemented
 
 ---
 
@@ -454,187 +315,6 @@ npm run web-vitals
 - **Password Security**: Bcrypt hashing with salt
 - **Account Security**: Login attempt monitoring and rate limiting
 
-### Compliance & Auditing
-
-- **SOC2 Type II**: Security and availability compliance
-- **GDPR Compliant**: European data protection regulation
-- **CCPA Compliant**: California privacy rights
-- **Audit Logging**: Comprehensive activity tracking
-- **Data Retention**: Configurable data retention policies
-
-### Security Headers
-
-```typescript
-// Security headers automatically applied
-{
-  'X-Frame-Options': 'DENY',
-  'X-Content-Type-Options': 'nosniff',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'"
-}
-```
-
----
-
-## 🤝 Contributing Guide
-
-We welcome contributions from the community! Here's how to get started:
-
-### Development Workflow
-
-1. **Fork the repository**
-   ```bash
-   git clone https://github.com/yourusername/dbooster.git
-   cd dbooster
-   ```
-
-2. **Create feature branch**
-   ```bash
-   git checkout -b feature/amazing-new-feature
-   ```
-
-3. **Make your changes**
-   ```bash
-   # Follow our coding standards
-   npm run lint
-   npm run format
-   npm test
-   ```
-
-4. **Commit with conventional format**
-   ```bash
-   git commit -m "feat: add amazing new feature"
-   ```
-
-5. **Push and create PR**
-   ```bash
-   git push origin feature/amazing-new-feature
-   # Open pull request on GitHub
-   ```
-
-### Coding Standards
-
-#### TypeScript
-- **Strict Mode**: All TypeScript strict checks enabled
-- **Type Safety**: Prefer type assertions over `any`
-- **Interface Design**: Consistent interface naming and structure
-
-#### React Best Practices
-- **Functional Components**: Use function components with hooks
-- **Component Composition**: Favor composition over inheritance
-- **Performance**: Use React.memo and useMemo appropriately
-- **Accessibility**: Always include proper ARIA attributes
-
-#### Code Style
-```typescript
-// Use ESLint and Prettier configurations
-// Consistent naming conventions
-const ComponentName = () => { ... }; // PascalCase for components
-const variableName = "value"; // camelCase for variables
-const CONSTANT_VALUE = "constant"; // UPPER_CASE for constants
-```
-
-### Pull Request Guidelines
-
-- **Small Focused Changes**: Keep PRs focused on a single feature
-- **Tests Required**: Include tests for new functionality
-- **Documentation**: Update README and inline documentation
-- **Accessibility**: Ensure new features are accessible
-- **Performance**: Consider performance impact of changes
-
----
-
-## 📈 Analytics & Monitoring
-
-### Supported Analytics Platforms
-
-- **Google Analytics 4**: Comprehensive user behavior tracking
-- **Mixpanel**: Advanced event tracking and user segmentation
-- **Plausible**: Privacy-focused web analytics
-- **Custom Events**: Detailed application-specific metrics
-
-### Key Metrics Tracked
-
-#### User Engagement
-- **Page Views**: Route-based navigation tracking
-- **Session Duration**: User engagement metrics
-- **Feature Usage**: AI tool adoption rates
-- **Conversion Funnels**: User journey optimization
-
-#### Performance Metrics
-- **Query Analysis Time**: AI processing performance
-- **Database Response Time**: Backend performance monitoring
-- **Error Rates**: Application stability metrics
-- **User Satisfaction**: Net Promoter Score tracking
-
-### Error Monitoring
-
-```typescript
-// Comprehensive error boundary implementation
-import { ErrorBoundary } from '@/components/ui/error-boundary';
-
-// Automatic error reporting
-window.addEventListener('error', (event) => {
-  // Report to monitoring service
-  console.error('Global error:', event.error);
-});
-```
-
----
-
-## 🔧 Configuration Guide
-
-### Feature Flags
-
-Enable or disable features via environment variables:
-
-```env
-# AI Features
-VITE_FEATURE_AI_QUERY_OPTIMIZATION=true
-VITE_FEATURE_AI_PERFORMANCE_PREDICTION=true
-VITE_FEATURE_AI_ANOMALY_DETECTION=true
-
-# Integrations
-VITE_FEATURE_GITHUB_INTEGRATION=true
-VITE_FEATURE_SLACK_NOTIFICATIONS=true
-VITE_FEATURE_TEAMS_INTEGRATION=true
-
-# UI Features
-VITE_FEATURE_DARK_MODE=true
-VITE_FEATURE_RTL_SUPPORT=true
-VITE_FEATURE_ACCESSIBILITY_MENU=true
-
-# Analytics
-VITE_FEATURE_ANALYTICS_TRACKING=true
-VITE_FEATURE_ERROR_REPORTING=true
-VITE_FEATURE_PERFORMANCE_MONITORING=true
-```
-
-### Database Configuration
-
-```sql
--- Required Supabase configuration
--- Enable Row Level Security
-ALTER TABLE public.queries ENABLE ROW LEVEL SECURITY;
-
--- Create policies for multi-tenant access
-CREATE POLICY "Users can access their own data" ON public.queries
-  FOR ALL USING (auth.uid() = user_id);
-```
-
-### API Rate Limiting
-
-```typescript
-// Rate limiting configuration
-const rateLimitConfig = {
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-};
-```
-
 ---
 
 ## 🐛 Troubleshooting
@@ -652,21 +332,15 @@ rm -rf .vite
 npm run dev
 ```
 
-#### TypeScript Errors
-```bash
-# Regenerate TypeScript definitions
-npm run type-check
-
-# Check for missing dependencies
-npm run lint
-```
-
 #### Authentication Issues
-```bash
-# Check Supabase configuration
-# Verify environment variables
-# Check network connectivity
-```
+- Check Supabase configuration in environment variables
+- Verify Site URL and Redirect URLs in Supabase dashboard
+- Ensure email confirmation is properly configured
+
+#### Accessibility Issues
+- Test with screen readers (NVDA, JAWS, VoiceOver)
+- Verify keyboard navigation works without mouse
+- Check color contrast ratios meet WCAG standards
 
 ### Performance Issues
 
@@ -675,170 +349,63 @@ npm run lint
 - **Database Queries**: Optimize with proper indexing
 - **Network Requests**: Implement proper caching strategies
 
-### Getting Help
+---
 
-- **Documentation**: [docs.lovable.dev](https://docs.lovable.dev)
-- **Community Discord**: [Join our community](https://discord.com/channels/1119885301872070706/1280461670979993613)
-- **GitHub Issues**: [Report bugs](https://github.com/lovable-dev/dbooster/issues)
-- **Email Support**: support@lovable.dev
+## 📈 Recent Updates & Changelog
+
+### Version 2.0.0 (Latest)
+
+#### 🆕 New Features
+- **Interactive Onboarding Tours**: Guided user experience for new users
+- **Universal Search**: Global search functionality across all features
+- **Advanced Query Builder**: Visual SQL query construction with AI assistance
+- **Performance Monitor**: Real-time database performance tracking
+- **Smart Notifications**: Context-aware notification system
+
+#### 🔧 Bug Fixes
+- Fixed critical TabsList navigation error in authentication forms
+- Resolved accessibility issues with keyboard navigation
+- Fixed mobile responsiveness on smaller devices
+- Improved error handling with enhanced error boundaries
+- Fixed RTL language support implementation
+
+#### ♿ Accessibility Improvements
+- Achieved full WCAG 2.1 AA compliance
+- Added comprehensive screen reader support
+- Implemented skip links and keyboard navigation
+- Added high contrast mode support
+- Enhanced focus management throughout the application
+
+#### 🎨 UI/UX Enhancements
+- Improved button loading states with better visual feedback
+- Enhanced form validation with accessible error messages
+- Improved responsive design for mobile devices
+- Added smooth animations and micro-interactions
+- Updated typography and spacing for better readability
 
 ---
 
-## 📋 API Documentation
+## 🤝 Contributing Guide
 
-### Authentication Endpoints
+We welcome contributions from the community! Here's how to get started:
 
-```typescript
-// Sign up new user
-POST /auth/signup
-{
-  "email": "user@example.com",
-  "password": "securepassword",
-  "metadata": { "full_name": "John Doe" }
-}
+### Development Workflow
 
-// Sign in existing user
-POST /auth/signin
-{
-  "email": "user@example.com",
-  "password": "securepassword"
-}
+1. **Fork the repository**
+2. **Create feature branch**: `git checkout -b feature/amazing-new-feature`
+3. **Make your changes** following our coding standards
+4. **Test thoroughly** including accessibility testing
+5. **Commit**: `git commit -m "feat: add amazing new feature"`
+6. **Push**: `git push origin feature/amazing-new-feature`
+7. **Create Pull Request**
 
-// Refresh token
-POST /auth/refresh
-{
-  "refresh_token": "refresh_token_here"
-}
-```
+### Coding Standards
 
-### Query Analysis API
-
-```typescript
-// Analyze SQL query
-POST /api/queries/analyze
-{
-  "query": "SELECT * FROM users WHERE email = ?",
-  "database_type": "postgresql",
-  "schema": {...}
-}
-
-// Get optimization suggestions
-GET /api/queries/{id}/suggestions
-
-// Performance prediction
-POST /api/queries/predict
-{
-  "query": "SELECT * FROM large_table",
-  "parameters": {...}
-}
-```
-
-### Team Management API
-
-```typescript
-// Create team
-POST /api/teams
-{
-  "name": "Development Team",
-  "description": "Main development team"
-}
-
-// Invite team member
-POST /api/teams/{id}/invite
-{
-  "email": "newmember@example.com",
-  "role": "developer"
-}
-```
-
----
-
-## 🚀 Roadmap
-
-### Short Term (Q1 2024)
-
-- [ ] **Advanced AI Features**
-  - Query complexity scoring
-  - Automated index recommendations
-  - Performance regression detection
-
-- [ ] **Enhanced Integrations**
-  - Slack notifications
-  - Microsoft Teams integration
-  - JIRA ticket creation
-
-- [ ] **Mobile Applications**
-  - iOS native app
-  - Android native app
-  - Progressive Web App enhancements
-
-### Medium Term (Q2-Q3 2024)
-
-- [ ] **Enterprise Features**
-  - Single Sign-On (SSO)
-  - Advanced audit logging
-  - Custom branding options
-
-- [ ] **AI Enhancements**
-  - Natural language query generation
-  - Automated database migrations
-  - Predictive scaling recommendations
-
-- [ ] **Developer Tools**
-  - VS Code extension
-  - CLI tool for CI/CD integration
-  - GraphQL query optimization
-
-### Long Term (Q4 2024 & Beyond)
-
-- [ ] **Advanced Analytics**
-  - Machine learning model training
-  - Custom optimization rules
-  - Automated database tuning
-
-- [ ] **Global Expansion**
-  - Additional language support
-  - Regional data centers
-  - Compliance certifications
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-### Third-Party Licenses
-
-- React: MIT License
-- Tailwind CSS: MIT License
-- Supabase: Apache 2.0 License
-- Lucide React: ISC License
-
----
-
-## 🙏 Acknowledgments
-
-### Core Technologies
-
-- **[Lovable](https://lovable.dev)** - AI-powered development platform that made this project possible
-- **[React](https://reactjs.org)** - The library for web and native user interfaces
-- **[Tailwind CSS](https://tailwindcss.com)** - Utility-first CSS framework
-- **[shadcn/ui](https://ui.shadcn.com)** - Beautiful and accessible component library
-- **[Supabase](https://supabase.com)** - Open source Firebase alternative
-
-### Community & Contributors
-
-- **Development Team**: Core contributors and maintainers
-- **Beta Testers**: Early adopters who provided valuable feedback
-- **Open Source Community**: Libraries and tools that power DBooster
-- **Accessibility Experts**: Ensuring our platform is usable by everyone
-
-### Special Thanks
-
-- **Design Inspiration**: Modern database tools and AI platforms
-- **Performance Benchmarks**: Industry-leading optimization tools
-- **Security Standards**: Enterprise security frameworks
-- **Accessibility Guidelines**: WCAG working group and accessibility advocates
+- **TypeScript**: Strict mode enabled with comprehensive type coverage
+- **Accessibility**: All components must be WCAG 2.1 AA compliant
+- **Testing**: Include unit tests for new functionality
+- **Performance**: Consider performance impact of changes
+- **Documentation**: Update documentation for new features
 
 ---
 
@@ -848,22 +415,13 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 - **Discord Community**: [Join our Discord](https://discord.com/channels/1119885301872070706/1280461670979993613)
 - **GitHub Discussions**: [Community discussions](https://github.com/lovable-dev/dbooster/discussions)
-- **Stack Overflow**: Tag questions with `dbooster`
-- **Reddit**: r/dbooster community
+- **Documentation**: [docs.lovable.dev](https://docs.lovable.dev)
 
 ### Professional Support
 
 - **Email**: support@lovable.dev
 - **Enterprise Support**: enterprise@lovable.dev
 - **Security Issues**: security@lovable.dev
-- **Partnership Inquiries**: partnerships@lovable.dev
-
-### Documentation & Resources
-
-- **Main Documentation**: [docs.lovable.dev](https://docs.lovable.dev)
-- **API Reference**: [api.dbooster.com](https://api.dbooster.com)
-- **Video Tutorials**: [YouTube Channel](https://youtube.com/@dbooster)
-- **Blog & Updates**: [blog.dbooster.com](https://blog.dbooster.com)
 
 ---
 
@@ -872,8 +430,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 🌟 Star this Project
 
 If DBooster has helped improve your database performance, please consider giving us a star on GitHub!
-
-[![GitHub Stars](https://img.shields.io/github/stars/lovable-dev/dbooster?style=social)](https://github.com/lovable-dev/dbooster)
 
 **Built with ❤️ using [Lovable](https://lovable.dev)**
 

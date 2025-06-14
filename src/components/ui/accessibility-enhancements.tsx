@@ -15,6 +15,7 @@ export function AccessibilityEnhancements() {
     
     // Ensure focus is visible for keyboard navigation
     const style = document.createElement('style');
+    style.id = 'accessibility-styles';
     style.textContent = `
       .accessibility-high-contrast {
         --background: 255 255 255;
@@ -60,16 +61,50 @@ export function AccessibilityEnhancements() {
         z-index: 1000;
         text-decoration: none;
         border-radius: 4px;
+        transition: top 0.2s ease;
       }
       
       .skip-link:focus {
         top: 6px;
       }
+      
+      /* Enhanced keyboard navigation */
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible,
+      a:focus-visible {
+        outline: 2px solid hsl(var(--primary));
+        outline-offset: 2px;
+      }
+      
+      /* Screen reader only content */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
     `;
+
+    // Remove existing style if it exists
+    const existingStyle = document.getElementById('accessibility-styles');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+
     document.head.appendChild(style);
 
     return () => {
-      document.head.removeChild(style);
+      const styleElement = document.getElementById('accessibility-styles');
+      if (styleElement) {
+        styleElement.remove();
+      }
     };
   }, [direction]);
 
