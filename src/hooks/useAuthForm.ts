@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { validateForm } from '@/utils/authValidation';
+import { getStoredAuthData, storeAuthData } from '@/utils/authUtils';
 
 interface FormData {
   email: string;
@@ -16,7 +17,6 @@ interface ValidationErrors {
 
 export function useAuthForm(mode: 'login' | 'signup') {
   const [loginType, setLoginType] = useState<'email' | 'phone'>('email');
-  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -28,13 +28,12 @@ export function useAuthForm(mode: 'login' | 'signup') {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
-  // Load remembered email on mount
+  // Load stored auth data on mount
   useEffect(() => {
-    const remembered = localStorage.getItem('dbooster_remember_me');
-    const savedEmail = localStorage.getItem('dbooster_email');
-    if (remembered && savedEmail) {
+    const { rememberMe: storedRememberMe, email: storedEmail } = getStoredAuthData();
+    if (storedRememberMe && storedEmail) {
       setRememberMe(true);
-      setFormData(prev => ({ ...prev, email: savedEmail }));
+      setFormData(prev => ({ ...prev, email: storedEmail }));
     }
   }, []);
 
@@ -74,13 +73,7 @@ export function useAuthForm(mode: 'login' | 'signup') {
   };
 
   const handleRememberMe = () => {
-    if (rememberMe) {
-      localStorage.setItem('dbooster_remember_me', 'true');
-      localStorage.setItem('dbooster_email', formData.email);
-    } else {
-      localStorage.removeItem('dbooster_remember_me');
-      localStorage.removeItem('dbooster_email');
-    }
+    storeAuthData(formData.email, rememberMe);
   };
 
   const getFieldValidation = (field: string) => {
@@ -98,8 +91,6 @@ export function useAuthForm(mode: 'login' | 'signup') {
   return {
     loginType,
     setLoginType,
-    showPassword,
-    setShowPassword,
     rememberMe,
     setRememberMe,
     formData,

@@ -1,7 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { EnhancedCheckbox } from '@/components/ui/enhanced-checkbox';
 import { Loader2, UserPlus, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,16 +26,12 @@ export function AuthFormActions({
       {/* Remember Me & Forgot Password */}
       {mode === 'login' && (
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="remember"
-              checked={rememberMe}
-              onCheckedChange={(checked) => onRememberMeChange(checked === true)}
-            />
-            <Label htmlFor="remember" className="text-sm font-normal">
-              Remember me
-            </Label>
-          </div>
+          <EnhancedCheckbox
+            id="remember"
+            checked={rememberMe}
+            onCheckedChange={(checked) => onRememberMeChange(checked === true)}
+            label="Remember me"
+          />
           <Button
             type="button"
             variant="link"

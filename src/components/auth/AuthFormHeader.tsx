@@ -1,4 +1,7 @@
 
+import { Button } from '@/components/ui/button';
+import { KeyRound, UserPlus } from 'lucide-react';
+
 interface AuthFormHeaderProps {
   mode: 'login' | 'signup';
   onModeChange: (mode: 'login' | 'signup') => void;
