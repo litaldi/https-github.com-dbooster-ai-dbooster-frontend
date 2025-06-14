@@ -9,6 +9,7 @@ export interface AuthFormData {
 
 export type AuthMode = 'login' | 'signup';
 export type LoginType = 'email' | 'phone';
+export type OAuthProvider = 'github' | 'google';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -19,4 +20,17 @@ export interface ValidationResult {
 export interface AuthContextValue {
   signIn: (identifier: string, password: string) => Promise<{ error?: any }>;
   signUp: (userData: any) => Promise<{ error?: any }>;
+}
+
+export interface AuthResult {
+  success: boolean;
+  error?: string;
+  data?: any;
+}
+
+export interface AuthCredentials {
+  email?: string;
+  phone?: string;
+  password: string;
+  name?: string;
 }

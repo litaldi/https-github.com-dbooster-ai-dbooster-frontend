@@ -4,6 +4,7 @@ import { RateLimiter } from '@/utils/rateLimiting';
 import { AuthMethods } from '@/services/authMethods';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { handleApiError } from '@/utils/errorHandling';
+import type { OAuthProvider, AuthCredentials } from '@/types/auth';
 
 export class AuthService {
   private rateLimiter: RateLimiter;
@@ -14,89 +15,53 @@ export class AuthService {
     this.authMethods = new AuthMethods(this.rateLimiter);
   }
 
-  async loginWithOAuth(provider: 'github' | 'google'): Promise<void> {
+  private showSuccessToast(title: string, description: string): void {
+    enhancedToast.success({ title, description });
+  }
+
+  private showErrorToast(title: string, error: any): void {
+    enhancedToast.error({
+      title,
+      description: handleApiError(error)
+    });
+  }
+
+  async loginWithOAuth(provider: OAuthProvider): Promise<void> {
     try {
       await this.authMethods.loginWithOAuth(provider);
-      enhancedToast.success({
-        title: 'Signed in successfully',
-        description: `Welcome back! You're now signed in with ${provider}.`
-      });
+      this.showSuccessToast(
+        'Signed in successfully',
+        `Welcome back! You're now signed in with ${provider}.`
+      );
     } catch (error) {
       console.error('Login failed:', error);
-      enhancedToast.error({
-        title: 'Sign in failed',
-        description: handleApiError(error)
-      });
+      this.showErrorToast('Sign in failed', error);
       throw error;
     }
   }
 
-  async loginWithEmail(email: string, password: string): Promise<void> {
+  async loginWithCredentials(credentials: AuthCredentials): Promise<void> {
     try {
-      await this.authMethods.loginWithEmail(email, password);
+      await this.authMethods.loginWithCredentials(credentials);
       this.rateLimiter.resetAttempts();
-      enhancedToast.success({
-        title: 'Welcome back!',
-        description: 'You have been signed in successfully.'
-      });
+      this.showSuccessToast('Welcome back!', 'You have been signed in successfully.');
     } catch (error) {
-      console.error('Email login failed:', error);
-      enhancedToast.error({
-        title: 'Sign in failed',
-        description: handleApiError(error)
-      });
+      console.error('Login failed:', error);
+      this.showErrorToast('Sign in failed', error);
       throw error;
     }
   }
 
-  async loginWithPhone(phone: string, password: string): Promise<void> {
+  async signupWithCredentials(credentials: AuthCredentials): Promise<void> {
     try {
-      await this.authMethods.loginWithPhone(phone, password);
-      this.rateLimiter.resetAttempts();
-      enhancedToast.success({
-        title: 'Welcome back!',
-        description: 'You have been signed in successfully.'
-      });
+      await this.authMethods.signupWithCredentials(credentials);
+      this.showSuccessToast(
+        'Account created!',
+        'Welcome to DBooster! Your account has been created successfully.'
+      );
     } catch (error) {
-      console.error('Phone login failed:', error);
-      enhancedToast.error({
-        title: 'Sign in failed',
-        description: handleApiError(error)
-      });
-      throw error;
-    }
-  }
-
-  async signupWithEmail(email: string, password: string, name: string): Promise<void> {
-    try {
-      await this.authMethods.signupWithEmail(email, password, name);
-      enhancedToast.success({
-        title: 'Account created!',
-        description: 'Welcome to DBooster! Your account has been created successfully.'
-      });
-    } catch (error) {
-      console.error('Email signup failed:', error);
-      enhancedToast.error({
-        title: 'Account creation failed',
-        description: handleApiError(error)
-      });
-      throw error;
-    }
-  }
-
-  async signupWithPhone(phone: string, password: string, name: string): Promise<void> {
-    try {
-      await this.authMethods.signupWithPhone(phone, password, name);
-      enhancedToast.success({
-        title: 'Account created!',
-        description: 'Welcome to DBooster! Your account has been created successfully.'
-      });
-    } catch (error) {
-      console.error('Phone signup failed:', error);
-      enhancedToast.error({
-        title: 'Account creation failed',
-        description: handleApiError(error)
-      });
+      console.error('Signup failed:', error);
+      this.showErrorToast('Account creation failed', error);
       throw error;
     }
   }
@@ -104,23 +69,20 @@ export class AuthService {
   async loginDemo(): Promise<{ user: any; session: any }> {
     try {
       const result = await loginDemoUser();
-      enhancedToast.success({
-        title: 'Demo mode activated',
-        description: 'You can now explore DBooster with sample data.'
-      });
+      this.showSuccessToast(
+        'Demo mode activated',
+        'You can now explore DBooster with sample data.'
+      );
       console.log('Demo user logged in successfully');
       return result;
     } catch (error) {
       console.error('Demo login failed:', error);
-      enhancedToast.error({
-        title: 'Demo mode failed',
-        description: handleApiError(error)
-      });
+      this.showErrorToast('Demo mode failed', error);
       throw error;
     }
   }
 
-  async logout(isDemo: boolean): Promise<void> {
+  async logout(isDemo: boolean = false): Promise<void> {
     try {
       if (isDemo) {
         logoutDemoUser();
@@ -133,16 +95,10 @@ export class AuthService {
       }
 
       await this.authMethods.logout();
-      enhancedToast.success({
-        title: 'Signed out',
-        description: 'You have been signed out successfully.'
-      });
+      this.showSuccessToast('Signed out', 'You have been signed out successfully.');
     } catch (error) {
       console.error('Logout failed:', error);
-      enhancedToast.error({
-        title: 'Sign out failed',
-        description: handleApiError(error)
-      });
+      this.showErrorToast('Sign out failed', error);
       throw error;
     }
   }

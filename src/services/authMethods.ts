@@ -1,6 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { RateLimiter } from '@/utils/rateLimiting';
+import { normalizeEmail, cleanPhoneNumber, getAuthRedirectUrl, createUserMetadata } from '@/utils/authUtils';
+import { AUTH_CONFIG, type OAuthProvider } from '@/config/auth';
+import type { AuthResult, AuthCredentials } from '@/types/auth';
 
 export class AuthMethods {
   private rateLimiter: RateLimiter;
@@ -9,114 +12,81 @@ export class AuthMethods {
     this.rateLimiter = rateLimiter;
   }
 
-  async loginWithOAuth(provider: 'github' | 'google'): Promise<void> {
+  private checkRateLimit(): void {
     this.rateLimiter.checkRateLimit();
+  }
+
+  private handleAuthError(error: any, context: string): never {
+    console.error(`${context} error:`, error);
+    throw new Error(error.message || `${context} failed`);
+  }
+
+  async loginWithOAuth(provider: OAuthProvider): Promise<void> {
+    this.checkRateLimit();
     console.log(`Attempting to sign in with ${provider}`);
     
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: provider,
+      provider,
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: getAuthRedirectUrl(),
         scopes: provider === 'github' ? 'repo read:user user:email' : undefined,
       },
     });
 
     if (error) {
-      console.error('Login error:', error);
-      throw error;
+      this.handleAuthError(error, 'OAuth login');
     }
 
     console.log('OAuth login initiated:', data);
   }
 
-  async loginWithEmail(email: string, password: string): Promise<void> {
-    this.rateLimiter.checkRateLimit();
+  async loginWithCredentials(credentials: AuthCredentials): Promise<void> {
+    this.checkRateLimit();
     
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
+    const { email, phone, password } = credentials;
+    const loginData = email 
+      ? { email: normalizeEmail(email), password }
+      : { phone: `+${cleanPhoneNumber(phone!)}`, password };
+
+    const { data, error } = await supabase.auth.signInWithPassword(loginData);
 
     if (error) {
-      console.error('Email login error:', error);
-      throw new Error(error.message || 'Invalid email or password');
+      this.handleAuthError(error, email ? 'Email login' : 'Phone login');
     }
 
-    console.log('Email login successful:', data.user?.email);
+    console.log(`${email ? 'Email' : 'Phone'} login successful:`, email || phone);
   }
 
-  async loginWithPhone(phone: string, password: string): Promise<void> {
-    this.rateLimiter.checkRateLimit();
+  async signupWithCredentials(credentials: AuthCredentials): Promise<void> {
+    this.checkRateLimit();
     
-    // Clean phone number (remove spaces, dashes, parentheses)
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-      phone: `+${cleanPhone}`,
-      password,
-    });
-
-    if (error) {
-      console.error('Phone login error:', error);
-      throw new Error(error.message || 'Invalid phone number or password');
-    }
-
-    console.log('Phone login successful:', data.user?.phone);
-  }
-
-  async signupWithEmail(email: string, password: string, name: string): Promise<void> {
-    this.rateLimiter.checkRateLimit();
-    
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
-      password,
-      options: {
-        data: {
-          full_name: name.trim(),
-          name: name.trim(),
+    const { email, phone, password, name } = credentials;
+    const signupData = email 
+      ? { 
+          email: normalizeEmail(email), 
+          password,
+          options: createUserMetadata(name!)
         }
-      }
-    });
+      : { 
+          phone: `+${cleanPhoneNumber(phone!)}`, 
+          password,
+          options: createUserMetadata(name!)
+        };
+
+    const { data, error } = await supabase.auth.signUp(signupData);
 
     if (error) {
-      console.error('Email signup error:', error);
-      throw new Error(error.message || 'Failed to create account');
+      this.handleAuthError(error, email ? 'Email signup' : 'Phone signup');
     }
 
     if (data.user && !data.session) {
-      throw new Error('Please check your email to confirm your account');
+      const message = email 
+        ? 'Please check your email to confirm your account'
+        : 'Please check your phone for a verification code';
+      throw new Error(message);
     }
 
-    console.log('Email signup successful:', data.user?.email);
-  }
-
-  async signupWithPhone(phone: string, password: string, name: string): Promise<void> {
-    this.rateLimiter.checkRateLimit();
-    
-    // Clean phone number (remove spaces, dashes, parentheses)
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    const { data, error } = await supabase.auth.signUp({
-      phone: `+${cleanPhone}`,
-      password,
-      options: {
-        data: {
-          full_name: name.trim(),
-          name: name.trim(),
-        }
-      }
-    });
-
-    if (error) {
-      console.error('Phone signup error:', error);
-      throw new Error(error.message || 'Failed to create account');
-    }
-
-    if (data.user && !data.session) {
-      throw new Error('Please check your phone for a verification code');
-    }
-
-    console.log('Phone signup successful:', data.user?.phone);
+    console.log(`${email ? 'Email' : 'Phone'} signup successful:`, email || phone);
   }
 
   async logout(): Promise<void> {
@@ -124,8 +94,7 @@ export class AuthMethods {
     
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Logout error:', error);
-      throw error;
+      this.handleAuthError(error, 'Logout');
     }
     
     console.log('Successfully signed out');
