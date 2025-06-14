@@ -1,4 +1,3 @@
-
 # DBQuery Optimizer & AI-Enhanced Performance Tool 🚀
 
 A comprehensive, enterprise-grade database query optimization platform with advanced AI capabilities, real-time performance monitoring, and intelligent recommendations for peak database performance.
@@ -227,6 +226,62 @@ We welcome contributions! Please see our contributing guidelines for:
 3. Make your changes
 4. Add tests for new functionality
 5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+### Documentation
+- **API Documentation**: Comprehensive API reference
+- **Component Library**: Detailed component documentation
+- **Tutorial Videos**: Step-by-step video guides
+- **Best Practices**: Database optimization guidelines
+
+### Community
+- **GitHub Issues**: Bug reports and feature requests
+- **Discussions**: Community Q&A and feature discussions
+- **Discord**: Real-time community support
+- **Email Support**: Direct support for enterprise users
+
+## 🗺️ Roadmap
+
+### Upcoming Features
+- **Advanced AI Models**: Enhanced query optimization algorithms
+- **Multi-Database Support**: PostgreSQL, MySQL, SQL Server support
+- **Team Collaboration**: Shared workspaces and query libraries
+- **API Integration**: RESTful API for external integrations
+- **Mobile App**: Native mobile application
+- **Enterprise Features**: Advanced security and compliance tools
+
+### Performance Improvements
+- **Faster Query Execution**: Optimized query processing
+- **Better Caching**: Enhanced caching strategies
+- **Real-time Collaboration**: Live query sharing and editing
+- **Advanced Analytics**: Deeper performance insights
+
+---
+
+**Built with ❤️ using modern web technologies**
+
+For more information, visit our [documentation](https://docs.example.com) or join our [community](https://discord.gg/example).
+
+## ♻️ Refactored Authentication Context
+
+- Authentication (`AuthProvider` and `useAuth`) has been modularized into `src/contexts/AuthProvider.tsx` and `src/contexts/useAuth.ts` for improved maintainability and clarity.
+- All error handling formatting is now handled in `src/utils/formatApiError.ts` (shared across the app).
+
+## 🛠️ Code Quality & Best Practices
+
+- The codebase now uses smaller, focused modules to ensure maintainability.
+- All unused, redundant, or duplicate logic is being refactored.
+- Naming consistency is enforced and file structure is flattened wherever possible.
+- For authentication context, always use:
+  ```typescript
+  import { AuthProvider } from "@/contexts/AuthProvider";
+  import { useAuth } from "@/contexts/useAuth";
+  ```
 
 ## 📄 License
 
