@@ -120,7 +120,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
       {/* Login Type Selector */}
       <LoginTypeSelector 
         loginType={loginType} 
-        onLoginTypeChange={setLoginType} 
+        onTypeChange={setLoginType} 
       />
 
       {/* Name field for signup */}
@@ -159,10 +159,8 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
         onChange={(value) => handleInputChange('password', value)}
         placeholder={mode === 'login' ? 'Enter your password' : 'Create a strong password'}
         error={getFieldValidation('password').errorMessage}
-        isValid={getFieldValidation('password').isValid}
         autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
         showStrength={mode === 'signup'}
-        required
       />
 
       {/* Confirm Password for signup */}
@@ -174,9 +172,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
           onChange={(value) => handleInputChange('confirmPassword', value)}
           placeholder="Confirm your password"
           error={getFieldValidation('confirmPassword').errorMessage}
-          isValid={getFieldValidation('confirmPassword').isValid}
           autoComplete="new-password"
-          required
         />
       )}
 
@@ -187,7 +183,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
             <Checkbox
               id="remember"
               checked={rememberMe}
-              onCheckedChange={setRememberMe}
+              onCheckedChange={(checked) => setRememberMe(checked === true)}
             />
             <Label htmlFor="remember" className="text-sm font-normal">
               Remember me

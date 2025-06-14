@@ -50,13 +50,19 @@ function MetricCard({ title, value, description, change, changeType = 'neutral',
 export function RealTimeMetrics() {
   const { status, overallStatus } = useSystemStatus();
 
+  const getChangeType = (status: string): 'positive' | 'negative' | 'neutral' => {
+    if (status === 'online') return 'positive';
+    if (status === 'degraded') return 'neutral';
+    return 'negative';
+  };
+
   const metrics = [
     {
       title: "Active Queries",
       value: "2,847",
       description: "Currently running",
       change: "+12% from last hour",
-      changeType: "positive" as const,
+      changeType: 'positive' as const,
       icon: Activity,
       trend: 78
     },
@@ -65,7 +71,7 @@ export function RealTimeMetrics() {
       value: "67%",
       description: "Average across all DBs",
       change: "-5% from yesterday",
-      changeType: "positive" as const,
+      changeType: 'positive' as const,
       icon: Database,
       trend: 67
     },
@@ -74,7 +80,7 @@ export function RealTimeMetrics() {
       value: "94.2",
       description: "Optimization rating",
       change: "+2.1 points",
-      changeType: "positive" as const,
+      changeType: 'positive' as const,
       icon: Zap,
       trend: 94
     },
@@ -83,7 +89,7 @@ export function RealTimeMetrics() {
       value: "142ms",
       description: "Average query time",
       change: "-18ms improvement",
-      changeType: "positive" as const,
+      changeType: 'positive' as const,
       icon: Clock,
       trend: 85
     },
@@ -92,7 +98,7 @@ export function RealTimeMetrics() {
       value: "1,249",
       description: "Online now",
       change: "+3% from last week",
-      changeType: "positive" as const,
+      changeType: 'positive' as const,
       icon: Users,
       trend: 72
     },
@@ -101,7 +107,7 @@ export function RealTimeMetrics() {
       value: overallStatus === 'online' ? '100%' : overallStatus === 'degraded' ? '85%' : '45%',
       description: `All systems ${overallStatus}`,
       change: status.lastChecked.toLocaleTimeString(),
-      changeType: (overallStatus === 'online' ? 'positive' : overallStatus === 'degraded' ? 'neutral' : 'negative') as const,
+      changeType: getChangeType(overallStatus),
       icon: Activity,
       trend: overallStatus === 'online' ? 100 : overallStatus === 'degraded' ? 85 : 45
     }

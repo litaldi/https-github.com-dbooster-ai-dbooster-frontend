@@ -9,6 +9,8 @@ export interface AuthContextType {
   loginWithPhone: (phone: string, password: string) => Promise<void>;
   signupWithEmail: (email: string, password: string, name: string) => Promise<void>;
   signupWithPhone: (phone: string, password: string, name: string) => Promise<void>;
+  signIn: (identifier: string, password: string) => Promise<{ error?: { message: string } }>;
+  signUp: (userData: any) => Promise<{ error?: { message: string } }>;
   loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;

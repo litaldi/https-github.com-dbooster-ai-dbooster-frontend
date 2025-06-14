@@ -77,6 +77,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Generic signIn method for the auth form
+  const signIn = async (identifier: string, password: string) => {
+    try {
+      setIsLoading(true);
+      // Determine if identifier is email or phone
+      const isEmail = identifier.includes('@');
+      if (isEmail) {
+        await authService.loginWithEmail(identifier, password);
+      } else {
+        await authService.loginWithPhone(identifier, password);
+      }
+      return {};
+    } catch (error: any) {
+      return { error: { message: error.message } };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Generic signUp method for the auth form
+  const signUp = async (userData: any) => {
+    try {
+      setIsLoading(true);
+      if (userData.email) {
+        await authService.signupWithEmail(userData.email, userData.password, userData.options?.data?.name || '');
+      } else if (userData.phone) {
+        await authService.signupWithPhone(userData.phone, userData.password, userData.options?.data?.name || '');
+      }
+      return {};
+    } catch (error: any) {
+      return { error: { message: error.message } };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const loginDemo = async () => {
     try {
       setIsLoading(true);
@@ -110,6 +146,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginWithPhone,
       signupWithEmail,
       signupWithPhone,
+      signIn,
+      signUp,
       loginDemo,
       logout, 
       isLoading, 
