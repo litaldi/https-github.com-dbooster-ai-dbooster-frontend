@@ -17,6 +17,7 @@ interface EnhancedAuthFormProps {
 export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) {
   const { signIn, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string>('');
   const { toast } = useToast();
 
   const {
@@ -48,6 +49,7 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
 
     setIsLoading(true);
     setErrors({});
+    setSubmitError('');
 
     try {
       const identifier = loginType === 'email' ? formData.email : formData.phone;
@@ -58,7 +60,7 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
           const errorMessage = error.message.includes('Invalid login credentials') 
             ? 'Invalid email or password. Please check your credentials and try again.'
             : error.message;
-          setErrors({ submit: errorMessage });
+          setSubmitError(errorMessage);
           toast({
             title: "Login Failed",
             description: errorMessage,
@@ -91,7 +93,7 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
           const errorMessage = error.message.includes('User already registered')
             ? 'An account with this email already exists. Please try logging in instead.'
             : error.message;
-          setErrors({ submit: errorMessage });
+          setSubmitError(errorMessage);
           toast({
             title: "Signup Failed",
             description: errorMessage,
@@ -106,7 +108,7 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
       }
     } catch (error: any) {
       const errorMessage = error?.message || 'An unexpected error occurred. Please try again.';
-      setErrors({ submit: errorMessage });
+      setSubmitError(errorMessage);
       toast({
         title: "Error",
         description: errorMessage,
@@ -135,10 +137,10 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
         getFieldValidation={getFieldValidation}
       />
 
-      {errors.submit && (
+      {submitError && (
         <Alert variant="destructive" role="alert">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{errors.submit}</AlertDescription>
+          <AlertDescription>{submitError}</AlertDescription>
         </Alert>
       )}
 
