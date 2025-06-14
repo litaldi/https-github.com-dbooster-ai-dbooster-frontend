@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithEmail = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      await authService.loginWithEmail(email, password);
+      await authService.loginWithCredentials({ email, password });
     } catch (error) {
       throw error;
     } finally {
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithPhone = async (phone: string, password: string) => {
     try {
       setIsLoading(true);
-      await authService.loginWithPhone(phone, password);
+      await authService.loginWithCredentials({ phone, password });
     } catch (error) {
       throw error;
     } finally {
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signupWithEmail = async (email: string, password: string, name: string) => {
     try {
       setIsLoading(true);
-      await authService.signupWithEmail(email, password, name);
+      await authService.signupWithCredentials({ email, password, name });
     } catch (error) {
       throw error;
     } finally {
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signupWithPhone = async (phone: string, password: string, name: string) => {
     try {
       setIsLoading(true);
-      await authService.signupWithPhone(phone, password, name);
+      await authService.signupWithCredentials({ phone, password, name });
     } catch (error) {
       throw error;
     } finally {
@@ -84,9 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Determine if identifier is email or phone
       const isEmail = identifier.includes('@');
       if (isEmail) {
-        await authService.loginWithEmail(identifier, password);
+        await authService.loginWithCredentials({ email: identifier, password });
       } else {
-        await authService.loginWithPhone(identifier, password);
+        await authService.loginWithCredentials({ phone: identifier, password });
       }
       return {};
     } catch (error: any) {
@@ -101,9 +101,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       if (userData.email) {
-        await authService.signupWithEmail(userData.email, userData.password, userData.options?.data?.name || '');
+        await authService.signupWithCredentials({ 
+          email: userData.email, 
+          password: userData.password, 
+          name: userData.options?.data?.name || '' 
+        });
       } else if (userData.phone) {
-        await authService.signupWithPhone(userData.phone, userData.password, userData.options?.data?.name || '');
+        await authService.signupWithCredentials({ 
+          phone: userData.phone, 
+          password: userData.password, 
+          name: userData.options?.data?.name || '' 
+        });
       }
       return {};
     } catch (error: any) {
