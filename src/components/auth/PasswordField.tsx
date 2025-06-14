@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,7 @@ export function PasswordField({
   showStrength = false
 }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const strength = showStrength ? validatePasswordStrength(value) : null;
 
@@ -44,59 +44,65 @@ export function PasswordField({
   };
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+    <div className="space-y-1 relative group">
+      <Label htmlFor={id} className={error ? "text-destructive font-semibold" : ""}>
+        {label}
+      </Label>
       <div className="relative">
         <Input
+          ref={inputRef}
           id={id}
           type={showPassword ? "text" : "password"}
-          placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={error ? "border-destructive pr-10" : "pr-10"}
+          aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
+          placeholder={placeholder}
           autoComplete={autoComplete}
-          required
+          className={`
+            pr-10
+            transition-all duration-150
+            focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+            ${error ? "border-destructive" : ""}
+          `}
         />
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
-          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-          onClick={() => setShowPassword(!showPassword)}
+          tabIndex={0}
           aria-label={showPassword ? "Hide password" : "Show password"}
+          className="
+            absolute inset-y-0 right-2 flex items-center px-1
+            text-muted-foreground hover:text-primary
+            focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary
+            transition-transform duration-150 active:scale-90
+          "
+          onClick={() => setShowPassword(v => !v)}
         >
           {showPassword ? (
-            <EyeOff className="h-4 w-4 text-muted-foreground" />
+            <EyeOff className="h-4 w-4" />
           ) : (
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <Eye className="h-4 w-4" />
           )}
-        </Button>
+        </button>
+        {/* Animated valid/invalid state if needed */}
       </div>
       
       {showStrength && value && strength && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-muted rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor(strength.score)}`}
-                style={{ width: `${(strength.score / 5) * 100}%` }}
-              />
-            </div>
-            <span className="text-xs font-medium">
-              {getStrengthText(strength.score)}
-            </span>
+        <div className="mt-1 flex items-center gap-2">
+          <div className="flex-1 bg-muted rounded-full h-2">
+            <div 
+              className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor(strength.score)}`}
+              style={{ width: `${(strength.score / 5) * 100}%` }}
+            />
           </div>
-          {strength.feedback.length > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Missing: {strength.feedback.join(', ')}
-            </p>
-          )}
+          <span className="text-xs font-medium">
+            {getStrengthText(strength.score)}
+          </span>
         </div>
       )}
       
       {error && (
-        <p id={`${id}-error`} className="text-sm text-destructive" role="alert">
+        <p id={`${id}-error`} className="text-xs text-destructive font-medium mt-1">
           {error}
         </p>
       )}
