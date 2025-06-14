@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -42,6 +41,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { KeyboardShortcutsHelper } from '@/components/layout/KeyboardShortcutsHelper';
 
 const publicNavItems = [
   { href: '/home', label: 'Home', icon: Home },
@@ -232,6 +232,9 @@ export function MainNav() {
           {item.label}
         </Link>
       ))}
+      
+      {/* Add keyboard shortcuts helper for authenticated users */}
+      {user && !mobile && <KeyboardShortcutsHelper />}
       
       <Button
         variant="ghost"

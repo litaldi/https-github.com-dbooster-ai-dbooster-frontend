@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,7 @@ import {
   Activity
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { RealTimeMetrics } from '@/components/dashboard/RealTimeMetrics';
 
 export default function Dashboard() {
   const { user, isDemo } = useAuth();
@@ -103,8 +103,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+    <div className="space-y-8">
+      {/* Welcome Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -131,6 +131,9 @@ export default function Dashboard() {
           <KeyboardShortcutsHelper />
         </div>
       </div>
+
+      {/* Real-Time Metrics */}
+      <RealTimeMetrics />
 
       {/* Quick Start Guide (for new users) */}
       {(!isDemo && dashboardData?.totalDatabases === 0) && <QuickStartGuide />}

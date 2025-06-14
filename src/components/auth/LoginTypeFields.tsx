@@ -1,6 +1,6 @@
 
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { formatPhoneNumber } from '@/utils/authValidation';
 
 interface LoginTypeFieldsProps {
@@ -11,13 +11,21 @@ interface LoginTypeFieldsProps {
   };
   errors: Record<string, string>;
   onInputChange: (field: string, value: string) => void;
+  onBlur?: (field: string) => void;
+  getFieldValidation?: (field: string) => {
+    isValid: boolean;
+    hasError: boolean;
+    errorMessage?: string;
+  };
 }
 
 export function LoginTypeFields({ 
   loginType, 
   formData, 
   errors, 
-  onInputChange 
+  onInputChange,
+  onBlur,
+  getFieldValidation
 }: LoginTypeFieldsProps) {
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhoneNumber(value);
@@ -25,48 +33,43 @@ export function LoginTypeFields({
   };
 
   if (loginType === 'email') {
+    const validation = getFieldValidation?.('email') || { isValid: false, hasError: !!errors.email, errorMessage: errors.email };
+    
     return (
-      <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="Enter your email address"
-          value={formData.email}
-          onChange={(e) => onInputChange('email', e.target.value)}
-          className={errors.email ? "border-destructive" : ""}
-          aria-describedby={errors.email ? "email-error" : undefined}
-          autoComplete="email"
-          required
-        />
-        {errors.email && (
-          <p id="email-error" className="text-sm text-destructive" role="alert">
-            {errors.email}
-          </p>
-        )}
-      </div>
+      <EnhancedInput
+        id="email"
+        type="email"
+        label="Email Address"
+        placeholder="Enter your email address"
+        value={formData.email}
+        onChange={(e) => onInputChange('email', e.target.value)}
+        onBlur={() => onBlur?.('email')}
+        error={validation.errorMessage}
+        isValid={validation.isValid}
+        showValidation={true}
+        autoComplete="email"
+        required
+      />
     );
   }
 
+  const validation = getFieldValidation?.('phone') || { isValid: false, hasError: !!errors.phone, errorMessage: errors.phone };
+
   return (
-    <div className="space-y-2">
-      <Label htmlFor="phone">Phone Number</Label>
-      <Input
-        id="phone"
-        type="tel"
-        placeholder="(555) 123-4567"
-        value={formData.phone}
-        onChange={(e) => handlePhoneChange(e.target.value)}
-        className={errors.phone ? "border-destructive" : ""}
-        aria-describedby={errors.phone ? "phone-error" : undefined}
-        autoComplete="tel"
-        required
-      />
-      {errors.phone && (
-        <p id="phone-error" className="text-sm text-destructive" role="alert">
-          {errors.phone}
-        </p>
-      )}
-    </div>
+    <EnhancedInput
+      id="phone"
+      type="tel"
+      label="Phone Number"
+      placeholder="(555) 123-4567"
+      value={formData.phone}
+      onChange={(e) => handlePhoneChange(e.target.value)}
+      onBlur={() => onBlur?.('phone')}
+      error={validation.errorMessage}
+      isValid={validation.isValid}
+      showValidation={true}
+      autoComplete="tel"
+      helperText="We'll send you a verification code"
+      required
+    />
   );
 }
