@@ -55,7 +55,7 @@ const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
       >
         {loading ? (
           <>
-            <EnhancedLoading size="sm" variant="spinner" />
+            <EnhancedLoading size="sm" variant="inline" />
             {loadingText || 'Loading...'}
           </>
         ) : (

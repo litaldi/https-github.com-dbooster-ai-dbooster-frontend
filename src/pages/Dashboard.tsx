@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,6 @@ import { useState, useEffect } from 'react';
 import { RealTimeMetrics } from '@/components/dashboard/RealTimeMetrics';
 import { DatabaseStatus } from '@/components/dashboard/DatabaseStatus';
 import { QueryAnalytics } from '@/components/dashboard/QueryAnalytics';
-import { QuickActions } from '@/components/dashboard/QuickActions';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 
 export default function Dashboard() {
