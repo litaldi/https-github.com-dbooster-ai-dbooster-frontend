@@ -3,26 +3,17 @@ import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { PasswordField } from '@/components/auth/PasswordField';
 import { LoginTypeSelector } from '@/components/auth/LoginTypeSelector';
 import { formatPhoneNumber } from '@/utils/validation';
+import type { AuthFormData, AuthMode, LoginType, ValidationResult } from '@/types/auth';
 
 interface AuthFormFieldsProps {
-  mode: 'login' | 'signup';
-  loginType: 'email' | 'phone';
-  setLoginType: (type: 'email' | 'phone') => void;
-  formData: {
-    name: string;
-    email: string;
-    phone: string;
-    password: string;
-    confirmPassword: string;
-  };
-  errors: Record<string, string>;
-  onInputChange: (field: string, value: string) => void;
-  onBlur: (field: string) => void;
-  getFieldValidation: (field: string) => {
-    isValid: boolean;
-    hasError: boolean;
-    errorMessage?: string;
-  };
+  mode: AuthMode;
+  loginType: LoginType;
+  setLoginType: (type: LoginType) => void;
+  formData: AuthFormData;
+  errors: Partial<Record<keyof AuthFormData, string>>;
+  onInputChange: (field: keyof AuthFormData, value: string) => void;
+  onBlur: (field: keyof AuthFormData) => void;
+  getFieldValidation: (field: keyof AuthFormData) => ValidationResult;
 }
 
 export function AuthFormFields({

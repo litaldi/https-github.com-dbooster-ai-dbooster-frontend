@@ -2,10 +2,11 @@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Mail, Phone } from 'lucide-react';
+import type { LoginType } from '@/types/auth';
 
 interface LoginTypeSelectorProps {
-  loginType: 'email' | 'phone';
-  onTypeChange: (type: 'email' | 'phone') => void;
+  loginType: LoginType;
+  onTypeChange: (type: LoginType) => void;
 }
 
 export function LoginTypeSelector({ loginType, onTypeChange }: LoginTypeSelectorProps) {
@@ -16,7 +17,7 @@ export function LoginTypeSelector({ loginType, onTypeChange }: LoginTypeSelector
       </Label>
       <RadioGroup
         value={loginType}
-        onValueChange={(value) => onTypeChange(value as 'email' | 'phone')}
+        onValueChange={(value) => onTypeChange(value as LoginType)}
         className="flex space-x-4"
       >
         <div className="flex items-center space-x-2">

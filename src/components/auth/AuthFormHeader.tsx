@@ -1,10 +1,11 @@
 
 import { Button } from '@/components/ui/button';
 import { KeyRound, UserPlus } from 'lucide-react';
+import type { AuthMode } from '@/types/auth';
 
 interface AuthFormHeaderProps {
-  mode: 'login' | 'signup';
-  onModeChange: (mode: 'login' | 'signup') => void;
+  mode: AuthMode;
+  onModeChange: (mode: AuthMode) => void;
 }
 
 export function AuthFormHeader({ mode, onModeChange }: AuthFormHeaderProps) {

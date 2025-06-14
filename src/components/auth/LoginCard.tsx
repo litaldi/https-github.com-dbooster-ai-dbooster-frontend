@@ -4,24 +4,35 @@ import { EnhancedAuthForm } from '@/components/auth/EnhancedAuthForm';
 import { SocialAuth } from '@/components/auth/SocialAuth';
 import { Separator } from '@/components/ui/separator';
 import { AuthFormHeader } from '@/components/auth/AuthFormHeader';
+import type { AuthMode } from '@/types/auth';
 
 interface LoginCardProps {
-  authMode: 'login' | 'signup';
-  onAuthModeChange: (mode: 'login' | 'signup') => void;
+  authMode: AuthMode;
+  onAuthModeChange: (mode: AuthMode) => void;
 }
 
 export function LoginCard({ authMode, onAuthModeChange }: LoginCardProps) {
+  const cardConfig = {
+    login: {
+      title: 'Welcome back',
+      description: 'Sign in to your account to continue optimizing'
+    },
+    signup: {
+      title: 'Get started today',
+      description: 'Create your account and start optimizing queries'
+    }
+  };
+
+  const config = cardConfig[authMode];
+
   return (
     <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm animate-scale-in">
       <CardHeader className="text-center space-y-1 pb-4">
         <CardTitle className="text-2xl font-bold">
-          {authMode === 'login' ? 'Welcome back' : 'Get started today'}
+          {config.title}
         </CardTitle>
         <CardDescription className="text-sm">
-          {authMode === 'login' 
-            ? 'Sign in to your account to continue optimizing'
-            : 'Create your account and start optimizing queries'
-          }
+          {config.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

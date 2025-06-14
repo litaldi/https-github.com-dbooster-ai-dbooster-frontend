@@ -1,74 +1,46 @@
 
 import { useState, useEffect } from 'react';
-import { useFormValidation } from './useFormValidation';
 import { getStoredAuthData, storeAuthData } from '@/utils/authUtils';
-import { emailPattern, phonePattern, passwordValidator, confirmPasswordValidator } from '@/utils/validation';
+import type { AuthFormData, AuthMode, LoginType } from '@/types/auth';
 
-interface AuthFormData {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-}
-
-export function useAuthForm(mode: 'login' | 'signup') {
-  const [loginType, setLoginType] = useState<'email' | 'phone'>('email');
+export function useAuth(mode: AuthMode) {
+  const [loginType, setLoginType] = useState<LoginType>('email');
   const [rememberMe, setRememberMe] = useState(false);
-
-  const initialData: AuthFormData = {
+  const [formData, setFormData] = useState<AuthFormData>({
     name: '',
     email: '',
     phone: '',
     password: '',
     confirmPassword: ''
-  };
-
-  const {
-    data,
-    errors,
-    handleChange,
-    handleBlur,
-    validateAll,
-    getFieldValidation,
-    setData,
-    setErrors
-  } = useFormValidation(initialData, {});
-
-  const validationRules = {
-    name: mode === 'signup' ? { required: true, minLength: 2 } : undefined,
-    email: loginType === 'email' ? { 
-      required: true, 
-      pattern: emailPattern 
-    } : undefined,
-    phone: loginType === 'phone' ? { 
-      required: true, 
-      pattern: phonePattern 
-    } : undefined,
-    password: { 
-      required: true, 
-      custom: mode === 'signup' ? passwordValidator : undefined,
-      minLength: mode === 'login' ? 1 : 8
-    },
-    confirmPassword: mode === 'signup' ? { 
-      required: true, 
-      custom: confirmPasswordValidator(data.password)
-    } : undefined
-  };
+  });
 
   // Load stored auth data on mount
   useEffect(() => {
     const { rememberMe: storedRememberMe, email: storedEmail } = getStoredAuthData();
     if (storedRememberMe && storedEmail) {
       setRememberMe(true);
-      setData(prev => ({ ...prev, email: storedEmail }));
+      setFormData(prev => ({ ...prev, email: storedEmail }));
     }
-  }, [setData]);
+  }, []);
+
+  const handleInputChange = (field: keyof AuthFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleRememberMe = () => {
     if (rememberMe) {
-      storeAuthData(data.email, true);
+      storeAuthData(formData.email, true);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: ''
+    });
   };
 
   return {
@@ -76,13 +48,9 @@ export function useAuthForm(mode: 'login' | 'signup') {
     setLoginType,
     rememberMe,
     setRememberMe,
-    formData: data,
-    errors,
-    handleInputChange: handleChange,
-    handleBlur,
-    validate: validateAll,
+    formData,
+    handleInputChange,
     handleRememberMe,
-    getFieldValidation,
-    setErrors
+    resetForm
   };
 }

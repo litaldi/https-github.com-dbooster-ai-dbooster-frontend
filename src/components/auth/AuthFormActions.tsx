@@ -3,13 +3,14 @@ import { Button } from '@/components/ui/button';
 import { EnhancedCheckbox } from '@/components/ui/enhanced-checkbox';
 import { Loader2, UserPlus, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { AuthMode } from '@/types/auth';
 
 interface AuthFormActionsProps {
-  mode: 'login' | 'signup';
+  mode: AuthMode;
   isLoading: boolean;
   rememberMe: boolean;
   onRememberMeChange: (checked: boolean) => void;
-  onModeChange: (mode: 'login' | 'signup') => void;
+  onModeChange: (mode: AuthMode) => void;
 }
 
 export function AuthFormActions({
@@ -20,6 +21,13 @@ export function AuthFormActions({
   onModeChange
 }: AuthFormActionsProps) {
   const { toast } = useToast();
+
+  const handleForgotPassword = () => {
+    toast({
+      title: "Feature Coming Soon",
+      description: "Password reset functionality will be available soon.",
+    });
+  };
 
   return (
     <>
@@ -36,12 +44,7 @@ export function AuthFormActions({
             type="button"
             variant="link"
             size="sm"
-            onClick={() => {
-              toast({
-                title: "Feature Coming Soon",
-                description: "Password reset functionality will be available soon.",
-              });
-            }}
+            onClick={handleForgotPassword}
             className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             Forgot password?

@@ -4,10 +4,12 @@ import { AuthFormHeader } from './AuthFormHeader';
 import { AuthFormFields } from './AuthFormFields';
 import { AuthFormActions } from './AuthFormActions';
 import { AuthFormFooter } from './AuthFormFooter';
-import { useAuthForm } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuthValidation } from '@/hooks/useAuthValidation';
+import type { AuthMode } from '@/types/auth';
 
 export function AuthForm() {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -16,17 +18,20 @@ export function AuthForm() {
     rememberMe,
     setRememberMe,
     formData,
-    errors,
     handleInputChange,
+    handleRememberMe
+  } = useAuth(mode);
+
+  const {
+    errors,
     handleBlur,
-    validate,
-    handleRememberMe,
+    validateAll,
     getFieldValidation
-  } = useAuthForm(mode);
+  } = useAuthValidation(mode);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) {
+    if (!validateAll(formData, loginType)) {
       return;
     }
     setIsLoading(true);
@@ -61,8 +66,8 @@ export function AuthForm() {
           formData={formData}
           errors={errors}
           onInputChange={handleInputChange}
-          onBlur={handleBlur}
-          getFieldValidation={getFieldValidation}
+          onBlur={(field) => handleBlur(field, formData, loginType)}
+          getFieldValidation={(field) => getFieldValidation(field, formData, loginType)}
         />
         
         <AuthFormActions 

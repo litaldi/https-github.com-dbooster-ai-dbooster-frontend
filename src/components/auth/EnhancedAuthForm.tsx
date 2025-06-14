@@ -1,21 +1,23 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth as useAuthContext } from '@/contexts/auth-context';
 import { LoginTypeSelector } from '@/components/auth/LoginTypeSelector';
 import { AuthFormFields } from '@/components/auth/AuthFormFields';
 import { AuthFormActions } from '@/components/auth/AuthFormActions';
-import { useAuthForm } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuthValidation } from '@/hooks/useAuthValidation';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import type { AuthMode } from '@/types/auth';
 
 interface EnhancedAuthFormProps {
-  mode: 'login' | 'signup';
-  onModeChange: (mode: 'login' | 'signup') => void;
+  mode: AuthMode;
+  onModeChange: (mode: AuthMode) => void;
 }
 
 export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
   const { toast } = useToast();
@@ -26,19 +28,23 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
     rememberMe,
     setRememberMe,
     formData,
-    errors,
-    setErrors,
     handleInputChange,
-    handleBlur,
-    validate,
     handleRememberMe,
-    getFieldValidation
-  } = useAuthForm(mode);
+    resetForm
+  } = useAuth(mode);
+
+  const {
+    errors,
+    handleBlur,
+    validateAll,
+    getFieldValidation,
+    clearErrors
+  } = useAuthValidation(mode);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validate()) {
+    if (!validateAll(formData, loginType)) {
       toast({
         title: "Validation Error",
         description: "Please fix the errors below and try again.",
@@ -48,7 +54,7 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
     }
 
     setIsLoading(true);
-    setErrors({});
+    clearErrors();
     setSubmitError('');
 
     try {
@@ -104,6 +110,7 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
             title: "Account Created!",
             description: "Please check your email to verify your account.",
           });
+          resetForm();
         }
       }
     } catch (error: any) {
@@ -133,8 +140,8 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
         formData={formData}
         errors={errors}
         onInputChange={handleInputChange}
-        onBlur={handleBlur}
-        getFieldValidation={getFieldValidation}
+        onBlur={(field) => handleBlur(field, formData, loginType)}
+        getFieldValidation={(field) => getFieldValidation(field, formData, loginType)}
       />
 
       {submitError && (
