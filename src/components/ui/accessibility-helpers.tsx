@@ -86,3 +86,42 @@ export function FocusTrap({ children, enabled = true }: FocusTrapProps) {
     </div>
   );
 }
+
+interface ProgressiveDisclosureProps {
+  summary: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ProgressiveDisclosure({ summary, children, className }: ProgressiveDisclosureProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  return (
+    <div className={cn('progressive-disclosure', className)}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity cursor-pointer"
+        aria-expanded={isOpen}
+        aria-controls="disclosure-content"
+      >
+        <span className={cn(
+          'transition-transform duration-200',
+          isOpen ? 'rotate-90' : 'rotate-0'
+        )}>
+          ▶
+        </span>
+        {summary}
+      </button>
+      
+      {isOpen && (
+        <div 
+          id="disclosure-content"
+          className="mt-2 pl-4 animate-in slide-in-from-top-2 duration-200"
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
