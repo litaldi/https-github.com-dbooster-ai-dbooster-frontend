@@ -1,121 +1,107 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { validateEmail, validatePhone, validateName, passwordValidator } from '@/utils/validation';
 
-export interface ValidationRule {
-  required?: boolean;
-  minLength?: number;
-  maxLength?: number;
-  pattern?: RegExp;
-  custom?: (value: string) => string | null;
+export interface ValidationError {
+  field: string;
+  message: string;
 }
 
-export interface ValidationResult {
-  isValid: boolean;
-  error?: string;
+export interface FormValidationConfig {
+  required?: string[];
+  validators?: Record<string, (value: any) => string | null>;
 }
 
-export function useFormValidation<T extends Record<string, any>>(
-  initialData: T,
-  rules: Partial<Record<keyof T, ValidationRule>>
-) {
-  const [data, setData] = useState<T>(initialData);
-  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
-  const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
+export function useFormValidation(config: FormValidationConfig = {}) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const validateField = (field: keyof T, value: string): ValidationResult => {
-    const rule = rules[field];
-    if (!rule) return { isValid: true };
-
-    if (rule.required && !value.trim()) {
-      return { isValid: false, error: 'This field is required' };
+  const validateField = useCallback((field: string, value: any): string | null => {
+    // Check if field is required
+    if (config.required?.includes(field) && (!value || value.toString().trim() === '')) {
+      return `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
     }
 
-    if (rule.minLength && value.length < rule.minLength) {
-      return { isValid: false, error: `Must be at least ${rule.minLength} characters` };
+    // Run custom validators
+    const validator = config.validators?.[field];
+    if (validator && value) {
+      return validator(value);
     }
 
-    if (rule.maxLength && value.length > rule.maxLength) {
-      return { isValid: false, error: `Must be less than ${rule.maxLength} characters` };
+    // Built-in validators
+    switch (field) {
+      case 'email':
+        return validateEmail(value);
+      case 'phone':
+        return validatePhone(value);
+      case 'name':
+        return validateName(value);
+      case 'password':
+        return passwordValidator(value);
+      default:
+        return null;
     }
+  }, [config]);
 
-    if (rule.pattern && !rule.pattern.test(value)) {
-      return { isValid: false, error: 'Invalid format' };
-    }
+  const setFieldTouched = useCallback((field: string, isTouched: boolean = true) => {
+    setTouched(prev => ({ ...prev, [field]: isTouched }));
+  }, []);
 
-    if (rule.custom) {
-      const customError = rule.custom(value);
-      if (customError) {
-        return { isValid: false, error: customError };
+  const setFieldError = useCallback((field: string, error: string | null) => {
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      if (error) {
+        newErrors[field] = error;
+      } else {
+        delete newErrors[field];
       }
-    }
+      return newErrors;
+    });
+  }, []);
 
-    return { isValid: true };
-  };
+  const validateForm = useCallback((formData: Record<string, any>): boolean => {
+    const newErrors: Record<string, string> = {};
+    const newTouched: Record<string, boolean> = {};
 
-  const handleChange = (field: keyof T, value: any) => {
-    setData(prev => ({ ...prev, [field]: value }));
-    
-    if (touched[field]) {
-      const validation = validateField(field, value);
-      setErrors(prev => ({ 
-        ...prev, 
-        [field]: validation.error || undefined 
-      }));
-    }
-  };
-
-  const handleBlur = (field: keyof T) => {
-    setTouched(prev => ({ ...prev, [field]: true }));
-    const validation = validateField(field, data[field]);
-    setErrors(prev => ({ 
-      ...prev, 
-      [field]: validation.error || undefined 
-    }));
-  };
-
-  const validateAll = (): boolean => {
-    const newErrors: Partial<Record<keyof T, string>> = {};
-    let isValid = true;
-
-    Object.keys(data).forEach(key => {
-      const field = key as keyof T;
-      const validation = validateField(field, data[field]);
-      if (!validation.isValid) {
-        newErrors[field] = validation.error;
-        isValid = false;
+    Object.keys(formData).forEach(field => {
+      newTouched[field] = true;
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
       }
     });
 
+    setTouched(newTouched);
     setErrors(newErrors);
-    setTouched(Object.keys(data).reduce((acc, key) => ({ 
-      ...acc, 
-      [key]: true 
-    }), {} as Partial<Record<keyof T, boolean>>));
 
-    return isValid;
-  };
+    return Object.keys(newErrors).length === 0;
+  }, [validateField]);
 
-  const getFieldValidation = (field: keyof T) => {
-    const hasError = touched[field] && errors[field];
-    const hasValue = data[field]?.toString().length > 0;
-    const isValid = touched[field] && hasValue && !errors[field];
+  const clearErrors = useCallback(() => {
+    setErrors({});
+    setTouched({});
+  }, []);
+
+  const getFieldValidation = useCallback((field: string, value: any) => {
+    const hasError = !!errors[field];
+    const isValid = touched[field] && !hasError && !!value;
     
     return {
       isValid,
-      hasError: !!hasError,
-      errorMessage: hasError ? errors[field] : undefined
+      hasError,
+      errorMessage: errors[field]
     };
-  };
+  }, [errors, touched]);
 
   return {
-    data,
     errors,
     touched,
-    handleChange,
-    handleBlur,
-    validateAll,
+    validateField,
+    validateForm,
+    setFieldTouched,
+    setFieldError,
+    clearErrors,
     getFieldValidation,
-    setData,
-    setErrors
+    hasErrors: Object.keys(errors).length > 0
   };
 }

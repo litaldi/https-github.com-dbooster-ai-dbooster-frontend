@@ -1,47 +1,118 @@
 
-import { toast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
+import { toast as sonnerToast } from 'sonner';
+import { CheckCircle, XCircle, AlertCircle, Info, Loader2 } from 'lucide-react';
 
-export interface ToastOptions {
+interface ToastOptions {
   title: string;
   description?: string;
   duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+  onDismiss?: () => void;
 }
 
-export const enhancedToast = {
-  success: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast({
-      title,
-      description,
-      duration,
-      className: 'border-green-200 bg-green-50 text-green-900',
-    });
-  },
+interface LoadingToastOptions {
+  title: string;
+  description?: string;
+  promise?: Promise<any>;
+  success?: string | ((data: any) => string);
+  error?: string | ((error: any) => string);
+}
 
-  error: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast({
-      title,
-      description,
-      duration,
-      variant: 'destructive',
+class EnhancedToast {
+  success(options: ToastOptions) {
+    return sonnerToast.success(options.title, {
+      description: options.description,
+      duration: options.duration || 4000,
+      icon: <CheckCircle className="h-4 w-4" />,
+      action: options.action ? {
+        label: options.action.label,
+        onClick: options.action.onClick,
+      } : undefined,
+      onDismiss: options.onDismiss,
+      className: 'toast-success',
     });
-  },
+  }
 
-  warning: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast({
-      title,
-      description,
-      duration,
-      className: 'border-yellow-200 bg-yellow-50 text-yellow-900',
+  error(options: ToastOptions) {
+    return sonnerToast.error(options.title, {
+      description: options.description,
+      duration: options.duration || 6000,
+      icon: <XCircle className="h-4 w-4" />,
+      action: options.action ? {
+        label: options.action.label,
+        onClick: options.action.onClick,
+      } : undefined,
+      onDismiss: options.onDismiss,
+      className: 'toast-error',
     });
-  },
+  }
 
-  info: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast({
-      title,
-      description,
-      duration,
-      className: 'border-blue-200 bg-blue-50 text-blue-900',
+  warning(options: ToastOptions) {
+    return sonnerToast.warning(options.title, {
+      description: options.description,
+      duration: options.duration || 5000,
+      icon: <AlertCircle className="h-4 w-4" />,
+      action: options.action ? {
+        label: options.action.label,
+        onClick: options.action.onClick,
+      } : undefined,
+      onDismiss: options.onDismiss,
+      className: 'toast-warning',
     });
-  },
-};
+  }
+
+  info(options: ToastOptions) {
+    return sonnerToast.info(options.title, {
+      description: options.description,
+      duration: options.duration || 4000,
+      icon: <Info className="h-4 w-4" />,
+      action: options.action ? {
+        label: options.action.label,
+        onClick: options.action.onClick,
+      } : undefined,
+      onDismiss: options.onDismiss,
+      className: 'toast-info',
+    });
+  }
+
+  loading(options: LoadingToastOptions) {
+    if (options.promise) {
+      return sonnerToast.promise(options.promise, {
+        loading: {
+          title: options.title,
+          description: options.description,
+          icon: <Loader2 className="h-4 w-4 animate-spin" />,
+        },
+        success: (data) => ({
+          title: typeof options.success === 'function' ? options.success(data) : (options.success || 'Success'),
+          icon: <CheckCircle className="h-4 w-4" />,
+        }),
+        error: (error) => ({
+          title: typeof options.error === 'function' ? options.error(error) : (options.error || 'Error'),
+          icon: <XCircle className="h-4 w-4" />,
+        }),
+      });
+    }
+
+    return sonnerToast.loading(options.title, {
+      description: options.description,
+      icon: <Loader2 className="h-4 w-4 animate-spin" />,
+    });
+  }
+
+  dismiss(toastId?: string | number) {
+    return sonnerToast.dismiss(toastId);
+  }
+
+  custom(jsx: React.ReactNode, options?: { duration?: number }) {
+    return sonnerToast.custom(jsx, options);
+  }
+}
+
+export const enhancedToast = new EnhancedToast();
+
+// Re-export for backward compatibility
+export { enhancedToast as toast };

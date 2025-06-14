@@ -116,11 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       // Determine if identifier is email or phone
       const isEmail = identifier.includes('@');
-      if (isEmail) {
-        await authService.loginWithCredentials({ email: identifier.trim(), password });
-      } else {
-        await authService.loginWithCredentials({ phone: identifier.trim(), password });
-      }
+      await authService.loginWithCredentials({ 
+        [isEmail ? 'email' : 'phone']: identifier.trim(), 
+        password 
+      });
       return {};
     } catch (error: any) {
       console.error('Sign in failed:', error);
@@ -138,6 +137,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       setIsLoading(true);
+      const name = userData.options?.data?.name || userData.options?.data?.full_name || '';
+      
       if (userData.email) {
         if (!userData.email.trim() || !userData.password?.trim()) {
           return { error: { message: 'Email and password are required' } };
@@ -145,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await authService.signupWithCredentials({ 
           email: userData.email.trim(), 
           password: userData.password, 
-          name: userData.options?.data?.name?.trim() || userData.options?.data?.full_name?.trim() || '' 
+          name: name.trim()
         });
       } else if (userData.phone) {
         if (!userData.phone.trim() || !userData.password?.trim()) {
@@ -154,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await authService.signupWithCredentials({ 
           phone: userData.phone.trim(), 
           password: userData.password, 
-          name: userData.options?.data?.name?.trim() || userData.options?.data?.full_name?.trim() || '' 
+          name: name.trim()
         });
       } else {
         return { error: { message: 'Email or phone is required' } };
