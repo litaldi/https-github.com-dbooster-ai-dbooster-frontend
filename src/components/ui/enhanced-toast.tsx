@@ -81,19 +81,9 @@ class EnhancedToast {
   loading(options: LoadingToastOptions) {
     if (options.promise) {
       return sonnerToast.promise(options.promise, {
-        loading: {
-          title: options.title,
-          description: options.description,
-          icon: <Loader2 className="h-4 w-4 animate-spin" />,
-        },
-        success: (data) => ({
-          title: typeof options.success === 'function' ? options.success(data) : (options.success || 'Success'),
-          icon: <CheckCircle className="h-4 w-4" />,
-        }),
-        error: (error) => ({
-          title: typeof options.error === 'function' ? options.error(error) : (options.error || 'Error'),
-          icon: <XCircle className="h-4 w-4" />,
-        }),
+        loading: options.title,
+        success: (data) => typeof options.success === 'function' ? options.success(data) : (options.success || 'Success'),
+        error: (error) => typeof options.error === 'function' ? options.error(error) : (options.error || 'Error'),
       });
     }
 
@@ -108,7 +98,7 @@ class EnhancedToast {
   }
 
   custom(jsx: React.ReactNode, options?: { duration?: number }) {
-    return sonnerToast.custom(jsx, options);
+    return sonnerToast.custom(() => jsx, options);
   }
 }
 
