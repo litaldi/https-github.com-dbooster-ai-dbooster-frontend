@@ -12,10 +12,13 @@ export interface InputProps
   startIcon?: React.ReactNode
   endIcon?: React.ReactNode
   variant?: 'default' | 'filled' | 'outline'
+  showPasswordToggle?: boolean
+  isValid?: boolean
+  showValidation?: boolean
 }
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, helpText, startIcon, endIcon, variant = 'default', id, ...props }, ref) => {
+const EnhancedInput = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, label, error, helpText, startIcon, endIcon, variant = 'default', id, showPasswordToggle, isValid, showValidation, ...props }, ref) => {
     const [showPassword, setShowPassword] = React.useState(false)
     const inputId = id || React.useId()
     const isPassword = type === 'password'
@@ -43,7 +46,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             variantStyles[variant],
             error && "border-destructive focus-visible:ring-destructive",
             startIcon && "pl-10",
-            (endIcon || isPassword) && "pr-10",
+            (endIcon || (isPassword && showPasswordToggle)) && "pr-10",
             className
           )}
           ref={ref}
@@ -54,9 +57,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         
-        {(endIcon || isPassword) && (
+        {(endIcon || (isPassword && showPasswordToggle)) && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            {isPassword ? (
+            {isPassword && showPasswordToggle ? (
               <Button
                 type="button"
                 variant="ghost"
@@ -108,6 +111,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     )
   }
 )
-Input.displayName = "Input"
+EnhancedInput.displayName = "EnhancedInput"
 
-export { Input }
+// Export both names for compatibility
+export { EnhancedInput, EnhancedInput as Input }
