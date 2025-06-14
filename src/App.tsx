@@ -1,7 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/auth-context';
-import { ProtectedRoute } from '@/components/protected-route';
+import ProtectedRoute from '@/components/protected-route';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import { ThemeProvider } from '@/components/theme-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
