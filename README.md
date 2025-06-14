@@ -1,86 +1,61 @@
 
-# DBooster - AI-Powered Database Query Optimizer 🚀
+# DBooster - Database Query Optimization Platform
 
-<div align="center">
-  
-![DBooster Logo](https://lovable.dev/opengraph-image-p98pqg.png)
+A modern, accessible database query optimization platform built with React, TypeScript, and Supabase. DBooster helps developers analyze, optimize, and monitor database queries with AI-powered suggestions and real-time performance insights.
 
-[![Lovable](https://img.shields.io/badge/Built%20with-Lovable-ff69b4.svg)](https://lovable.dev)
-[![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Latest-blue.svg)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-Latest-38bdf8.svg)](https://tailwindcss.com/)
-[![WCAG](https://img.shields.io/badge/WCAG-2.1%20AA-green.svg)](https://www.w3.org/WAI/WCAG21/quickref/)
+## 🚀 Features
 
-**Transform your database performance with AI-powered query analysis and intelligent optimization recommendations.**
+### Core Functionality
+- **Query Analysis & Optimization** - AI-powered query performance analysis
+- **Real-time Monitoring** - Live database performance metrics and alerts
+- **Repository Management** - Connect and manage multiple database repositories
+- **AI-Powered Suggestions** - Intelligent recommendations for query improvements
+- **Performance Benchmarking** - Compare query performance across different implementations
 
-[🚀 Live Demo](https://dbooster.lovable.app) • [📖 Documentation](https://docs.lovable.dev) • [🐛 Report Bug](https://github.com/lovable-dev/dbooster/issues) • [💬 Community](https://discord.com/channels/1119885301872070706/1280461670979993613)
+### Authentication & Security
+- **Multiple Auth Methods** - Email, phone, OAuth (GitHub, Google), and demo mode
+- **Secure Session Management** - JWT-based authentication with auto-refresh
+- **Row Level Security (RLS)** - Data isolation and secure access controls
+- **Rate Limiting** - Built-in protection against abuse
 
-</div>
+### User Experience
+- **Responsive Design** - Works seamlessly across desktop, tablet, and mobile
+- **Dark/Light Mode** - System-aware theme switching
+- **Accessibility First** - WCAG 2.1 AA compliant with screen reader support
+- **Progressive Loading** - Optimized loading states and error handling
+- **Keyboard Navigation** - Full keyboard accessibility support
 
----
+### Developer Experience
+- **TypeScript** - Full type safety throughout the application
+- **Modern React** - Hooks, Context API, and functional components
+- **Performance Optimized** - Code splitting, lazy loading, and memoization
+- **Comprehensive Testing** - Unit tests and integration tests
+- **Error Boundaries** - Graceful error handling and recovery
 
-## 🌟 What is DBooster?
+## 🛠️ Tech Stack
 
-DBooster is a cutting-edge AI-powered database optimization platform that helps developers, DBAs, and data engineers dramatically improve their database performance. Using advanced machine learning algorithms, DBooster analyzes SQL queries, identifies bottlenecks, and provides intelligent recommendations for optimization.
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **Authentication**: Supabase Auth
+- **Database**: PostgreSQL (via Supabase)
+- **State Management**: React Context + React Query
+- **Routing**: React Router v6
+- **Icons**: Lucide React
+- **Charts**: Recharts
+- **Animations**: Framer Motion
 
-### 🎯 Key Benefits
-
-- **🚀 10x Faster Queries**: AI-driven optimization recommendations
-- **💰 Cost Reduction**: Reduce cloud database costs by up to 60%
-- **⚡ Real-time Analysis**: Instant feedback on query performance
-- **🤖 Smart Automation**: Automated query optimization suggestions
-- **🔍 Deep Insights**: Comprehensive performance analytics
-- **♿ Fully Accessible**: WCAG 2.1 AA compliant with RTL support
-
----
-
-## ✨ Core Features
-
-### 🧠 AI-Powered Intelligence
-- **Smart Query Analysis**: Advanced ML algorithms analyze SQL patterns
-- **Performance Prediction**: AI forecasts query execution times
-- **Automated Optimization**: Intelligent query rewriting and suggestions
-- **Anomaly Detection**: Identify performance regressions automatically
-- **Learning Engine**: Continuously improves recommendations based on usage
-
-### 🔧 Developer-First Tools
-- **GitHub Integration**: Seamlessly scan repositories for SQL queries
-- **Multi-Database Support**: PostgreSQL, MySQL, SQLite, MongoDB, and more
-- **Real-time Query Builder**: Visual query constructor with AI assistance
-- **Performance Monitor**: Live dashboard with key metrics
-- **Team Collaboration**: Share optimizations and insights across teams
-
-### 🎨 Modern User Experience
-- **Responsive Design**: Perfect on desktop, tablet, and mobile devices
-- **Dark/Light Themes**: Automatic system preference detection
-- **Accessibility First**: WCAG 2.1 AA compliant with full keyboard navigation
-- **RTL Support**: Complete Hebrew and Arabic language support
-- **Progressive Web App**: Installable with offline capabilities
-- **Micro-interactions**: Smooth animations and delightful user experience
-
-### 🌐 Enterprise Ready
-- **SSO Integration**: Support for SAML, OAuth, and enterprise identity providers
-- **Advanced Security**: SOC2 compliant with bank-level encryption
-- **Audit Logging**: Complete activity tracking and compliance reporting
-- **Role-based Access**: Granular permissions and team management
-- **API First**: Comprehensive REST API for integrations
-
----
-
-## 🚀 Quick Start Guide
+## 🎯 Getting Started
 
 ### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Supabase account (for backend services)
 
-Ensure you have the following installed:
-- **Node.js** 18.0 or higher
-- **npm** 8.0 or higher (or **yarn** 1.22+)
-- **Git** for version control
-
-### 🛠️ Installation
+### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <YOUR_GIT_URL>
+   git clone <repository-url>
    cd dbooster
    ```
 
@@ -89,13 +64,15 @@ Ensure you have the following installed:
    npm install
    ```
 
-3. **Environment setup**
+3. **Environment Setup**
    ```bash
-   # Copy environment template
-   cp .env.example .env
+   cp .env.example .env.local
+   ```
    
-   # Edit .env with your configuration
-   nano .env
+   Add your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
 4. **Start development server**
@@ -104,312 +81,184 @@ Ensure you have the following installed:
    ```
 
 5. **Open in browser**
-   ```
-   http://localhost:5173
-   ```
+   Navigate to `http://localhost:5173`
 
-### 🔧 Environment Variables
+### Database Setup
 
-Create a `.env` file in the root directory:
+The application uses Supabase for backend services. The database schema includes:
 
-```env
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+- **Authentication** - User management and session handling
+- **Profiles** - Extended user information and preferences
+- **Repositories** - Database connection management
+- **Queries** - Query storage and optimization history
+- **Analytics** - Performance metrics and insights
 
-# Feature Flags
-VITE_FEATURE_AI_ENABLED=true
-VITE_FEATURE_GITHUB_INTEGRATION=true
-VITE_FEATURE_TEAM_COLLABORATION=true
-
-# Analytics (Optional)
-VITE_GOOGLE_ANALYTICS_ID=your_ga_id
-VITE_MIXPANEL_TOKEN=your_mixpanel_token
-```
-
----
-
-## 🏗️ Architecture Overview
-
-### Tech Stack
-
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui components
-- **State Management**: TanStack Query, React Context
-- **Routing**: React Router v6 with lazy loading
-- **Animations**: Framer Motion, CSS animations
-- **Icons**: Lucide React (tree-shakeable)
-- **Charts**: Recharts for data visualization
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth with RLS
-- **Deployment**: Lovable Platform with CDN
-
-### Project Structure
+## 🏗️ Project Structure
 
 ```
 src/
 ├── components/          # Reusable UI components
-│   ├── ai/             # AI-related components
 │   ├── auth/           # Authentication components
-│   │   ├── AuthFormActions.tsx      # Form actions and buttons
-│   │   ├── AuthFormFields.tsx       # Form input fields
-│   │   ├── AuthFormHeader.tsx       # Mode switcher header
-│   │   ├── EnhancedAuthForm.tsx     # Main auth form container
-│   │   ├── LoginCard.tsx            # Login page card wrapper
-│   │   ├── LoginFooter.tsx          # Login page footer
-│   │   ├── LoginHeader.tsx          # Login page header
-│   │   ├── LoginTypeFields.tsx      # Email/phone input fields
-│   │   ├── LoginTypeSelector.tsx    # Email/phone type selector
-│   │   └── PasswordField.tsx        # Password input component
+│   ├── ui/             # Base UI components (shadcn/ui)
 │   ├── dashboard/      # Dashboard-specific components
-│   ├── layout/         # Layout components
-│   ├── navigation/     # Navigation components
-│   ├── notifications/  # Smart notification system
-│   ├── onboarding/     # User onboarding flows
-│   ├── performance/    # Performance monitoring
-│   ├── queries/        # Query builder and analysis
-│   ├── search/         # Universal search
-│   └── ui/             # Base UI components (shadcn/ui)
-│       ├── accessibility-enhancements.tsx  # Global a11y features
-│       ├── accessibility-helpers.tsx       # Skip links, screen reader utils
-│       ├── AnimatedBackground.tsx          # Reusable animated backgrounds
-│       ├── enhanced-button.tsx             # Enhanced button with loading
-│       ├── enhanced-error-boundary.tsx     # Error boundary with retry
-│       └── ...                            # Other UI components
-├── contexts/           # React contexts for state management
+│   └── ...
+├── pages/              # Route components
+├── contexts/           # React Context providers
 ├── hooks/              # Custom React hooks
-│   ├── useI18n.ts      # Internationalization hook (improved)
-│   └── ...            # Other hooks
-├── integrations/       # External service integrations
-├── lib/                # Utility libraries and configurations
-├── pages/              # Page components (route handlers)
-│   └── Login.tsx       # Refactored login page
-├── services/           # API services and business logic
-└── utils/              # Helper functions and utilities
+├── services/           # API and external service integrations
+├── utils/              # Utility functions and helpers
+├── types/              # TypeScript type definitions
+└── config/             # Configuration files
 ```
 
-### Recent Code Refactoring (Latest)
+## 🔐 Authentication
 
-#### 🔧 Component Architecture Improvements
-- **Modular Auth Components**: Split large `EnhancedAuthForm` into focused components:
-  - `AuthFormHeader` - Mode switching functionality
-  - `AuthFormFields` - Input field management
-  - `AuthFormActions` - Submit buttons and actions
-  - `LoginCard`, `LoginHeader`, `LoginFooter` - Page layout components
+DBooster supports multiple authentication methods:
 
-#### 🎨 UI Component Enhancements
-- **Enhanced Button Component**: Added loading states and better accessibility
-- **Improved Input Component**: Better error states and styling variants
-- **Enhanced Label Component**: Added required field indicators and size variants
-- **Animated Background**: Extracted reusable animated background component
+### Email/Password
+- Standard email and password authentication
+- Email verification for new accounts
+- Password reset functionality
 
-#### 🌐 Internationalization Improvements
-- **Enhanced useI18n Hook**: 
-  - Better TypeScript support
-  - Improved caching and performance
-  - Translation fallback system
-  - Enhanced memory management
+### Phone Authentication
+- SMS-based verification
+- International phone number support
+- Formatted phone number input
 
-#### ♿ Accessibility Refinements
-- **Accessibility Helpers**: Centralized accessibility utilities
-- **Screen Reader Support**: Enhanced ARIA labels and descriptions
-- **Keyboard Navigation**: Improved focus management
-- **Skip Links**: Better content accessibility
+### OAuth Providers
+- **GitHub** - Access to repository data and user profile
+- **Google** - Quick sign-in with Google account
 
-#### 📁 File Organization
-- **Smaller Component Files**: Broke down large files for better maintainability
-- **Focused Responsibility**: Each component has a single, clear purpose
-- **Better Import Structure**: Cleaner dependency management
-- **Consistent Naming**: Improved naming conventions across components
+### Demo Mode
+- No registration required
+- Sample data for testing features
+- Limited functionality for security
 
----
+## 🎨 UI/UX Features
 
-## ♿ Accessibility Features
+### Design System
+- Consistent color palette and typography
+- Responsive breakpoints for all screen sizes
+- Smooth animations and transitions
+- Loading states and skeleton screens
 
-DBooster is built with accessibility as a core requirement, ensuring equal access for all users.
+### Accessibility
+- ARIA labels and semantic HTML
+- Focus management and keyboard navigation
+- Screen reader announcements
+- High contrast mode support
+- Reduced motion preferences
 
-### Compliance Standards
+### Error Handling
+- User-friendly error messages
+- Graceful degradation on failures
+- Retry mechanisms for failed requests
+- Offline state detection
 
-- **WCAG 2.1 AA**: Full compliance with Web Content Accessibility Guidelines
-- **Section 508**: US federal accessibility requirements
-- **EN 301 549**: European accessibility standard
-- **AODA**: Accessibility for Ontarians with Disabilities Act
+## 🧪 Testing
 
-### Accessibility Features
-
-#### Navigation & Interaction
-- **Keyboard Navigation**: Complete functionality without mouse
-- **Focus Management**: Clear focus indicators and logical tab order
-- **Skip Links**: Quick navigation to main content
-- **Screen Reader Support**: Proper ARIA labels and descriptions
-
-#### Visual Accessibility
-- **High Contrast Mode**: Enhanced contrast for better readability
-- **Text Scaling**: Support for 200% zoom without horizontal scrolling
-- **Color Independence**: Information not conveyed by color alone
-- **Motion Preferences**: Respects user's reduced motion settings
-
-#### Interactive Elements
-- **Button States**: Clear indication of enabled/disabled states
-- **Form Validation**: Accessible error messages and guidance
-- **Loading States**: Screen reader announcements for async operations
-- **Tooltips**: Keyboard accessible with proper ARIA implementation
-
-### Language & Internationalization
-
-- **RTL Support**: Complete right-to-left text direction support
-- **Language Switching**: Dynamic language changes without page reload
-- **Cultural Adaptations**: Appropriate date, number, and currency formats
-- **Font Optimization**: Optimized typography for different languages
-
----
-
-## 🧪 Testing & Quality Assurance
-
-### Running Tests
-
+Run the test suite:
 ```bash
-# Unit tests
 npm run test
-
-# Watch mode for development
-npm run test:watch
-
-# Coverage report
-npm run test:coverage
-
-# E2E tests
-npm run test:e2e
-
-# Accessibility tests
-npm run test:a11y
-
-# Performance tests
-npm run test:performance
 ```
 
-### Quality Metrics
+### Testing Strategy
+- **Unit Tests** - Individual component and function testing
+- **Integration Tests** - Feature workflow testing
+- **Accessibility Tests** - ARIA and keyboard navigation
+- **Performance Tests** - Load time and bundle size monitoring
 
-- **Code Coverage**: Minimum 80% across all modules
-- **Accessibility**: WCAG 2.1 AA compliance (verified with axe-core)
-- **Performance**: Lighthouse scores 95+ on all metrics
-- **Bundle Size**: < 100KB gzipped for initial load
-- **Load Time**: < 2s on 3G networks
-- **Component Modularity**: Average component size < 100 lines
+## 🚀 Deployment
 
----
+### Build for Production
+```bash
+npm run build
+```
 
-## 🚀 Deployment Guide
+### Preview Production Build
+```bash
+npm run preview
+```
 
-### Deploy to Lovable (Recommended)
+### Environment Configuration
+Ensure all environment variables are properly set for production:
+- Supabase URL and keys
+- OAuth provider credentials
+- API endpoints and secrets
 
-1. **Push changes to repository**
-   ```bash
-   git add .
-   git commit -m "Ready for production"
-   git push origin main
-   ```
+## 📊 Performance
 
-2. **Deploy via Lovable Dashboard**
-   - Visit your [Lovable Project](https://lovable.dev/projects/e337b8a8-c0d7-4d65-93a2-33a9ff366332)
-   - Click **"Publish"** to deploy
-   - Custom domains available on paid plans
+### Optimization Features
+- **Code Splitting** - Lazy-loaded routes and components
+- **Tree Shaking** - Eliminated unused code
+- **Image Optimization** - WebP format and responsive images
+- **Caching** - Strategic API response caching
+- **Bundle Analysis** - Regular bundle size monitoring
 
-### Production Checklist
+### Performance Metrics
+- First Contentful Paint (FCP) < 1.5s
+- Largest Contentful Paint (LCP) < 2.5s
+- Cumulative Layout Shift (CLS) < 0.1
+- Time to Interactive (TTI) < 3.5s
 
-- [x] Environment variables configured
-- [x] Accessibility compliance verified
-- [x] Error boundaries implemented
-- [x] Performance optimized
-- [x] Mobile responsiveness tested
-- [x] Cross-browser compatibility verified
-- [x] Security headers configured
-- [x] Analytics tracking implemented
-- [x] Code refactoring completed
-- [x] Component modularity achieved
+## 🔧 Configuration
 
----
+### Theme Customization
+Customize the theme in `tailwind.config.ts`:
+```typescript
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          // Custom primary colors
+        }
+      }
+    }
+  }
+}
+```
 
-## 📈 Recent Updates & Changelog
+### Authentication Providers
+Configure OAuth providers in Supabase dashboard:
+1. Enable desired providers
+2. Add redirect URLs
+3. Configure OAuth app credentials
 
-### Version 2.1.0 (Latest - Code Refactoring Release)
+## 📝 Contributing
 
-#### 🔧 Code Architecture Improvements
-- **Component Modularization**: Broke down large components into focused, reusable modules
-- **Enhanced Type Safety**: Improved TypeScript coverage and type definitions
-- **Better File Organization**: Restructured component hierarchy for better maintainability
-- **Performance Optimizations**: Reduced bundle size through better code splitting
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-#### 🎨 UI Component Enhancements
-- **Enhanced Button Component**: Added loading states and better accessibility features
-- **Improved Form Components**: Better validation feedback and error handling
-- **Modular Auth System**: Split authentication into smaller, focused components
-- **Reusable UI Elements**: Created consistent, reusable UI building blocks
+### Development Guidelines
+- Follow TypeScript strict mode
+- Write comprehensive tests for new features
+- Ensure accessibility compliance
+- Update documentation for API changes
+- Use semantic commit messages
 
-#### 🌐 Internationalization & Accessibility
-- **Enhanced i18n System**: Improved translation management and fallback handling
-- **Better RTL Support**: Enhanced right-to-left language support
-- **Accessibility Helpers**: Centralized accessibility utilities and components
-- **Screen Reader Improvements**: Enhanced ARIA support and screen reader compatibility
+## 📄 License
 
-#### 📁 Developer Experience
-- **Cleaner Codebase**: Removed redundant code and improved consistency
-- **Better Import Structure**: Optimized dependency management
-- **Enhanced Documentation**: Updated README with latest architectural changes
-- **Improved Maintainability**: Smaller, focused components for easier maintenance
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
+## 🙏 Acknowledgments
 
-## 🤝 Contributing Guide
+- **Supabase** - Backend infrastructure and authentication
+- **shadcn/ui** - Beautiful and accessible UI components
+- **Tailwind CSS** - Utility-first CSS framework
+- **Lucide** - Beautiful icon library
+- **Recharts** - Powerful charting library
 
-We welcome contributions from the community! Here's how to get started:
+## 📞 Support
 
-### Development Workflow
-
-1. **Fork the repository**
-2. **Create feature branch**: `git checkout -b feature/amazing-new-feature`
-3. **Make your changes** following our coding standards
-4. **Test thoroughly** including accessibility testing
-5. **Commit**: `git commit -m "feat: add amazing new feature"`
-6. **Push**: `git push origin feature/amazing-new-feature`
-7. **Create Pull Request**
-
-### Coding Standards
-
-- **Component Size**: Keep components under 100 lines when possible
-- **Single Responsibility**: Each component should have one clear purpose
-- **TypeScript**: Strict mode enabled with comprehensive type coverage
-- **Accessibility**: All components must be WCAG 2.1 AA compliant
-- **Testing**: Include unit tests for new functionality
-- **Performance**: Consider performance impact of changes
-- **Documentation**: Update documentation for new features
-
----
-
-## 📞 Support & Contact
-
-### Community Support
-
-- **Discord Community**: [Join our Discord](https://discord.com/channels/1119885301872070706/1280461670979993613)
-- **GitHub Discussions**: [Community discussions](https://github.com/lovable-dev/dbooster/discussions)
-- **Documentation**: [docs.lovable.dev](https://docs.lovable.dev)
-
-### Professional Support
-
-- **Email**: support@lovable.dev
-- **Enterprise Support**: enterprise@lovable.dev
-- **Security Issues**: security@lovable.dev
+For support and questions:
+- Create an issue in the repository
+- Check the documentation
+- Join our community discussions
 
 ---
 
-<div align="center">
-
-## 🌟 Star this Project
-
-If DBooster has helped improve your database performance, please consider giving us a star on GitHub!
-
-**Built with ❤️ using [Lovable](https://lovable.dev)**
-
-**© 2024 DBooster. All rights reserved.**
-
-</div>
+Built with ❤️ for developers who care about database performance and user experience.

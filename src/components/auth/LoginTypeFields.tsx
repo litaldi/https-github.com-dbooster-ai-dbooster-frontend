@@ -1,7 +1,6 @@
 
-import { Label } from '@/components/ui/label';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
-import { formatPhoneNumber } from '@/utils/authValidation';
+import { formatPhoneNumber } from '@/utils/validation';
 
 interface LoginTypeFieldsProps {
   loginType: 'email' | 'phone';
@@ -33,7 +32,11 @@ export function LoginTypeFields({
   };
 
   if (loginType === 'email') {
-    const validation = getFieldValidation?.('email') || { isValid: false, hasError: !!errors.email, errorMessage: errors.email };
+    const validation = getFieldValidation?.('email') || { 
+      isValid: false, 
+      hasError: !!errors.email, 
+      errorMessage: errors.email 
+    };
     
     return (
       <EnhancedInput
@@ -49,11 +52,16 @@ export function LoginTypeFields({
         showValidation={true}
         autoComplete="email"
         required
+        aria-describedby={validation.errorMessage ? "email-error" : undefined}
       />
     );
   }
 
-  const validation = getFieldValidation?.('phone') || { isValid: false, hasError: !!errors.phone, errorMessage: errors.phone };
+  const validation = getFieldValidation?.('phone') || { 
+    isValid: false, 
+    hasError: !!errors.phone, 
+    errorMessage: errors.phone 
+  };
 
   return (
     <EnhancedInput
@@ -70,6 +78,7 @@ export function LoginTypeFields({
       autoComplete="tel"
       helperText="We'll send you a verification code"
       required
+      aria-describedby={validation.errorMessage ? "phone-error" : undefined}
     />
   );
 }

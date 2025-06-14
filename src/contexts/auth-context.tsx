@@ -26,52 +26,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       await authService.loginWithOAuth(provider);
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      console.error('OAuth login failed:', error);
+      throw new Error(handleApiError(error));
     } finally {
       setIsLoading(false);
     }
   };
 
   const loginWithEmail = async (email: string, password: string) => {
+    if (!email?.trim() || !password?.trim()) {
+      throw new Error('Email and password are required');
+    }
+    
     try {
       setIsLoading(true);
-      await authService.loginWithCredentials({ email, password });
-    } catch (error) {
-      throw error;
+      await authService.loginWithCredentials({ email: email.trim(), password });
+    } catch (error: any) {
+      console.error('Email login failed:', error);
+      throw new Error(handleApiError(error));
     } finally {
       setIsLoading(false);
     }
   };
 
   const loginWithPhone = async (phone: string, password: string) => {
+    if (!phone?.trim() || !password?.trim()) {
+      throw new Error('Phone and password are required');
+    }
+    
     try {
       setIsLoading(true);
-      await authService.loginWithCredentials({ phone, password });
-    } catch (error) {
-      throw error;
+      await authService.loginWithCredentials({ phone: phone.trim(), password });
+    } catch (error: any) {
+      console.error('Phone login failed:', error);
+      throw new Error(handleApiError(error));
     } finally {
       setIsLoading(false);
     }
   };
 
   const signupWithEmail = async (email: string, password: string, name: string) => {
+    if (!email?.trim() || !password?.trim() || !name?.trim()) {
+      throw new Error('Email, password, and name are required');
+    }
+    
     try {
       setIsLoading(true);
-      await authService.signupWithCredentials({ email, password, name });
-    } catch (error) {
-      throw error;
+      await authService.signupWithCredentials({ 
+        email: email.trim(), 
+        password, 
+        name: name.trim() 
+      });
+    } catch (error: any) {
+      console.error('Email signup failed:', error);
+      throw new Error(handleApiError(error));
     } finally {
       setIsLoading(false);
     }
   };
 
   const signupWithPhone = async (phone: string, password: string, name: string) => {
+    if (!phone?.trim() || !password?.trim() || !name?.trim()) {
+      throw new Error('Phone, password, and name are required');
+    }
+    
     try {
       setIsLoading(true);
-      await authService.signupWithCredentials({ phone, password, name });
-    } catch (error) {
-      throw error;
+      await authService.signupWithCredentials({ 
+        phone: phone.trim(), 
+        password, 
+        name: name.trim() 
+      });
+    } catch (error: any) {
+      console.error('Phone signup failed:', error);
+      throw new Error(handleApiError(error));
     } finally {
       setIsLoading(false);
     }
@@ -79,18 +108,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Generic signIn method for the auth form
   const signIn = async (identifier: string, password: string) => {
+    if (!identifier?.trim() || !password?.trim()) {
+      return { error: { message: 'Email/phone and password are required' } };
+    }
+
     try {
       setIsLoading(true);
       // Determine if identifier is email or phone
       const isEmail = identifier.includes('@');
       if (isEmail) {
-        await authService.loginWithCredentials({ email: identifier, password });
+        await authService.loginWithCredentials({ email: identifier.trim(), password });
       } else {
-        await authService.loginWithCredentials({ phone: identifier, password });
+        await authService.loginWithCredentials({ phone: identifier.trim(), password });
       }
       return {};
     } catch (error: any) {
-      return { error: { message: error.message } };
+      console.error('Sign in failed:', error);
+      return { error: { message: handleApiError(error) } };
     } finally {
       setIsLoading(false);
     }
@@ -98,24 +132,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Generic signUp method for the auth form
   const signUp = async (userData: any) => {
+    if (!userData) {
+      return { error: { message: 'User data is required' } };
+    }
+
     try {
       setIsLoading(true);
       if (userData.email) {
+        if (!userData.email.trim() || !userData.password?.trim()) {
+          return { error: { message: 'Email and password are required' } };
+        }
         await authService.signupWithCredentials({ 
-          email: userData.email, 
+          email: userData.email.trim(), 
           password: userData.password, 
-          name: userData.options?.data?.name || '' 
+          name: userData.options?.data?.name?.trim() || userData.options?.data?.full_name?.trim() || '' 
         });
       } else if (userData.phone) {
+        if (!userData.phone.trim() || !userData.password?.trim()) {
+          return { error: { message: 'Phone and password are required' } };
+        }
         await authService.signupWithCredentials({ 
-          phone: userData.phone, 
+          phone: userData.phone.trim(), 
           password: userData.password, 
-          name: userData.options?.data?.name || '' 
+          name: userData.options?.data?.name?.trim() || userData.options?.data?.full_name?.trim() || '' 
         });
+      } else {
+        return { error: { message: 'Email or phone is required' } };
       }
       return {};
     } catch (error: any) {
-      return { error: { message: error.message } };
+      console.error('Sign up failed:', error);
+      return { error: { message: handleApiError(error) } };
     } finally {
       setIsLoading(false);
     }
@@ -126,8 +173,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const { user, session } = await authService.loginDemo();
       updateAuthState(user, session, true);
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      console.error('Demo login failed:', error);
+      throw new Error(handleApiError(error));
     } finally {
       setIsLoading(false);
     }
@@ -138,8 +186,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       await authService.logout(isDemo);
       clearAuthState();
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      console.error('Logout failed:', error);
+      throw new Error(handleApiError(error));
     } finally {
       setIsLoading(false);
     }

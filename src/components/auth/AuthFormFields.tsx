@@ -53,6 +53,7 @@ export function AuthFormFields({
           showValidation={true}
           autoComplete="name"
           required
+          aria-describedby={errors.name ? "name-error" : undefined}
         />
       )}
 
@@ -71,6 +72,7 @@ export function AuthFormFields({
           showValidation={true}
           autoComplete="email"
           required
+          aria-describedby={errors.email ? "email-error" : undefined}
         />
       ) : (
         <EnhancedInput
@@ -87,6 +89,7 @@ export function AuthFormFields({
           autoComplete="tel"
           helperText="We'll send you a verification code"
           required
+          aria-describedby={errors.phone ? "phone-error" : undefined}
         />
       )}
 

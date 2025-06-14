@@ -1,21 +1,19 @@
 
-import { Loader2, Database, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 interface EnhancedLoadingProps {
-  variant?: 'default' | 'full-screen' | 'inline' | 'button';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'full-screen' | 'overlay' | 'inline';
   text?: string;
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
-  showIcon?: boolean;
 }
 
 export function EnhancedLoading({ 
   variant = 'default', 
+  text = 'Loading...', 
   size = 'md',
-  text,
-  className,
-  showIcon = true
+  className 
 }: EnhancedLoadingProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
@@ -23,70 +21,56 @@ export function EnhancedLoading({
     lg: 'h-8 w-8'
   };
 
-  const LoadingIcon = ({ className: iconClassName }: { className?: string }) => (
-    <div className="relative">
-      <Database className={cn(iconClassName, 'animate-pulse opacity-60')} />
-      <Zap className={cn(iconClassName, 'absolute inset-0 animate-spin')} />
+  const spinnerElement = (
+    <Loader2 
+      className={cn('animate-spin', sizeClasses[size])} 
+      aria-hidden="true"
+    />
+  );
+
+  const loadingContent = (
+    <div className="flex flex-col items-center gap-3">
+      {spinnerElement}
+      <span className="text-sm text-muted-foreground" role="status" aria-live="polite">
+        {text}
+      </span>
     </div>
   );
 
   if (variant === 'full-screen') {
     return (
-      <div 
-        className={cn(
-          "fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50",
-          className
-        )}
-        role="status"
-        aria-live="polite"
-        aria-label="Loading content"
-      >
-        <div className="flex flex-col items-center space-y-4">
-          {showIcon ? (
-            <LoadingIcon className={sizeClasses.lg} />
-          ) : (
-            <Loader2 className={cn(sizeClasses.lg, "animate-spin")} />
-          )}
-          <p className="text-muted-foreground text-sm font-medium">
-            {text || 'Optimizing your database...'}
-          </p>
-        </div>
+      <div className={cn(
+        'fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm',
+        className
+      )}>
+        {loadingContent}
       </div>
     );
   }
 
-  if (variant === 'button') {
+  if (variant === 'overlay') {
     return (
-      <div className={cn("flex items-center space-x-2", className)}>
-        <Loader2 className={cn(sizeClasses[size], "animate-spin")} />
-        {text && <span className="text-sm">{text}</span>}
+      <div className={cn(
+        'absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg',
+        className
+      )}>
+        {loadingContent}
+      </div>
+    );
+  }
+
+  if (variant === 'inline') {
+    return (
+      <div className={cn('flex items-center gap-2', className)}>
+        {spinnerElement}
+        <span className="text-sm text-muted-foreground">{text}</span>
       </div>
     );
   }
 
   return (
-    <div 
-      className={cn(
-        "flex items-center justify-center py-8",
-        variant === 'inline' && 'py-4',
-        className
-      )}
-      role="status"
-      aria-live="polite"
-      aria-label="Loading content"
-    >
-      <div className="flex flex-col items-center space-y-3">
-        {showIcon ? (
-          <LoadingIcon className={sizeClasses[size]} />
-        ) : (
-          <Loader2 className={cn(sizeClasses[size], "animate-spin")} />
-        )}
-        {text && (
-          <p className="text-muted-foreground text-sm font-medium">
-            {text}
-          </p>
-        )}
-      </div>
+    <div className={cn('flex items-center justify-center p-8', className)}>
+      {loadingContent}
     </div>
   );
 }

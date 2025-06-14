@@ -1,7 +1,6 @@
 
+import React from 'react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface SkipLinkProps {
   href: string;
@@ -14,9 +13,9 @@ export function SkipLink({ href, children, className }: SkipLinkProps) {
     <a
       href={href}
       className={cn(
-        "skip-link",
-        "absolute -top-40 left-6 bg-primary text-primary-foreground px-4 py-2 z-50",
-        "focus:top-6 transition-all duration-200 rounded-md font-medium",
+        'skip-link sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50',
+        'bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium',
+        'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
         className
       )}
     >
@@ -25,81 +24,65 @@ export function SkipLink({ href, children, className }: SkipLinkProps) {
   );
 }
 
-interface ScreenReaderOnlyProps {
+interface VisuallyHiddenProps {
   children: React.ReactNode;
-  as?: keyof JSX.IntrinsicElements;
   className?: string;
 }
 
-export function ScreenReaderOnly({ 
-  children, 
-  as: Component = 'span', 
-  className 
-}: ScreenReaderOnlyProps) {
+export function VisuallyHidden({ children, className }: VisuallyHiddenProps) {
   return (
-    <Component className={cn("sr-only", className)}>
+    <span className={cn('sr-only', className)}>
       {children}
-    </Component>
+    </span>
   );
 }
 
-interface LiveRegionProps {
+interface FocusTrapProps {
   children: React.ReactNode;
-  level?: 'polite' | 'assertive' | 'off';
-  atomic?: boolean;
-  className?: string;
+  enabled?: boolean;
 }
 
-export function LiveRegion({ 
-  children, 
-  level = 'polite', 
-  atomic = false, 
-  className 
-}: LiveRegionProps) {
+export function FocusTrap({ children, enabled = true }: FocusTrapProps) {
+  const trapRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!enabled || !trapRef.current) return;
+
+    const trap = trapRef.current;
+    const focusableElements = trap.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement?.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement?.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    trap.addEventListener('keydown', handleTabKey);
+    firstElement?.focus();
+
+    return () => {
+      trap.removeEventListener('keydown', handleTabKey);
+    };
+  }, [enabled]);
+
   return (
-    <div
-      aria-live={level}
-      aria-atomic={atomic}
-      className={cn("sr-only", className)}
-    >
+    <div ref={trapRef}>
       {children}
-    </div>
-  );
-}
-
-interface ProgressiveDisclosureProps {
-  summary: React.ReactNode;
-  children: React.ReactNode;
-  className?: string;
-}
-
-export function ProgressiveDisclosure({ 
-  summary, 
-  children, 
-  className 
-}: ProgressiveDisclosureProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className={cn("progressive-disclosure", className)}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-        aria-expanded={isOpen}
-        type="button"
-      >
-        {isOpen ? (
-          <ChevronDown className="h-3 w-3" />
-        ) : (
-          <ChevronRight className="h-3 w-3" />
-        )}
-        {summary}
-      </button>
-      {isOpen && (
-        <div className="mt-2 pl-5">
-          {children}
-        </div>
-      )}
     </div>
   );
 }
