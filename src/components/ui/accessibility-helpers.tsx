@@ -1,5 +1,7 @@
 
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface SkipLinkProps {
   href: string;
@@ -61,6 +63,43 @@ export function LiveRegion({
       className={cn("sr-only", className)}
     >
       {children}
+    </div>
+  );
+}
+
+interface ProgressiveDisclosureProps {
+  summary: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ProgressiveDisclosure({ 
+  summary, 
+  children, 
+  className 
+}: ProgressiveDisclosureProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className={cn("progressive-disclosure", className)}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+        aria-expanded={isOpen}
+        type="button"
+      >
+        {isOpen ? (
+          <ChevronDown className="h-3 w-3" />
+        ) : (
+          <ChevronRight className="h-3 w-3" />
+        )}
+        {summary}
+      </button>
+      {isOpen && (
+        <div className="mt-2 pl-5">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

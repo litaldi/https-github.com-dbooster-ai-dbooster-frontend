@@ -1,12 +1,24 @@
 
 import { useState, useEffect } from 'react';
 
+export type Language = 'en' | 'he' | 'ar' | 'fa' | 'ur';
+
 interface I18nConfig {
   language: string;
   direction: 'ltr' | 'rtl';
 }
 
 const RTL_LANGUAGES = ['ar', 'he', 'fa', 'ur'];
+
+// Simple translation function - can be expanded later
+const translations = {
+  en: {
+    // English translations can be added here
+  },
+  he: {
+    // Hebrew translations can be added here
+  }
+};
 
 export function useI18n() {
   const [config, setConfig] = useState<I18nConfig>(() => {
@@ -18,12 +30,21 @@ export function useI18n() {
   });
 
   const setLanguage = (language: string) => {
-    const newConfig = {
+    const newConfig: I18nConfig = {
       language,
-      direction: RTL_LANGUAGES.includes(language) ? 'rtl' : 'ltr' as const
+      direction: RTL_LANGUAGES.includes(language) ? 'rtl' : 'ltr'
     };
     setConfig(newConfig);
     localStorage.setItem('dbooster-language', language);
+  };
+
+  const changeLanguage = (language: Language) => {
+    setLanguage(language);
+  };
+
+  const t = (key: string) => {
+    // Simple translation function - returns key if translation not found
+    return key;
   };
 
   useEffect(() => {
@@ -35,6 +56,8 @@ export function useI18n() {
   return {
     ...config,
     setLanguage,
+    changeLanguage,
+    t,
     isRTL: config.direction === 'rtl'
   };
 }
