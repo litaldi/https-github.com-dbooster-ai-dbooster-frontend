@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AuthFormHeader } from './AuthFormHeader';
 import { AuthFormFields } from './AuthFormFields';
 import { AuthFormActions } from './AuthFormActions';
@@ -7,29 +7,37 @@ import { AuthFormFooter } from './AuthFormFooter';
 import { useAuthForm } from '@/hooks/useAuthForm';
 
 export function AuthForm() {
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
-    mode,
-    setMode,
     loginType,
     setLoginType,
     rememberMe,
     setRememberMe,
-    email,
-    setEmail,
-    phone,
-    setPhone,
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    isLoading,
-    handleSubmit,
+    formData,
+    errors,
+    handleInputChange,
+    handleBlur,
+    validate,
+    handleRememberMe,
     getFieldValidation
-  } = useAuthForm();
+  } = useAuthForm(mode);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) {
+      return;
+    }
+    setIsLoading(true);
+    // Handle authentication logic here
+    console.log('Form submitted:', { mode, formData });
+    setIsLoading(false);
+  };
+
+  const handlePasswordReset = () => {
+    console.log('Password reset requested');
+  };
 
   return (
     <div className="space-y-6">
@@ -38,31 +46,28 @@ export function AuthForm() {
       <AuthFormFields 
         mode={mode}
         loginType={loginType}
-        setLoginType={setLoginType}
-        rememberMe={rememberMe}
-        setRememberMe={setRememberMe}
-        email={email}
-        setEmail={setEmail}
-        phone={phone}
-        setPhone={setPhone}
-        password={password}
-        setPassword={setPassword}
-        confirmPassword={confirmPassword}
-        setConfirmPassword={setConfirmPassword}
-        firstName={firstName}
-        setFirstName={setFirstName}
-        lastName={lastName}
-        setLastName={setLastName}
+        formData={formData}
+        errors={errors}
+        onInputChange={handleInputChange}
+        onBlur={handleBlur}
         getFieldValidation={getFieldValidation}
       />
       
       <AuthFormActions 
         mode={mode}
         isLoading={isLoading}
-        onSubmit={handleSubmit}
+        rememberMe={rememberMe}
+        onRememberMeChange={setRememberMe}
+        onModeChange={setMode}
       />
       
-      <AuthFormFooter mode={mode} />
+      <AuthFormFooter 
+        mode={mode}
+        onModeChange={setMode}
+        rememberMe={rememberMe}
+        onRememberMeChange={setRememberMe}
+        onPasswordReset={handlePasswordReset}
+      />
     </div>
   );
 }
