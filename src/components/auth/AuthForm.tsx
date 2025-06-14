@@ -3,18 +3,14 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs } from '@/components/ui/tabs';
-import { AlertCircle, Loader2, CheckCircle } from 'lucide-react';
-import { PasswordReset } from './PasswordReset';
-import { LoginTypeSelector } from './LoginTypeSelector';
-import { LoginTypeFields } from './LoginTypeFields';
-import { PasswordField } from './PasswordField';
-import { AuthFormFooter } from './AuthFormFooter';
-import { useAuthForm } from '@/hooks/useAuthForm';
+import { Checkbox } from '@/components/ui/checkbox';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { PasswordField } from '@/components/auth/PasswordField';
+import { LoginTypeSelector } from '@/components/auth/LoginTypeSelector';
+import { LoginTypeFields } from '@/components/auth/LoginTypeFields';
+import { useAuthForm } from '@/hooks/useAuthForm';
+import { Loader2, UserPlus, LogIn } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -22,13 +18,15 @@ interface AuthFormProps {
 }
 
 export function AuthForm({ mode, onModeChange }: AuthFormProps) {
-  const { loginWithEmail, loginWithPhone, signupWithEmail, signupWithPhone, isLoading } = useAuth();
-  const [showPasswordReset, setShowPasswordReset] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { signIn, signUp } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const {
     loginType,
     setLoginType,
+    showPassword,
+    setShowPassword,
     rememberMe,
     setRememberMe,
     formData,
@@ -45,167 +43,219 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
     e.preventDefault();
     
     if (!validate()) {
-      enhancedToast.error({
-        title: 'Validation Error',
-        description: 'Please fix the errors before submitting.'
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors below and try again.",
+        variant: "destructive",
       });
       return;
     }
 
-    setIsSubmitting(true);
-    
-    try {
-      handleRememberMe();
+    setIsLoading(true);
+    setErrors({});
 
+    try {
+      const identifier = loginType === 'email' ? formData.email : formData.phone;
+      
       if (mode === 'login') {
-        if (loginType === 'email') {
-          await loginWithEmail(formData.email, formData.password);
+        const { error } = await signIn(identifier, formData.password);
+        if (error) {
+          setErrors({ submit: error.message });
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
         } else {
-          await loginWithPhone(formData.phone, formData.password);
+          if (rememberMe) {
+            handleRememberMe();
+          }
+          toast({
+            title: "Welcome back!",
+            description: "You have been successfully signed in.",
+          });
         }
-        
-        enhancedToast.success({
-          title: 'Welcome back!',
-          description: 'You have been successfully logged in.'
-        });
       } else {
-        if (loginType === 'email') {
-          await signupWithEmail(formData.email, formData.password, formData.name);
-        } else {
-          await signupWithPhone(formData.phone, formData.password, formData.name);
-        }
+        const userData: any = {
+          [loginType]: identifier,
+          password: formData.password,
+        };
         
-        enhancedToast.success({
-          title: 'Account Created!',
-          description: 'Welcome to DBooster. Your account has been created successfully.'
-        });
+        if (formData.name) {
+          userData.options = {
+            data: { name: formData.name }
+          };
+        }
+
+        const { error } = await signUp(userData);
+        if (error) {
+          setErrors({ submit: error.message });
+          toast({
+            title: "Signup Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Account Created!",
+            description: "Please check your email to verify your account.",
+          });
+        }
       }
     } catch (error: any) {
-      const errorMessage = error.message || 'An error occurred. Please try again.';
+      const errorMessage = error?.message || 'An unexpected error occurred';
       setErrors({ submit: errorMessage });
-      
-      enhancedToast.error({
-        title: mode === 'login' ? 'Login Failed' : 'Signup Failed',
-        description: errorMessage
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  if (showPasswordReset) {
-    return <PasswordReset onBack={() => setShowPasswordReset(false)} />;
-  }
-
   return (
-    <Card className="w-full max-w-md shadow-lg">
-      <CardHeader className="text-center space-y-1">
-        <CardTitle className="text-2xl font-bold">
-          {mode === 'login' ? 'Welcome back' : 'Create account'}
-        </CardTitle>
-        <CardDescription>
-          {mode === 'login' 
-            ? 'Sign in to your account to continue'
-            : 'Enter your details to create your account'
-          }
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {errors.submit && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{errors.submit}</AlertDescription>
-          </Alert>
-        )}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Login Type Selector */}
+      <LoginTypeSelector 
+        loginType={loginType} 
+        onLoginTypeChange={setLoginType} 
+      />
 
-        <Tabs value={loginType}>
-          <LoginTypeSelector loginType={loginType} onTypeChange={setLoginType} />
+      {/* Name field for signup */}
+      {mode === 'signup' && (
+        <EnhancedInput
+          id="name"
+          type="text"
+          label="Full Name"
+          placeholder="Enter your full name"
+          value={formData.name}
+          onChange={(e) => handleInputChange('name', e.target.value)}
+          onBlur={() => handleBlur('name')}
+          error={getFieldValidation('name').errorMessage}
+          isValid={getFieldValidation('name').isValid}
+          showValidation={true}
+          autoComplete="name"
+          required
+        />
+      )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === 'signup' && (
-              <EnhancedInput
-                id="name"
-                type="text"
-                label="Full Name"
-                placeholder="Enter your full name"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                onBlur={() => handleBlur('name')}
-                error={getFieldValidation('name').errorMessage}
-                isValid={getFieldValidation('name').isValid}
-                showValidation={true}
-                autoComplete="name"
-                required
-              />
-            )}
+      {/* Email/Phone Fields */}
+      <LoginTypeFields
+        loginType={loginType}
+        formData={formData}
+        errors={errors}
+        onInputChange={handleInputChange}
+        onBlur={handleBlur}
+        getFieldValidation={getFieldValidation}
+      />
 
-            <LoginTypeFields
-              loginType={loginType}
-              formData={formData}
-              errors={errors}
-              onInputChange={handleInputChange}
-              onBlur={handleBlur}
-              getFieldValidation={getFieldValidation}
+      {/* Password Field */}
+      <PasswordField
+        id="password"
+        label="Password"
+        value={formData.password}
+        onChange={(value) => handleInputChange('password', value)}
+        placeholder={mode === 'login' ? 'Enter your password' : 'Create a strong password'}
+        error={getFieldValidation('password').errorMessage}
+        isValid={getFieldValidation('password').isValid}
+        autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+        showStrength={mode === 'signup'}
+        required
+      />
+
+      {/* Confirm Password for signup */}
+      {mode === 'signup' && (
+        <PasswordField
+          id="confirmPassword"
+          label="Confirm Password"
+          value={formData.confirmPassword}
+          onChange={(value) => handleInputChange('confirmPassword', value)}
+          placeholder="Confirm your password"
+          error={getFieldValidation('confirmPassword').errorMessage}
+          isValid={getFieldValidation('confirmPassword').isValid}
+          autoComplete="new-password"
+          required
+        />
+      )}
+
+      {/* Remember Me & Forgot Password */}
+      {mode === 'login' && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="remember"
+              checked={rememberMe}
+              onCheckedChange={setRememberMe}
             />
-
-            <PasswordField
-              id="password"
-              label="Password"
-              value={formData.password}
-              onChange={(value) => handleInputChange('password', value)}
-              onBlur={() => handleBlur('password')}
-              placeholder="Enter your password"
-              error={getFieldValidation('password').errorMessage}
-              isValid={getFieldValidation('password').isValid}
-              autoComplete={mode === 'login' ? "current-password" : "new-password"}
-              showStrength={mode === 'signup'}
-              required
-            />
-
-            {mode === 'signup' && (
-              <PasswordField
-                id="confirmPassword"
-                label="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={(value) => handleInputChange('confirmPassword', value)}
-                onBlur={() => handleBlur('confirmPassword')}
-                placeholder="Confirm your password"
-                error={getFieldValidation('confirmPassword').errorMessage}
-                isValid={getFieldValidation('confirmPassword').isValid}
-                autoComplete="new-password"
-                required
-              />
-            )}
-
-            <AuthFormFooter
-              mode={mode}
-              onModeChange={onModeChange}
-              rememberMe={rememberMe}
-              onRememberMeChange={setRememberMe}
-              onPasswordReset={() => setShowPasswordReset(true)}
-            />
-
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading || isSubmitting}
-              aria-label={mode === 'login' ? 'Sign in to your account' : 'Create your account'}
-            >
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === 'login' ? 'Sign In' : 'Create Account'}
-            </Button>
-          </form>
-        </Tabs>
-
-        <div className="text-center pt-4 border-t">
-          <p className="text-xs text-muted-foreground">
-            By continuing, you agree to our{' '}
-            <a href="/terms" className="underline hover:text-primary">Terms of Service</a>
-            {' '}and{' '}
-            <a href="/privacy" className="underline hover:text-primary">Privacy Policy</a>
-          </p>
+            <Label htmlFor="remember" className="text-sm font-normal">
+              Remember me
+            </Label>
+          </div>
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            onClick={() => {
+              // TODO: Implement forgot password
+              toast({
+                title: "Feature Coming Soon",
+                description: "Password reset functionality will be available soon.",
+              });
+            }}
+            className="px-0 text-blue-600 hover:text-blue-700"
+          >
+            Forgot password?
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Submit Error */}
+      {errors.submit && (
+        <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+          {errors.submit}
+        </div>
+      )}
+
+      {/* Submit Button */}
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={isLoading}
+        size="lg"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            {mode === 'login' ? 'Signing in...' : 'Creating account...'}
+          </>
+        ) : (
+          <>
+            {mode === 'login' ? (
+              <LogIn className="w-4 h-4 mr-2" />
+            ) : (
+              <UserPlus className="w-4 h-4 mr-2" />
+            )}
+            {mode === 'login' ? 'Sign In' : 'Create Account'}
+          </>
+        )}
+      </Button>
+
+      {/* Mode Switch */}
+      <div className="text-center text-sm">
+        <span className="text-muted-foreground">
+          {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+        </span>
+        <Button
+          type="button"
+          variant="link"
+          onClick={() => onModeChange(mode === 'login' ? 'signup' : 'login')}
+          className="px-0 text-blue-600 hover:text-blue-700"
+        >
+          {mode === 'login' ? 'Sign up' : 'Sign in'}
+        </Button>
+      </div>
+    </form>
   );
 }

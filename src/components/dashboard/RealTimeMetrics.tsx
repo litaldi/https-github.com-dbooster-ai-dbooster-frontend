@@ -101,7 +101,7 @@ export function RealTimeMetrics() {
       value: overallStatus === 'online' ? '100%' : overallStatus === 'degraded' ? '85%' : '45%',
       description: `All systems ${overallStatus}`,
       change: status.lastChecked.toLocaleTimeString(),
-      changeType: overallStatus === 'online' ? 'positive' : overallStatus === 'degraded' ? 'neutral' : 'negative',
+      changeType: (overallStatus === 'online' ? 'positive' : overallStatus === 'degraded' ? 'neutral' : 'negative') as const,
       icon: Activity,
       trend: overallStatus === 'online' ? 100 : overallStatus === 'degraded' ? 85 : 45
     }
