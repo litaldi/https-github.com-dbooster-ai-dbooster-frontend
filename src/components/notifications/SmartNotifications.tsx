@@ -96,7 +96,7 @@ export function NotificationTrigger() {
   );
 }
 
-export function NotificationBell() {
+export function NotificationCenter() {
   const { notifications, unreadCount, markAsRead } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -180,3 +180,6 @@ export function NotificationBell() {
     </div>
   );
 }
+
+// Alias for backward compatibility
+export const NotificationBell = NotificationCenter;

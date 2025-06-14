@@ -47,9 +47,7 @@ function QuickActions() {
       onClick: () => addNotification({
         type: 'info',
         title: 'Database Connection',
-        message: 'Opening database connection wizard...',
-        category: 'system',
-        priority: 'medium'
+        message: 'Opening database connection wizard...'
       })
     },
     {
@@ -57,11 +55,9 @@ function QuickActions() {
       description: 'AI-powered query optimization',
       icon: Zap,
       onClick: () => addNotification({
-        type: 'performance',
+        type: 'info',
         title: 'Query Optimization',
-        message: 'Starting AI query analysis...',
-        category: 'performance',
-        priority: 'medium'
+        message: 'Starting AI query analysis...'
       })
     },
     {
@@ -71,9 +67,7 @@ function QuickActions() {
       onClick: () => addNotification({
         type: 'success',
         title: 'Report Generated',
-        message: 'Performance report is ready for download.',
-        category: 'system',
-        priority: 'low'
+        message: 'Performance report is ready for download.'
       })
     },
     {

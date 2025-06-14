@@ -15,14 +15,16 @@ export interface InputProps
   showPasswordToggle?: boolean
   isValid?: boolean
   showValidation?: boolean
+  helperText?: string
 }
 
 const EnhancedInput = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, helpText, startIcon, endIcon, variant = 'default', id, showPasswordToggle, isValid, showValidation, ...props }, ref) => {
+  ({ className, type, label, error, helpText, helperText, startIcon, endIcon, variant = 'default', id, showPasswordToggle, isValid, showValidation, ...props }, ref) => {
     const [showPassword, setShowPassword] = React.useState(false)
     const inputId = id || React.useId()
     const isPassword = type === 'password'
     const actualType = isPassword && showPassword ? 'text' : type
+    const displayHelperText = helperText || helpText
 
     const variantStyles = {
       default: "border-input bg-background",
@@ -45,6 +47,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, InputProps>(
             "flex h-12 w-full rounded-lg border px-3 py-2 text-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
             variantStyles[variant],
             error && "border-destructive focus-visible:ring-destructive",
+            isValid && showValidation && "border-green-500 focus-visible:ring-green-500",
             startIcon && "pl-10",
             (endIcon || (isPassword && showPasswordToggle)) && "pr-10",
             className
@@ -52,7 +55,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           aria-invalid={error ? 'true' : undefined}
           aria-describedby={
-            error ? `${inputId}-error` : helpText ? `${inputId}-help` : undefined
+            error ? `${inputId}-error` : displayHelperText ? `${inputId}-help` : undefined
           }
           {...props}
         />
@@ -82,7 +85,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, InputProps>(
       </div>
     )
 
-    if (!label && !error && !helpText) {
+    if (!label && !error && !displayHelperText) {
       return inputElement
     }
 
@@ -102,9 +105,9 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, InputProps>(
             {error}
           </p>
         )}
-        {helpText && !error && (
+        {displayHelperText && !error && (
           <p id={`${inputId}-help`} className="text-sm text-muted-foreground">
-            {helpText}
+            {displayHelperText}
           </p>
         )}
       </div>
@@ -113,5 +116,5 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, InputProps>(
 )
 EnhancedInput.displayName = "EnhancedInput"
 
-// Export both names for compatibility
-export { EnhancedInput, EnhancedInput as Input }
+export { EnhancedInput }
+export default EnhancedInput

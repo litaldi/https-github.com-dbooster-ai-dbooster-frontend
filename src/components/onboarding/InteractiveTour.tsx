@@ -3,7 +3,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Play, BookOpen, Zap } from 'lucide-react';
 
 interface TourStep {
   id: string;
@@ -17,7 +17,7 @@ interface TourContextType {
   isActive: boolean;
   currentStep: number;
   steps: TourStep[];
-  startTour: (steps: TourStep[]) => void;
+  startTour: (steps: TourStep[] | string) => void;
   nextStep: () => void;
   prevStep: () => void;
   endTour: () => void;
@@ -33,13 +33,64 @@ const TourContext = createContext<TourContextType>({
   endTour: () => {},
 });
 
+// Predefined tour configurations
+const tourConfigurations = {
+  basic: [
+    {
+      id: 'welcome',
+      title: 'Welcome to DBooster!',
+      description: 'Let\'s take a quick tour to help you get started with optimizing your database performance.',
+    },
+    {
+      id: 'dashboard',
+      title: 'Performance Dashboard',
+      description: 'Monitor your database performance metrics and get insights into query optimization opportunities.',
+    },
+    {
+      id: 'ai-features',
+      title: 'AI-Powered Optimization',
+      description: 'Leverage our AI engine to automatically analyze and optimize your SQL queries for better performance.',
+    },
+    {
+      id: 'complete',
+      title: 'You\'re All Set!',
+      description: 'You now know the basics. Start exploring and optimizing your database performance!',
+    },
+  ],
+  advanced: [
+    {
+      id: 'advanced-welcome',
+      title: 'Advanced Features Tour',
+      description: 'Discover advanced database optimization features and AI-powered tools.',
+    },
+    {
+      id: 'query-analyzer',
+      title: 'Smart Query Analyzer',
+      description: 'Use our AI to analyze query performance and get optimization suggestions.',
+    },
+    {
+      id: 'performance-monitor',
+      title: 'Performance Monitoring',
+      description: 'Set up real-time monitoring and alerts for your database performance.',
+    },
+  ]
+};
+
 export function TourProvider({ children }: { children: ReactNode }) {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [steps, setSteps] = useState<TourStep[]>([]);
 
-  const startTour = (tourSteps: TourStep[]) => {
-    setSteps(tourSteps);
+  const startTour = (tourSteps: TourStep[] | string) => {
+    let tourData: TourStep[];
+    
+    if (typeof tourSteps === 'string') {
+      tourData = tourConfigurations[tourSteps as keyof typeof tourConfigurations] || [];
+    } else {
+      tourData = tourSteps;
+    }
+    
+    setSteps(tourData);
     setCurrentStep(0);
     setIsActive(true);
   };
@@ -81,6 +132,61 @@ export function TourProvider({ children }: { children: ReactNode }) {
 
 export function useTour() {
   return useContext(TourContext);
+}
+
+export function TourMenu() {
+  const { startTour } = useTour();
+
+  const tours = [
+    {
+      id: 'basic',
+      title: 'Basic Tour',
+      description: 'Learn the fundamentals of DBooster',
+      icon: BookOpen,
+      duration: '3 minutes'
+    },
+    {
+      id: 'advanced',
+      title: 'Advanced Features',
+      description: 'Explore advanced optimization tools',
+      icon: Zap,
+      duration: '5 minutes'
+    }
+  ];
+
+  return (
+    <div className="space-y-3">
+      {tours.map((tour) => {
+        const Icon = tour.icon;
+        return (
+          <Card key={tour.id} className="cursor-pointer hover:shadow-md transition-all">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Icon className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-sm">{tour.title}</h4>
+                  <p className="text-xs text-muted-foreground mb-2">{tour.description}</p>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="text-xs">{tour.duration}</Badge>
+                    <Button 
+                      size="sm" 
+                      onClick={() => startTour(tour.id)}
+                      className="h-7 px-3 text-xs"
+                    >
+                      <Play className="h-3 w-3 mr-1" />
+                      Start Tour
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
 }
 
 export function TourOverlay() {
