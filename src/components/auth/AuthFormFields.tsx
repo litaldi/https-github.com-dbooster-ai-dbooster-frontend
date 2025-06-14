@@ -54,6 +54,7 @@ export function AuthFormFields({
           autoComplete="name"
           required
           aria-describedby={errors.name ? "name-error" : undefined}
+          className="transition-all duration-200"
         />
       )}
 
@@ -73,6 +74,7 @@ export function AuthFormFields({
           autoComplete="email"
           required
           aria-describedby={errors.email ? "email-error" : undefined}
+          className="transition-all duration-200"
         />
       ) : (
         <EnhancedInput
@@ -90,6 +92,7 @@ export function AuthFormFields({
           helperText="We'll send you a verification code"
           required
           aria-describedby={errors.phone ? "phone-error" : undefined}
+          className="transition-all duration-200"
         />
       )}
 

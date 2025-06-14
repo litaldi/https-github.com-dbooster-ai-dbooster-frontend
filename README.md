@@ -1,261 +1,269 @@
 
-# DBooster - Intelligent Database Query Optimization Platform
+# DBQuery Optimizer & AI-Enhanced Performance Tool 🚀
 
-A modern, accessible web application built with React, TypeScript, and Tailwind CSS that helps developers optimize database queries using AI-powered insights and recommendations.
+A comprehensive, enterprise-grade database query optimization platform with advanced AI capabilities, real-time performance monitoring, and intelligent recommendations for peak database performance.
 
-## 🌟 Features
+## ✨ Features
 
-### 🔐 Authentication & Security
-- **Multi-Modal Authentication**: Email/password and phone number support
-- **OAuth Integration**: Google and GitHub social authentication
-- **Demo Mode**: Try the platform without creating an account
-- **Remember Me**: Persistent login sessions
-- **Password Strength Validation**: Real-time password strength checking
-- **Rate Limiting**: Protection against brute force attacks
+### 🤖 AI-Powered Intelligence
+- **Smart Query Analysis**: AI-driven query performance analysis and optimization suggestions
+- **Natural Language Queries**: Convert plain English to optimized SQL queries
+- **Intelligent Index Advisor**: AI recommendations for optimal database indexing
+- **Automated Query Fixing**: Real-time query correction and enhancement
+- **Performance Prediction**: ML-based performance forecasting and bottleneck detection
+- **Smart Schema Analysis**: Automated database schema optimization recommendations
 
-### 🤖 AI-Powered Query Optimization
-- **Smart Query Analyzer**: AI-driven query performance analysis
-- **Automated Query Fixer**: Intelligent suggestions for query improvements
-- **Natural Language Query**: Convert plain English to SQL
-- **Performance Predictor**: Predict query execution times
-- **Index Advisor**: Smart recommendations for database indexing
+### 🔐 Enterprise Authentication & Security
+- **Multi-Provider OAuth**: GitHub, Google, and email/phone authentication
+- **Enhanced Security**: Row Level Security (RLS) with Supabase
+- **Demo Mode**: Try all features without registration
+- **Session Management**: Secure session handling with automatic refresh
+- **Rate Limiting**: Built-in protection against abuse
 
-### 📊 Dashboard & Analytics
-- **Real-Time Metrics**: Live database performance monitoring
-- **Query Analytics**: Detailed insights into query patterns
-- **Performance Benchmarking**: Compare query performance over time
-- **Database Status**: Monitor connection health and statistics
+### 📊 Real-Time Performance Monitoring
+- **Live Metrics Dashboard**: Real-time database performance visualization
+- **Query Analytics**: Comprehensive query execution analysis
+- **Performance Benchmarking**: Compare and track query performance over time
+- **Smart Notifications**: Intelligent alerts for performance issues
+- **Resource Monitoring**: CPU, memory, and I/O usage tracking
 
-### ♿ Accessibility Excellence
-- **WCAG 2.1 AA Compliant**: Comprehensive accessibility support
-- **Screen Reader Optimized**: Full compatibility with assistive technologies
-- **Keyboard Navigation**: Complete functionality without mouse
-- **High Contrast Mode**: Enhanced visibility options
-- **RTL Language Support**: Right-to-left text direction support
-- **Focus Management**: Logical tab order and focus indicators
-- **Skip Links**: Quick navigation for screen reader users
+### 🛠️ Advanced Query Tools
+- **Visual Query Builder**: Drag-and-drop query construction
+- **Query History**: Track and replay previous queries
+- **Query Optimization**: Automated performance improvements
+- **Code Review**: AI-powered SQL code analysis
+- **Complexity Analysis**: Understand query performance implications
 
-### 🎨 Modern UI/UX
-- **Responsive Design**: Optimized for all device sizes
-- **Dark/Light Theme**: Automatic and manual theme switching
-- **Smooth Animations**: Thoughtful micro-interactions
-- **Progressive Disclosure**: Information revealed as needed
-- **Loading States**: Enhanced feedback during operations
-- **Toast Notifications**: Non-intrusive user feedback
+### 🌐 Modern User Experience
+- **Responsive Design**: Perfect experience across all devices
+- **Dark/Light Theme**: Adaptive theming with system preference detection
+- **Accessibility First**: WCAG 2.1 AA compliant with screen reader support
+- **Keyboard Navigation**: Full keyboard accessibility
+- **Progressive Enhancement**: Works offline with service worker support
 
-### 🛠 Developer Experience
-- **TypeScript**: Full type safety throughout the application
-- **Component Library**: Reusable shadcn/ui components
-- **Error Boundaries**: Graceful error handling and recovery
-- **Form Validation**: Real-time validation with helpful messages
-- **Code Organization**: Clean, maintainable component structure
+### 🚀 Developer Experience
+- **TypeScript First**: Full type safety throughout the application
+- **Component Library**: Comprehensive UI component system with Shadcn/UI
+- **Error Boundaries**: Robust error handling with detailed debugging
+- **Performance Optimized**: Lazy loading, code splitting, and optimization
+- **Testing Ready**: Built with testing best practices
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 18** with TypeScript for type-safe development
+- **Vite** for lightning-fast development and building
+- **Tailwind CSS** for utility-first styling
+- **Shadcn/UI** for consistent, accessible components
+- **Framer Motion** for smooth animations
+- **React Query** for efficient data fetching and caching
+- **React Router** for client-side routing
+
+### Backend & Database
+- **Supabase** for backend-as-a-service
+- **PostgreSQL** for robust data storage
+- **Edge Functions** for serverless compute
+- **Real-time Subscriptions** for live data updates
+- **Row Level Security** for data protection
+
+### UI/UX
+- **Responsive Design** with mobile-first approach
+- **Accessibility Features** including ARIA labels, keyboard navigation
+- **Loading States** with skeleton screens and progress indicators
+- **Error Handling** with user-friendly messages and recovery options
+- **Toast Notifications** for user feedback
+- **Theme System** with dark/light mode support
+
+### Development Tools
+- **ESLint** for code quality
+- **TypeScript** for type safety
+- **Component Documentation** with comprehensive examples
+- **Error Boundaries** for graceful error handling
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Modern web browser
+- Node.js 18+ and npm/yarn/bun
+- Supabase account (free tier available)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd dbooster
+   cd dbquery-optimizer
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
+   # or
+   yarn install
+   # or
+   bun install
    ```
 
-3. **Environment Setup**
-   ```bash
-   cp .env.example .env.local
+3. **Set up environment variables**
+   - Copy `.env.example` to `.env.local`
+   - Add your Supabase project URL and anon key
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
-   Configure your environment variables:
-   - `VITE_SUPABASE_URL`: Your Supabase project URL
-   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
 
 4. **Start the development server**
    ```bash
    npm run dev
+   # or
+   yarn dev
+   # or
+   bun dev
    ```
 
 5. **Open your browser**
    Navigate to `http://localhost:5173`
 
-## 🏗 Project Structure
+## 🏗️ Project Structure
 
 ```
 src/
 ├── components/          # Reusable UI components
+│   ├── ui/             # Base UI components (buttons, inputs, etc.)
 │   ├── auth/           # Authentication components
-│   ├── ui/             # Base UI components (shadcn/ui)
 │   ├── dashboard/      # Dashboard-specific components
 │   └── ...
+├── pages/              # Page components
 ├── hooks/              # Custom React hooks
 ├── contexts/           # React context providers
-├── pages/              # Page components
-├── services/           # API and business logic
+├── services/           # API and external service integrations
 ├── utils/              # Utility functions
 ├── types/              # TypeScript type definitions
-└── lib/                # Library configurations
+└── styles/             # Global styles and Tailwind config
 ```
 
-## 🔧 Key Technologies
+## 🔧 Configuration
 
-- **React 18**: Modern React with hooks and concurrent features
-- **TypeScript**: Static type checking for better code quality
-- **Vite**: Fast build tool and development server
-- **Tailwind CSS**: Utility-first CSS framework
-- **shadcn/ui**: High-quality, accessible component library
-- **Supabase**: Backend-as-a-Service for authentication and database
-- **React Router**: Client-side routing
-- **Framer Motion**: Smooth animations and transitions
-- **Lucide React**: Beautiful, customizable icons
+### Authentication Setup
+1. **Configure OAuth providers in Supabase**
+   - Enable GitHub and Google OAuth in your Supabase dashboard
+   - Add redirect URLs for your domain
 
-## 🎯 Core Features Deep Dive
+2. **Email Settings**
+   - Configure SMTP settings for email authentication
+   - Customize email templates as needed
 
-### Authentication System
-- **Secure by Design**: All authentication flows include proper error handling and validation
-- **Accessibility First**: Forms include proper ARIA labels, error announcements, and keyboard navigation
-- **Progressive Enhancement**: Works without JavaScript for basic functionality
-- **Session Management**: Persistent sessions with automatic token refresh
+### Database Setup
+The application includes automated database migrations for:
+- User profiles and preferences
+- Query history and analytics
+- Performance metrics storage
+- AI training data collection
 
-### Form Handling
-- **Real-time Validation**: Immediate feedback on user input
-- **Accessible Error Messages**: Screen reader compatible error announcements
-- **Smart Field Formatting**: Automatic phone number and email formatting
-- **Remember Me**: Secure credential storage for returning users
+## 🎯 Usage
 
-### UI Components
-- **Design System**: Consistent spacing, typography, and color palette
-- **Responsive Layout**: Mobile-first design that scales to desktop
-- **Theme Support**: Dark and light modes with system preference detection
-- **Animation Library**: Smooth, purposeful animations that enhance UX
+### For Database Administrators
+- **Monitor Performance**: Real-time dashboard for database health
+- **Optimize Queries**: AI-powered suggestions for query improvements
+- **Manage Indexes**: Smart recommendations for index optimization
+- **Track Usage**: Comprehensive analytics and reporting
 
-## 🔒 Security Features
+### For Developers
+- **Query Building**: Visual interface for complex query construction
+- **Performance Testing**: Benchmark queries across environments
+- **Code Review**: AI-powered SQL code analysis
+- **Learning**: Educational resources and best practices
 
-- **Input Sanitization**: All user inputs are validated and sanitized
-- **Rate Limiting**: Protection against abuse and spam
-- **CSRF Protection**: Cross-site request forgery prevention
-- **Secure Headers**: Security headers for XSS and clickjacking protection
-- **Environment Variables**: Sensitive data stored securely
+### For Data Analysts
+- **Natural Language Queries**: Convert questions to SQL automatically
+- **Data Exploration**: Interactive query building and execution
+- **Performance Insights**: Understand query costs and optimization opportunities
+- **Collaboration**: Share queries and results with team members
 
-## ♿ Accessibility Features
+## 📈 Performance Features
 
-### Keyboard Navigation
-- **Tab Order**: Logical navigation through interactive elements
-- **Focus Indicators**: Clear visual focus states
-- **Skip Links**: Quick navigation to main content
-- **Escape Key**: Close modals and dropdowns
+### Query Optimization
+- **Execution Plan Analysis**: Detailed breakdown of query execution
+- **Index Recommendations**: AI-powered indexing suggestions
+- **Query Rewriting**: Automatic query optimization
+- **Performance Predictions**: ML-based performance forecasting
 
-### Screen Reader Support
-- **ARIA Labels**: Descriptive labels for all interactive elements
-- **Live Regions**: Dynamic content announcements
-- **Semantic HTML**: Proper heading hierarchy and landmarks
-- **Alt Text**: Descriptive text for all images
+### Monitoring & Analytics
+- **Real-time Metrics**: Live performance dashboard
+- **Historical Analysis**: Track performance trends over time
+- **Alert System**: Proactive notifications for performance issues
+- **Custom Reports**: Detailed performance reporting
 
-### Visual Accessibility
-- **High Contrast**: Support for high contrast color schemes
-- **Font Scaling**: Responsive to user font size preferences
-- **Color Independence**: Information not conveyed by color alone
-- **Reduced Motion**: Respects user motion preferences
+### AI Capabilities
+- **Smart Query Generation**: Natural language to SQL conversion
+- **Automated Optimization**: AI-driven query improvements
+- **Predictive Analysis**: Performance forecasting and recommendations
+- **Learning System**: Continuous improvement from usage patterns
 
-## 🚀 Performance Optimizations
+## 🔒 Security
 
-- **Code Splitting**: Lazy loading for optimal bundle size
-- **Image Optimization**: Responsive images with modern formats
-- **Caching Strategy**: Efficient browser and API caching
-- **Bundle Analysis**: Regular monitoring of bundle size
-- **Tree Shaking**: Elimination of unused code
+### Authentication & Authorization
+- **OAuth Integration**: Secure third-party authentication
+- **Row Level Security**: Database-level access control
+- **Session Management**: Secure session handling
+- **API Rate Limiting**: Protection against abuse
 
-## 🧪 Testing Strategy
-
-- **Unit Tests**: Component and utility function testing
-- **Integration Tests**: User workflow testing
-- **Accessibility Tests**: Automated accessibility checking
-- **Performance Tests**: Load time and interaction monitoring
-
-## 📱 Progressive Web App
-
-- **Service Worker**: Offline functionality and caching
-- **App Manifest**: Install prompts and app-like experience
-- **Push Notifications**: Engagement and update notifications
-- **Background Sync**: Offline data synchronization
-
-## 🌐 Internationalization
-
-- **Multiple Languages**: Support for various locales
-- **RTL Support**: Right-to-left text direction
-- **Date/Time Formatting**: Locale-specific formatting
-- **Number Formatting**: Regional number formats
-
-## 🔄 State Management
-
-- **React Context**: Global state management
-- **Custom Hooks**: Reusable stateful logic
-- **Local Storage**: Persistent user preferences
-- **Session Storage**: Temporary data management
-
-## 📊 Analytics & Monitoring
-
-- **Error Tracking**: Comprehensive error logging and reporting
-- **Performance Monitoring**: Real-time performance metrics
-- **User Analytics**: Privacy-respecting usage analytics
-- **A/B Testing**: Feature flag and experiment framework
-
-## 🚀 Deployment
-
-### Production Build
-```bash
-npm run build
-```
-
-### Preview Build
-```bash
-npm run preview
-```
-
-### Environment Configuration
-Ensure all environment variables are properly configured for your deployment target.
+### Data Protection
+- **Encryption**: Data encrypted in transit and at rest
+- **Audit Logging**: Comprehensive activity tracking
+- **Privacy Controls**: GDPR-compliant data handling
+- **Secure Defaults**: Security-first configuration
 
 ## 🤝 Contributing
 
+We welcome contributions! Please see our contributing guidelines for:
+- Code style and standards
+- Pull request process
+- Issue reporting
+- Feature requests
+
+### Development Workflow
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
 
-### Development Guidelines
-- Follow TypeScript best practices
-- Write accessible code (WCAG 2.1 AA)
-- Include proper error handling
-- Add unit tests for new features
-- Update documentation as needed
+## 📄 License
 
-## 📝 License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 🆘 Support
 
-## 🙏 Acknowledgments
+### Documentation
+- **API Documentation**: Comprehensive API reference
+- **Component Library**: Detailed component documentation
+- **Tutorial Videos**: Step-by-step video guides
+- **Best Practices**: Database optimization guidelines
 
-- **shadcn/ui**: For the excellent component library
-- **Supabase**: For the robust backend infrastructure
-- **Tailwind CSS**: For the utility-first CSS framework
-- **React Team**: For the amazing React framework
-- **Accessibility Community**: For guidance and best practices
+### Community
+- **GitHub Issues**: Bug reports and feature requests
+- **Discussions**: Community Q&A and feature discussions
+- **Discord**: Real-time community support
+- **Email Support**: Direct support for enterprise users
 
-## 📞 Support
+## 🗺️ Roadmap
 
-- **Documentation**: [Project Wiki](link-to-wiki)
-- **Issues**: [GitHub Issues](link-to-issues)
-- **Discussions**: [GitHub Discussions](link-to-discussions)
-- **Email**: support@dbooster.dev
+### Upcoming Features
+- **Advanced AI Models**: Enhanced query optimization algorithms
+- **Multi-Database Support**: PostgreSQL, MySQL, SQL Server support
+- **Team Collaboration**: Shared workspaces and query libraries
+- **API Integration**: RESTful API for external integrations
+- **Mobile App**: Native mobile application
+- **Enterprise Features**: Advanced security and compliance tools
+
+### Performance Improvements
+- **Faster Query Execution**: Optimized query processing
+- **Better Caching**: Enhanced caching strategies
+- **Real-time Collaboration**: Live query sharing and editing
+- **Advanced Analytics**: Deeper performance insights
 
 ---
 
-Built with ❤️ for developers who care about performance, accessibility, and user experience.
+**Built with ❤️ using modern web technologies**
+
+For more information, visit our [documentation](https://docs.example.com) or join our [community](https://discord.gg/example).

@@ -1,193 +1,244 @@
 
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
-export interface ErrorInfo {
-  code?: string;
-  context?: string;
+export interface ErrorContext {
+  component?: string;
+  action?: string;
   userId?: string;
-  timestamp?: string;
-  url?: string;
+  timestamp?: number;
   userAgent?: string;
+  url?: string;
 }
 
 export class AppError extends Error {
-  public code: string;
-  public context: string;
-  public isUserFacing: boolean;
-  public severity: 'low' | 'medium' | 'high' | 'critical';
+  public readonly code: string;
+  public readonly statusCode: number;
+  public readonly context?: ErrorContext;
+  public readonly isOperational: boolean;
 
   constructor(
     message: string,
     code: string = 'UNKNOWN_ERROR',
-    context: string = 'general',
-    isUserFacing: boolean = true,
-    severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
+    statusCode: number = 500,
+    context?: ErrorContext,
+    isOperational: boolean = true
   ) {
     super(message);
     this.name = 'AppError';
     this.code = code;
-    this.context = context;
-    this.isUserFacing = isUserFacing;
-    this.severity = severity;
-  }
-}
+    this.statusCode = statusCode;
+    this.context = {
+      ...context,
+      timestamp: Date.now(),
+      userAgent: navigator?.userAgent,
+      url: window?.location?.href
+    };
+    this.isOperational = isOperational;
 
-export function createError(
-  message: string,
-  code?: string,
-  context?: string,
-  severity?: 'low' | 'medium' | 'high' | 'critical'
-): AppError {
-  return new AppError(message, code, context, true, severity);
+    // Maintains proper stack trace for where our error was thrown (V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AppError);
+    }
+  }
 }
 
 export function handleApiError(error: any): string {
   console.error('API Error:', error);
-  
-  // Supabase errors
-  if (error?.message) {
-    if (error.message.includes('Invalid login credentials')) {
-      return 'Invalid email or password. Please check your credentials and try again.';
-    }
-    if (error.message.includes('Email not confirmed')) {
-      return 'Please check your email and click the confirmation link before signing in.';
-    }
-    if (error.message.includes('User already registered')) {
-      return 'An account with this email already exists. Please try signing in instead.';
-    }
-    if (error.message.includes('rate limit')) {
-      return 'Too many attempts. Please wait a few minutes before trying again.';
-    }
-    if (error.message.includes('network') || error.message.includes('fetch')) {
-      return 'Network error. Please check your connection and try again.';
-    }
+
+  // Handle network errors
+  if (!navigator.onLine) {
+    return 'No internet connection. Please check your network and try again.';
   }
 
-  // Network errors
-  if (error instanceof TypeError && error.message.includes('fetch')) {
-    return 'Unable to connect. Please check your internet connection.';
+  if (error?.name === 'NetworkError' || error?.message?.includes('fetch')) {
+    return 'Network error. Please check your connection and try again.';
   }
 
-  // Rate limiting
-  if (error?.status === 429) {
-    return 'Too many requests. Please wait a moment and try again.';
+  // Handle Supabase auth errors
+  if (error?.message?.includes('Invalid login credentials')) {
+    return 'Invalid email or password. Please check your credentials.';
   }
 
-  // Server errors
-  if (error?.status >= 500) {
-    return 'Server error. Please try again later.';
+  if (error?.message?.includes('User already registered')) {
+    return 'An account with this email already exists. Please try signing in instead.';
   }
 
-  // Client errors
-  if (error?.status >= 400 && error?.status < 500) {
+  if (error?.message?.includes('Email not confirmed')) {
+    return 'Please check your email and click the confirmation link.';
+  }
+
+  // Handle validation errors
+  if (error?.statusCode >= 400 && error?.statusCode < 500) {
     return error?.message || 'Invalid request. Please check your input and try again.';
   }
 
-  // Default fallback
+  // Handle server errors
+  if (error?.statusCode >= 500) {
+    return 'Server error. Please try again later.';
+  }
+
+  // Handle timeout errors
+  if (error?.name === 'TimeoutError' || error?.message?.includes('timeout')) {
+    return 'Request timed out. Please try again.';
+  }
+
+  // Default error message
   return error?.message || 'An unexpected error occurred. Please try again.';
 }
 
-export function logError(error: Error | AppError, info?: ErrorInfo) {
-  const errorData = {
+export function logError(error: Error | AppError, context?: ErrorContext) {
+  const errorInfo = {
     message: error.message,
     stack: error.stack,
     name: error.name,
-    timestamp: new Date().toISOString(),
-    url: window.location.href,
-    userAgent: navigator.userAgent,
-    ...info,
     ...(error instanceof AppError && {
       code: error.code,
-      context: error.context,
-      severity: error.severity,
-      isUserFacing: error.isUserFacing,
+      statusCode: error.statusCode,
+      isOperational: error.isOperational,
+      context: error.context
     }),
+    context,
+    timestamp: new Date().toISOString(),
+    userAgent: navigator.userAgent,
+    url: window.location.href
   };
 
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
-    console.error('Error logged:', errorData);
+    console.group('🚨 Error Logged');
+    console.error('Error:', error);
+    console.table(errorInfo);
+    console.groupEnd();
+  } else {
+    // In production, send to monitoring service
+    console.error('Error logged:', errorInfo);
+    // TODO: Send to external monitoring service (Sentry, LogRocket, etc.)
   }
 
-  // In production, send to error tracking service
-  if (process.env.NODE_ENV === 'production') {
-    // TODO: Send to Sentry, LogRocket, or other error tracking service
-    console.error('Production error:', errorData);
-  }
+  return errorInfo;
+}
 
-  // Show user-facing errors as toasts
-  if (error instanceof AppError && error.isUserFacing) {
-    enhancedToast.error({
-      title: 'Error',
-      description: error.message,
-      duration: error.severity === 'critical' ? 10000 : 5000,
-    });
+export function showErrorToast(error: Error | string, context?: ErrorContext) {
+  const message = typeof error === 'string' ? error : handleApiError(error);
+  
+  enhancedToast.error({
+    title: "Error",
+    description: message,
+    duration: 6000,
+  });
+
+  if (typeof error === 'object') {
+    logError(error, context);
   }
 }
 
+export function setupGlobalErrorHandling() {
+  // Handle uncaught errors
+  window.addEventListener('error', (event) => {
+    const error = new AppError(
+      event.error?.message || 'Uncaught error occurred',
+      'UNCAUGHT_ERROR',
+      500,
+      {
+        component: 'Global',
+        action: 'Uncaught Error'
+      },
+      false
+    );
+
+    logError(error);
+    
+    // Don't show toast for every uncaught error in production to avoid spam
+    if (process.env.NODE_ENV === 'development') {
+      showErrorToast(error);
+    }
+  });
+
+  // Handle unhandled promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    const error = new AppError(
+      event.reason?.message || 'Unhandled promise rejection',
+      'UNHANDLED_REJECTION',
+      500,
+      {
+        component: 'Global',
+        action: 'Unhandled Promise Rejection'
+      },
+      false
+    );
+
+    logError(error);
+    
+    // Prevent the default browser behavior
+    event.preventDefault();
+    
+    // Show user-friendly error message
+    if (process.env.NODE_ENV === 'development') {
+      showErrorToast(error);
+    }
+  });
+
+  // Handle network status changes
+  window.addEventListener('online', () => {
+    enhancedToast.success({
+      title: "Connection Restored",
+      description: "You're back online!",
+      duration: 3000,
+    });
+  });
+
+  window.addEventListener('offline', () => {
+    enhancedToast.warning({
+      title: "Connection Lost",
+      description: "Please check your internet connection.",
+      duration: 5000,
+    });
+  });
+}
+
+// Utility function for async error handling
 export function withErrorHandling<T extends any[], R>(
   fn: (...args: T) => Promise<R>,
-  context: string = 'operation'
+  context?: ErrorContext
 ) {
   return async (...args: T): Promise<R | null> => {
     try {
       return await fn(...args);
     } catch (error) {
-      logError(
-        error instanceof Error ? error : new Error(String(error)),
-        { context }
-      );
+      logError(error instanceof Error ? error : new Error(String(error)), context);
+      showErrorToast(error instanceof Error ? error : String(error), context);
       return null;
     }
   };
 }
 
-// Retry utility with exponential backoff
+// Retry mechanism for failed operations
 export async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxAttempts: number = 3,
-  baseDelay: number = 1000
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delay: number = 1000,
+  context?: ErrorContext
 ): Promise<T> {
   let lastError: Error;
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      return await fn();
+      return await operation();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       
-      if (attempt === maxAttempts) {
-        break;
+      if (attempt === maxRetries) {
+        logError(lastError, { ...context, action: `Failed after ${maxRetries} attempts` });
+        throw lastError;
       }
 
-      // Exponential backoff with jitter
-      const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
-      await new Promise(resolve => setTimeout(resolve, delay));
+      // Exponential backoff
+      const waitTime = delay * Math.pow(2, attempt - 1);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      
+      console.warn(`Attempt ${attempt} failed, retrying in ${waitTime}ms...`, lastError.message);
     }
   }
 
   throw lastError!;
-}
-
-// Global error handler
-export function setupGlobalErrorHandling() {
-  // Catch unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
-    logError(
-      new Error(`Unhandled promise rejection: ${event.reason}`),
-      { context: 'unhandled_promise' }
-    );
-    event.preventDefault();
-  });
-
-  // Catch global errors
-  window.addEventListener('error', (event) => {
-    logError(
-      new Error(`Global error: ${event.message}`),
-      { 
-        context: 'global_error',
-        url: event.filename,
-      }
-    );
-  });
 }

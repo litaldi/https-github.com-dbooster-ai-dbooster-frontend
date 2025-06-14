@@ -29,8 +29,33 @@ export default function Login() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Add keyboard navigation for mode switching
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        if (event.key === '1') {
+          event.preventDefault();
+          setAuthMode('login');
+        } else if (event.key === '2') {
+          event.preventDefault();
+          setAuthMode('signup');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   if (isLoading || isPageLoading) {
-    return <EnhancedLoading variant="full-screen" text="Loading authentication..." />;
+    return (
+      <EnhancedLoading 
+        variant="full-screen" 
+        text="Loading authentication..." 
+        showProgress={true}
+        progress={isPageLoading ? 50 : 90}
+      />
+    );
   }
 
   if (user) {
@@ -48,6 +73,11 @@ export default function Login() {
           <LoginCard authMode={authMode} onAuthModeChange={setAuthMode} />
           <DemoModeButton />
           <LoginFooter />
+          
+          {/* Keyboard shortcuts hint */}
+          <div className="text-center text-xs text-muted-foreground opacity-75">
+            Press Ctrl+1 for Login, Ctrl+2 for Signup
+          </div>
         </main>
       </div>
     </>

@@ -6,9 +6,9 @@ import { AuthFormFields } from '@/components/auth/AuthFormFields';
 import { AuthFormActions } from '@/components/auth/AuthFormActions';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthValidation } from '@/hooks/useAuthValidation';
-import { useToast } from '@/hooks/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import type { AuthMode } from '@/types/auth';
 
 interface EnhancedAuthFormProps {
@@ -20,7 +20,6 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
   const { signIn, signUp } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
-  const { toast } = useToast();
 
   const {
     loginType,
@@ -45,10 +44,9 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
     e.preventDefault();
     
     if (!validateAll(formData, loginType)) {
-      toast({
+      enhancedToast.error({
         title: "Validation Error",
         description: "Please fix the errors below and try again.",
-        variant: "destructive",
       });
       return;
     }
@@ -67,16 +65,15 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
             ? 'Invalid email or password. Please check your credentials and try again.'
             : error.message;
           setSubmitError(errorMessage);
-          toast({
+          enhancedToast.error({
             title: "Login Failed",
             description: errorMessage,
-            variant: "destructive",
           });
         } else {
           if (rememberMe) {
             handleRememberMe();
           }
-          toast({
+          enhancedToast.success({
             title: "Welcome back!",
             description: "You have been successfully signed in.",
           });
@@ -100,13 +97,12 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
             ? 'An account with this email already exists. Please try logging in instead.'
             : error.message;
           setSubmitError(errorMessage);
-          toast({
+          enhancedToast.error({
             title: "Signup Failed",
             description: errorMessage,
-            variant: "destructive",
           });
         } else {
-          toast({
+          enhancedToast.success({
             title: "Account Created!",
             description: "Please check your email to verify your account.",
           });
@@ -116,10 +112,9 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
     } catch (error: any) {
       const errorMessage = error?.message || 'An unexpected error occurred. Please try again.';
       setSubmitError(errorMessage);
-      toast({
+      enhancedToast.error({
         title: "Error",
         description: errorMessage,
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -127,7 +122,13 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" role="form" aria-label={`${mode === 'login' ? 'Sign in' : 'Sign up'} form`}>
+    <form 
+      onSubmit={handleSubmit} 
+      className="space-y-6" 
+      role="form" 
+      aria-label={`${mode === 'login' ? 'Sign in' : 'Sign up'} form`}
+      noValidate
+    >
       <LoginTypeSelector 
         loginType={loginType} 
         onTypeChange={setLoginType} 
@@ -145,10 +146,19 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
       />
 
       {submitError && (
-        <Alert variant="destructive" role="alert">
+        <Alert variant="destructive" role="alert" className="animate-fade-in">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{submitError}</AlertDescription>
         </Alert>
+      )}
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-4" role="status" aria-live="polite">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <span className="text-sm text-muted-foreground">
+            {mode === 'login' ? 'Signing you in...' : 'Creating your account...'}
+          </span>
+        </div>
       )}
 
       <AuthFormActions

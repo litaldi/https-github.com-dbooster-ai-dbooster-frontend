@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { EnhancedCheckbox } from '@/components/ui/enhanced-checkbox';
 import { Loader2, UserPlus, LogIn } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 import type { AuthMode } from '@/types/auth';
 
 interface AuthFormActionsProps {
@@ -20,10 +20,8 @@ export function AuthFormActions({
   onRememberMeChange,
   onModeChange
 }: AuthFormActionsProps) {
-  const { toast } = useToast();
-
   const handleForgotPassword = () => {
-    toast({
+    enhancedToast.info({
       title: "Feature Coming Soon",
       description: "Password reset functionality will be available soon.",
     });
@@ -39,13 +37,15 @@ export function AuthFormActions({
             checked={rememberMe}
             onCheckedChange={(checked) => onRememberMeChange(checked === true)}
             label="Remember me"
+            size="sm"
           />
           <Button
             type="button"
             variant="link"
             size="sm"
             onClick={handleForgotPassword}
-            className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+            disabled={isLoading}
           >
             Forgot password?
           </Button>
@@ -55,7 +55,7 @@ export function AuthFormActions({
       {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full"
+        className="w-full hover:scale-[1.02] transition-transform"
         disabled={isLoading}
         size="lg"
       >
@@ -85,7 +85,8 @@ export function AuthFormActions({
           type="button"
           variant="link"
           onClick={() => onModeChange(mode === 'login' ? 'signup' : 'login')}
-          className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+          disabled={isLoading}
         >
           {mode === 'login' ? 'Sign up' : 'Sign in'}
         </Button>
