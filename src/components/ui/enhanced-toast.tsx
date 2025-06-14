@@ -97,7 +97,7 @@ class EnhancedToast {
     return sonnerToast.dismiss(toastId);
   }
 
-  custom(jsx: React.ReactNode, options?: { duration?: number }) {
+  custom(jsx: React.ReactElement, options?: { duration?: number }) {
     return sonnerToast.custom(() => jsx, options);
   }
 }
