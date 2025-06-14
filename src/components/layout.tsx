@@ -8,12 +8,12 @@ import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { Footer } from '@/components/navigation/Footer';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { SkipLink } from '@/components/ui/accessibility-helpers';
-import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import { ScrollToTop } from '@/components/ui/scroll-to-top';
 
 export default function Layout() {
   return (
-    <ErrorBoundary>
+    <EnhancedErrorBoundary>
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
           <SkipLink href="#main-content">Skip to main content</SkipLink>
@@ -23,9 +23,9 @@ export default function Layout() {
             <main id="main-content" className="flex-1 p-4 md:p-6 overflow-auto" role="main">
               <div className="max-w-7xl mx-auto w-full">
                 <BreadcrumbNav />
-                <ErrorBoundary>
+                <EnhancedErrorBoundary>
                   <Outlet />
-                </ErrorBoundary>
+                </EnhancedErrorBoundary>
               </div>
             </main>
             <Footer />
@@ -35,6 +35,6 @@ export default function Layout() {
         <DemoWalkthrough />
         <OnboardingTour />
       </SidebarProvider>
-    </ErrorBoundary>
+    </EnhancedErrorBoundary>
   );
 }

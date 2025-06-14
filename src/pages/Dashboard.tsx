@@ -24,6 +24,10 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { RealTimeMetrics } from '@/components/dashboard/RealTimeMetrics';
+import { DatabaseStatus } from '@/components/dashboard/DatabaseStatus';
+import { QueryAnalytics } from '@/components/dashboard/QueryAnalytics';
+import { QuickActions } from '@/components/dashboard/QuickActions';
+import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 
 export default function Dashboard() {
   const { user, isDemo } = useAuth();
@@ -103,150 +107,24 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <EnhancedErrorBoundary>
+      <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back{user?.user_metadata?.name ? `, ${user.user_metadata.name}` : ''}! 👋
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Here's what's happening with your database optimization today.
+            Welcome to your database optimization center
           </p>
         </div>
+
+        <QuickActions />
         
-        <div className="flex items-center gap-2">
-          {/* System Status */}
-          <Badge className={getStatusColor(overallStatus)} variant="outline">
-            {getStatusIcon(overallStatus)}
-            System {overallStatus}
-          </Badge>
-          
-          {isDemo && (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-              Demo Mode
-            </Badge>
-          )}
-          
-          <KeyboardShortcutsHelper />
+        <RealTimeMetrics />
+        
+        <div className="grid gap-6 lg:grid-cols-1">
+          <DatabaseStatus />
+          <QueryAnalytics />
         </div>
       </div>
-
-      {/* Real-Time Metrics */}
-      <RealTimeMetrics />
-
-      {/* Quick Start Guide (for new users) */}
-      {(!isDemo && dashboardData?.totalDatabases === 0) && <QuickStartGuide />}
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Connected Databases</CardTitle>
-            <Database className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboardData?.totalDatabases || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              {dashboardData?.totalDatabases > 0 ? '+2 from last month' : 'Connect your first database'}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Queries</CardTitle>
-            <Zap className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboardData?.totalQueries || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              {dashboardData?.totalQueries > 0 ? '+12% from last week' : 'No queries analyzed yet'}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Performance</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboardData?.avgPerformance || 0}%</div>
-            <Progress value={dashboardData?.avgPerformance || 0} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-1">
-              Performance score
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-            <Users className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboardData?.activeTeamMembers || 1}</div>
-            <p className="text-xs text-muted-foreground">
-              {dashboardData?.activeTeamMembers > 1 ? 'Active collaborators' : 'Just you for now'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Quick Actions */}
-        <div className="lg:col-span-1">
-          <QuickActions />
-        </div>
-        
-        {/* Query History */}
-        <div className="lg:col-span-1">
-          <QueryHistory />
-        </div>
-      </div>
-
-      {/* Performance Insights */}
-      {isDemo && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-green-600" />
-              Performance Insights
-            </CardTitle>
-            <CardDescription>
-              AI-powered recommendations to improve your database performance
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="border-l-4 border-blue-500 pl-4 py-2">
-                <h4 className="font-medium text-sm">Query Optimization Opportunity</h4>
-                <p className="text-sm text-muted-foreground">
-                  We found 3 queries that could benefit from indexing. Potential 40% performance improvement.
-                </p>
-                <Button variant="link" size="sm" className="p-0 h-auto text-blue-600">
-                  View recommendations →
-                </Button>
-              </div>
-              
-              <div className="border-l-4 border-green-500 pl-4 py-2">
-                <h4 className="font-medium text-sm">Schema Analysis Complete</h4>
-                <p className="text-sm text-muted-foreground">
-                  Your database schema looks healthy. No critical issues detected.
-                </p>
-                <Button variant="link" size="sm" className="p-0 h-auto text-green-600">
-                  View full report →
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Floating Feedback Button */}
-      <FeedbackButton />
-    </div>
+    </EnhancedErrorBoundary>
   );
 }
