@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export type Language = 'en' | 'he' | 'ar' | 'fa' | 'ur';
 
@@ -8,49 +8,83 @@ interface I18nConfig {
   direction: 'ltr' | 'rtl';
 }
 
-const RTL_LANGUAGES = ['ar', 'he', 'fa', 'ur'];
+interface TranslationMap {
+  [key: string]: {
+    [key: string]: string;
+  };
+}
 
-// Simple translation function - can be expanded later
-const translations = {
+const RTL_LANGUAGES: readonly string[] = ['ar', 'he', 'fa', 'ur'];
+const STORAGE_KEY = 'dbooster-language';
+const DEFAULT_LANGUAGE = 'en';
+
+// Translation system - can be expanded with actual translations
+const translations: TranslationMap = {
   en: {
-    // English translations can be added here
+    // English translations
+    'common.loading': 'Loading...',
+    'common.error': 'Error',
+    'auth.signin': 'Sign In',
+    'auth.signup': 'Sign Up',
   },
   he: {
-    // Hebrew translations can be added here
+    // Hebrew translations
+    'common.loading': 'טוען...',
+    'common.error': 'שגיאה',
+    'auth.signin': 'התחברות',
+    'auth.signup': 'הרשמה',
   }
 };
 
 export function useI18n() {
   const [config, setConfig] = useState<I18nConfig>(() => {
-    const savedLanguage = localStorage.getItem('dbooster-language') || 'en';
+    const savedLanguage = typeof window !== 'undefined' 
+      ? localStorage.getItem(STORAGE_KEY) || DEFAULT_LANGUAGE
+      : DEFAULT_LANGUAGE;
+    
     return {
       language: savedLanguage,
       direction: RTL_LANGUAGES.includes(savedLanguage) ? 'rtl' : 'ltr'
     };
   });
 
-  const setLanguage = (language: string) => {
+  const setLanguage = useCallback((language: string) => {
     const newConfig: I18nConfig = {
       language,
       direction: RTL_LANGUAGES.includes(language) ? 'rtl' : 'ltr'
     };
+    
     setConfig(newConfig);
-    localStorage.setItem('dbooster-language', language);
-  };
+    
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, language);
+    }
+  }, []);
 
-  const changeLanguage = (language: Language) => {
+  const changeLanguage = useCallback((language: Language) => {
     setLanguage(language);
-  };
+  }, [setLanguage]);
 
-  const t = (key: string) => {
-    // Simple translation function - returns key if translation not found
-    return key;
-  };
+  const t = useCallback((key: string, fallback?: string): string => {
+    const languageTranslations = translations[config.language];
+    if (languageTranslations && languageTranslations[key]) {
+      return languageTranslations[key];
+    }
+    
+    // Fallback to English if available
+    if (config.language !== 'en' && translations.en && translations.en[key]) {
+      return translations.en[key];
+    }
+    
+    // Return fallback or key if no translation found
+    return fallback || key;
+  }, [config.language]);
 
   useEffect(() => {
-    // Apply language direction to document
-    document.documentElement.dir = config.direction;
-    document.documentElement.lang = config.language;
+    if (typeof document !== 'undefined') {
+      document.documentElement.dir = config.direction;
+      document.documentElement.lang = config.language;
+    }
   }, [config]);
 
   return {
@@ -58,6 +92,7 @@ export function useI18n() {
     setLanguage,
     changeLanguage,
     t,
-    isRTL: config.direction === 'rtl'
+    isRTL: config.direction === 'rtl',
+    isLTR: config.direction === 'ltr'
   };
 }

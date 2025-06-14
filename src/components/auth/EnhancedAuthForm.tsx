@@ -1,17 +1,13 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { EnhancedInput } from '@/components/ui/enhanced-input';
-import { PasswordField } from '@/components/auth/PasswordField';
 import { LoginTypeSelector } from '@/components/auth/LoginTypeSelector';
-import { LoginTypeFields } from '@/components/auth/LoginTypeFields';
+import { AuthFormFields } from '@/components/auth/AuthFormFields';
+import { AuthFormActions } from '@/components/auth/AuthFormActions';
 import { useAuthForm } from '@/hooks/useAuthForm';
-import { Loader2, UserPlus, LogIn, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface EnhancedAuthFormProps {
   mode: 'login' | 'signup';
@@ -123,33 +119,13 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" role="form" aria-label={`${mode === 'login' ? 'Sign in' : 'Sign up'} form`}>
-      {/* Login Type Selector */}
       <LoginTypeSelector 
         loginType={loginType} 
         onTypeChange={setLoginType} 
       />
 
-      {/* Name field for signup */}
-      {mode === 'signup' && (
-        <EnhancedInput
-          id="name"
-          type="text"
-          label="Full Name"
-          placeholder="Enter your full name"
-          value={formData.name}
-          onChange={(e) => handleInputChange('name', e.target.value)}
-          onBlur={() => handleBlur('name')}
-          error={getFieldValidation('name').errorMessage}
-          isValid={getFieldValidation('name').isValid}
-          showValidation={true}
-          autoComplete="name"
-          required
-          aria-describedby="name-help"
-        />
-      )}
-
-      {/* Email/Phone Fields */}
-      <LoginTypeFields
+      <AuthFormFields
+        mode={mode}
         loginType={loginType}
         formData={formData}
         errors={errors}
@@ -158,62 +134,6 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
         getFieldValidation={getFieldValidation}
       />
 
-      {/* Password Field */}
-      <PasswordField
-        id="password"
-        label="Password"
-        value={formData.password}
-        onChange={(value) => handleInputChange('password', value)}
-        placeholder={mode === 'login' ? 'Enter your password' : 'Create a strong password'}
-        error={getFieldValidation('password').errorMessage}
-        autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-        showStrength={mode === 'signup'}
-      />
-
-      {/* Confirm Password for signup */}
-      {mode === 'signup' && (
-        <PasswordField
-          id="confirmPassword"
-          label="Confirm Password"
-          value={formData.confirmPassword}
-          onChange={(value) => handleInputChange('confirmPassword', value)}
-          placeholder="Confirm your password"
-          error={getFieldValidation('confirmPassword').errorMessage}
-          autoComplete="new-password"
-        />
-      )}
-
-      {/* Remember Me & Forgot Password */}
-      {mode === 'login' && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="remember"
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked === true)}
-            />
-            <Label htmlFor="remember" className="text-sm font-normal">
-              Remember me
-            </Label>
-          </div>
-          <Button
-            type="button"
-            variant="link"
-            size="sm"
-            onClick={() => {
-              toast({
-                title: "Feature Coming Soon",
-                description: "Password reset functionality will be available soon.",
-              });
-            }}
-            className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500"
-          >
-            Forgot password?
-          </Button>
-        </div>
-      )}
-
-      {/* Submit Error */}
       {errors.submit && (
         <Alert variant="destructive" role="alert">
           <AlertCircle className="h-4 w-4" />
@@ -221,45 +141,13 @@ export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) 
         </Alert>
       )}
 
-      {/* Submit Button */}
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={isLoading}
-        size="lg"
-        aria-describedby={errors.submit ? 'submit-error' : undefined}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
-            {mode === 'login' ? 'Signing in...' : 'Creating account...'}
-          </>
-        ) : (
-          <>
-            {mode === 'login' ? (
-              <LogIn className="w-4 h-4 mr-2" aria-hidden="true" />
-            ) : (
-              <UserPlus className="w-4 h-4 mr-2" aria-hidden="true" />
-            )}
-            {mode === 'login' ? 'Sign In' : 'Create Account'}
-          </>
-        )}
-      </Button>
-
-      {/* Mode Switch */}
-      <div className="text-center text-sm">
-        <span className="text-muted-foreground">
-          {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
-        </span>
-        <Button
-          type="button"
-          variant="link"
-          onClick={() => onModeChange(mode === 'login' ? 'signup' : 'login')}
-          className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          {mode === 'login' ? 'Sign up' : 'Sign in'}
-        </Button>
-      </div>
+      <AuthFormActions
+        mode={mode}
+        isLoading={isLoading}
+        rememberMe={rememberMe}
+        onRememberMeChange={setRememberMe}
+        onModeChange={onModeChange}
+      />
     </form>
   );
 }
