@@ -1,11 +1,13 @@
 
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { PasswordField } from '@/components/auth/PasswordField';
-import { LoginTypeFields } from '@/components/auth/LoginTypeFields';
+import { LoginTypeSelector } from '@/components/auth/LoginTypeSelector';
+import { formatPhoneNumber } from '@/utils/validation';
 
 interface AuthFormFieldsProps {
   mode: 'login' | 'signup';
   loginType: 'email' | 'phone';
+  setLoginType: (type: 'email' | 'phone') => void;
   formData: {
     name: string;
     email: string;
@@ -26,14 +28,25 @@ interface AuthFormFieldsProps {
 export function AuthFormFields({
   mode,
   loginType,
+  setLoginType,
   formData,
   errors,
   onInputChange,
   onBlur,
   getFieldValidation
 }: AuthFormFieldsProps) {
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value);
+    onInputChange('phone', formatted);
+  };
+
   return (
-    <>
+    <div className="space-y-4">
+      <LoginTypeSelector 
+        loginType={loginType} 
+        onTypeChange={setLoginType} 
+      />
+
       {/* Name field for signup */}
       {mode === 'signup' && (
         <EnhancedInput
@@ -49,19 +62,42 @@ export function AuthFormFields({
           showValidation={true}
           autoComplete="name"
           required
-          aria-describedby="name-help"
         />
       )}
 
-      {/* Email/Phone Fields */}
-      <LoginTypeFields
-        loginType={loginType}
-        formData={formData}
-        errors={errors}
-        onInputChange={onInputChange}
-        onBlur={onBlur}
-        getFieldValidation={getFieldValidation}
-      />
+      {/* Email/Phone Field */}
+      {loginType === 'email' ? (
+        <EnhancedInput
+          id="email"
+          type="email"
+          label="Email Address"
+          placeholder="Enter your email address"
+          value={formData.email}
+          onChange={(e) => onInputChange('email', e.target.value)}
+          onBlur={() => onBlur('email')}
+          error={getFieldValidation('email').errorMessage}
+          isValid={getFieldValidation('email').isValid}
+          showValidation={true}
+          autoComplete="email"
+          required
+        />
+      ) : (
+        <EnhancedInput
+          id="phone"
+          type="tel"
+          label="Phone Number"
+          placeholder="(555) 123-4567"
+          value={formData.phone}
+          onChange={(e) => handlePhoneChange(e.target.value)}
+          onBlur={() => onBlur('phone')}
+          error={getFieldValidation('phone').errorMessage}
+          isValid={getFieldValidation('phone').isValid}
+          showValidation={true}
+          autoComplete="tel"
+          helperText="We'll send you a verification code"
+          required
+        />
+      )}
 
       {/* Password Field */}
       <PasswordField
@@ -87,6 +123,6 @@ export function AuthFormFields({
           autoComplete="new-password"
         />
       )}
-    </>
+    </div>
   );
 }
