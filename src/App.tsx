@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { GlobalLoadingOverlay } from "@/components/ui/GlobalLoadingOverlay";
+import { AccessibilityEnhancements } from "@/components/ui/accessibility-enhancements";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Features from "./pages/Features";
@@ -53,6 +54,7 @@ const queryClient = new QueryClient({
 function AppRoutes() {
   return (
     <>
+      <AccessibilityEnhancements />
       <GlobalLoadingOverlay />
       <Routes>
         {/* Public routes with public layout */}
