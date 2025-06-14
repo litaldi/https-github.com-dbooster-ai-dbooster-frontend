@@ -1,20 +1,15 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
-import { EnhancedButton } from './enhanced-button';
+import { Button } from './button';
 import { cn } from '@/lib/utils';
 
-interface ScrollToTopProps {
-  threshold?: number;
-  className?: string;
-}
-
-export function ScrollToTop({ threshold = 400, className }: ScrollToTopProps) {
+export function ScrollToTop({ className }: { className?: string }) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const toggleVisibility = () => {
-      if (window.pageYOffset > threshold) {
+      if (window.pageYOffset > 300) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
@@ -22,11 +17,9 @@ export function ScrollToTop({ threshold = 400, className }: ScrollToTopProps) {
     };
 
     window.addEventListener('scroll', toggleVisibility);
-    
-    return () => {
-      window.removeEventListener('scroll', toggleVisibility);
-    };
-  }, [threshold]);
+
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -35,24 +28,25 @@ export function ScrollToTop({ threshold = 400, className }: ScrollToTopProps) {
     });
   };
 
-  if (!isVisible) {
-    return null;
-  }
-
   return (
-    <div className={cn(
-      "fixed bottom-6 right-6 z-50 transition-all duration-300",
-      "animate-fade-in",
-      className
-    )}>
-      <EnhancedButton
+    <div
+      className={cn(
+        'fixed bottom-8 right-8 z-50 transition-all duration-300',
+        isVisible 
+          ? 'opacity-100 translate-y-0 pointer-events-auto' 
+          : 'opacity-0 translate-y-2 pointer-events-none',
+        className
+      )}
+    >
+      <Button
         onClick={scrollToTop}
         size="icon"
-        className="w-12 h-12 rounded-full shadow-lg hover:shadow-xl"
+        variant="default"
+        className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
         aria-label="Scroll to top"
       >
         <ArrowUp className="h-5 w-5" />
-      </EnhancedButton>
+      </Button>
     </div>
   );
 }

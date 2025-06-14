@@ -1,8 +1,17 @@
+
 # DBQuery Optimizer & AI-Enhanced Performance Tool 🚀
 
 A comprehensive, enterprise-grade database query optimization platform with advanced AI capabilities, real-time performance monitoring, and intelligent recommendations for peak database performance.
 
 ## ✨ Features
+
+### 🎨 Enhanced User Experience
+- **Accessible Design**: WCAG 2.1 AA compliant with comprehensive keyboard navigation and screen reader support
+- **Smart Accessibility Menu**: Customizable high contrast, large text, reduced motion, and font size options
+- **Responsive Excellence**: Mobile-first design with fluid layouts and optimized touch targets
+- **Interactive Micro-animations**: Smooth transitions, hover effects, and loading states for delightful interactions
+- **Progressive Enhancement**: Works offline with graceful degradation
+- **Smart Notifications**: Real-time in-app notification system with unread counts and actions
 
 ### 🤖 AI-Powered Intelligence
 - **Smart Query Analysis**: AI-driven query performance analysis and optimization suggestions
@@ -34,29 +43,32 @@ A comprehensive, enterprise-grade database query optimization platform with adva
 - **Complexity Analysis**: Understand query performance implications
 
 ### 🌐 Modern User Experience
-- **Responsive Design**: Perfect experience across all devices
-- **Dark/Light Theme**: Adaptive theming with system preference detection
-- **Accessibility First**: WCAG 2.1 AA compliant with screen reader support
-- **Keyboard Navigation**: Full keyboard accessibility
-- **Progressive Enhancement**: Works offline with service worker support
+- **Enhanced Navigation**: Breadcrumb navigation with smart route detection
+- **Onboarding Tour**: Interactive guided tour for new users
+- **Demo Walkthrough**: Feature-rich demo mode with contextual guidance
+- **Keyboard Shortcuts**: Comprehensive keyboard navigation (press '?' to view)
+- **Error Boundaries**: Graceful error handling with detailed debugging
+- **Loading States**: Skeleton screens, progress indicators, and timeout handling
+- **Theme System**: Dark/light/system theme preference with smooth transitions
 
 ### 🚀 Developer Experience
 - **TypeScript First**: Full type safety throughout the application
-- **Component Library**: Comprehensive UI component system with Shadcn/UI
-- **Error Boundaries**: Robust error handling with detailed debugging
+- **Component Library**: Comprehensive UI component system with enhanced variants
+- **Accessibility First**: Built-in accessibility features and helpers
 - **Performance Optimized**: Lazy loading, code splitting, and optimization
 - **Testing Ready**: Built with testing best practices
+- **Enhanced Error Handling**: Comprehensive error boundaries with retry mechanisms
 
 ## 🛠️ Tech Stack
 
 ### Frontend
 - **React 18** with TypeScript for type-safe development
 - **Vite** for lightning-fast development and building
-- **Tailwind CSS** for utility-first styling
-- **Shadcn/UI** for consistent, accessible components
-- **Framer Motion** for smooth animations
+- **Tailwind CSS** for utility-first styling with custom animations
+- **Shadcn/UI** for consistent, accessible components with enhancements
+- **Framer Motion** for smooth animations and micro-interactions
 - **React Query** for efficient data fetching and caching
-- **React Router** for client-side routing
+- **React Router** for client-side routing with breadcrumb navigation
 
 ### Backend & Database
 - **Supabase** for backend-as-a-service
@@ -65,19 +77,20 @@ A comprehensive, enterprise-grade database query optimization platform with adva
 - **Real-time Subscriptions** for live data updates
 - **Row Level Security** for data protection
 
-### UI/UX
-- **Responsive Design** with mobile-first approach
-- **Accessibility Features** including ARIA labels, keyboard navigation
-- **Loading States** with skeleton screens and progress indicators
-- **Error Handling** with user-friendly messages and recovery options
-- **Toast Notifications** for user feedback
-- **Theme System** with dark/light mode support
+### UI/UX Enhancements
+- **Enhanced Components**: Custom button variants, input fields, checkboxes with improved interactions
+- **Accessibility Features**: Screen reader support, keyboard navigation, focus management
+- **Smart Feedback**: Toast notifications with categorized styling and actions
+- **Progressive Disclosure**: Collapsible content with smooth animations
+- **Error Handling**: Enhanced error boundaries with retry logic and user guidance
+- **Theme System**: Advanced theming with system preference detection
 
 ### Development Tools
 - **ESLint** for code quality
 - **TypeScript** for type safety
 - **Component Documentation** with comprehensive examples
-- **Error Boundaries** for graceful error handling
+- **Enhanced Error Boundaries** for graceful error handling
+- **Accessibility Testing** with automated checks
 
 ## 🚀 Getting Started
 
@@ -127,104 +140,96 @@ A comprehensive, enterprise-grade database query optimization platform with adva
 ```
 src/
 ├── components/          # Reusable UI components
-│   ├── ui/             # Base UI components (buttons, inputs, etc.)
+│   ├── ui/             # Enhanced base UI components
 │   ├── auth/           # Authentication components
 │   ├── dashboard/      # Dashboard-specific components
-│   └── ...
+│   ├── accessibility/ # Accessibility enhancements
+│   ├── notifications/ # Smart notification system
+│   ├── onboarding/    # User onboarding components
+│   └── navigation/    # Navigation components
 ├── pages/              # Page components
 ├── hooks/              # Custom React hooks
-├── contexts/           # React context providers
+├── contexts/           # React context providers (refactored)
 ├── services/           # API and external service integrations
 ├── utils/              # Utility functions
 ├── types/              # TypeScript type definitions
 └── styles/             # Global styles and Tailwind config
 ```
 
+## 🎯 UX/UI Features
+
+### Enhanced Accessibility
+- **WCAG 2.1 AA Compliance**: Comprehensive accessibility support
+- **Keyboard Navigation**: Full keyboard support with visible focus indicators
+- **Screen Reader Support**: Proper ARIA labels and semantic HTML
+- **Customizable Accessibility**: User-controlled settings for visual and interaction preferences
+- **High Contrast Mode**: Enhanced contrast options for better visibility
+- **Reduced Motion**: Respects user preferences for motion sensitivity
+
+### Interactive Elements
+- **Micro-interactions**: Hover effects, button animations, and state transitions
+- **Smart Loading**: Context-aware loading states with timeout handling
+- **Progressive Enhancement**: Features work without JavaScript
+- **Touch Optimization**: Optimized for mobile and tablet interactions
+- **Visual Feedback**: Clear indication of interactive elements and state changes
+
+### Navigation & Wayfinding
+- **Breadcrumb Navigation**: Smart route detection with proper semantic markup
+- **Sidebar Navigation**: Collapsible sidebar with category organization
+- **Keyboard Shortcuts**: Comprehensive shortcut system (press '?' to view all)
+- **Search Integration**: Quick access to features and content
+- **Context-Aware Help**: Contextual guidance and tooltips
+
+### User Onboarding
+- **Interactive Tour**: Guided walkthrough for new users
+- **Demo Mode**: Full-featured demo without registration
+- **Progressive Disclosure**: Information revealed as needed
+- **Smart Defaults**: Sensible default settings and configurations
+
 ## 🔧 Configuration
 
-### Authentication Setup
-1. **Configure OAuth providers in Supabase**
-   - Enable GitHub and Google OAuth in your Supabase dashboard
-   - Add redirect URLs for your domain
+### Accessibility Setup
+The application includes comprehensive accessibility features:
+- Configurable text size and line height
+- High contrast mode toggle
+- Motion reduction preferences
+- Keyboard navigation optimization
+- Screen reader announcements
 
-2. **Email Settings**
-   - Configure SMTP settings for email authentication
-   - Customize email templates as needed
-
-### Database Setup
-The application includes automated database migrations for:
-- User profiles and preferences
-- Query history and analytics
-- Performance metrics storage
-- AI training data collection
-
-## 🎯 Usage
-
-### For Database Administrators
-- **Monitor Performance**: Real-time dashboard for database health
-- **Optimize Queries**: AI-powered suggestions for query improvements
-- **Manage Indexes**: Smart recommendations for index optimization
-- **Track Usage**: Comprehensive analytics and reporting
-
-### For Developers
-- **Query Building**: Visual interface for complex query construction
-- **Performance Testing**: Benchmark queries across environments
-- **Code Review**: AI-powered SQL code analysis
-- **Learning**: Educational resources and best practices
-
-### For Data Analysts
-- **Natural Language Queries**: Convert questions to SQL automatically
-- **Data Exploration**: Interactive query building and execution
-- **Performance Insights**: Understand query costs and optimization opportunities
-- **Collaboration**: Share queries and results with team members
+### Theme Configuration
+- System theme detection
+- Manual theme switching
+- Persistent theme preferences
+- Smooth theme transitions
 
 ## 📈 Performance Features
 
-### Query Optimization
-- **Execution Plan Analysis**: Detailed breakdown of query execution
-- **Index Recommendations**: AI-powered indexing suggestions
-- **Query Rewriting**: Automatic query optimization
-- **Performance Predictions**: ML-based performance forecasting
+### Enhanced Loading States
+- **Skeleton Screens**: Content-aware placeholder loading
+- **Progress Indicators**: Visual progress for long-running operations
+- **Timeout Handling**: Graceful handling of slow network conditions
+- **Retry Logic**: Smart retry mechanisms with exponential backoff
 
-### Monitoring & Analytics
-- **Real-time Metrics**: Live performance dashboard
-- **Historical Analysis**: Track performance trends over time
-- **Alert System**: Proactive notifications for performance issues
-- **Custom Reports**: Detailed performance reporting
-
-### AI Capabilities
-- **Smart Query Generation**: Natural language to SQL conversion
-- **Automated Optimization**: AI-driven query improvements
-- **Predictive Analysis**: Performance forecasting and recommendations
-- **Learning System**: Continuous improvement from usage patterns
-
-## 🔒 Security
-
-### Authentication & Authorization
-- **OAuth Integration**: Secure third-party authentication
-- **Row Level Security**: Database-level access control
-- **Session Management**: Secure session handling
-- **API Rate Limiting**: Protection against abuse
-
-### Data Protection
-- **Encryption**: Data encrypted in transit and at rest
-- **Audit Logging**: Comprehensive activity tracking
-- **Privacy Controls**: GDPR-compliant data handling
-- **Secure Defaults**: Security-first configuration
+### Error Handling
+- **Enhanced Error Boundaries**: Comprehensive error catching with recovery options
+- **User-Friendly Messages**: Clear, actionable error messages
+- **Debugging Tools**: Detailed error information for development
+- **Fallback UI**: Graceful degradation when components fail
 
 ## 🤝 Contributing
 
 We welcome contributions! Please see our contributing guidelines for:
+- Accessibility standards and testing
+- UI/UX design principles
 - Code style and standards
 - Pull request process
 - Issue reporting
-- Feature requests
 
 ### Development Workflow
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
+3. Make your changes with accessibility in mind
+4. Test with keyboard navigation and screen readers
 5. Submit a pull request
 
 ## 📄 License
@@ -234,10 +239,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🆘 Support
 
 ### Documentation
-- **API Documentation**: Comprehensive API reference
-- **Component Library**: Detailed component documentation
-- **Tutorial Videos**: Step-by-step video guides
-- **Best Practices**: Database optimization guidelines
+- **Accessibility Guide**: Comprehensive accessibility features and usage
+- **UI Component Library**: Detailed component documentation with examples
+- **Keyboard Shortcuts**: Complete list of available shortcuts (press '?' in app)
+- **Best Practices**: Database optimization and UX guidelines
 
 ### Community
 - **GitHub Issues**: Bug reports and feature requests
@@ -247,78 +252,38 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🗺️ Roadmap
 
-### Upcoming Features
-- **Advanced AI Models**: Enhanced query optimization algorithms
-- **Multi-Database Support**: PostgreSQL, MySQL, SQL Server support
-- **Team Collaboration**: Shared workspaces and query libraries
-- **API Integration**: RESTful API for external integrations
-- **Mobile App**: Native mobile application
-- **Enterprise Features**: Advanced security and compliance tools
+### UX/UI Improvements
+- **Advanced Personalization**: User-customizable interface layouts
+- **Voice Navigation**: Voice-controlled interface options
+- **Gesture Support**: Touch and gesture navigation
+- **AI-Powered UX**: Intelligent interface adaptations based on usage patterns
 
-### Performance Improvements
-- **Faster Query Execution**: Optimized query processing
-- **Better Caching**: Enhanced caching strategies
-- **Real-time Collaboration**: Live query sharing and editing
-- **Advanced Analytics**: Deeper performance insights
+### Accessibility Enhancements
+- **Enhanced Screen Reader Support**: More detailed ARIA descriptions
+- **Voice Commands**: Voice-controlled navigation and actions
+- **Eye Tracking**: Support for eye-tracking navigation devices
+- **Cognitive Accessibility**: Features for users with cognitive disabilities
 
 ---
 
-**Built with ❤️ using modern web technologies**
+**Built with ❤️ and accessibility in mind using modern web technologies**
 
 For more information, visit our [documentation](https://docs.example.com) or join our [community](https://discord.gg/example).
 
-## ♻️ Refactored Authentication Context
+## ♻️ Recent Enhancements
 
-- Authentication (`AuthProvider` and `useAuth`) has been modularized into `src/contexts/AuthProvider.tsx` and `src/contexts/useAuth.ts` for improved maintainability and clarity.
-- All error handling formatting is now handled in `src/utils/formatApiError.ts` (shared across the app).
+### Accessibility & UX Improvements
+- **Enhanced Button Components**: Multiple variants with micro-animations and improved focus states
+- **Smart Input Fields**: Password visibility toggle, enhanced validation, and better error handling
+- **Accessibility Menu**: User-controlled settings for contrast, text size, and motion preferences
+- **Enhanced Navigation**: Breadcrumb system with smart route detection and keyboard navigation
+- **Interactive Tours**: Guided onboarding with contextual help and progressive disclosure
+- **Error Boundaries**: Comprehensive error handling with retry mechanisms and debugging tools
+- **Theme System**: Advanced theming with system preference detection and smooth transitions
+- **Notification System**: Real-time notifications with categorized styling and accessibility features
 
-## 🛠️ Code Quality & Best Practices
-
-- The codebase now uses smaller, focused modules to ensure maintainability.
-- All unused, redundant, or duplicate logic is being refactored.
-- Naming consistency is enforced and file structure is flattened wherever possible.
-- For authentication context, always use:
-  ```typescript
-  import { AuthProvider } from "@/contexts/AuthProvider";
-  import { useAuth } from "@/contexts/useAuth";
-  ```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-### Documentation
-- **API Documentation**: Comprehensive API reference
-- **Component Library**: Detailed component documentation
-- **Tutorial Videos**: Step-by-step video guides
-- **Best Practices**: Database optimization guidelines
-
-### Community
-- **GitHub Issues**: Bug reports and feature requests
-- **Discussions**: Community Q&A and feature discussions
-- **Discord**: Real-time community support
-- **Email Support**: Direct support for enterprise users
-
-## 🗺️ Roadmap
-
-### Upcoming Features
-- **Advanced AI Models**: Enhanced query optimization algorithms
-- **Multi-Database Support**: PostgreSQL, MySQL, SQL Server support
-- **Team Collaboration**: Shared workspaces and query libraries
-- **API Integration**: RESTful API for external integrations
-- **Mobile App**: Native mobile application
-- **Enterprise Features**: Advanced security and compliance tools
-
-### Performance Improvements
-- **Faster Query Execution**: Optimized query processing
-- **Better Caching**: Enhanced caching strategies
-- **Real-time Collaboration**: Live query sharing and editing
-- **Advanced Analytics**: Deeper performance insights
-
----
-
-**Built with ❤️ using modern web technologies**
-
-For more information, visit our [documentation](https://docs.example.com) or join our [community](https://discord.gg/example).
+### Code Quality & Architecture
+- **Modular Components**: Focused, reusable components with clear separation of concerns
+- **Enhanced TypeScript**: Strict typing with comprehensive interfaces and error handling
+- **Accessibility Testing**: Built-in accessibility features and testing utilities
+- **Performance Optimization**: Lazy loading, code splitting, and optimized animations

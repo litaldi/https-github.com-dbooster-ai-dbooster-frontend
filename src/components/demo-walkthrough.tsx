@@ -1,140 +1,113 @@
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/auth-context';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, X, Sparkles, Database, BarChart3, Shield } from 'lucide-react';
-import { isDemoMode } from '@/services/demo';
+import { X, PlayCircle, ArrowRight } from 'lucide-react';
 
-interface WalkthroughStep {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  highlight?: string;
-}
-
-const walkthroughSteps: WalkthroughStep[] = [
+const walkthrough = [
   {
     title: 'Welcome to DBooster Demo!',
-    description: 'Explore our AI-powered database optimization platform with real demo data. No signup required!',
-    icon: <Sparkles className="w-6 h-6" />,
+    description: 'You\'re now in demo mode. Explore all features without any setup required.',
+    action: 'Get Started'
   },
   {
-    title: 'Connected Repositories',
-    description: 'View your connected repositories and see optimization opportunities across your codebase.',
-    icon: <Database className="w-6 h-6" />,
-    highlight: 'repositories',
+    title: 'AI-Powered Analysis',
+    description: 'Try our AI query optimizer to see how it can improve your database performance.',
+    action: 'View AI Features'
   },
   {
-    title: 'Query Analysis',
-    description: 'Discover slow queries and get AI-powered optimization suggestions to improve performance.',
-    icon: <BarChart3 className="w-6 h-6" />,
-    highlight: 'queries',
-  },
-  {
-    title: 'Security Alerts',
-    description: 'Monitor potential security issues and get recommendations to keep your database secure.',
-    icon: <Shield className="w-6 h-6" />,
-    highlight: 'reports',
-  },
+    title: 'Real-time Monitoring',
+    description: 'Check out the dashboard to see performance metrics and insights.',
+    action: 'View Dashboard'
+  }
 ];
 
 export function DemoWalkthrough() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isDemo } = useAuth();
+  const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [hasBeenShown, setHasBeenShown] = useState(false);
 
   useEffect(() => {
-    if (isDemoMode()) {
-      const hasSeenWalkthrough = localStorage.getItem('demo_walkthrough_seen');
-      if (!hasSeenWalkthrough) {
-        setIsOpen(true);
-      }
+    if (isDemo && !hasBeenShown) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+        setHasBeenShown(true);
+      }, 1000);
+
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isDemo, hasBeenShown]);
+
+  if (!isVisible || !isDemo) {
+    return null;
+  }
+
+  const currentStepData = walkthrough[currentStep];
+  const isLastStep = currentStep === walkthrough.length - 1;
 
   const handleNext = () => {
-    if (currentStep < walkthroughSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (isLastStep) {
+      setIsVisible(false);
     } else {
-      handleClose();
+      setCurrentStep(currentStep + 1);
     }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleClose = () => {
-    setIsOpen(false);
-    localStorage.setItem('demo_walkthrough_seen', 'true');
   };
 
   const handleSkip = () => {
-    handleClose();
+    setIsVisible(false);
   };
 
-  if (!isDemoMode() || !isOpen) return null;
-
-  const currentStepData = walkthroughSteps[currentStep];
-
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
-              {currentStepData.icon}
-              {currentStepData.title}
-            </DialogTitle>
-            <Button variant="ghost" size="icon" onClick={handleClose}>
-              <X className="w-4 h-4" />
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-in fade-in-0 duration-300">
+      <Card className="max-w-md w-full animate-in zoom-in-95 duration-300">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div className="flex items-center space-x-2">
+            <PlayCircle className="h-5 w-5 text-primary" />
+            <CardTitle className="text-lg">{currentStepData.title}</CardTitle>
+            <Badge variant="secondary" className="text-xs">
+              {currentStep + 1} of {walkthrough.length}
+            </Badge>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSkip}
+            className="h-6 w-6 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {currentStepData.description}
+          </p>
+          
+          <div className="flex justify-between items-center pt-2">
+            <Button variant="outline" onClick={handleSkip} size="sm">
+              Skip Tour
+            </Button>
+            <Button onClick={handleNext} className="flex items-center">
+              {currentStepData.action}
+              {!isLastStep && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
           </div>
-        </DialogHeader>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <Badge variant="outline">
-                Step {currentStep + 1} of {walkthroughSteps.length}
-              </Badge>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                Demo Mode
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <CardDescription className="text-base">
-              {currentStepData.description}
-            </CardDescription>
-
-            <div className="flex items-center justify-between pt-4">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 0}
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </Button>
-
-              <div className="flex gap-2">
-                <Button variant="ghost" onClick={handleSkip}>
-                  Skip Tour
-                </Button>
-                <Button onClick={handleNext} className="flex items-center gap-2">
-                  {currentStep === walkthroughSteps.length - 1 ? 'Get Started' : 'Next'}
-                  {currentStep < walkthroughSteps.length - 1 && <ChevronRight className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </DialogContent>
-    </Dialog>
+          
+          {/* Progress indicator */}
+          <div className="flex gap-1 pt-2">
+            {walkthrough.map((_, index) => (
+              <div
+                key={index}
+                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+                  index <= currentStep ? 'bg-primary' : 'bg-muted'
+                }`}
+              />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

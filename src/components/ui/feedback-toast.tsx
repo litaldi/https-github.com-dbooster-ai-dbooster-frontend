@@ -1,153 +1,78 @@
 
-import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from './button';
+import { toast } from 'sonner';
+import { CheckCircle, XCircle, AlertTriangle, Info, Star } from 'lucide-react';
 
-interface FeedbackToastProps {
-  type: 'success' | 'error' | 'warning' | 'info';
+interface FeedbackOptions {
   title: string;
   description?: string;
-  onClose?: () => void;
+  duration?: number;
   action?: {
     label: string;
     onClick: () => void;
   };
-  className?: string;
 }
 
-export function FeedbackToast({ 
-  type, 
-  title, 
-  description, 
-  onClose, 
-  action,
-  className 
-}: FeedbackToastProps) {
-  const icons = {
-    success: CheckCircle,
-    error: XCircle,
-    warning: AlertTriangle,
-    info: Info
-  };
+export const showSuccess = (options: FeedbackOptions) => {
+  return toast.success(options.title, {
+    description: options.description,
+    duration: options.duration || 4000,
+    icon: <CheckCircle className="h-5 w-5 text-green-600" />,
+    action: options.action ? {
+      label: options.action.label,
+      onClick: options.action.onClick,
+    } : undefined,
+    className: 'border-l-4 border-l-green-500',
+  });
+};
 
-  const colors = {
-    success: 'border-green-200 bg-green-50 text-green-800',
-    error: 'border-red-200 bg-red-50 text-red-800',
-    warning: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-    info: 'border-blue-200 bg-blue-50 text-blue-800'
-  };
+export const showError = (options: FeedbackOptions) => {
+  return toast.error(options.title, {
+    description: options.description,
+    duration: options.duration || 6000,
+    icon: <XCircle className="h-5 w-5 text-red-600" />,
+    action: options.action ? {
+      label: options.action.label,
+      onClick: options.action.onClick,
+    } : undefined,
+    className: 'border-l-4 border-l-red-500',
+  });
+};
 
-  const iconColors = {
-    success: 'text-green-500',
-    error: 'text-red-500',
-    warning: 'text-yellow-500',
-    info: 'text-blue-500'
-  };
+export const showWarning = (options: FeedbackOptions) => {
+  return toast.warning(options.title, {
+    description: options.description,
+    duration: options.duration || 5000,
+    icon: <AlertTriangle className="h-5 w-5 text-orange-600" />,
+    action: options.action ? {
+      label: options.action.label,
+      onClick: options.action.onClick,
+    } : undefined,
+    className: 'border-l-4 border-l-orange-500',
+  });
+};
 
-  const Icon = icons[type];
+export const showInfo = (options: FeedbackOptions) => {
+  return toast.info(options.title, {
+    description: options.description,
+    duration: options.duration || 4000,
+    icon: <Info className="h-5 w-5 text-blue-600" />,
+    action: options.action ? {
+      label: options.action.label,
+      onClick: options.action.onClick,
+    } : undefined,
+    className: 'border-l-4 border-l-blue-500',
+  });
+};
 
-  return (
-    <div className={cn(
-      'relative rounded-lg border p-4 shadow-sm',
-      colors[type],
-      className
-    )}>
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <Icon className={cn('h-5 w-5', iconColors[type])} />
-        </div>
-        <div className="ml-3 flex-1">
-          <h3 className="text-sm font-medium">{title}</h3>
-          {description && (
-            <p className="mt-1 text-sm opacity-90">{description}</p>
-          )}
-          {action && (
-            <div className="mt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={action.onClick}
-                className="text-xs"
-              >
-                {action.label}
-              </Button>
-            </div>
-          )}
-        </div>
-        {onClose && (
-          <div className="ml-auto pl-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Updated helper functions to accept both string and object parameters
-export function showSuccess(titleOrOptions: string | { title: string; description?: string }, description?: string) {
-  let title: string;
-  let desc: string | undefined;
-  
-  if (typeof titleOrOptions === 'string') {
-    title = titleOrOptions;
-    desc = description;
-  } else {
-    title = titleOrOptions.title;
-    desc = titleOrOptions.description;
-  }
-  
-  console.log(`Success: ${title}`, desc);
-}
-
-export function showError(titleOrOptions: string | { title: string; description?: string }, description?: string) {
-  let title: string;
-  let desc: string | undefined;
-  
-  if (typeof titleOrOptions === 'string') {
-    title = titleOrOptions;
-    desc = description;
-  } else {
-    title = titleOrOptions.title;
-    desc = titleOrOptions.description;
-  }
-  
-  console.log(`Error: ${title}`, desc);
-}
-
-export function showWarning(titleOrOptions: string | { title: string; description?: string }, description?: string) {
-  let title: string;
-  let desc: string | undefined;
-  
-  if (typeof titleOrOptions === 'string') {
-    title = titleOrOptions;
-    desc = description;
-  } else {
-    title = titleOrOptions.title;
-    desc = titleOrOptions.description;
-  }
-  
-  console.log(`Warning: ${title}`, desc);
-}
-
-export function showInfo(titleOrOptions: string | { title: string; description?: string }, description?: string) {
-  let title: string;
-  let desc: string | undefined;
-  
-  if (typeof titleOrOptions === 'string') {
-    title = titleOrOptions;
-    desc = description;
-  } else {
-    title = titleOrOptions.title;
-    desc = titleOrOptions.description;
-  }
-  
-  console.log(`Info: ${title}`, desc);
-}
+export const showFeature = (options: FeedbackOptions) => {
+  return toast.success(options.title, {
+    description: options.description,
+    duration: options.duration || 5000,
+    icon: <Star className="h-5 w-5 text-purple-600" />,
+    action: options.action ? {
+      label: options.action.label,
+      onClick: options.action.onClick,
+    } : undefined,
+    className: 'border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20',
+  });
+};

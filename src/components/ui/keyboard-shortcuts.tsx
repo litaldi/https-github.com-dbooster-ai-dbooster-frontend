@@ -1,133 +1,118 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog';
+
+import { useEffect, useState } from 'react';
+import { X, Keyboard } from 'lucide-react';
+import { Button } from './button';
+import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
-import { Kbd } from './kbd';
-import { Command, Search, Home, Settings, HelpCircle, Database } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface ShortcutGroup {
   title: string;
-  shortcuts: {
+  shortcuts: Array<{
     keys: string[];
     description: string;
-    action?: () => void;
-  }[];
+  }>;
 }
 
 const shortcutGroups: ShortcutGroup[] = [
   {
     title: 'Navigation',
     shortcuts: [
-      { keys: ['G', 'H'], description: 'Go to Dashboard' },
-      { keys: ['G', 'R'], description: 'Go to Repositories' },
-      { keys: ['G', 'Q'], description: 'Go to Queries' },
-      { keys: ['G', 'S'], description: 'Go to Settings' },
+      { keys: ['Ctrl', 'K'], description: 'Open command palette' },
+      { keys: ['G', 'H'], description: 'Go to dashboard' },
+      { keys: ['G', 'R'], description: 'Go to repositories' },
+      { keys: ['G', 'Q'], description: 'Go to queries' },
+      { keys: ['G', 'S'], description: 'Go to settings' },
     ]
   },
   {
     title: 'Actions',
     shortcuts: [
-      { keys: ['Ctrl', 'K'], description: 'Open command palette' },
-      { keys: ['Ctrl', 'Shift', 'P'], description: 'Quick actions' },
+      { keys: ['Ctrl', 'N'], description: 'New query' },
+      { keys: ['Ctrl', 'S'], description: 'Save current work' },
+      { keys: ['Ctrl', '/'], description: 'Toggle sidebar' },
       { keys: ['?'], description: 'Show keyboard shortcuts' },
-      { keys: ['Esc'], description: 'Close dialogs' },
+      { keys: ['Esc'], description: 'Close modal/dialog' },
     ]
   },
   {
-    title: 'Database',
+    title: 'Query Editor',
     shortcuts: [
       { keys: ['Ctrl', 'Enter'], description: 'Execute query' },
-      { keys: ['Ctrl', 'S'], description: 'Save query' },
-      { keys: ['Ctrl', 'Shift', 'F'], description: 'Format query' },
+      { keys: ['Ctrl', 'D'], description: 'Duplicate line' },
+      { keys: ['Ctrl', 'L'], description: 'Select line' },
+      { keys: ['Ctrl', 'F'], description: 'Find in query' },
+      { keys: ['F11'], description: 'Toggle fullscreen' },
     ]
   }
 ];
 
 export function KeyboardShortcuts() {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Show shortcuts dialog
-      if (event.key === '?' && !event.ctrlKey && !event.metaKey) {
-        event.preventDefault();
-        setIsOpen(true);
-        return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Show shortcuts with '?'
+      if (e.key === '?' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        const target = e.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          setIsOpen(true);
+        }
       }
-
-      // Navigation shortcuts
-      if (event.key === 'g' || event.key === 'G') {
-        const nextKey = new Promise<string>((resolve) => {
-          const handler = (e: KeyboardEvent) => {
-            document.removeEventListener('keydown', handler);
-            resolve(e.key.toLowerCase());
-          };
-          document.addEventListener('keydown', handler);
-        });
-
-        nextKey.then((key) => {
-          switch (key) {
-            case 'h':
-              navigate('/');
-              break;
-            case 'r':
-              navigate('/repositories');
-              break;
-            case 'q':
-              navigate('/queries');
-              break;
-            case 's':
-              navigate('/settings');
-              break;
-          }
-        });
-      }
-
-      // Close dialogs with Escape
-      if (event.key === 'Escape') {
+      
+      // Close with Escape
+      if (e.key === 'Escape' && isOpen) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Command className="h-5 w-5" />
-            Keyboard Shortcuts
-          </DialogTitle>
-          <DialogDescription>
-            Use these keyboard shortcuts to navigate and interact with DBooster more efficiently.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="grid gap-6 py-4">
-          {shortcutGroups.map((group) => (
-            <div key={group.title} className="space-y-3">
-              <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
+      <Card className="max-w-2xl w-full max-h-[80vh] overflow-auto animate-in zoom-in-95 duration-200">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div className="flex items-center gap-2">
+            <Keyboard className="h-5 w-5" />
+            <CardTitle>Keyboard Shortcuts</CardTitle>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsOpen(false)}
+            className="h-6 w-6 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {shortcutGroups.map((group, index) => (
+            <div key={index} className="space-y-3">
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                 {group.title}
               </h3>
               <div className="space-y-2">
-                {group.shortcuts.map((shortcut, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-muted/50 transition-colors"
+                {group.shortcuts.map((shortcut, shortcutIndex) => (
+                  <div 
+                    key={shortcutIndex} 
+                    className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <span className="text-sm">{shortcut.description}</span>
                     <div className="flex items-center gap-1">
                       {shortcut.keys.map((key, keyIndex) => (
-                        <div key={keyIndex} className="flex items-center gap-1">
-                          <Kbd>{key}</Kbd>
-                          {keyIndex < shortcut.keys.length - 1 && (
-                            <span className="text-xs text-muted-foreground">+</span>
-                          )}
-                        </div>
+                        <Badge 
+                          key={keyIndex} 
+                          variant="outline" 
+                          className="text-xs font-mono px-2 py-1 min-w-[28px] text-center"
+                        >
+                          {key}
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -135,34 +120,14 @@ export function KeyboardShortcuts() {
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="flex items-center gap-2 pt-4 border-t text-xs text-muted-foreground">
-          <HelpCircle className="h-3 w-3" />
-          Press <Kbd>?</Kbd> to open this dialog anytime
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// Export the trigger component for use in other parts of the app
-export function KeyboardShortcutsTrigger() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        title="View keyboard shortcuts"
-      >
-        <Command className="h-3 w-3" />
-        <span className="hidden sm:inline">Shortcuts</span>
-      </button>
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <KeyboardShortcuts />
-      </Dialog>
-    </>
+          <div className="pt-4 border-t text-center">
+            <p className="text-xs text-muted-foreground">
+              Press <Badge variant="outline" className="text-xs font-mono mx-1">?</Badge> 
+              to show shortcuts or <Badge variant="outline" className="text-xs font-mono mx-1">Esc</Badge> to close
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

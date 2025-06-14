@@ -1,61 +1,46 @@
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home, Bug, ExternalLink } from 'lucide-react';
+import React, { Component, ReactNode } from 'react';
 import { Button } from './button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
+import { Card, CardContent, CardHeader, CardTitle } from './card';
+import { AlertTriangle, RefreshCw, Home, Bug, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   showDetails?: boolean;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
   error?: Error;
-  errorInfo?: ErrorInfo;
+  errorInfo?: React.ErrorInfo;
   retryCount: number;
-  errorId: string;
 }
 
 export class EnhancedErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    retryCount: 0,
-    errorId: ''
-  };
-
-  public static getDerivedStateFromError(error: Error): Partial<State> {
-    const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    return { 
-      hasError: true, 
-      error,
-      errorId
-    };
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, retryCount: 0 };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error in ErrorBoundary:', error, errorInfo);
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Enhanced Error Boundary caught an error:', error, errorInfo);
     this.setState({ error, errorInfo });
-    
-    // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
-    
-    // Log to external service in production
+
+    // Report to error tracking service in production
     if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to error tracking service (Sentry, LogRocket, etc.)
-      console.error('Production error:', { 
-        error: error.message, 
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        errorId: this.state.errorId
-      });
+      // Analytics or error reporting here
     }
   }
 
-  private handleRetry = () => {
+  handleRetry = () => {
     this.setState(prevState => ({ 
       hasError: false, 
       error: undefined, 
@@ -64,155 +49,109 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     }));
   };
 
-  private handleGoHome = () => {
+  handleGoHome = () => {
     window.location.href = '/';
   };
 
-  private handleReload = () => {
-    window.location.reload();
+  handleCopyError = () => {
+    if (this.state.error) {
+      const errorText = `${this.state.error.toString()}\n${this.state.errorInfo?.componentStack || ''}`;
+      navigator.clipboard.writeText(errorText).then(() => {
+        toast.success('Error details copied to clipboard');
+      });
+    }
   };
 
-  private handleReportError = () => {
-    const subject = encodeURIComponent(`Error Report: ${this.state.error?.name || 'Unknown Error'}`);
-    const body = encodeURIComponent(`
-Error ID: ${this.state.errorId}
-Error Message: ${this.state.error?.message || 'No message'}
-Stack Trace: ${this.state.error?.stack || 'No stack trace'}
-User Agent: ${navigator.userAgent}
-URL: ${window.location.href}
-Timestamp: ${new Date().toISOString()}
-    `);
-    
-    window.open(`mailto:support@example.com?subject=${subject}&body=${body}`);
-  };
-
-  public render() {
+  render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
       const isRepeatedError = this.state.retryCount > 2;
-      const isNetworkError = this.state.error?.message?.includes('Network') || 
-                            this.state.error?.message?.includes('fetch');
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-red-950/20 dark:via-gray-900 dark:to-orange-950/20">
-          <Card className="w-full max-w-lg shadow-lg border-destructive/20 animate-fade-in">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle className="w-8 h-8 text-destructive" />
+        <div className="min-h-[50vh] flex items-center justify-center p-4 bg-gradient-to-br from-red-50/50 to-orange-50/50 dark:from-red-950/20 dark:to-orange-950/20">
+          <Card className="max-w-lg w-full shadow-lg border-destructive/20">
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                <AlertTriangle className="h-8 w-8 text-destructive" />
               </div>
-              
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <CardTitle className="text-xl font-semibold text-destructive">
-                  {isNetworkError ? 'Connection Problem' : 
-                   isRepeatedError ? 'Persistent Error' : 'Something went wrong'}
-                </CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  ID: {this.state.errorId.slice(-8)}
-                </Badge>
-              </div>
-              
-              <CardDescription className="text-sm">
-                {isNetworkError 
-                  ? 'Please check your internet connection and try again.'
-                  : isRepeatedError 
-                    ? 'This error has occurred multiple times. A page reload might help resolve the issue.'
-                    : 'We encountered an unexpected error. This has been logged and our team will investigate.'
-                }
-              </CardDescription>
+              <CardTitle className="text-xl text-destructive">
+                {isRepeatedError ? 'Persistent Error Detected' : 'Something went wrong'}
+              </CardTitle>
             </CardHeader>
-            
             <CardContent className="space-y-4">
-              <div className="flex flex-col gap-3">
-                {!isRepeatedError ? (
-                  <Button 
-                    onClick={this.handleRetry} 
-                    className="w-full"
-                    variant="default"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Try Again
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={this.handleReload} 
-                    className="w-full"
-                    variant="default"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Reload Page
-                  </Button>
-                )}
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <Button 
-                    onClick={this.handleGoHome} 
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Home className="w-4 h-4 mr-2" />
-                    Go Home
-                  </Button>
-                  
-                  <Button 
-                    onClick={this.handleReportError} 
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Report
-                  </Button>
-                </div>
-              </div>
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                {isRepeatedError 
+                  ? 'This error has occurred multiple times. Please try refreshing the page or contact support if the issue persists.'
+                  : 'We encountered an unexpected error. This has been logged and we\'re working to fix it.'
+                }
+              </p>
               
-              {(process.env.NODE_ENV === 'development' || this.props.showDetails) && this.state.error && (
-                <details className="mt-4 p-3 bg-muted rounded-md">
-                  <summary className="cursor-pointer text-sm font-medium flex items-center gap-2 hover:opacity-80">
-                    <Bug className="w-4 h-4" />
-                    Error Details {process.env.NODE_ENV === 'development' && '(Development)'}
+              {this.state.retryCount > 0 && (
+                <div className="text-xs text-center text-muted-foreground bg-muted/50 p-2 rounded">
+                  Retry attempts: {this.state.retryCount}
+                </div>
+              )}
+
+              {(this.props.showDetails || process.env.NODE_ENV === 'development') && this.state.error && (
+                <details className="mt-4 p-3 bg-muted rounded-lg text-xs border">
+                  <summary className="cursor-pointer font-medium flex items-center gap-2 hover:text-primary">
+                    <Bug className="h-4 w-4" />
+                    Technical Details
                   </summary>
-                  <div className="mt-3 space-y-3">
+                  <div className="mt-3 space-y-2">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Error Type:</p>
-                      <Badge variant="secondary" className="text-xs">
-                        {this.state.error.name}
-                      </Badge>
-                    </div>
-                    
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Message:</p>
-                      <pre className="text-xs overflow-auto max-h-20 p-2 bg-background rounded border font-mono">
-                        {this.state.error.message}
+                      <strong>Error:</strong>
+                      <pre className="mt-1 overflow-auto whitespace-pre-wrap bg-background p-2 rounded border text-xs">
+                        {this.state.error.toString()}
                       </pre>
                     </div>
-                    
-                    {this.state.error.stack && (
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Stack Trace:</p>
-                        <pre className="text-xs overflow-auto max-h-32 p-2 bg-background rounded border font-mono">
-                          {this.state.error.stack}
-                        </pre>
-                      </div>
-                    )}
-                    
                     {this.state.errorInfo?.componentStack && (
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Component Stack:</p>
-                        <pre className="text-xs overflow-auto max-h-32 p-2 bg-background rounded border font-mono">
+                        <strong>Component Stack:</strong>
+                        <pre className="mt-1 overflow-auto whitespace-pre-wrap bg-background p-2 rounded border text-xs max-h-32">
                           {this.state.errorInfo.componentStack}
                         </pre>
                       </div>
                     )}
-                    
-                    <div className="pt-2 border-t text-xs text-muted-foreground">
-                      <p>Retry attempts: {this.state.retryCount}</p>
-                      <p>Timestamp: {new Date().toLocaleString()}</p>
-                    </div>
+                    <Button
+                      onClick={this.handleCopyError}
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2"
+                    >
+                      <Copy className="h-3 w-3 mr-2" />
+                      Copy Error Details
+                    </Button>
                   </div>
                 </details>
               )}
+              
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  onClick={this.handleRetry} 
+                  className="flex-1"
+                  variant={isRepeatedError ? "outline" : "default"}
+                  disabled={isRepeatedError}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  {isRepeatedError ? 'Max Retries Reached' : 'Try Again'}
+                </Button>
+                <Button 
+                  onClick={this.handleGoHome} 
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Home className="h-4 w-4 mr-2" />
+                  Go Home
+                </Button>
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground pt-2">
+                If this issue persists, please contact our support team with the error details above.
+              </p>
             </CardContent>
           </Card>
         </div>
