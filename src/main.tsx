@@ -4,9 +4,17 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { setupGlobalErrorHandling } from './utils/errorHandling'
+import { monitoringService } from './services/monitoringService'
+import { initializeProductionEnvironment } from './utils/productionCleanup'
+
+// Initialize production environment cleanup
+initializeProductionEnvironment();
 
 // Set up global error handling
 setupGlobalErrorHandling();
+
+// Initialize monitoring service
+monitoringService;
 
 // Performance monitoring setup
 if (typeof window !== 'undefined') {
@@ -15,10 +23,14 @@ if (typeof window !== 'undefined') {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
-          console.log('SW registered: ', registration);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('SW registered: ', registration);
+          }
         })
         .catch((registrationError) => {
-          console.log('SW registration failed: ', registrationError);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('SW registration failed: ', registrationError);
+          }
         });
     });
   }

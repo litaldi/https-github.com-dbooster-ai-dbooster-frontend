@@ -4,6 +4,7 @@ import { AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { EnhancedButton } from './enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
+import { monitoringService } from '@/services/monitoringService';
 
 interface Props {
   children: ReactNode;
@@ -36,8 +37,15 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       errorInfo,
     });
 
-    // Log error to external service
-    console.error('Error caught by boundary:', error, errorInfo);
+    // Send to monitoring service
+    monitoringService.captureError({
+      message: error.message,
+      stack: error.stack,
+      timestamp: Date.now(),
+      userAgent: navigator.userAgent,
+      component: 'ErrorBoundary',
+      action: 'Component Error'
+    });
     
     // Call optional error handler
     this.props.onError?.(error, errorInfo);
