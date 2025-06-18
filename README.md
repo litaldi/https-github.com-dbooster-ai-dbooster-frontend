@@ -57,19 +57,80 @@
 
 ---
 
-## ✨ What Makes Us Different
+## ✨ Latest Updates & Enhancements
 
-### 🤖 **AI-First Approach**
-Unlike traditional database tools, our AI doesn't just monitor—it understands, predicts, and optimizes. Convert plain English to optimized SQL, get intelligent index recommendations, and receive proactive performance insights.
+### 🔐 **Enhanced Login Experience**
+- **Mobile-first design** with intuitive spacing and clear visual hierarchy
+- **Advanced security features** including password visibility toggle and autocomplete
+- **Real-time validation** with helpful error messages and loading states
+- **Accessibility-first** with WCAG 2.1 AA compliance and keyboard navigation
 
-### 🎨 **Accessibility Excellence** 
-Built from day one with WCAG 2.1 AA compliance. Full keyboard navigation, screen reader support, customizable interfaces, and inclusive design patterns throughout.
+### 🎯 **Improved User Experience**
+- **Left-to-right alignment** throughout the application for better readability
+- **Enhanced form components** with reusable InputField and PasswordField components
+- **Consistent microcopy** with friendly, supportive messaging
+- **Better error handling** with clear, actionable feedback
 
-### 🔐 **Enterprise Security**
-95/100 security score with comprehensive rate limiting, audit logging, RLS policies, and SOC2-ready compliance features. Your data stays secure and private.
+### 📄 **Essential Pages Added**
+- **Accessibility Statement** (`/accessibility`) - Our commitment to WCAG 2.1 AA compliance
+- **Enhanced Footer** with links to Terms, Privacy, Accessibility, Contact, and Support
+- **Improved 404 handling** with better user experience and navigation options
 
-### ⚡ **Real-Time Intelligence**
-Live performance monitoring, instant optimization suggestions, and predictive analytics that prevent issues before they impact your users.
+---
+
+## 🌟 Accessibility Excellence
+
+### ♿ **WCAG 2.1 AA Compliant**
+We're committed to digital accessibility for all users:
+
+- **Visual Accessibility**: High contrast ratios, scalable fonts, clear hierarchy
+- **Keyboard Navigation**: Complete keyboard access with logical tab order
+- **Screen Reader Support**: Semantic HTML, ARIA labels, alternative text
+- **Motor Accessibility**: Large click targets, generous spacing
+- **Mobile Accessibility**: Touch-friendly, responsive design
+
+### 🔧 **Assistive Technology Support**
+- Screen readers (NVDA, JAWS, VoiceOver, TalkBack)
+- Voice recognition software (Dragon NaturallySpeaking)
+- Switch navigation devices and alternative keyboards
+- Browser zoom and magnification tools up to 500%
+
+**Contact us**: [accessibility@dbooster.com](mailto:accessibility@dbooster.com) for accessibility feedback or support.
+
+---
+
+## 🛠️ Technical Architecture
+
+### 📁 **Component Structure**
+```
+src/
+├── components/
+│   ├── forms/              # Reusable form components
+│   │   ├── InputField.tsx  # Enhanced input with validation
+│   │   └── PasswordField.tsx # Password input with visibility toggle
+│   ├── home/               # Home page components
+│   │   ├── HeroSection.tsx
+│   │   ├── FloatingQuerySnippets.tsx
+│   │   ├── PerformanceCounter.tsx
+│   │   └── InteractiveQueryInput.tsx
+│   └── navigation/         # Navigation components
+│       └── Footer.tsx      # Enhanced footer with essential links
+├── data/                   # Data and configuration
+│   └── homePageData.ts     # Home page content and configuration
+├── hooks/                  # Custom React hooks
+│   └── useHomePage.ts      # Home page state management
+└── pages/                  # Page components
+    ├── Home.tsx            # Refactored home page
+    ├── Login.tsx           # Enhanced login experience
+    └── Accessibility.tsx   # Accessibility statement
+```
+
+### 🎨 **Design System**
+- **Left-to-Right (LTR) alignment** for improved readability
+- **Mobile-first responsive design** with consistent breakpoints
+- **Reusable form components** for consistency across the application
+- **Enhanced animations** with reduced-motion support
+- **Semantic HTML structure** with proper ARIA attributes
 
 ---
 
@@ -103,173 +164,66 @@ For production deployments with SSO, custom domains, and enterprise features:
 
 ---
 
-## 🎬 Live Demo
+## 🧩 Page Structure & Routes
 
-<div align="center">
+### 🏠 **Public Pages**
+- `/` - Enhanced home page with interactive elements
+- `/login` - Improved authentication experience
+- `/how-it-works` - Clear, step-by-step process explanation
+- `/features` - Comprehensive feature showcase
+- `/pricing` - Transparent pricing information
+- `/accessibility` - **NEW** Accessibility statement and commitment
 
-### 🎯 Interactive Demo Experience
-*Experience the full platform without any setup*
+### 🔒 **Protected Pages** (requires authentication)
+- `/app/dashboard` - Main application dashboard
+- `/app/queries` - Query management and optimization
+- `/app/repositories` - GitHub integration and repository management
+- `/app/settings` - User and application settings
 
-[**🚀 Launch Live Demo**](https://demo.dbquery-optimizer.com) | [**📹 Video Walkthrough**](https://youtube.com/watch?v=demo)
-
-**Try These Features:**
-- 🤖 AI Query Generation: "Show me all users who purchased in the last 30 days"
-- 📊 Performance Analysis: Upload your slow query and get instant optimization
-- 🎨 Visual Query Builder: Build complex queries with drag-and-drop
-- 📈 Real-time Monitoring: See live performance metrics and alerts
-
-</div>
-
----
-
-## 💼 Enterprise Features
-
-<table>
-<tr>
-<td width="50%">
-
-### 🔐 **Security & Compliance**
-- ✅ SOC2 Type II Certified
-- ✅ GDPR & CCPA Compliant  
-- ✅ SSO Integration (SAML, OIDC)
-- ✅ Advanced Audit Logging
-- ✅ Row-Level Security (RLS)
-- ✅ Data Encryption at Rest & Transit
-
-</td>
-<td width="50%">
-
-### 🏢 **Enterprise Management**
-- ✅ Multi-tenant Architecture
-- ✅ Custom Domain Support
-- ✅ Advanced User Management
-- ✅ API Rate Limiting & Quotas
-- ✅ White-label Options
-- ✅ 24/7 Premium Support
-
-</td>
-</tr>
-</table>
+### 📄 **Essential Pages**
+- `/terms` - Terms of Service
+- `/privacy` - Privacy Policy
+- `/contact` - Contact information and support
+- `/support` - Help and documentation
 
 ---
 
-## 🛠️ Core Technologies
+## 👥 Contributing Guidelines
 
-<div align="center">
+### 🛠️ **Development Setup**
+```bash
+# Install dependencies
+npm install
 
-| Frontend | Backend | Database | AI/ML |
-|----------|---------|----------|-------|
-| React 18 + TypeScript | Supabase Edge Functions | PostgreSQL | Hugging Face Transformers |
-| Vite + Tailwind CSS | Row Level Security | Real-time Subscriptions | Natural Language Processing |
-| Shadcn/UI Components | RESTful APIs | Automated Backups | Query Pattern Recognition |
+# Start development server with hot reload
+npm run dev
 
-</div>
+# Run accessibility tests
+npm run test:a11y
 
-### 🎨 **UI/UX Excellence**
-- **Framer Motion** for smooth animations and micro-interactions
-- **React Query** for efficient data fetching and caching  
-- **Responsive Design** with mobile-first approach
-- **Dark/Light/System** theme support with smooth transitions
-- **Progressive Enhancement** - works offline with graceful degradation
+# Build for production
+npm run build
+```
 
----
+### ♿ **Accessibility Requirements**
+- Follow WCAG 2.1 AA guidelines
+- Test with screen readers (NVDA, JAWS, VoiceOver)
+- Ensure keyboard navigation works for all interactive elements
+- Maintain color contrast ratios of 4.5:1 minimum
+- Include alternative text for all images and icons
 
-## 📊 Proven Results
+### 🎨 **Component Development**
+- Use semantic HTML elements (`<main>`, `<section>`, `<article>`)
+- Implement proper ARIA labels and descriptions
+- Follow left-to-right alignment patterns
+- Create reusable, focused components (max 50 lines when possible)
+- Extract complex logic into custom hooks
 
-<div align="center">
-
-| Metric | Average Improvement | Enterprise Customers |
-|--------|-------------------|---------------------|
-| **Query Performance** | 73% faster | 89% faster |
-| **Database Costs** | 45% reduction | 61% reduction |
-| **Developer Productivity** | 3.2x increase | 4.1x increase |
-| **Issue Resolution Time** | 67% faster | 78% faster |
-
-*Based on 6-month analysis of 500+ enterprise deployments*
-
-</div>
-
----
-
-## 🗺️ Roadmap
-
-### 🚀 **Q1 2024** 
-- [ ] **Advanced AI Models**: GPT-4 integration for complex query analysis
-- [ ] **Multi-Database Support**: MySQL, MongoDB, Redis support
-- [ ] **Advanced Visualizations**: Interactive query execution plans
-- [ ] **Team Collaboration**: Shared workspaces and query libraries
-
-### 🎯 **Q2 2024**
-- [ ] **Voice Commands**: Voice-controlled interface and navigation
-- [ ] **Mobile Apps**: Native iOS and Android applications
-- [ ] **Advanced Integrations**: Slack, Teams, PagerDuty webhooks
-- [ ] **Custom Dashboards**: Drag-and-drop dashboard builder
-
-### 🌟 **Future Vision**
-- **Autonomous Database Optimization**: Self-healing database performance
-- **Advanced ML Predictions**: Capacity planning and trend analysis
-- **Industry-Specific Templates**: Pre-built solutions for common use cases
-
----
-
-## 🏆 Recognition & Trust
-
-<div align="center">
-
-**🎖️ Awards & Recognition**
-- "Best Database Tool 2024" - TechCrunch Disrupt
-- "Innovation Award" - Database Weekly
-- "Accessibility Excellence" - WebAIM Recognition
-
-**🤝 Trusted By**
-- 500+ Enterprise Customers
-- Fortune 500 Companies
-- Leading Startups & Scale-ups
-- Government Agencies
-
-</div>
-
----
-
-## 🤝 Community & Support
-
-### 💬 **Join Our Community**
-
-<div align="center">
-
-[**Discord Community**](https://discord.gg/dbquery) • [**GitHub Discussions**](https://github.com/discussions) • [**Stack Overflow**](https://stackoverflow.com/questions/tagged/dbquery-optimizer)
-
-**Daily Active Contributors:** 1,200+ | **Community Projects:** 50+ | **Success Stories:** 200+
-
-</div>
-
-### 🎓 **Learning Resources**
-
-- 📚 **[Complete Documentation](https://docs.dbquery-optimizer.com)** - Comprehensive guides and API references
-- 🎥 **[Video Tutorials](https://youtube.com/dbquery-optimizer)** - Step-by-step walkthroughs
-- 📝 **[Blog & Best Practices](https://blog.dbquery-optimizer.com)** - Weekly tips and insights
-- 🛠️ **[Sample Projects](https://github.com/dbquery-optimizer/examples)** - Ready-to-use examples
-
-### 📞 **Enterprise Support**
-
-- **24/7 Priority Support** for enterprise customers
-- **Dedicated Success Manager** for strategic accounts  
-- **Custom Training Sessions** for your team
-- **SLA Guarantees** with 99.9% uptime commitment
-
----
-
-## 🚀 Quick Actions
-
-<div align="center">
-
-### Ready to Transform Your Database Performance?
-
-[**🚀 Start Free Trial**](https://app.dbquery-optimizer.com/signup) [**📅 Schedule Demo**](https://calendly.com/dbquery-demo) [**💬 Chat with Sales**](mailto:sales@company.com)
-
-**No Credit Card Required** • **30-Day Free Trial** • **5-Minute Setup**
-
-</div>
+### 📝 **Code Style**
+- TypeScript strict mode compliance
+- Consistent error handling with user-friendly messages
+- Mobile-first responsive design
+- Clear, descriptive component and variable names
 
 ---
 
@@ -326,6 +280,20 @@ We welcome contributions! Please:
 
 ---
 
+## 📞 Support & Contact
+
+### 💬 **Get Help**
+- **General Support**: [support@dbooster.com](mailto:support@dbooster.com)
+- **Accessibility**: [accessibility@dbooster.com](mailto:accessibility@dbooster.com)
+- **Enterprise Sales**: [enterprise@dbooster.com](mailto:enterprise@dbooster.com)
+
+### 🎓 **Learning Resources**
+- 📚 **[Complete Documentation](https://docs.dbquery-optimizer.com)** - Comprehensive guides and API references
+- 🎥 **[Video Tutorials](https://youtube.com/dbquery-optimizer)** - Step-by-step walkthroughs
+- 📝 **[Blog & Best Practices](https://blog.dbquery-optimizer.com)** - Weekly tips and insights
+
+---
+
 ## 📄 License & Legal
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
@@ -344,6 +312,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-*Last updated: December 2024 • Version 2.0.0*
+*Last updated: December 2024 • Version 2.1.0 - Enhanced Accessibility & User Experience*
 
 </div>
