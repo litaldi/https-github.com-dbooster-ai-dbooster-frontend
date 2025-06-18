@@ -56,7 +56,7 @@ export function ProblemSolutionHero({ onGetStarted, onLearnMore, isLoading = fal
         </FadeIn>
 
         <FadeIn delay={0.7}>
-          <Text size="lg" variant="subtle" className="mb-8 max-w-3xl mx-auto">
+          <Text size="lg" variant="muted" className="mb-8 max-w-3xl mx-auto">
             No more guessing, no more trial-and-error debugging. Just paste your query and get 
             expert-level optimizations instantly.
           </Text>
