@@ -27,11 +27,12 @@ import { RealTimeMetrics } from '@/components/dashboard/RealTimeMetrics';
 import { DatabaseStatus } from '@/components/dashboard/DatabaseStatus';
 import { QueryAnalytics } from '@/components/dashboard/QueryAnalytics';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
-import { AdvancedQueryBuilder } from '@/components/queries/AdvancedQueryBuilder';
+import { VisualQueryBuilder } from '@/components/query/VisualQueryBuilder';
 import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
 import { UniversalSearch } from '@/components/search/UniversalSearch';
 import { NotificationCenter, useNotifications } from '@/components/notifications/SmartNotifications';
 import { TourMenu, useTour } from '@/components/onboarding/InteractiveTour';
+import { EnhancedMetrics } from '@/components/dashboard/EnhancedMetrics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Quick Actions Component
@@ -42,37 +43,37 @@ function QuickActions() {
   const actions = [
     {
       title: 'Connect Database',
-      description: 'Add a new database connection',
+      description: 'Enterprise database integration',
       icon: Database,
       onClick: () => addNotification({
         type: 'info',
         title: 'Database Connection',
-        message: 'Opening database connection wizard...'
+        message: 'Opening enterprise database connection wizard...'
       })
     },
     {
-      title: 'Optimize Query',
-      description: 'AI-powered query optimization',
+      title: 'AI Query Optimization',
+      description: '73% faster query performance',
       icon: Zap,
       onClick: () => addNotification({
         type: 'info',
-        title: 'Query Optimization',
-        message: 'Starting AI query analysis...'
+        title: 'AI Optimization',
+        message: 'Starting enterprise AI query analysis...'
       })
     },
     {
-      title: 'Generate Report',
-      description: 'Create performance report',
+      title: 'Performance Report',
+      description: 'Generate executive summary',
       icon: BarChart3,
       onClick: () => addNotification({
         type: 'success',
         title: 'Report Generated',
-        message: 'Performance report is ready for download.'
+        message: 'Enterprise performance report ready for download.'
       })
     },
     {
-      title: 'Start Tour',
-      description: 'Interactive product tour',
+      title: 'Interactive Tour',
+      description: 'Learn enterprise features',
       icon: Activity,
       onClick: () => startTour('basic')
     }
@@ -111,13 +112,14 @@ export default function Dashboard() {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mock dashboard data
+      // Mock dashboard data with enterprise focus
       setDashboardData({
-        totalDatabases: isDemo ? 3 : 0,
-        totalQueries: isDemo ? 42 : 0,
-        avgPerformance: isDemo ? 85 : 0,
-        optimizedQueries: isDemo ? 18 : 0,
-        activeTeamMembers: isDemo ? 5 : 1
+        totalDatabases: isDemo ? 12 : 0,
+        totalQueries: isDemo ? 1247 : 0,
+        avgPerformance: isDemo ? 73 : 0,
+        optimizedQueries: isDemo ? 415 : 0,
+        activeTeamMembers: isDemo ? 24 : 1,
+        costSavings: isDemo ? 62450 : 0
       });
       setIsLoading(false);
     };
@@ -130,10 +132,10 @@ export default function Dashboard() {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <div className="h-8 bg-gray-200 rounded w-48 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-32"></div>
+            <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-48"></div>
           </div>
-          <div className="h-8 bg-gray-200 rounded w-24"></div>
+          <div className="h-8 bg-gray-200 rounded w-32"></div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -142,7 +144,7 @@ export default function Dashboard() {
           ))}
         </div>
         
-        <LoadingState message="Loading your dashboard..." variant="database" />
+        <LoadingState message="Loading your enterprise dashboard..." variant="database" />
       </div>
     );
   }
@@ -153,9 +155,9 @@ export default function Dashboard() {
         {/* Header with Search and Notifications */}
         <div className="flex items-center justify-between">
           <div data-tour="dashboard">
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Enterprise Dashboard</h1>
             <p className="text-muted-foreground">
-              Welcome to your database optimization center
+              AI-powered database optimization center - reducing query times by 73%
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -163,6 +165,9 @@ export default function Dashboard() {
             <NotificationCenter />
           </div>
         </div>
+
+        {/* Enhanced Performance Metrics */}
+        <EnhancedMetrics />
 
         {/* Quick Actions */}
         <QuickActions />
@@ -172,7 +177,7 @@ export default function Dashboard() {
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="query-builder">Query Builder</TabsTrigger>
+            <TabsTrigger value="query-builder">AI Query Builder</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="help">Help & Tours</TabsTrigger>
           </TabsList>
@@ -191,7 +196,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="query-builder" className="space-y-6">
-            <AdvancedQueryBuilder />
+            <VisualQueryBuilder />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
@@ -205,9 +210,9 @@ export default function Dashboard() {
             <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Interactive Tours</CardTitle>
+                  <CardTitle>Interactive Enterprise Tours</CardTitle>
                   <CardDescription>
-                    Learn DBooster with guided interactive tours
+                    Learn enterprise features with guided interactive tours
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -217,9 +222,9 @@ export default function Dashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Getting Started</CardTitle>
+                  <CardTitle>Enterprise Quick Start</CardTitle>
                   <CardDescription>
-                    Quick start guide for new users
+                    Setup guide for enterprise database optimization
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

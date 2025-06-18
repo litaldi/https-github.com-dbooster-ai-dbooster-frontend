@@ -2,11 +2,11 @@
 import { Zap } from 'lucide-react';
 import { SkipLink } from '@/components/ui/enhanced-accessibility';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
-import { HeroSection } from '@/components/home/HeroSection';
+import { EnhancedHeroSection } from '@/components/home/EnhancedHeroSection';
 import { QuickActions } from '@/components/home/QuickActions';
 import { FeaturesSection } from '@/components/home/FeaturesSection';
 import { EnhancedCTASection } from '@/components/home/EnhancedCTASection';
-import { StreamlinedOnboarding } from '@/components/onboarding/StreamlinedOnboarding';
+import { EnhancedOnboarding } from '@/components/onboarding/EnhancedOnboarding';
 import { EnhancedBreadcrumb } from '@/components/ui/enhanced-navigation';
 import { useHomePage } from '@/hooks/useHomePage';
 
@@ -28,12 +28,12 @@ export default function Home() {
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
           <SkipLink href="#main-content" />
           <EnhancedBreadcrumb 
-            items={[{ label: 'Getting Started', icon: Zap }]} 
+            items={[{ label: 'Enterprise Setup', icon: Zap }]} 
             className="p-6"
           />
           
           <main id="main-content" role="main" className="container mx-auto px-6 py-12">
-            <StreamlinedOnboarding />
+            <EnhancedOnboarding />
           </main>
         </div>
       </ErrorBoundary>
@@ -46,11 +46,11 @@ export default function Home() {
         <SkipLink href="#main-content" />
         
         <main id="main-content" role="main">
-          <HeroSection
+          <EnhancedHeroSection
             user={user}
             isLoading={isLoading}
             onGetStarted={handleGetStarted}
-            onNavigateToLogin={() => navigate(user ? '/settings' : '/login')}
+            onNavigateToLogin={() => navigate(user ? '/app/settings' : '/login')}
             guidanceSteps={guidanceSteps}
           />
 
