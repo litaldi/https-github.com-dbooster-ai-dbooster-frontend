@@ -52,7 +52,7 @@ export function QATestingSuite() {
         name: 'Performance Analysis',
         test: async () => {
           const metrics = await PerformanceOptimizer.runLighthouseAudit();
-          const score = metrics.firstContentfulPaint < 2000 ? 'pass' : 'warning';
+          const score = metrics.performance.firstContentfulPaint < 2000 ? 'pass' : 'warning';
           return {
             status: score,
             details: metrics
