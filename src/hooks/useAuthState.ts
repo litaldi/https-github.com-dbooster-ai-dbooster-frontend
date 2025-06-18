@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { monitoringService } from '@/services/monitoringService';
+import { logger } from '@/utils/logger';
 
 export interface AuthState {
   user: User | null;
@@ -28,7 +29,7 @@ export function useAuthState() {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting initial session:', error);
+          logger.error('Error getting initial session', error, 'useAuthState');
           monitoringService.captureError({
             message: `Initial session error: ${error.message}`,
             component: 'useAuthState',
@@ -42,7 +43,7 @@ export function useAuthState() {
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('Error in getInitialSession:', error);
+        logger.error('Error in getInitialSession', error, 'useAuthState');
         if (mounted) {
           setIsLoading(false);
         }
@@ -52,7 +53,7 @@ export function useAuthState() {
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        logger.info('Auth state changed', { event, userEmail: session?.user?.email }, 'useAuthState');
         
         if (mounted) {
           setSession(session);

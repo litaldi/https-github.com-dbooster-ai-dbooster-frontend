@@ -1,5 +1,6 @@
 
 import { securityService } from '@/services/securityService';
+import { logger } from '@/utils/logger';
 
 export class EnhancedRateLimiter {
   private getIdentifier(): string {
@@ -33,6 +34,7 @@ export class EnhancedRateLimiter {
     const result = await securityService.checkRateLimit(identifier, actionType);
     
     if (!result.allowed) {
+      logger.warn('Rate limit violation detected', { actionType, identifier, retryAfter: result.retryAfter }, 'EnhancedRateLimiter');
       await securityService.logSecurityEvent({
         event_type: 'rate_limit_violation',
         event_data: { actionType, identifier, retryAfter: result.retryAfter }
@@ -44,6 +46,7 @@ export class EnhancedRateLimiter {
 
   async resetRateLimit(actionType: string): Promise<void> {
     const identifier = this.getIdentifier();
+    logger.info('Rate limit reset requested', { actionType, identifier }, 'EnhancedRateLimiter');
     await securityService.logSecurityEvent({
       event_type: 'rate_limit_reset',
       event_data: { actionType, identifier }

@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 interface SecurityEvent {
   event_type: string;
@@ -43,8 +44,10 @@ export class AuditLogger {
         ip_address: event.ip_address || clientInfo.ip_address,
         user_agent: event.user_agent || clientInfo.user_agent,
       });
+
+      logger.info('Security event logged', { eventType: event.event_type }, 'AuditLogger');
     } catch (error) {
-      console.error('Failed to log security event:', error);
+      logger.error('Failed to log security event', { error, event }, 'AuditLogger');
       // Don't throw here to avoid breaking the main flow
     }
   }

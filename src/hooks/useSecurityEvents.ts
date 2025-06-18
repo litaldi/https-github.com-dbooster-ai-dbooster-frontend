@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
+import { logger } from '@/utils/logger';
 
 interface SecurityEvent {
   id: string;
@@ -41,7 +42,7 @@ export function useSecurityEvents(refreshInterval = 30000) {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching security events:', error);
+        logger.error('Error fetching security events', error, 'useSecurityEvents');
         throw error;
       }
 
@@ -56,7 +57,7 @@ export function useSecurityEvents(refreshInterval = 30000) {
         user_id: item.user_id
       }));
     } catch (error) {
-      console.error('Failed to fetch security events:', error);
+      logger.error('Failed to fetch security events', error, 'useSecurityEvents');
       return [];
     }
   }, [limit, debouncedFilter]);

@@ -1,6 +1,7 @@
 
 import { securityService } from '@/services/securityService';
 import { enhancedRateLimiter } from '@/utils/enhancedRateLimiting';
+import { logger } from '@/utils/logger';
 
 export interface SecurityMiddlewareOptions {
   rateLimitAction?: string;
@@ -64,6 +65,7 @@ export class SecurityMiddleware {
 
       // Log successful request
       if (logEvents) {
+        logger.debug('Middleware request allowed', { action: rateLimitAction }, 'SecurityMiddleware');
         await securityService.logSecurityEvent({
           event_type: 'middleware_request_allowed',
           event_data: { action: rateLimitAction }
@@ -72,7 +74,7 @@ export class SecurityMiddleware {
 
       return { allowed: true };
     } catch (error) {
-      console.error('Security middleware error:', error);
+      logger.error('Security middleware error', error, 'SecurityMiddleware');
       // In case of middleware error, allow the request but log it
       if (logEvents) {
         await securityService.logSecurityEvent({

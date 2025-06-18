@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { auditLogger } from './auditLogger';
+import { logger } from '@/utils/logger';
 
 interface RateLimitConfig {
   maxAttempts: number;
@@ -95,7 +96,7 @@ export class RateLimitService {
 
       return { allowed: true };
     } catch (error) {
-      console.error('Rate limit check failed:', error);
+      logger.error('Rate limit check failed', { error, identifier, actionType }, 'RateLimitService');
       // In case of error, allow the request to proceed
       return { allowed: true };
     }
