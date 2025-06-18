@@ -167,7 +167,7 @@ export function SecurityMonitor() {
               </div>
             </div>
           </div>
-        </Car content>
+        </CardContent>
       </Card>
     </div>
   );
