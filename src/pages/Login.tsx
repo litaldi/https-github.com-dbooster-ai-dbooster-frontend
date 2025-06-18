@@ -1,10 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
+import { useSecurityValidation } from '@/hooks/useSecurityValidation';
 import { LoginHeader } from '@/components/auth/LoginHeader';
 import { LoginFooter } from '@/components/auth/LoginFooter';
 import { DemoModeButton } from '@/components/auth/DemoModeButton';
+import { SecurityAlert } from '@/components/security/SecurityAlert';
 import { EnhancedLoading } from '@/components/ui/enhanced-loading';
 import { AccessibilityEnhancements } from '@/components/ui/accessibility-enhancements';
 import { SkipLink } from '@/components/ui/accessibility-helpers';
@@ -20,11 +21,17 @@ import { AlertCircle, KeyRound, UserPlus } from 'lucide-react';
 
 export default function Login() {
   const { user, isLoading, signIn, signUp } = useAuth();
+  const { validateInput, validateAuth, isValidating } = useSecurityValidation();
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
+  const [securityAlert, setSecurityAlert] = useState<{
+    type: 'warning' | 'error' | 'info';
+    title: string;
+    description: string;
+  } | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -45,7 +52,7 @@ export default function Login() {
     return () => clearTimeout(timer);
   }, []);
 
-  const validateForm = () => {
+  const validateForm = async () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
@@ -70,16 +77,39 @@ export default function Login() {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    
+    if (Object.keys(newErrors).length > 0) {
+      return false;
+    }
+
+    // Enhanced security validation
+    const inputValid = await validateInput(formData, `${authMode}_form`);
+    if (!inputValid) {
+      setSecurityAlert({
+        type: 'error',
+        title: 'Security Validation Failed',
+        description: 'Your input contains potentially unsafe content. Please review and try again.'
+      });
+      return false;
+    }
+
+    const authValid = await validateAuth(formData.email);
+    if (!authValid) {
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    const isValid = await validateForm();
+    if (!isValid) return;
 
     setIsSubmitting(true);
     setSubmitError('');
+    setSecurityAlert(null);
 
     try {
       if (authMode === 'login') {
@@ -150,6 +180,15 @@ export default function Login() {
             </CardHeader>
             
             <CardContent className="space-y-6">
+              {securityAlert && (
+                <SecurityAlert
+                  type={securityAlert.type}
+                  title={securityAlert.title}
+                  description={securityAlert.description}
+                  onDismiss={() => setSecurityAlert(null)}
+                />
+              )}
+
               {/* Auth Mode Toggle */}
               <div className="grid grid-cols-2 gap-3" role="tablist" aria-label="Authentication mode">
                 <Button
@@ -255,9 +294,9 @@ export default function Login() {
                 <Button
                   type="submit"
                   className="w-full justify-center"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isValidating}
                 >
-                  {isSubmitting ? 'Please wait...' : (authMode === 'login' ? 'Log In' : 'Sign Up')}
+                  {isSubmitting || isValidating ? 'Validating...' : (authMode === 'login' ? 'Log In' : 'Sign Up')}
                 </Button>
 
                 <div className="text-center text-sm text-left">
