@@ -1,5 +1,5 @@
 
-# DBQuery Optimizer & AI-Enhanced Performance Tool 🚀
+# DBQuery Optimizer & AI-Enhanced Performance Tool 
 
 A comprehensive, enterprise-grade database query optimization platform with advanced AI capabilities, real-time performance monitoring, and intelligent recommendations for peak database performance.
 
