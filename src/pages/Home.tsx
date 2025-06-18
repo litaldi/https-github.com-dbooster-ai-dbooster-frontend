@@ -1,153 +1,26 @@
 
-import { useState, useMemo } from 'react';
-import { useAuth } from '@/contexts/auth-context';
-import { useNavigate } from 'react-router-dom';
-import { Database, Zap, Shield, TrendingUp, Users, Code } from 'lucide-react';
-import { showSuccess } from '@/components/ui/feedback-toast';
-import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
+import { Zap } from 'lucide-react';
 import { SkipLink } from '@/components/ui/enhanced-accessibility';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { HeroSection } from '@/components/home/HeroSection';
 import { QuickActions } from '@/components/home/QuickActions';
 import { FeaturesSection } from '@/components/home/FeaturesSection';
+import { EnhancedCTASection } from '@/components/home/EnhancedCTASection';
 import { StreamlinedOnboarding } from '@/components/onboarding/StreamlinedOnboarding';
 import { EnhancedBreadcrumb } from '@/components/ui/enhanced-navigation';
-import { FadeIn, HoverScale } from '@/components/ui/enhanced-animations';
-import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { ArrowRight } from 'lucide-react';
+import { useHomePage } from '@/hooks/useHomePage';
 
 export default function Home() {
-  const { user, loginDemo } = useAuth();
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(!user);
-
-  const handleGetStarted = async () => {
-    setIsLoading(true);
-    
-    try {
-      if (user) {
-        showSuccess({ 
-          title: 'Taking you to your dashboard', 
-          description: 'Your personalized database optimization workspace awaits!' 
-        });
-        navigate('/dashboard');
-      } else {
-        await loginDemo();
-        showSuccess({ 
-          title: 'Welcome to DBooster!', 
-          description: 'You\'re now exploring our full-featured demo environment.' 
-        });
-        setShowOnboarding(true);
-      }
-    } catch (error) {
-      console.error('Navigation error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const features = useMemo(() => [
-    {
-      icon: Database,
-      title: "Smart Query Analysis",
-      description: "AI-powered analysis of your SQL queries to identify performance bottlenecks and optimization opportunities.",
-      highlight: false,
-      details: "Our advanced AI engine analyzes query execution plans, identifies missing indexes, and suggests optimizations that can improve performance by up to 10x."
-    },
-    {
-      icon: Zap,
-      title: "Real-time Optimization",
-      description: "Get instant suggestions to improve query performance with detailed execution plans and recommendations.",
-      highlight: true,
-      details: "Real-time monitoring and analysis provides immediate feedback on query performance, helping you optimize as you develop."
-    },
-    {
-      icon: Shield,
-      title: "Enterprise Security",
-      description: "SOC2 compliant with enterprise-grade security features and team collaboration tools.",
-      highlight: false,
-      details: "Bank-level security with encryption at rest and in transit, role-based access control, and comprehensive audit logging."
-    },
-    {
-      icon: TrendingUp,
-      title: "Performance Insights",
-      description: "Track query performance trends and database health metrics with comprehensive analytics.",
-      highlight: true,
-      details: "Detailed dashboards and reports help you understand performance trends and make data-driven optimization decisions."
-    },
-    {
-      icon: Users,
-      title: "Team Collaboration",
-      description: "Share optimizations, review queries, and collaborate with your team on database improvements.",
-      highlight: false,
-      details: "Built-in collaboration tools including code reviews, shared workspaces, and team performance analytics."
-    },
-    {
-      icon: Code,
-      title: "GitHub Integration",
-      description: "Seamlessly connect your repositories and automatically scan for SQL queries that need optimization.",
-      highlight: false,
-      details: "Automatic repository scanning, pull request integration, and CI/CD pipeline compatibility for seamless workflow integration."
-    }
-  ], []);
-
-  const quickActions = useMemo(() => [
-    {
-      icon: Code,
-      title: "How It Works",
-      description: "Learn how DBooster optimizes your database queries in 4 simple steps.",
-      action: () => navigate('/how-it-works'),
-      color: "from-blue-500 to-cyan-500"
-    },
-    {
-      icon: Database,
-      title: "Learning Hub",
-      description: "Master database optimization with our comprehensive guides and tutorials.",
-      action: () => navigate('/learn'),
-      color: "from-green-500 to-emerald-500"
-    },
-    {
-      icon: TrendingUp,
-      title: "View Pricing",
-      description: "Choose the perfect plan for your team and scale as you grow.",
-      action: () => navigate('/pricing'),
-      color: "from-purple-500 to-pink-500"
-    }
-  ], [navigate]);
-
-  const guidanceSteps = useMemo(() => [
-    {
-      id: 'welcome',
-      title: 'Welcome to DBooster',
-      description: 'Get started by exploring our AI-powered database optimization platform.',
-      action: (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Click "Try Free Demo" to experience DBooster without signing up.</p>
-        </div>
-      )
-    },
-    {
-      id: 'features',
-      title: 'Explore Features',
-      description: 'Discover the powerful tools available to optimize your database performance.',
-      action: (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Scroll down to see our comprehensive feature set and how they can help your team.</p>
-        </div>
-      )
-    },
-    {
-      id: 'get-started',
-      title: 'Get Started',
-      description: 'Ready to optimize? Start your journey with DBooster.',
-      action: (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Use the demo mode to explore or sign up for full access to all features.</p>
-        </div>
-      )
-    }
-  ], []);
+  const {
+    user,
+    isLoading,
+    showOnboarding,
+    features,
+    quickActions,
+    guidanceSteps,
+    handleGetStarted,
+    navigate
+  } = useHomePage();
 
   if (user && showOnboarding) {
     return (
@@ -188,57 +61,12 @@ export default function Home() {
             onViewAllFeatures={() => navigate('/features')} 
           />
 
-          {/* Enhanced CTA Section with better copy */}
-          <Section spacing="lg" className="bg-gradient-to-r from-primary/5 to-purple-500/5">
-            <Container className="text-center">
-              <FadeIn>
-                <Heading level={2} size="xl" className="mb-4">
-                  Ready to Supercharge Your Database?
-                </Heading>
-              </FadeIn>
-              
-              <FadeIn delay={0.2}>
-                <Text size="lg" variant="muted" className="mb-8 max-w-2xl mx-auto">
-                  Join thousands of developers who have improved their database performance by up to 10x with DBooster's AI-powered optimization recommendations.
-                </Text>
-              </FadeIn>
-              
-              <FadeIn delay={0.4}>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <HoverScale>
-                    <EnhancedButton 
-                      size="xl" 
-                      onClick={handleGetStarted} 
-                      className="min-w-[200px]"
-                      loading={isLoading}
-                      loadingText="Setting up your workspace..."
-                      aria-label="Start optimizing your database performance now"
-                    >
-                      {user ? 'Go to Your Dashboard' : 'Start Free Analysis'}
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </EnhancedButton>
-                  </HoverScale>
-                  
-                  <HoverScale>
-                    <EnhancedButton 
-                      variant="outline" 
-                      size="xl"
-                      onClick={() => navigate('/learn')}
-                      className="min-w-[200px]"
-                    >
-                      Explore Learning Hub
-                    </EnhancedButton>
-                  </HoverScale>
-                </div>
-              </FadeIn>
-              
-              <FadeIn delay={0.6}>
-                <Text size="sm" variant="muted" className="mt-6">
-                  No credit card required • 2-minute setup • Cancel anytime
-                </Text>
-              </FadeIn>
-            </Container>
-          </Section>
+          <EnhancedCTASection
+            user={user}
+            isLoading={isLoading}
+            onGetStarted={handleGetStarted}
+            onNavigateToLearn={() => navigate('/learn')}
+          />
         </main>
       </div>
     </ErrorBoundary>
