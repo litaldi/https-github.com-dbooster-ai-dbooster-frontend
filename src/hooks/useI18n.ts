@@ -1,8 +1,10 @@
 
 import { useState, useEffect } from 'react';
 
+export type Language = 'en' | 'he';
+
 interface I18nConfig {
-  language: string;
+  language: Language;
   direction: 'ltr' | 'rtl';
   dateFormat: string;
   numberFormat: string;
@@ -13,6 +15,16 @@ const DEFAULT_CONFIG: I18nConfig = {
   direction: 'ltr',
   dateFormat: 'MM/dd/yyyy',
   numberFormat: 'en-US'
+};
+
+// Simple translation dictionary
+const translations: Record<Language, Record<string, string>> = {
+  en: {
+    'toggle_language': 'Toggle language',
+  },
+  he: {
+    'toggle_language': 'החלף שפה',
+  }
 };
 
 export function useI18n() {
@@ -27,18 +39,28 @@ export function useI18n() {
     document.documentElement.dir = config.direction;
   }, [config]);
 
-  const updateLanguage = (language: string) => {
-    setConfig(prev => ({ ...prev, language }));
+  const updateLanguage = (language: Language) => {
+    const direction = language === 'he' ? 'rtl' : 'ltr';
+    setConfig(prev => ({ ...prev, language, direction }));
   };
 
   const updateDirection = (direction: 'ltr' | 'rtl') => {
     setConfig(prev => ({ ...prev, direction }));
   };
 
+  const t = (key: string): string => {
+    return translations[config.language]?.[key] || key;
+  };
+
+  // Alias for backwards compatibility
+  const changeLanguage = updateLanguage;
+
   return {
     ...config,
     updateLanguage,
+    changeLanguage,
     updateDirection,
-    setConfig
+    setConfig,
+    t
   };
 }
