@@ -82,6 +82,10 @@ class ResourcePreloaderService {
     link.href = nextRoute;
     document.head.appendChild(link);
   }
+
+  getPreloadedResources(): string[] {
+    return Array.from(this.preloadedResources);
+  }
 }
 
 export const ResourcePreloader = new ResourcePreloaderService();

@@ -33,7 +33,9 @@ export function useAuthState() {
           monitoringService.captureError({
             message: `Initial session error: ${error.message}`,
             component: 'useAuthState',
-            action: 'getInitialSession'
+            action: 'getInitialSession',
+            timestamp: Date.now(),
+            userAgent: navigator.userAgent
           });
         }
 

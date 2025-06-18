@@ -34,7 +34,9 @@ export function useProductionAuth() {
           monitoringService.captureError({
             message: `Initial session error: ${error.message}`,
             component: 'useProductionAuth',
-            action: 'getInitialSession'
+            action: 'getInitialSession',
+            timestamp: Date.now(),
+            userAgent: navigator.userAgent
           });
         }
 
