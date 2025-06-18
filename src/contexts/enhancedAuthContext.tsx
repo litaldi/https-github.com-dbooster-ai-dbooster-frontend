@@ -1,5 +1,5 @@
 
-import { createContext, useContext, ReactNode, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useAuthState } from '@/hooks/useAuthState';
 import { enhancedAuthService } from '@/services/enhancedAuthService';
 import { secureDemoService } from '@/services/secureDemoService';
@@ -27,13 +27,14 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
   const {
     user,
     session,
-    isLoading,
+    isLoading: authIsLoading,
     isDemo,
     githubAccessToken,
-    setIsLoading,
-    updateAuthState,
-    clearAuthState
+    setIsDemo,
+    setGithubAccessToken
   } = useAuthState();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // Security monitoring
   useEffect(() => {
@@ -107,7 +108,11 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const { user: demoUser, session: demoSession } = await secureDemoService.createDemoSession();
-      updateAuthState(demoUser, demoSession, true);
+      // Update demo state using the available setters
+      setIsDemo(true);
+      if (demoSession?.access_token) {
+        setGithubAccessToken(demoSession.access_token);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -121,7 +126,9 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
       } else {
         await enhancedAuthService.logout(false);
       }
-      clearAuthState();
+      // Clear auth state using available setters
+      setIsDemo(false);
+      setGithubAccessToken(null);
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +147,7 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
   const value: EnhancedAuthContextType = {
     user,
     session,
-    isLoading,
+    isLoading: isLoading || authIsLoading,
     isDemo,
     githubAccessToken,
     loginWithOAuth,
