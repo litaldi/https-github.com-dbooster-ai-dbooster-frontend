@@ -1,11 +1,18 @@
 
 import { useEffect, useCallback } from 'react';
-import { preloadCriticalResources, measurePerformance } from '@/utils/performance';
+import { preloadCriticalResources } from '@/utils/performance';
 
 interface UsePerformanceOptimizationOptions {
   preloadResources?: boolean;
   measureTimings?: boolean;
   enableWebVitals?: boolean;
+}
+
+// Extend Window interface for gtag
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
 }
 
 export function usePerformanceOptimization(options: UsePerformanceOptimizationOptions = {}) {
@@ -29,14 +36,14 @@ export function usePerformanceOptimization(options: UsePerformanceOptimizationOp
     // Dynamically import web-vitals to avoid bundle bloat
     const loadWebVitals = async () => {
       try {
-        const { onLCP, onFID, onCLS, onFCP, onTTFB } = await import('web-vitals');
+        const { onLCP, onINP, onCLS, onFCP, onTTFB } = await import('web-vitals');
         
         onLCP((metric) => {
           if (measureTimings) {
             console.log('LCP:', metric);
           }
           // Send to analytics in production
-          if (typeof window.gtag === 'function') {
+          if (window.gtag) {
             window.gtag('event', 'web_vitals', {
               event_category: 'Web Vitals',
               event_label: 'LCP',
@@ -46,14 +53,14 @@ export function usePerformanceOptimization(options: UsePerformanceOptimizationOp
           }
         });
 
-        onFID((metric) => {
+        onINP((metric) => {
           if (measureTimings) {
-            console.log('FID:', metric);
+            console.log('INP:', metric);
           }
-          if (typeof window.gtag === 'function') {
+          if (window.gtag) {
             window.gtag('event', 'web_vitals', {
               event_category: 'Web Vitals',
-              event_label: 'FID',
+              event_label: 'INP',
               value: Math.round(metric.value),
               non_interaction: true,
             });
@@ -64,7 +71,7 @@ export function usePerformanceOptimization(options: UsePerformanceOptimizationOp
           if (measureTimings) {
             console.log('CLS:', metric);
           }
-          if (typeof window.gtag === 'function') {
+          if (window.gtag) {
             window.gtag('event', 'web_vitals', {
               event_category: 'Web Vitals',
               event_label: 'CLS',
@@ -94,8 +101,24 @@ export function usePerformanceOptimization(options: UsePerformanceOptimizationOp
   }, [enableWebVitals, measureTimings]);
 
   // Performance measurement utility
-  const measureAsync = useCallback((name: string) => {
-    return measurePerformance(name);
+  const measureAsync = useCallback((name: string, fn: () => void | Promise<void>) => {
+    return async () => {
+      const start = performance.now();
+      try {
+        await fn();
+      } finally {
+        const end = performance.now();
+        console.log(`${name} took ${end - start} milliseconds`);
+        
+        // In production, send to analytics
+        if (window.gtag) {
+          window.gtag('event', 'timing_complete', {
+            name: name,
+            value: Math.round(end - start)
+          });
+        }
+      }
+    };
   }, []);
 
   // Resource preloader utility

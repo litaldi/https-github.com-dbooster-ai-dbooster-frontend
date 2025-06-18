@@ -6,7 +6,7 @@ import { TrendingUp, TrendingDown, Zap, Clock } from 'lucide-react';
 
 interface PerformanceMetrics {
   lcp: number; // Largest Contentful Paint
-  fid: number; // First Input delay
+  inp: number; // Interaction to Next Paint (replaces FID)
   cls: number; // Cumulative Layout Shift
   fcp: number; // First Contentful Paint
   ttfb: number; // Time to First Byte
@@ -31,7 +31,7 @@ export function PerformanceMonitor() {
         
         setMetrics({
           lcp: 0, // Will be updated by observer
-          fid: 0, // Will be updated by observer
+          inp: 0, // Will be updated by observer
           cls: 0, // Will be updated by observer
           fcp: navigation.responseStart - navigation.fetchStart,
           ttfb: navigation.responseStart - navigation.requestStart,
@@ -41,13 +41,13 @@ export function PerformanceMonitor() {
 
     // Use Web Vitals library if available
     if (typeof window !== 'undefined') {
-      import('web-vitals').then(({ onLCP, onFID, onCLS, onFCP }) => {
+      import('web-vitals').then(({ onLCP, onINP, onCLS, onFCP }) => {
         onLCP((metric) => {
           setMetrics(prev => prev ? { ...prev, lcp: metric.value } : null);
         });
         
-        onFID((metric) => {
-          setMetrics(prev => prev ? { ...prev, fid: metric.value } : null);
+        onINP((metric) => {
+          setMetrics(prev => prev ? { ...prev, inp: metric.value } : null);
         });
         
         onCLS((metric) => {
@@ -101,13 +101,13 @@ export function PerformanceMonitor() {
           </div>
           
           <div className="flex justify-between items-center text-xs">
-            <span>FID (First Input Delay)</span>
+            <span>INP (Interaction to Next Paint)</span>
             <div className="flex items-center gap-1">
-              <span className={getScoreColor(metrics.fid, [100, 300])}>
-                {metrics.fid.toFixed(0)}ms
+              <span className={getScoreColor(metrics.inp, [200, 500])}>
+                {metrics.inp.toFixed(0)}ms
               </span>
               <Badge variant="outline" className="text-xs">
-                {getScoreBadge(metrics.fid, [100, 300])}
+                {getScoreBadge(metrics.inp, [200, 500])}
               </Badge>
             </div>
           </div>

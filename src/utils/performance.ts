@@ -2,6 +2,13 @@
 // Performance optimization utilities
 import { lazy } from 'react';
 
+// Extend Window interface for gtag
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+
 // Image optimization utilities
 export const optimizeImage = (src: string, width?: number, height?: number, format: 'webp' | 'avif' | 'jpeg' = 'webp') => {
   if (!src) return src;
@@ -54,7 +61,7 @@ export const measurePerformance = (name: string, fn: () => void | Promise<void>)
       console.log(`${name} took ${end - start} milliseconds`);
       
       // In production, send to analytics
-      if (typeof window !== 'undefined' && window.gtag) {
+      if (window.gtag) {
         window.gtag('event', 'timing_complete', {
           name: name,
           value: Math.round(end - start)
@@ -75,13 +82,10 @@ export const createIntersectionObserver = (callback: IntersectionObserverCallbac
   });
 };
 
-// Bundle size analyzer helper
+// Bundle size analyzer helper (removed webpack-bundle-analyzer import)
 export const logBundleInfo = () => {
   if (process.env.NODE_ENV === 'development') {
-    import('webpack-bundle-analyzer/lib/analyzer').then(({ getBundleDir }) => {
-      console.log('Bundle analysis available in development mode');
-    }).catch(() => {
-      console.log('Bundle analyzer not available');
-    });
+    console.log('Bundle analysis available in development mode');
+    console.log('Run "npm run build" and check the dist folder for bundle analysis');
   }
 };

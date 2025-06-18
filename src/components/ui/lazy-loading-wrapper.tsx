@@ -23,16 +23,17 @@ export function LazyLoadingWrapper({
   );
 }
 
-// Utility function to create lazy-loaded components with built-in error handling
+// Simplified utility function to create lazy-loaded components
 export function createLazyComponent<T extends React.ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   fallback?: React.ReactNode
 ) {
   const LazyComponent = lazy(importFn);
   
-  return React.forwardRef<any, React.ComponentProps<T>>((props, ref) => (
+  // Simplified wrapper without complex forwardRef generics
+  return (props: React.ComponentProps<T>) => (
     <LazyLoadingWrapper fallback={fallback}>
-      <LazyComponent {...props} ref={ref} />
+      <LazyComponent {...props} />
     </LazyLoadingWrapper>
-  ));
+  );
 }

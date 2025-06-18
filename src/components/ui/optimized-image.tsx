@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { optimizeImage, createIntersectionObserver } from '@/utils/performance';
 
-interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface OptimizedImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: string;
   alt: string;
   width?: number;
@@ -11,7 +11,6 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   format?: 'webp' | 'avif' | 'jpeg';
   lazy?: boolean;
   priority?: boolean;
-  className?: string;
 }
 
 export function OptimizedImage({
@@ -75,8 +74,7 @@ export function OptimizedImage({
               onError={() => setError(true)}
               className={cn(
                 'transition-opacity duration-300',
-                isLoaded ? 'opacity-100' : 'opacity-0',
-                props.className
+                isLoaded ? 'opacity-100' : 'opacity-0'
               )}
             />
           </picture>
