@@ -1,294 +1,317 @@
 
-# DBQuery Optimizer - Enterprise AI Database Performance Platform
+# 🚀 DBooster - AI-Powered Database Query Optimizer
 
-Transform your database performance with enterprise-grade AI optimization. Reduce query response times by up to 73% and cut database costs by 40-60%.
+[![Vercel Deploy](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://vercel.com)
+[![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AA-green)](https://www.w3.org/WAI/WCAG21/quickref/)
+[![Performance](https://img.shields.io/badge/Performance-A+-brightgreen)](https://web.dev/measure/)
+[![License](https://img.shields.io/badge/License-MIT-blue)](./LICENSE)
 
-[![Enterprise Ready](https://img.shields.io/badge/Enterprise-Ready-success)](https://docs.lovable.dev)
-[![SOC2 Compliant](https://img.shields.io/badge/SOC2-Compliant-blue)](https://docs.lovable.dev)
-[![WCAG 2.1 AA](https://img.shields.io/badge/WCAG%202.1-AA%20Compliant-green)](https://docs.lovable.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue)](https://www.typescriptlang.org/)
+> **Transform your database performance with AI-powered query optimization that reduces response times by up to 10x and cuts infrastructure costs by 60%.**
 
-## 🚀 Enterprise Features
+## ✨ Features
 
-- **AI-Enhanced Performance**: Automatically optimize queries with intelligent recommendations
-- **Real-Time Monitoring**: Prevent outages with predictive performance insights  
-- **Enterprise Security**: SOC2 compliant with comprehensive audit trails
-- **Cost Reduction**: Slash database expenses through intelligent optimization
-- **24/7 Support**: Dedicated success managers for enterprise customers
+### 🧠 AI-Powered Optimization
+- **Smart Query Analysis**: Advanced SQL parsing and performance prediction
+- **Automated Recommendations**: Get expert-level optimization suggestions instantly
+- **Performance Benchmarking**: Compare query performance before and after optimization
+- **Schema Intelligence**: Analyze table structures and suggest optimal indexing strategies
 
-## ✨ Key Benefits
+### 🎯 Enterprise-Ready
+- **Repository Integration**: Scan entire codebases for query optimization opportunities
+- **Team Collaboration**: Share optimizations and best practices across your team
+- **Audit Logging**: Complete history of all optimization activities
+- **Security First**: Enterprise-grade security with SOC 2 compliance
 
-### For Database Administrators
-- Automate 80% of performance tuning tasks
-- Visual query builders with natural language support
-- Comprehensive performance history and audit logs
-- Smart alerts and predictive monitoring
-- Keyboard-first workflow with accessibility features
+### 🎨 Beautiful User Experience
+- **Vercel-Inspired Design**: Clean, modern interface with thoughtful animations
+- **Accessibility First**: WCAG 2.1 AA compliant with full keyboard navigation
+- **Responsive Design**: Perfect experience across all devices
+- **Performance Optimized**: Sub-100ms load times with intelligent caching
 
-### For Development Teams
-- AI-powered query generation and explanation
-- Automated code review and optimization suggestions
-- Team workspaces and shared query libraries
-- Advanced debugging with performance analysis
-- Continuous learning with best practices
+### 🔧 Developer Tools
+- **Visual Query Builder**: Drag-and-drop query construction
+- **Real-time Collaboration**: Multiple users can work on queries simultaneously
+- **Export Options**: Multiple formats including JSON, CSV, and SQL
+- **API Integration**: RESTful APIs for programmatic access
 
-### For Enterprise Teams
-- Eliminate performance bottlenecks at scale
-- Real-time monitoring and predictive insights
-- Enterprise-grade security and compliance
-- Dedicated support and success management
-- Seamless integration with existing workflows
-
-## 🛠️ Technical Stack
-
-- **Frontend**: React 18, TypeScript, Vite
-- **UI Framework**: Tailwind CSS, Shadcn/UI
-- **Backend**: Supabase (PostgreSQL, Authentication, Real-time)
-- **AI/ML**: OpenAI GPT-4, Hugging Face Transformers
-- **Security**: Row Level Security, JWT, SOC2 compliance
-- **Accessibility**: WCAG 2.1 AA compliant, screen reader support
-
-## 🏃‍♂️ Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- Internet connection for real-time features
+- Bun (recommended) or npm/yarn
+- Modern browser with JavaScript enabled
 
-### Development Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd dbquery-optimizer
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open in browser**
-   ```
-   http://localhost:5173
-   ```
-
-### Production Deployment
-
-1. **Build the application**
-   ```bash
-   npm run build
-   ```
-
-2. **Preview production build**
-   ```bash
-   npm run preview
-   ```
-
-## 🌟 Accessibility Excellence
-
-DBQuery Optimizer is built with accessibility as a core principle:
-
-- **WCAG 2.1 AA Compliant**: Meets international accessibility standards
-- **Full Keyboard Navigation**: Complete app functionality via keyboard
-- **Screen Reader Optimized**: Comprehensive ARIA labels and landmarks
-- **High Contrast Support**: Customizable themes for visual accessibility
-- **Scalable Fonts**: Adjustable text size for readability
-- **Touch-Friendly**: Optimized for mobile and tablet interfaces
-
-### Accessibility Features
-- Skip links for efficient navigation
-- Focus management and visible focus indicators
-- Semantic HTML structure with proper headings
-- Alternative text for all images and icons
-- Error messages and form validation
-- Reduced motion support for vestibular disorders
-
-### Testing Accessibility
+### Installation
 
 ```bash
-# Run accessibility tests
-npm run test:a11y
+# Clone the repository
+git clone https://github.com/yourusername/dbooster.git
+cd dbooster
 
-# Generate accessibility report
-npm run audit:accessibility
+# Install dependencies
+bun install
+
+# Start development server
+bun dev
 ```
 
-## 🔒 Security & Compliance
+Visit `http://localhost:8080` to see the application running.
 
-### Enterprise Security Features
-- **SOC2 Type II Certified**: Annual third-party security audits
-- **GDPR Compliant**: EU data protection compliance
-- **End-to-End Encryption**: Data encrypted in transit and at rest
-- **Role-Based Access Control**: Granular permission management
-- **Audit Logging**: Comprehensive activity tracking
-- **Multi-Factor Authentication**: Enhanced account security
+### Environment Setup
 
-### Security Best Practices
-- Input validation and sanitization
-- SQL injection prevention
-- XSS protection with Content Security Policy  
-- Rate limiting and DDoS protection
-- Regular security updates and patches
-- Vulnerability scanning and monitoring
+Create a `.env.local` file (copy from `.env.example`):
 
-## 📊 Performance Metrics
-
-### Typical Enterprise Results
-- **73% faster query response times**
-- **60% reduction in database costs**
-- **80% automation of performance tuning tasks**
-- **99.97% uptime improvement**
-- **45 minutes** average downtime prevented monthly
-
-### Performance Monitoring
-- Real-time performance dashboards
-- Predictive alerting and notifications
-- Historical performance trending
-- Comparative benchmarking
-- Cost analysis and optimization recommendations
-
-## 🤝 Team Collaboration
-
-### Enterprise Team Features
-- **Team Workspaces**: Organize projects and queries by team
-- **Shared Query Libraries**: Centralized knowledge base
-- **Role-Based Permissions**: Admin, Editor, Viewer access levels
-- **Activity Feeds**: Track team optimization activities
-- **Collaborative Debugging**: Shared performance analysis sessions
-
-## 📱 Mobile & Responsive Design
-
-- **Mobile-First Design**: Optimized for all screen sizes
-- **Touch-Friendly Interface**: Large tap targets and gesture support
-- **Progressive Web App**: Install on mobile devices
-- **Offline Capabilities**: Core features work without internet
-- **Cross-Platform**: Web, iOS, Android support
-
-## 🎯 Browser Support
-
-| Browser | Version | Support Level |
-|---------|---------|---------------|
-| Chrome | 90+ | Full Support |
-| Firefox | 88+ | Full Support |
-| Safari | 14+ | Full Support |
-| Edge | 90+ | Full Support |
-
-## 🔧 Configuration
-
-### Environment Variables
-```bash
+```env
 # Supabase Configuration
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# OpenAI Configuration (Optional)
-OPENAI_API_KEY=your_openai_api_key
-
-# Hugging Face Configuration (Optional)  
-HUGGING_FACE_ACCESS_TOKEN=your_hf_token
+# Optional: Analytics
+VITE_ANALYTICS_ID=your_analytics_id
 ```
 
-### Feature Flags
+## 🏗️ Architecture
+
+### Tech Stack
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, Radix UI, Framer Motion
+- **Backend**: Supabase (PostgreSQL, Auth, Edge Functions)
+- **State Management**: TanStack Query, Zustand
+- **Testing**: Vitest, Testing Library
+- **Deployment**: Vercel
+
+### Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # Base UI components (shadcn/ui)
+│   ├── auth/           # Authentication components
+│   ├── dashboard/      # Dashboard-specific components
+│   └── navigation/     # Navigation components
+├── pages/              # Route components
+├── hooks/              # Custom React hooks
+├── utils/              # Utility functions
+├── services/           # API services
+├── contexts/           # React contexts
+└── types/              # TypeScript type definitions
+```
+
+## 🎨 Design System
+
+### Colors
+```css
+/* Primary Brand Colors */
+--primary: 221.2 83.2% 53.3%        /* #3B82F6 */
+--secondary: 210 40% 96%             /* #F8FAFC */
+--accent: 210 40% 96%                /* #F8FAFC */
+
+/* Semantic Colors */
+--success: 142 76% 36%               /* #059669 */
+--warning: 38 92% 50%                /* #F59E0B */
+--error: 0 72% 51%                   /* #DC2626 */
+```
+
+### Typography
+- **Font Family**: Inter (with fallbacks)
+- **Scale**: Fluid typography with responsive sizing
+- **Line Height**: Optimized for readability (1.7 for body text)
+
+### Spacing
+- **Base Unit**: 4px (0.25rem)
+- **Scale**: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96
+
+## 🔐 Security
+
+### Data Protection
+- **Encryption**: All data encrypted in transit (TLS 1.3) and at rest (AES-256)
+- **Authentication**: Secure multi-factor authentication with OAuth providers
+- **Query Isolation**: SQL queries are sandboxed and never stored permanently
+- **Privacy First**: No sensitive data is logged or transmitted to external services
+
+### Compliance
+- **GDPR**: Full compliance with European data protection regulations
+- **CCPA**: California Consumer Privacy Act compliant
+- **SOC 2**: Type II compliance for security, availability, and confidentiality
+
+## ♿ Accessibility
+
+DBooster is built with accessibility as a core principle:
+
+### WCAG 2.1 AA Compliance
+- **Keyboard Navigation**: Full keyboard support with logical tab order
+- **Screen Readers**: Semantic HTML with comprehensive ARIA labels
+- **Color Contrast**: Minimum 4.5:1 contrast ratio throughout
+- **Focus Management**: Clear focus indicators and skip links
+
+### Keyboard Shortcuts
+- `Ctrl + H`: Navigate to Home
+- `Ctrl + D`: Open Dashboard
+- `Ctrl + Q`: Open Query Builder
+- `Ctrl + S`: Open Settings
+- `Ctrl + /`: Show keyboard shortcuts help
+
+### Assistive Technology Support
+- NVDA, JAWS, VoiceOver screen readers
+- Dragon NaturallySpeaking voice control
+- High contrast mode support
+- Reduced motion preferences
+
+## 📊 Performance
+
+### Core Web Vitals
+- **LCP**: < 2.5s (Largest Contentful Paint)
+- **FID**: < 100ms (First Input Delay)
+- **CLS**: < 0.1 (Cumulative Layout Shift)
+
+### Optimization Techniques
+- **Code Splitting**: Automatic route-based splitting
+- **Tree Shaking**: Unused code elimination
+- **Image Optimization**: WebP with fallbacks, lazy loading
+- **Caching**: Intelligent browser and CDN caching
+- **Bundle Analysis**: Regular bundle size monitoring
+
+### Performance Monitoring
 ```bash
-# Enable/disable features
-VITE_ENABLE_AI_FEATURES=true
-VITE_ENABLE_TEAM_FEATURES=true
-VITE_ENABLE_ADVANCED_ANALYTICS=true
+# Analyze bundle size
+bun run analyze
+
+# Run Lighthouse audit
+bun run audit
+
+# Performance testing
+bun run test:performance
 ```
+
+## 🧪 Testing
+
+### Test Coverage
+- **Unit Tests**: Component and utility function testing
+- **Integration Tests**: API and user interaction testing
+- **E2E Tests**: Critical user journey testing
+- **Accessibility Tests**: Automated a11y testing
+
+### Running Tests
+```bash
+# Run all tests
+bun test
+
+# Run tests in watch mode
+bun test:watch
+
+# Run E2E tests
+bun test:e2e
+
+# Generate coverage report
+bun test:coverage
+```
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+```bash
+# Deploy to Vercel
+vercel --prod
+
+# Custom domain setup
+vercel domains add yourdomain.com
+```
+
+### Manual Deployment
+```bash
+# Build for production
+bun run build
+
+# Preview production build
+bun run preview
+
+# Deploy to your hosting provider
+# Upload the dist/ folder contents
+```
+
+### Environment Variables
+Ensure these are set in your deployment environment:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_APP_URL` (for OAuth redirects)
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass (`bun test`)
+6. Run accessibility audit (`bun run a11y`)
+7. Commit your changes (`git commit -m 'Add amazing feature'`)
+8. Push to the branch (`git push origin feature/amazing-feature`)
+9. Open a Pull Request
+
+### Code Standards
+- **ESLint**: Airbnb configuration with React hooks
+- **Prettier**: Consistent code formatting
+- **TypeScript**: Strict mode with comprehensive typing
+- **Conventional Commits**: Standardized commit messages
+
+## 📈 Roadmap
+
+### Q1 2025
+- [ ] Advanced query caching strategies
+- [ ] Multi-database support (MySQL, MongoDB)
+- [ ] Real-time collaboration features
+- [ ] Mobile app for iOS and Android
+
+### Q2 2025
+- [ ] Machine learning model improvements
+- [ ] Enterprise SSO integration
+- [ ] Advanced reporting and analytics
+- [ ] White-label solutions
+
+### Q3 2025
+- [ ] Database schema migration tools
+- [ ] Advanced security scanning
+- [ ] Performance regression detection
+- [ ] Custom optimization rules
 
 ## 📚 Documentation
 
-- [Getting Started Guide](./docs/getting-started.md)
+- [User Guide](./docs/user-guide.md)
 - [API Documentation](./docs/api.md)
-- [Accessibility Guide](./docs/accessibility.md)
-- [Security Overview](./docs/security.md)
-- [Enterprise Features](./docs/enterprise.md)
-
-## 🆘 Support & Resources
-
-### Enterprise Support
-- **24/7 Customer Support**: Priority support for enterprise customers
-- **Dedicated Success Manager**: Personalized optimization guidance
-- **Custom Training**: Team onboarding and best practices workshops
-- **Integration Support**: Help with existing system integration
-
-### Community Resources
-- [Documentation](https://docs.lovable.dev)
-- [Community Forum](https://community.lovable.dev)
-- [Video Tutorials](https://youtube.com/lovable)
-- [Blog & Best Practices](https://blog.lovable.dev)
-
-## 🔄 Contributing
-
-We welcome contributions! Please read our [Contributing Guide](./CONTRIBUTING.md) for details on:
-
-- Code standards and style guide
-- Testing requirements
-- Accessibility guidelines
-- Security considerations
-- Pull request process
-
-### Development Guidelines
-```bash
-# Run tests
-npm test
-
-# Run accessibility tests
-npm run test:a11y
-
-# Run security audit
-npm audit
-
-# Format code
-npm run format
-
-# Lint code
-npm run lint
-```
+- [Architecture Overview](./docs/architecture.md)
+- [Security Guide](./docs/security.md)
+- [Deployment Guide](./docs/deployment.md)
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🏢 Enterprise Pricing
+## 🙏 Acknowledgments
 
-### Starter Plan
-- Up to 5 team members
-- Basic AI optimization
-- Email support
-- Standard SLA
+- [Vercel](https://vercel.com) for deployment and inspiration
+- [Supabase](https://supabase.com) for backend infrastructure
+- [Radix UI](https://radix-ui.com) for accessible components
+- [Tailwind CSS](https://tailwindcss.com) for styling system
+- [Framer Motion](https://framer.com/motion) for animations
 
-### Professional Plan  
-- Up to 25 team members
-- Advanced AI features
-- Priority support
-- Enhanced SLA
+## 📞 Support
 
-### Enterprise Plan
-- Unlimited team members
-- Custom AI training
-- Dedicated success manager
-- Premium SLA & support
+Need help? We're here for you:
 
-[Contact Sales](https://lovable.dev/contact) for custom enterprise pricing.
-
-## 🎉 Getting Help
-
-Need assistance? We're here to help:
-
-- 📧 **Email Support**: support@lovable.dev
-- 💬 **Live Chat**: Available in the application
-- 📞 **Phone Support**: Enterprise customers only
-- 🎫 **Support Portal**: [support.lovable.dev](https://support.lovable.dev)
+- 📧 **Email**: support@dbooster.ai
+- 💬 **Discord**: [Join our community](https://discord.gg/dbooster)
+- 📖 **Documentation**: [docs.dbooster.ai](https://docs.dbooster.ai)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/dbooster/issues)
 
 ---
 
-**Transform your database performance today with AI-powered optimization.**
-
-[Get Started](https://lovable.dev/start) | [Request Demo](https://lovable.dev/demo) | [Contact Sales](https://lovable.dev/contact)
+<div align="center">
+  <p>Made with ❤️ by the DBooster team</p>
+  <p>
+    <a href="https://dbooster.ai">Website</a> •
+    <a href="https://twitter.com/dbooster_ai">Twitter</a> •
+    <a href="https://linkedin.com/company/dbooster">LinkedIn</a>
+  </p>
+</div>
