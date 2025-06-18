@@ -6,6 +6,8 @@ import './index.css'
 import { setupGlobalErrorHandling } from './utils/errorHandling'
 import { monitoringService } from './services/monitoringService'
 import { initializeProductionEnvironment } from './utils/productionCleanup'
+import { ResourcePreloader } from './utils/resourcePreloader'
+import { BundleAnalyzer } from './utils/bundleAnalyzer'
 
 // Initialize production environment cleanup
 initializeProductionEnvironment();
@@ -16,8 +18,24 @@ setupGlobalErrorHandling();
 // Initialize monitoring service
 monitoringService;
 
-// Performance monitoring setup
+// Performance optimization setup
 if (typeof window !== 'undefined') {
+  // Preload critical resources immediately
+  ResourcePreloader.preloadCriticalAssets();
+
+  // Bundle analysis in development
+  if (process.env.NODE_ENV === 'development') {
+    setTimeout(() => {
+      BundleAnalyzer.analyzeChunks();
+      BundleAnalyzer.measureLoadTimes();
+      
+      const memory = BundleAnalyzer.getMemoryUsage();
+      if (memory) {
+        console.log(`💾 Memory Usage: ${memory.used}MB / ${memory.total}MB (Limit: ${memory.limit}MB)`);
+      }
+    }, 1000);
+  }
+
   // Register service worker for caching
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
     window.addEventListener('load', () => {
@@ -35,18 +53,32 @@ if (typeof window !== 'undefined') {
     });
   }
 
-  // Preload critical resources
-  const preloadCriticalResources = () => {
-    // Preload critical CSS
-    const cssLink = document.createElement('link');
-    cssLink.rel = 'preload';
-    cssLink.href = '/src/index.css';
-    cssLink.as = 'style';
-    document.head.appendChild(cssLink);
+  // Enhanced resource hints for better performance
+  const addResourceHints = () => {
+    // DNS prefetch for external domains
+    const domains = [
+      'fonts.googleapis.com',
+      'fonts.gstatic.com',
+      'www.google-analytics.com',
+      'vitals.vercel-analytics.com'
+    ];
+
+    domains.forEach(domain => {
+      const link = document.createElement('link');
+      link.rel = 'dns-prefetch';
+      link.href = `//${domain}`;
+      document.head.appendChild(link);
+    });
+
+    // Prefetch likely next pages
+    const likelyPages = ['/dashboard', '/repositories', '/queries'];
+    likelyPages.forEach(page => {
+      ResourcePreloader.prefetchRoute(page);
+    });
   };
 
-  // Run preloading
-  preloadCriticalResources();
+  // Run resource hints after initial load
+  addResourceHints();
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
