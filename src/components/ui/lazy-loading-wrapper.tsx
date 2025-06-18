@@ -1,0 +1,38 @@
+
+import React, { Suspense, lazy } from 'react';
+import { LoadingSpinner } from '@/components/ui/enhanced-loading-states';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+
+interface LazyLoadingWrapperProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  errorFallback?: React.ReactNode;
+}
+
+export function LazyLoadingWrapper({ 
+  children, 
+  fallback = <LoadingSpinner size="lg" text="Loading component..." />,
+  errorFallback = <div className="p-4 text-center text-muted-foreground">Failed to load component</div>
+}: LazyLoadingWrapperProps) {
+  return (
+    <ErrorBoundary fallback={errorFallback}>
+      <Suspense fallback={fallback}>
+        {children}
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+// Utility function to create lazy-loaded components with built-in error handling
+export function createLazyComponent<T extends React.ComponentType<any>>(
+  importFn: () => Promise<{ default: T }>,
+  fallback?: React.ReactNode
+) {
+  const LazyComponent = lazy(importFn);
+  
+  return React.forwardRef<any, React.ComponentProps<T>>((props, ref) => (
+    <LazyLoadingWrapper fallback={fallback}>
+      <LazyComponent {...props} ref={ref} />
+    </LazyLoadingWrapper>
+  ));
+}
