@@ -73,7 +73,7 @@ export function NotificationCenter({
         )}
       </EnhancedButton>
 
-      <Animate // ... keep existing code (from imports to closing tag)Presence>
+      <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: -10 }}
