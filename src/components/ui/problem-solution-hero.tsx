@@ -115,7 +115,7 @@ export function ProblemSolutionHero({ onGetStarted, onLearnMore, isLoading = fal
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
             Join 10,000+ developers who've already optimized their databases
           </Text>
-        </Fadein>
+        </FadeIn>
       </Container>
     </Section>
   );
