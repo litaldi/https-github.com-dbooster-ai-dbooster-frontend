@@ -38,14 +38,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     });
 
     // Send to monitoring service
-    monitoringService.captureError({
-      message: error.message,
-      stack: error.stack,
-      timestamp: Date.now(),
-      userAgent: navigator.userAgent,
-      component: 'ErrorBoundary',
-      action: 'Component Error'
-    });
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
     
     // Call optional error handler
     this.props.onError?.(error, errorInfo);

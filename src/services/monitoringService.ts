@@ -1,181 +1,113 @@
-
-interface ErrorEvent {
+interface ErrorReport {
   message: string;
   stack?: string;
-  url?: string;
-  line?: number;
-  column?: number;
   timestamp: number;
   userAgent: string;
-  userId?: string;
   component?: string;
   action?: string;
-}
-
-interface PerformanceMetric {
-  name: string;
-  value: number;
-  timestamp: number;
-  url: string;
   userId?: string;
 }
 
-export class MonitoringService {
-  private static instance: MonitoringService;
-  private errors: ErrorEvent[] = [];
-  private metrics: PerformanceMetric[] = [];
-  private maxStoredEvents = 100;
+interface PerformanceReport {
+  metric: string;
+  value: number;
+  timestamp: number;
+  page: string;
+}
 
-  static getInstance(): MonitoringService {
-    if (!MonitoringService.instance) {
-      MonitoringService.instance = new MonitoringService();
-    }
-    return MonitoringService.instance;
-  }
+class MonitoringService {
+  private errorQueue: ErrorReport[] = [];
+  private performanceQueue: PerformanceReport[] = [];
+  private maxQueueSize = 50;
 
-  constructor() {
-    this.setupGlobalErrorHandling();
-    this.setupPerformanceMonitoring();
-  }
-
-  private setupGlobalErrorHandling() {
-    window.addEventListener('error', (event) => {
-      this.captureError({
-        message: event.error?.message || event.message || 'Unknown error',
-        stack: event.error?.stack,
-        url: event.filename,
-        line: event.lineno,
-        column: event.colno,
-        timestamp: Date.now(),
-        userAgent: navigator.userAgent,
-        component: 'Global',
-        action: 'Uncaught Error'
-      });
-    });
-
-    window.addEventListener('unhandledrejection', (event) => {
-      this.captureError({
-        message: event.reason?.message || 'Unhandled promise rejection',
-        stack: event.reason?.stack,
-        timestamp: Date.now(),
-        userAgent: navigator.userAgent,
-        component: 'Global',
-        action: 'Unhandled Promise Rejection'
-      });
-    });
-  }
-
-  private setupPerformanceMonitoring() {
-    // Monitor Web Vitals if available
-    if (typeof window !== 'undefined') {
-      import('web-vitals').then(({ onLCP, onINP, onCLS, onFCP, onTTFB }) => {
-        onLCP((metric) => this.captureMetric('LCP', metric.value));
-        onINP((metric) => this.captureMetric('INP', metric.value));
-        onCLS((metric) => this.captureMetric('CLS', metric.value));
-        onFCP((metric) => this.captureMetric('FCP', metric.value));
-        onTTFB((metric) => this.captureMetric('TTFB', metric.value));
-      }).catch(() => {
-        // Web Vitals library not available, continue without it
-      });
-    }
-
-    // Monitor navigation timing
-    if ('performance' in window && 'getEntriesByType' in performance) {
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-          if (navigation) {
-            this.captureMetric('DOM Content Loaded', navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart);
-            this.captureMetric('Load Complete', navigation.loadEventEnd - navigation.loadEventStart);
-            this.captureMetric('Page Load Time', navigation.loadEventEnd - navigation.fetchStart);
-          }
-        }, 0);
-      });
-    }
-  }
-
-  captureError(error: Partial<ErrorEvent>) {
-    const errorEvent: ErrorEvent = {
-      message: error.message || 'Unknown error',
-      stack: error.stack,
-      url: error.url || window.location.href,
-      line: error.line,
-      column: error.column,
+  captureError(error: ErrorReport) {
+    this.errorQueue.push({
+      ...error,
       timestamp: error.timestamp || Date.now(),
-      userAgent: error.userAgent || navigator.userAgent,
-      userId: error.userId,
-      component: error.component,
-      action: error.action
-    };
+      userAgent: error.userAgent || navigator.userAgent
+    });
 
-    this.errors.push(errorEvent);
-    this.trimStoredEvents();
+    // Keep queue size manageable
+    if (this.errorQueue.length > this.maxQueueSize) {
+      this.errorQueue = this.errorQueue.slice(-this.maxQueueSize);
+    }
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.group('🚨 Error Captured by Monitoring Service');
-      console.error('Error:', errorEvent);
-      console.groupEnd();
+      console.error('Error captured:', error);
     }
 
-    // In production, send to external monitoring service
-    this.sendToExternalService('error', errorEvent);
+    this.flushErrors();
   }
 
-  captureMetric(name: string, value: number) {
-    const metric: PerformanceMetric = {
-      name,
-      value,
-      timestamp: Date.now(),
-      url: window.location.href
-    };
+  capturePerformance(report: PerformanceReport) {
+    this.performanceQueue.push({
+      ...report,
+      timestamp: report.timestamp || Date.now(),
+      page: report.page || window.location.pathname
+    });
 
-    this.metrics.push(metric);
-    this.trimStoredEvents();
-
-    // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📊 Performance Metric: ${name} = ${value}ms`);
+    if (this.performanceQueue.length > this.maxQueueSize) {
+      this.performanceQueue = this.performanceQueue.slice(-this.maxQueueSize);
     }
 
-    // Send to external service
-    this.sendToExternalService('metric', metric);
+    this.flushPerformance();
   }
 
-  private trimStoredEvents() {
-    if (this.errors.length > this.maxStoredEvents) {
-      this.errors = this.errors.slice(-this.maxStoredEvents);
-    }
-    if (this.metrics.length > this.maxStoredEvents) {
-      this.metrics = this.metrics.slice(-this.maxStoredEvents);
-    }
-  }
+  private async flushErrors() {
+    if (this.errorQueue.length === 0) return;
 
-  private sendToExternalService(type: 'error' | 'metric', data: ErrorEvent | PerformanceMetric) {
-    // In production, integrate with services like Sentry, LogRocket, etc.
-    if (process.env.NODE_ENV === 'production') {
-      // Example: Send to analytics
-      if (window.gtag) {
-        window.gtag('event', 'exception' + (type === 'metric' ? '_performance' : ''), {
-          description: type === 'error' ? (data as ErrorEvent).message : (data as PerformanceMetric).name,
-          fatal: type === 'error'
-        });
-      }
+    const errors = [...this.errorQueue];
+    this.errorQueue = [];
+
+    try {
+      // In a real app, send to your monitoring service
+      console.log('Flushing errors to monitoring service:', errors);
+      
+      // Example: await fetch('/api/monitoring/errors', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ errors })
+      // });
+    } catch (error) {
+      console.error('Failed to flush errors:', error);
+      // Re-add errors to queue for retry
+      this.errorQueue.unshift(...errors);
     }
   }
 
-  getErrors(): ErrorEvent[] {
-    return [...this.errors];
+  private async flushPerformance() {
+    if (this.performanceQueue.length === 0) return;
+
+    const reports = [...this.performanceQueue];
+    this.performanceQueue = [];
+
+    try {
+      console.log('Flushing performance data:', reports);
+      
+      // Example: await fetch('/api/monitoring/performance', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ reports })
+      // });
+    } catch (error) {
+      console.error('Failed to flush performance data:', error);
+      this.performanceQueue.unshift(...reports);
+    }
   }
 
-  getMetrics(): PerformanceMetric[] {
-    return [...this.metrics];
+  getErrorReports() {
+    return [...this.errorQueue];
   }
 
-  clearData() {
-    this.errors = [];
-    this.metrics = [];
+  getPerformanceReports() {
+    return [...this.performanceQueue];
+  }
+
+  clearReports() {
+    this.errorQueue = [];
+    this.performanceQueue = [];
   }
 }
 
-export const monitoringService = MonitoringService.getInstance();
+export const monitoringService = new MonitoringService();

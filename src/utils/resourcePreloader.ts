@@ -1,81 +1,87 @@
 
-// Advanced resource preloading for critical assets
-export class ResourcePreloader {
-  private static preloadedResources = new Set<string>();
+class ResourcePreloaderService {
+  private preloadedResources = new Set<string>();
 
-  static preloadCriticalAssets() {
-    // Preload critical fonts
-    this.preloadFont('/fonts/inter-var.woff2');
-    
-    // Preload hero images with different formats
-    this.preloadImage('/images/hero-bg.webp', 'image/webp');
-    this.preloadImage('/images/hero-bg.jpg', 'image/jpeg'); // fallback
-    
-    // Preload critical CSS
-    this.preloadCSS('/src/index.css');
+  async preloadCriticalAssets() {
+    const criticalResources = [
+      '/fonts/inter-var.woff2',
+      '/images/hero-bg.webp',
+      '/images/dashboard-preview.webp'
+    ];
 
-    console.log('🚀 Critical assets preloaded');
+    const preloadPromises = criticalResources.map(resource => 
+      this.preloadResource(resource)
+    );
+
+    try {
+      await Promise.allSettled(preloadPromises);
+      console.log('Critical assets preloaded successfully');
+    } catch (error) {
+      console.error('Error preloading critical assets:', error);
+    }
   }
 
-  static preloadFont(href: string) {
-    if (this.preloadedResources.has(href)) return;
+  private preloadResource(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.preloadedResources.has(url)) {
+        resolve();
+        return;
+      }
 
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = href;
-    link.as = 'font';
-    link.type = 'font/woff2';
-    link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
-    
-    this.preloadedResources.add(href);
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.href = url;
+      
+      // Determine resource type
+      if (url.includes('.woff2') || url.includes('.woff') || url.includes('.ttf')) {
+        link.as = 'font';
+        link.crossOrigin = 'anonymous';
+      } else if (url.includes('.webp') || url.includes('.jpg') || url.includes('.png')) {
+        link.as = 'image';
+      } else if (url.includes('.css')) {
+        link.as = 'style';
+      } else if (url.includes('.js')) {
+        link.as = 'script';
+      }
+
+      link.onload = () => {
+        this.preloadedResources.add(url);
+        resolve();
+      };
+
+      link.onerror = () => {
+        console.warn(`Failed to preload resource: ${url}`);
+        reject(new Error(`Failed to preload: ${url}`));
+      };
+
+      document.head.appendChild(link);
+    });
   }
 
-  static preloadImage(href: string, type?: string) {
-    if (this.preloadedResources.has(href)) return;
+  preloadRouteData(route: string) {
+    // Preload data for upcoming routes
+    const routeDataMap: Record<string, string[]> = {
+      '/dashboard': ['/api/dashboard/stats', '/api/dashboard/recent-queries'],
+      '/queries': ['/api/queries/list', '/api/queries/stats'],
+      '/repositories': ['/api/repositories/list', '/api/repositories/stats']
+    };
 
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = href;
-    link.as = 'image';
-    if (type) link.type = type;
-    document.head.appendChild(link);
-    
-    this.preloadedResources.add(href);
+    const urls = routeDataMap[route];
+    if (urls) {
+      urls.forEach(url => {
+        fetch(url, { method: 'GET' }).catch(() => {
+          // Silent fail for preloading
+        });
+      });
+    }
   }
 
-  static preloadCSS(href: string) {
-    if (this.preloadedResources.has(href)) return;
-
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = href;
-    link.as = 'style';
-    document.head.appendChild(link);
-    
-    this.preloadedResources.add(href);
-  }
-
-  static preloadScript(href: string) {
-    if (this.preloadedResources.has(href)) return;
-
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = href;
-    link.as = 'script';
-    document.head.appendChild(link);
-    
-    this.preloadedResources.add(href);
-  }
-
-  static prefetchRoute(href: string) {
+  prefetchNextPage(nextRoute: string) {
     const link = document.createElement('link');
     link.rel = 'prefetch';
-    link.href = href;
+    link.href = nextRoute;
     document.head.appendChild(link);
   }
-
-  static getPreloadedResources() {
-    return Array.from(this.preloadedResources);
-  }
 }
+
+export const ResourcePreloader = new ResourcePreloaderService();

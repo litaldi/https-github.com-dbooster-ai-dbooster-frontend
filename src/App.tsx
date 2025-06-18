@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -36,7 +35,7 @@ import Terms from '@/pages/Terms';
 import Privacy from '@/pages/Privacy';
 import Accessibility from '@/pages/Accessibility';
 import AIFeatures from '@/pages/AIFeatures';
-import NotFound from '@/pages/NotFound';
+import Error404 from '@/pages/Error404';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,8 +87,8 @@ function App() {
                 <Route path="db-import" element={<DbImport />} />
               </Route>
 
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
+              {/* 404 - Updated to use Error404 instead of NotFound */}
+              <Route path="*" element={<Error404 />} />
             </Routes>
           </Router>
           <Toaster />
