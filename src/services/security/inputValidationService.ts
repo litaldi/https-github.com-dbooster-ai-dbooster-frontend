@@ -25,7 +25,7 @@ export class InputValidationService {
     try {
       // Check for SQL injection patterns
       const sqlPatterns = [
-        /('|\\';|;|--|#|\*|\s*\*)/i,
+        /['";]|--|#|\*|\s*\*/i,
         /(union|select|insert|update|delete|drop|create|alter)/i,
         /(script|javascript|vbscript|onload|onerror)/i
       ];
