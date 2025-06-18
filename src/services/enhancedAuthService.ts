@@ -1,4 +1,3 @@
-
 import { AuthService } from '@/services/authService';
 import { securityService } from '@/services/securityService';
 import { enhancedRateLimiter } from '@/utils/enhancedRateLimiting';
@@ -10,45 +9,28 @@ export class EnhancedAuthService extends AuthService {
     const errors: string[] = [];
 
     if (credentials.email) {
-      const emailValidation = await securityService.validateInput(credentials.email, {
-        type: 'email',
-        required: true,
-        maxLength: 320
-      });
+      const emailValidation = await securityService.validateUserInput(credentials.email, 'email_input');
       if (!emailValidation.valid && emailValidation.errors) {
         errors.push(...emailValidation.errors);
       }
     }
 
     if (credentials.phone) {
-      const phoneValidation = await securityService.validateInput(credentials.phone, {
-        type: 'phone',
-        required: true,
-        maxLength: 20
-      });
+      const phoneValidation = await securityService.validateUserInput(credentials.phone, 'phone_input');
       if (!phoneValidation.valid && phoneValidation.errors) {
         errors.push(...phoneValidation.errors);
       }
     }
 
     if (credentials.password) {
-      const passwordValidation = await securityService.validateInput(credentials.password, {
-        type: 'password',
-        required: true,
-        minLength: 8,
-        maxLength: 128
-      });
+      const passwordValidation = await securityService.validateUserInput(credentials.password, 'password_input');
       if (!passwordValidation.valid && passwordValidation.errors) {
         errors.push(...passwordValidation.errors);
       }
     }
 
     if (credentials.name) {
-      const nameValidation = await securityService.validateInput(credentials.name, {
-        type: 'text',
-        required: true,
-        maxLength: 100
-      });
+      const nameValidation = await securityService.validateUserInput(credentials.name, 'name_input');
       if (!nameValidation.valid && nameValidation.errors) {
         errors.push(...nameValidation.errors);
       }
