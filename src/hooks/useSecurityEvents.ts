@@ -45,7 +45,16 @@ export function useSecurityEvents(refreshInterval = 30000) {
         throw error;
       }
 
-      return data || [];
+      // Transform the data to match our SecurityEvent interface
+      return (data || []).map(item => ({
+        id: item.id,
+        event_type: item.event_type,
+        event_data: item.event_data,
+        ip_address: item.ip_address ? String(item.ip_address) : null,
+        user_agent: item.user_agent,
+        created_at: item.created_at,
+        user_id: item.user_id
+      }));
     } catch (error) {
       console.error('Failed to fetch security events:', error);
       return [];

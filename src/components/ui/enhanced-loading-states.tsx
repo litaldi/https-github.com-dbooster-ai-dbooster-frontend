@@ -135,3 +135,33 @@ export function LoadingSpinner({ size = 'md', className = '', text }: SpinnerPro
     </div>
   );
 }
+
+// Add the missing LoadingState component
+interface LoadingStateProps {
+  message?: string;
+  variant?: 'default' | 'analysis' | 'database';
+}
+
+export function LoadingState({ message = 'Loading...', variant = 'default' }: LoadingStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      <LoadingSpinner size="lg" />
+      <p className="text-sm text-muted-foreground text-center">{message}</p>
+    </div>
+  );
+}
+
+// Add SkeletonCard component
+export function SkeletonCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-4 w-[200px]" />
+        <Skeleton className="h-4 w-[150px]" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-20 w-full" />
+      </CardContent>
+    </Card>
+  );
+}
