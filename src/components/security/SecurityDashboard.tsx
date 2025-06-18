@@ -8,13 +8,16 @@ import { Shield, AlertTriangle, CheckCircle, Clock, RefreshCw } from 'lucide-rea
 import { securityService } from '@/services/securityService';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import type { Database } from '@/integrations/supabase/types';
+
+type SecurityAuditLog = Database['public']['Tables']['security_audit_log']['Row'];
 
 interface SecurityEvent {
   id: string;
   event_type: string;
   event_data: any;
-  ip_address: string;
-  user_agent: string;
+  ip_address: string | null;
+  user_agent: string | null;
   created_at: string;
 }
 
@@ -43,26 +46,36 @@ export function SecurityDashboard() {
         .limit(50);
 
       if (recentEvents) {
-        setEvents(recentEvents);
+        // Transform the data to match our SecurityEvent interface
+        const transformedEvents: SecurityEvent[] = recentEvents.map((event: SecurityAuditLog) => ({
+          id: event.id,
+          event_type: event.event_type,
+          event_data: event.event_data,
+          ip_address: event.ip_address as string | null,
+          user_agent: event.user_agent,
+          created_at: event.created_at || new Date().toISOString()
+        }));
+
+        setEvents(transformedEvents);
         
         // Calculate stats
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        const recentActivity = recentEvents.filter(
+        const recentActivity = transformedEvents.filter(
           e => new Date(e.created_at) > oneHourAgo
         ).length;
         
-        const securityViolations = recentEvents.filter(
+        const securityViolations = transformedEvents.filter(
           e => e.event_type.includes('violation') || 
                e.event_type.includes('suspicious') ||
                e.event_type.includes('failure')
         ).length;
         
-        const rateLimitHits = recentEvents.filter(
+        const rateLimitHits = transformedEvents.filter(
           e => e.event_type.includes('rate_limit')
         ).length;
 
         setStats({
-          totalEvents: recentEvents.length,
+          totalEvents: transformedEvents.length,
           securityViolations,
           rateLimitHits,
           recentActivity
@@ -89,7 +102,7 @@ export function SecurityDashboard() {
     return <CheckCircle className="h-4 w-4 text-green-500" />;
   };
 
-  const getEventBadgeVariant = (eventType: string) => {
+  const getEventBadgeVariant = (eventType: string): "default" | "secondary" | "destructive" | "outline" => {
     if (eventType.includes('violation') || eventType.includes('failure') || eventType.includes('suspicious')) {
       return 'destructive';
     }
