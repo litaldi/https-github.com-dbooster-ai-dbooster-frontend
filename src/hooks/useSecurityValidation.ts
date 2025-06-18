@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { securityEnhancementService } from '@/services/securityEnhancementService';
+import { securityEnhancementService } from '@/services/security/securityEnhancementService';
 import { useToast } from '@/hooks/use-toast';
 
 interface UseSecurityValidationReturn {

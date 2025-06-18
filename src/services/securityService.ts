@@ -3,14 +3,14 @@ import { auditLogger } from './auditLogger';
 import { rateLimitService } from './rateLimitService';
 import { inputValidationService } from './inputValidationService';
 import { threatDetectionService } from './threatDetectionService';
-import { securityEnhancementService } from './securityEnhancementService';
+import { securityEnhancementService } from './security/securityEnhancementService';
 
 // Re-export all security services from a single entry point
 export { auditLogger } from './auditLogger';
 export { rateLimitService } from './rateLimitService';
 export { inputValidationService } from './inputValidationService';
 export { threatDetectionService } from './threatDetectionService';
-export { securityEnhancementService } from './securityEnhancementService';
+export { securityEnhancementService } from './security/securityEnhancementService';
 
 // Enhanced SecurityService with new security features
 export class SecurityService {
