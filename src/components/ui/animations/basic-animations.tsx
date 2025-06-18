@@ -1,21 +1,20 @@
 
-import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 
-interface FadeInProps {
+interface AnimationProps {
   children: ReactNode;
   delay?: number;
   duration?: number;
   className?: string;
 }
 
-export function FadeIn({ children, delay = 0, duration = 0.3, className }: FadeInProps) {
+export function FadeIn({ children, delay = 0, duration = 0.5, className }: AnimationProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration, delay }}
+      transition={{ duration, delay, ease: 'easeOut' }}
       className={className}
     >
       {children}
@@ -23,53 +22,38 @@ export function FadeIn({ children, delay = 0, duration = 0.3, className }: FadeI
   );
 }
 
-interface ScaleInProps {
-  children: ReactNode;
-  delay?: number;
-  duration?: number;
-  className?: string;
-}
-
-export function ScaleIn({ children, delay = 0, duration = 0.2, className }: ScaleInProps) {
+export function ScaleIn({ children, delay = 0, duration = 0.3, className }: AnimationProps) {
   return (
     <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration, delay }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration, delay, ease: 'easeOut' }}
       className={className}
     >
       {children}
     </motion.div>
   );
-}
-
-interface SlideInProps {
-  children: ReactNode;
-  direction?: 'left' | 'right' | 'up' | 'down';
-  delay?: number;
-  duration?: number;
-  className?: string;
 }
 
 export function SlideIn({ 
   children, 
-  direction = 'right', 
   delay = 0, 
-  duration = 0.3, 
+  duration = 0.5, 
+  direction = 'left',
   className 
-}: SlideInProps) {
-  const directionMap = {
-    left: { x: -20, y: 0 },
-    right: { x: 20, y: 0 },
-    up: { x: 0, y: -20 },
-    down: { x: 0, y: 20 },
+}: AnimationProps & { direction?: 'left' | 'right' | 'up' | 'down' }) {
+  const directions = {
+    left: { x: -50, y: 0 },
+    right: { x: 50, y: 0 },
+    up: { x: 0, y: 50 },
+    down: { x: 0, y: -50 }
   };
 
   return (
     <motion.div
-      initial={{ ...directionMap[direction], opacity: 0 }}
-      animate={{ x: 0, y: 0, opacity: 1 }}
-      transition={{ duration, delay }}
+      initial={{ opacity: 0, ...directions[direction] }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      transition={{ duration, delay, ease: 'easeOut' }}
       className={className}
     >
       {children}

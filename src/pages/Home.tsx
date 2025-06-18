@@ -9,6 +9,7 @@ import { EnhancedCTASection } from '@/components/home/EnhancedCTASection';
 import { EnhancedOnboarding } from '@/components/onboarding/EnhancedOnboarding';
 import { EnhancedBreadcrumb } from '@/components/ui/enhanced-navigation';
 import { PageTransition } from '@/components/ui/enhanced-transitions';
+import { SmartHeader } from '@/components/navigation/SmartHeader';
 import { useHomePage } from '@/hooks/useHomePage';
 
 export default function Home() {
@@ -26,50 +27,56 @@ export default function Home() {
   if (user && showOnboarding) {
     return (
       <ErrorBoundary>
-        <PageTransition className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-          <SkipLink href="#main-content" />
-          <EnhancedBreadcrumb 
-            items={[{ label: 'Enterprise Setup', icon: Zap }]} 
-            className="p-6"
-          />
-          
-          <main id="main-content" role="main" className="container mx-auto px-6 py-12">
-            <EnhancedOnboarding />
-          </main>
-        </PageTransition>
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+          <SmartHeader />
+          <PageTransition className="pt-16">
+            <SkipLink href="#main-content" />
+            <EnhancedBreadcrumb 
+              items={[{ label: 'Enterprise Setup', icon: Zap }]} 
+              className="p-6"
+            />
+            
+            <main id="main-content" role="main" className="container mx-auto px-6 py-12">
+              <EnhancedOnboarding />
+            </main>
+          </PageTransition>
+        </div>
       </ErrorBoundary>
     );
   }
 
   return (
     <ErrorBoundary>
-      <PageTransition className="min-h-screen">
-        <SkipLink href="#main-content" />
-        
-        <main id="main-content" role="main">
-          <EnhancedHeroSection
-            user={user}
-            isLoading={isLoading}
-            onGetStarted={handleGetStarted}
-            onNavigateToLogin={() => navigate(user ? '/app/settings' : '/login')}
-            guidanceSteps={guidanceSteps}
-          />
+      <div className="min-h-screen">
+        <SmartHeader />
+        <PageTransition className="pt-16">
+          <SkipLink href="#main-content" />
+          
+          <main id="main-content" role="main">
+            <EnhancedHeroSection
+              user={user}
+              isLoading={isLoading}
+              onGetStarted={handleGetStarted}
+              onNavigateToLogin={() => navigate(user ? '/app/settings' : '/login')}
+              guidanceSteps={guidanceSteps}
+            />
 
-          <QuickActions actions={quickActions} />
+            <QuickActions actions={quickActions} />
 
-          <FeaturesSection 
-            features={features} 
-            onViewAllFeatures={() => navigate('/features')} 
-          />
+            <FeaturesSection 
+              features={features} 
+              onViewAllFeatures={() => navigate('/features')} 
+            />
 
-          <EnhancedCTASection
-            user={user}
-            isLoading={isLoading}
-            onGetStarted={handleGetStarted}
-            onNavigateToLearn={() => navigate('/learn')}
-          />
-        </main>
-      </PageTransition>
+            <EnhancedCTASection
+              user={user}
+              isLoading={isLoading}
+              onGetStarted={handleGetStarted}
+              onNavigateToLearn={() => navigate('/learn')}
+            />
+          </main>
+        </PageTransition>
+      </div>
     </ErrorBoundary>
   );
 }

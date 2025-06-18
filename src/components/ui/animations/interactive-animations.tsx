@@ -1,43 +1,35 @@
 
-import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 
-interface HoverScaleProps {
+interface InteractiveAnimationProps {
   children: ReactNode;
-  scale?: number;
   className?: string;
 }
 
-export function HoverScale({ children, scale = 1.02, className }: HoverScaleProps) {
+export function HoverScale({ children, className }: InteractiveAnimationProps) {
   return (
     <motion.div
-      whileHover={{ scale }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 17 }}
-      className={cn("cursor-pointer", className)}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className={className}
     >
       {children}
     </motion.div>
   );
 }
 
-interface FloatingElementProps {
-  children: ReactNode;
-  duration?: number;
-  className?: string;
-}
-
-export function FloatingElement({ children, duration = 3, className }: FloatingElementProps) {
+export function FloatingElement({ children, className }: InteractiveAnimationProps) {
   return (
     <motion.div
-      animate={{
+      animate={{ 
         y: [0, -10, 0],
       }}
-      transition={{
-        duration,
+      transition={{ 
+        duration: 3,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: 'easeInOut'
       }}
       className={className}
     >
@@ -46,23 +38,17 @@ export function FloatingElement({ children, duration = 3, className }: FloatingE
   );
 }
 
-interface PulseProps {
-  children: ReactNode;
-  scale?: [number, number];
-  duration?: number;
-  className?: string;
-}
-
-export function Pulse({ children, scale = [1, 1.05], duration = 2, className }: PulseProps) {
+export function Pulse({ children, className }: InteractiveAnimationProps) {
   return (
     <motion.div
-      animate={{
-        scale,
+      animate={{ 
+        scale: [1, 1.05, 1],
+        opacity: [1, 0.8, 1]
       }}
-      transition={{
-        duration,
+      transition={{ 
+        duration: 2,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: 'easeInOut'
       }}
       className={className}
     >
