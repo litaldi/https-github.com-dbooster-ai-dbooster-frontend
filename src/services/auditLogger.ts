@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface SecurityEvent {
   event_type: string;
@@ -45,9 +45,10 @@ export class AuditLogger {
         user_agent: event.user_agent || clientInfo.user_agent,
       });
 
-      logger.info('Security event logged', { eventType: event.event_type }, 'AuditLogger');
+      // Use production-safe logging
+      productionLogger.secureInfo('Security event logged', { eventType: event.event_type }, 'AuditLogger');
     } catch (error) {
-      logger.error('Failed to log security event', { error, event }, 'AuditLogger');
+      productionLogger.error('Failed to log security event', { error, eventType: event.event_type }, 'AuditLogger');
       // Don't throw here to avoid breaking the main flow
     }
   }
@@ -61,6 +62,13 @@ export class AuditLogger {
         ...details
       }
     });
+
+    // Log authentication events with appropriate level
+    if (success) {
+      productionLogger.warn('Authentication event', { eventType, success }, 'AuditLogger');
+    } else {
+      productionLogger.error('Authentication failed', { eventType, success }, 'AuditLogger');
+    }
   }
 }
 
