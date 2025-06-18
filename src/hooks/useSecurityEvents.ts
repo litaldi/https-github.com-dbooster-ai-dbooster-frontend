@@ -1,9 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
-
-type SecurityAuditLog = Database['public']['Tables']['security_audit_log']['Row'];
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface SecurityEvent {
   id: string;
@@ -12,6 +11,7 @@ interface SecurityEvent {
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;
+  user_id: string | null;
 }
 
 interface SecurityStats {
@@ -21,81 +21,96 @@ interface SecurityStats {
   recentActivity: number;
 }
 
-export function useSecurityEvents() {
-  const [events, setEvents] = useState<SecurityEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<SecurityStats>({
-    totalEvents: 0,
-    securityViolations: 0,
-    rateLimitHits: 0,
-    recentActivity: 0
-  });
+export function useSecurityEvents(refreshInterval = 30000) {
+  const [limit, setLimit] = useState(50);
+  const [filter, setFilter] = useState<string>('');
+  const debouncedFilter = useDebounce(filter, 300);
 
-  const loadSecurityEvents = async () => {
+  const fetchSecurityEvents = useCallback(async (): Promise<SecurityEvent[]> => {
     try {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) return;
-
-      // Get recent security events
-      const { data: recentEvents } = await supabase
+      let query = supabase
         .from('security_audit_log')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(limit);
 
-      if (recentEvents) {
-        // Transform the data to match our SecurityEvent interface
-        const transformedEvents: SecurityEvent[] = recentEvents.map((event: SecurityAuditLog) => ({
-          id: event.id,
-          event_type: event.event_type,
-          event_data: event.event_data,
-          ip_address: event.ip_address as string | null,
-          user_agent: event.user_agent,
-          created_at: event.created_at || new Date().toISOString()
-        }));
-
-        setEvents(transformedEvents);
-        
-        // Calculate stats
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        const recentActivity = transformedEvents.filter(
-          e => new Date(e.created_at) > oneHourAgo
-        ).length;
-        
-        const securityViolations = transformedEvents.filter(
-          e => e.event_type.includes('violation') || 
-               e.event_type.includes('suspicious') ||
-               e.event_type.includes('failure')
-        ).length;
-        
-        const rateLimitHits = transformedEvents.filter(
-          e => e.event_type.includes('rate_limit')
-        ).length;
-
-        setStats({
-          totalEvents: transformedEvents.length,
-          securityViolations,
-          rateLimitHits,
-          recentActivity
-        });
+      if (debouncedFilter) {
+        query = query.ilike('event_type', `%${debouncedFilter}%`);
       }
-    } catch (error) {
-      console.error('Failed to load security events:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    loadSecurityEvents();
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching security events:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch security events:', error);
+      return [];
+    }
+  }, [limit, debouncedFilter]);
+
+  const {
+    data: events = [],
+    isLoading,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['security-events', limit, debouncedFilter],
+    queryFn: fetchSecurityEvents,
+    refetchInterval: refreshInterval,
+    staleTime: 10000, // Consider data stale after 10 seconds
+    retry: 3,
+  });
+
+  const stats = useMemo((): SecurityStats => {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+    const recentEvents = events.filter(event => 
+      new Date(event.created_at) > oneHourAgo
+    );
+
+    const securityViolations = events.filter(event =>
+      event.event_type.includes('violation') || 
+      event.event_type.includes('suspicious') ||
+      event.event_type.includes('failure')
+    ).length;
+
+    const rateLimitHits = events.filter(event =>
+      event.event_type.includes('rate_limit')
+    ).length;
+
+    return {
+      totalEvents: events.length,
+      securityViolations,
+      rateLimitHits,
+      recentActivity: recentEvents.length,
+    };
+  }, [events]);
+
+  const refreshEvents = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const updateLimit = useCallback((newLimit: number) => {
+    setLimit(newLimit);
+  }, []);
+
+  const updateFilter = useCallback((newFilter: string) => {
+    setFilter(newFilter);
   }, []);
 
   return {
     events,
     stats,
-    loading,
-    refreshEvents: loadSecurityEvents
+    loading: isLoading,
+    error,
+    refreshEvents,
+    updateLimit,
+    updateFilter,
+    filter,
   };
 }

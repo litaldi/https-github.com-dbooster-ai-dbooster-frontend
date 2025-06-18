@@ -1,18 +1,19 @@
 
-import { useState } from 'react';
-import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
-import { Database, Zap, Shield, TrendingUp, Users, Code, ArrowRight, Star, HelpCircle, PlayCircle, BookOpen, DollarSign } from 'lucide-react';
+import { Database, Zap, Shield, TrendingUp, Users, Code } from 'lucide-react';
 import { showSuccess } from '@/components/ui/feedback-toast';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
-import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/enhanced-animations';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
-import { SkipLink, ProgressiveDisclosure } from '@/components/ui/accessibility-helpers';
-import { UserGuidance, TooltipGuidance } from '@/components/ui/user-guidance';
+import { SkipLink } from '@/components/ui/accessibility-helpers';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { HeroSection } from '@/components/home/HeroSection';
+import { QuickActions } from '@/components/home/QuickActions';
+import { FeaturesSection } from '@/components/home/FeaturesSection';
+import { FadeIn, HoverScale } from '@/components/ui/enhanced-animations';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
+import { ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const { user, loginDemo } = useAuth();
@@ -28,14 +29,14 @@ export default function Home() {
           title: 'Redirecting to Dashboard', 
           description: 'Taking you to your dashboard...' 
         });
-        navigate('/');
+        navigate('/dashboard');
       } else {
         await loginDemo();
         showSuccess({ 
           title: 'Demo Started!', 
           description: 'Welcome to the DBooster demo experience.' 
         });
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Navigation error:', error);
@@ -44,7 +45,7 @@ export default function Home() {
     }
   };
 
-  const features = [
+  const features = useMemo(() => [
     {
       icon: Database,
       title: "Smart Query Analysis",
@@ -87,33 +88,33 @@ export default function Home() {
       highlight: false,
       details: "Automatic repository scanning, pull request integration, and CI/CD pipeline compatibility for seamless workflow integration."
     }
-  ];
+  ], []);
 
-  const quickActions = [
+  const quickActions = useMemo(() => [
     {
-      icon: PlayCircle,
+      icon: Code,
       title: "How It Works",
       description: "Learn how DBooster optimizes your database queries in 4 simple steps.",
       action: () => navigate('/how-it-works'),
       color: "from-blue-500 to-cyan-500"
     },
     {
-      icon: BookOpen,
+      icon: Database,
       title: "Learning Hub",
       description: "Master database optimization with our comprehensive guides and tutorials.",
       action: () => navigate('/learn'),
       color: "from-green-500 to-emerald-500"
     },
     {
-      icon: DollarSign,
+      icon: TrendingUp,
       title: "View Pricing",
       description: "Choose the perfect plan for your team and scale as you grow.",
       action: () => navigate('/pricing'),
       color: "from-purple-500 to-pink-500"
     }
-  ];
+  ], [navigate]);
 
-  const guidanceSteps = [
+  const guidanceSteps = useMemo(() => [
     {
       id: 'welcome',
       title: 'Welcome to DBooster',
@@ -144,7 +145,7 @@ export default function Home() {
         </div>
       )
     }
-  ];
+  ], []);
 
   return (
     <ErrorBoundary>
@@ -153,177 +154,20 @@ export default function Home() {
         <BreadcrumbNav />
         
         <main id="main-content" role="main">
-          {/* Hero Section */}
-          <Section spacing="lg" className="text-center bg-gradient-to-b from-background to-muted/50">
-            <Container>
-              <FadeIn delay={0.2}>
-                <ScaleIn delay={0.3}>
-                  <Badge variant="secondary" className="mb-6">
-                    <Star className="h-3 w-3 mr-1" />
-                    AI-Powered Database Optimization
-                  </Badge>
-                </ScaleIn>
-              </FadeIn>
-              
-              <FadeIn delay={0.4}>
-                <Heading level={1} size="2xl" className="mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Optimize Your Database Performance with AI
-                </Heading>
-              </FadeIn>
-              
-              <FadeIn delay={0.6}>
-                <Text size="lg" variant="muted" className="mb-8 max-w-3xl mx-auto leading-relaxed">
-                  DBooster uses advanced AI to analyze your SQL queries, identify performance issues, and provide intelligent optimization recommendations that can improve your database performance by up to 10x.
-                </Text>
-              </FadeIn>
-              
-              <FadeIn delay={0.8}>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-                  <TooltipGuidance content="Start exploring DBooster with our interactive demo">
-                    <HoverScale>
-                      <EnhancedButton 
-                        size="lg" 
-                        onClick={handleGetStarted} 
-                        className="text-lg px-8 min-h-[48px] min-w-[120px] transition-all duration-300"
-                        loading={isLoading}
-                        loadingText="Starting..."
-                      >
-                        {user ? 'Go to Dashboard' : 'Try Free Demo'}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </EnhancedButton>
-                    </HoverScale>
-                  </TooltipGuidance>
-                  
-                  <HoverScale>
-                    <EnhancedButton 
-                      size="lg" 
-                      variant="outline" 
-                      onClick={() => navigate('/login')} 
-                      className="text-lg px-8 min-h-[48px] transition-all duration-300"
-                    >
-                      {user ? 'Settings' : 'Sign In'}
-                    </EnhancedButton>
-                  </HoverScale>
+          <HeroSection
+            user={user}
+            isLoading={isLoading}
+            onGetStarted={handleGetStarted}
+            onNavigateToLogin={() => navigate(user ? '/settings' : '/login')}
+            guidanceSteps={guidanceSteps}
+          />
 
-                  <UserGuidance
-                    title="Getting Started Guide"
-                    description="Learn how to make the most of DBooster"
-                    steps={guidanceSteps}
-                    trigger={
-                      <TooltipGuidance content="Need help getting started?">
-                        <EnhancedButton variant="ghost" size="lg" className="text-lg px-4">
-                          <HelpCircle className="h-5 w-5" />
-                        </EnhancedButton>
-                      </TooltipGuidance>
-                    }
-                  />
-                </div>
-              </FadeIn>
+          <QuickActions actions={quickActions} />
 
-              {/* Quick Actions */}
-              <FadeIn delay={1.0}>
-                <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                  {quickActions.map((action, index) => (
-                    <HoverScale key={index}>
-                      <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20 group"
-                            onClick={action.action}>
-                        <CardContent className="p-6 text-center">
-                          <div className={`w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-r ${action.color} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
-                            <action.icon className="h-6 w-6 text-white" />
-                          </div>
-                          <Text className="font-semibold mb-2 group-hover:text-primary transition-colors duration-300">
-                            {action.title}
-                          </Text>
-                          <Text size="sm" variant="muted" className="leading-relaxed">
-                            {action.description}
-                          </Text>
-                        </CardContent>
-                      </Card>
-                    </HoverScale>
-                  ))}
-                </div>
-              </FadeIn>
-            </Container>
-          </Section>
-
-          {/* Features Section */}
-          <Section spacing="lg">
-            <Container>
-              <FadeIn delay={0.2}>
-                <div className="text-center mb-12 md:mb-16">
-                  <Heading level={2} size="xl" className="mb-4">
-                    Everything You Need for Database Optimization
-                  </Heading>
-                  <Text size="lg" variant="muted" className="max-w-3xl mx-auto">
-                    Comprehensive tools and insights to help you optimize your database performance and reduce costs.
-                  </Text>
-                </div>
-              </FadeIn>
-              
-              <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {features.map((feature, index) => (
-                  <StaggerItem key={index}>
-                    <HoverScale>
-                      <Card 
-                        className={`h-full transition-all duration-300 cursor-pointer group border-2 hover:border-primary/20 ${
-                          feature.highlight ? 'ring-2 ring-primary/20 bg-primary/5 border-primary/30' : 'hover:shadow-xl'
-                        }`}
-                      >
-                        <CardHeader className="pb-4">
-                          <div className="flex items-center gap-3 mb-3">
-                            <ScaleIn delay={index * 0.1}>
-                              <div className={`p-3 rounded-xl transition-all duration-300 ${
-                                feature.highlight 
-                                  ? 'bg-primary/15 text-primary shadow-lg' 
-                                  : 'bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary group-hover:shadow-md'
-                              }`}>
-                                <feature.icon className="h-6 w-6" />
-                              </div>
-                            </ScaleIn>
-                            {feature.highlight && (
-                              <Badge variant="default" className="text-xs animate-pulse">
-                                Popular
-                              </Badge>
-                            )}
-                          </div>
-                          <CardTitle className="text-lg md:text-xl group-hover:text-primary transition-colors duration-300">
-                            {feature.title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <CardDescription className="text-sm md:text-base leading-relaxed">
-                            {feature.description}
-                          </CardDescription>
-                          
-                          <ProgressiveDisclosure
-                            summary={<span className="text-sm font-medium text-primary">Learn more</span>}
-                          >
-                            <Text size="sm" variant="muted" className="mt-2">
-                              {feature.details}
-                            </Text>
-                          </ProgressiveDisclosure>
-                        </CardContent>
-                      </Card>
-                    </HoverScale>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-
-              <div className="text-center mt-12">
-                <HoverScale>
-                  <EnhancedButton 
-                    size="lg" 
-                    variant="outline" 
-                    onClick={() => navigate('/features')} 
-                    className="text-lg px-8"
-                  >
-                    View All Features
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </EnhancedButton>
-                </HoverScale>
-              </div>
-            </Container>
-          </Section>
+          <FeaturesSection 
+            features={features} 
+            onViewAllFeatures={() => navigate('/features')} 
+          />
 
           {/* CTA Section */}
           <Section spacing="lg" className="bg-muted/50">
@@ -348,6 +192,7 @@ export default function Home() {
                     className="text-lg px-8 min-h-[48px] transition-all duration-300 shadow-lg hover:shadow-xl"
                     loading={isLoading}
                     loadingText="Getting Started..."
+                    aria-label="Get started with DBooster now"
                   >
                     Get Started Now
                     <ArrowRight className="ml-2 h-4 w-4" />
