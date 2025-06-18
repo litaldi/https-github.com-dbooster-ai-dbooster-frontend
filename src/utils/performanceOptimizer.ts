@@ -15,10 +15,12 @@ export class PerformanceOptimizer {
           console.log(`🎯 LCP: ${entry.startTime.toFixed(2)}ms`);
         }
         if (entry.entryType === 'first-input') {
-          console.log(`⚡ FID: ${entry.processingStart - entry.startTime}ms`);
+          const firstInputEntry = entry as PerformanceEventTiming;
+          console.log(`⚡ FID: ${firstInputEntry.processingStart - firstInputEntry.startTime}ms`);
         }
         if (entry.entryType === 'layout-shift') {
-          console.log(`📐 CLS: ${entry.value}`);
+          const layoutShiftEntry = entry as any; // LayoutShift interface not available in all browsers
+          console.log(`📐 CLS: ${layoutShiftEntry.value}`);
         }
       });
     });
