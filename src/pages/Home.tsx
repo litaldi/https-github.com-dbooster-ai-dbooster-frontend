@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
@@ -27,15 +28,15 @@ export default function Home() {
     try {
       if (user) {
         showSuccess({ 
-          title: 'Redirecting to Dashboard', 
-          description: 'Taking you to your dashboard...' 
+          title: 'Taking you to your dashboard', 
+          description: 'Your personalized database optimization workspace awaits!' 
         });
         navigate('/dashboard');
       } else {
         await loginDemo();
         showSuccess({ 
           title: 'Welcome to DBooster!', 
-          description: 'You\'re now exploring our demo environment.' 
+          description: 'You\'re now exploring our full-featured demo environment.' 
         });
         setShowOnboarding(true);
       }
@@ -187,18 +188,18 @@ export default function Home() {
             onViewAllFeatures={() => navigate('/features')} 
           />
 
-          {/* Enhanced CTA Section */}
+          {/* Enhanced CTA Section with better copy */}
           <Section spacing="lg" className="bg-gradient-to-r from-primary/5 to-purple-500/5">
             <Container className="text-center">
               <FadeIn>
                 <Heading level={2} size="xl" className="mb-4">
-                  Ready to Optimize Your Database?
+                  Ready to Supercharge Your Database?
                 </Heading>
               </FadeIn>
               
               <FadeIn delay={0.2}>
                 <Text size="lg" variant="muted" className="mb-8 max-w-2xl mx-auto">
-                  Join thousands of developers who have improved their database performance with DBooster's AI-powered optimization tools.
+                  Join thousands of developers who have improved their database performance by up to 10x with DBooster's AI-powered optimization recommendations.
                 </Text>
               </FadeIn>
               
@@ -210,10 +211,10 @@ export default function Home() {
                       onClick={handleGetStarted} 
                       className="min-w-[200px]"
                       loading={isLoading}
-                      loadingText="Getting Started..."
-                      aria-label="Start optimizing your database now"
+                      loadingText="Setting up your workspace..."
+                      aria-label="Start optimizing your database performance now"
                     >
-                      Start Optimizing Now
+                      {user ? 'Go to Your Dashboard' : 'Start Free Analysis'}
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </EnhancedButton>
                   </HoverScale>
@@ -225,10 +226,16 @@ export default function Home() {
                       onClick={() => navigate('/learn')}
                       className="min-w-[200px]"
                     >
-                      Learn More
+                      Explore Learning Hub
                     </EnhancedButton>
                   </HoverScale>
                 </div>
+              </FadeIn>
+              
+              <FadeIn delay={0.6}>
+                <Text size="sm" variant="muted" className="mt-6">
+                  No credit card required • 2-minute setup • Cancel anytime
+                </Text>
               </FadeIn>
             </Container>
           </Section>

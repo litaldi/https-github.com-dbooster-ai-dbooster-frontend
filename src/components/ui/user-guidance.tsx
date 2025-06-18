@@ -1,262 +1,243 @@
 
-import { useState, useEffect } from 'react';
-import { X, HelpCircle, ChevronRight } from 'lucide-react';
-import { Button } from './button';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
+import { EnhancedButton } from './enhanced-button';
 import { Badge } from './badge';
-import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './dialog';
+import { Progress } from './progress';
+import { HelpCircle, ChevronRight, ChevronLeft, X, CheckCircle } from 'lucide-react';
+import { FadeIn, ScaleIn } from './enhanced-animations';
 
-interface TooltipProps {
-  children: React.ReactNode;
-  content: string;
-  side?: 'top' | 'right' | 'bottom' | 'left';
-  className?: string;
-}
-
-export function Tooltip({ children, content, side = 'top', className }: TooltipProps) {
-  const [isVisible, setIsVisible] = useState(false);
-
-  const sideClasses = {
-    top: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
-    right: 'left-full top-1/2 transform -translate-y-1/2 ml-2',
-    bottom: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
-    left: 'right-full top-1/2 transform -translate-y-1/2 mr-2'
-  };
-
-  return (
-    <div 
-      className="relative inline-block"
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-    >
-      {children}
-      {isVisible && (
-        <div className={cn(
-          'absolute z-50 px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg whitespace-nowrap',
-          sideClasses[side],
-          className
-        )}>
-          {content}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface OnboardingTourProps {
-  steps: Array<{
-    target: string;
-    title: string;
-    description: string;
-  }>;
-  onComplete: () => void;
-  isVisible?: boolean;
-}
-
-export function OnboardingTour({ steps, onComplete, isVisible = true }: OnboardingTourProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isActive, setIsActive] = useState(isVisible);
-
-  useEffect(() => {
-    setIsActive(isVisible);
-  }, [isVisible]);
-
-  if (!isActive || steps.length === 0) return null;
-
-  const currentStepData = steps[currentStep];
-  const isLastStep = currentStep === steps.length - 1;
-
-  const handleNext = () => {
-    if (isLastStep) {
-      setIsActive(false);
-      onComplete();
-    } else {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleSkip = () => {
-    setIsActive(false);
-    onComplete();
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <div className="flex items-center space-x-2">
-            <CardTitle className="text-lg">{currentStepData.title}</CardTitle>
-            <Badge variant="outline" className="text-xs">
-              {currentStep + 1} of {steps.length}
-            </Badge>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSkip}
-            className="h-6 w-6 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {currentStepData.description}
-          </p>
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={handleSkip}>
-              Skip Tour
-            </Button>
-            <Button onClick={handleNext}>
-              {isLastStep ? 'Finish' : 'Next'}
-              {!isLastStep && <ChevronRight className="ml-2 h-4 w-4" />}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-interface HelpButtonProps {
-  content: string;
-  title?: string;
-}
-
-export function HelpButton({ content, title = "Help" }: HelpButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setIsOpen(!isOpen)}
-        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-      >
-        <HelpCircle className="h-4 w-4" />
-      </Button>
-      
-      {isOpen && (
-        <>
-          <div 
-            className="fixed inset-0 z-40" 
-            onClick={() => setIsOpen(false)}
-          />
-          <Card className="absolute right-0 top-8 z-50 w-80 shadow-lg">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{content}</p>
-            </CardContent>
-          </Card>
-        </>
-      )}
-    </div>
-  );
-}
-
-interface ProgressIndicatorProps {
-  steps: string[];
-  currentStep: number;
-  className?: string;
-}
-
-export function ProgressIndicator({ steps, currentStep, className }: ProgressIndicatorProps) {
-  return (
-    <div className={cn("flex items-center justify-between", className)}>
-      {steps.map((step, index) => (
-        <div key={step} className="flex items-center">
-          <div className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium",
-            index <= currentStep 
-              ? "bg-primary text-primary-foreground" 
-              : "bg-muted text-muted-foreground"
-          )}>
-            {index + 1}
-          </div>
-          {index < steps.length - 1 && (
-            <div className={cn(
-              "mx-2 h-px w-8 flex-1",
-              index < currentStep ? "bg-primary" : "bg-muted"
-            )} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
+interface GuidanceStep {
+  id: string;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
 }
 
 interface UserGuidanceProps {
-  children?: React.ReactNode;
-  className?: string;
-  title?: string;
-  description?: string;
-  steps?: Array<{
-    id: string;
-    title: string;
-    description: string;
-    action: React.ReactNode;
-  }>;
+  title: string;
+  description: string;
+  steps: GuidanceStep[];
   trigger?: React.ReactNode;
+  onComplete?: () => void;
 }
 
-export function UserGuidance({ children, className, title, description, steps, trigger }: UserGuidanceProps) {
+export function UserGuidance({ 
+  title, 
+  description, 
+  steps, 
+  trigger, 
+  onComplete 
+}: UserGuidanceProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
 
-  if (trigger) {
-    return (
-      <div className="relative">
-        <div onClick={() => setIsOpen(!isOpen)}>
-          {trigger}
-        </div>
-        {isOpen && (
-          <>
-            <div 
-              className="fixed inset-0 z-40" 
-              onClick={() => setIsOpen(false)}
-            />
-            <Card className="absolute right-0 top-full mt-2 z-50 w-80 shadow-lg">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">{title}</CardTitle>
-                {description && (
-                  <p className="text-sm text-muted-foreground">{description}</p>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {steps?.map((step, index) => (
-                  <div key={step.id} className="space-y-2">
-                    <div className="font-medium text-sm">{step.title}</div>
-                    <div className="text-sm text-muted-foreground">{step.description}</div>
-                    {step.action}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
-    );
-  }
+  const handleStepComplete = (stepId: string) => {
+    if (!completedSteps.includes(stepId)) {
+      setCompletedSteps([...completedSteps, stepId]);
+    }
+    
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      onComplete?.();
+      setIsOpen(false);
+    }
+  };
+
+  const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {children}
-    </div>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {trigger || (
+          <EnhancedButton variant="outline" size="sm">
+            <HelpCircle className="h-4 w-4" />
+            Get Help
+          </EnhancedButton>
+        )}
+      </DialogTrigger>
+      
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {title}
+            <Badge variant="secondary">{currentStep + 1} of {steps.length}</Badge>
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          <div>
+            <Progress value={progress} className="h-2 mb-2" />
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+          
+          <FadeIn key={currentStep}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {completedSteps.includes(steps[currentStep].id) ? (
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center text-xs font-bold">
+                      {currentStep + 1}
+                    </div>
+                  )}
+                  {steps[currentStep].title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground leading-relaxed">
+                  {steps[currentStep].description}
+                </p>
+                {steps[currentStep].action && (
+                  <div>{steps[currentStep].action}</div>
+                )}
+              </CardContent>
+            </Card>
+          </FadeIn>
+          
+          <div className="flex justify-between items-center">
+            <EnhancedButton
+              variant="outline"
+              onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+              disabled={currentStep === 0}
+              className="gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </EnhancedButton>
+            
+            <div className="flex gap-2">
+              {currentStep < steps.length - 1 ? (
+                <EnhancedButton
+                  onClick={() => handleStepComplete(steps[currentStep].id)}
+                  className="gap-2"
+                >
+                  Continue
+                  <ChevronRight className="h-4 w-4" />
+                </EnhancedButton>
+              ) : (
+                <EnhancedButton
+                  onClick={() => handleStepComplete(steps[currentStep].id)}
+                  className="gap-2"
+                >
+                  Complete Guide
+                  <CheckCircle className="h-4 w-4" />
+                </EnhancedButton>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 interface TooltipGuidanceProps {
-  children: React.ReactNode;
   content: string;
+  children: React.ReactNode;
+  side?: 'top' | 'bottom' | 'left' | 'right';
+  align?: 'start' | 'center' | 'end';
+}
+
+export function TooltipGuidance({ 
+  content, 
+  children, 
+  side = 'top', 
+  align = 'center' 
+}: TooltipGuidanceProps) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {children}
+        </TooltipTrigger>
+        <TooltipContent side={side} align={align} className="max-w-xs">
+          <p className="text-sm leading-relaxed">{content}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+interface ContextualHelpProps {
+  title: string;
+  description: string;
+  tips?: string[];
   className?: string;
 }
 
-export function TooltipGuidance({ children, content, className }: TooltipGuidanceProps) {
+export function ContextualHelp({ title, description, tips, className }: ContextualHelpProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
-    <Tooltip content={content} className={className}>
+    <Card className={`border-blue-200 bg-blue-50/50 ${className}`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm text-blue-800">{title}</CardTitle>
+          </div>
+          {tips && (
+            <EnhancedButton
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-6 w-6 p-0 text-blue-600"
+            >
+              <ChevronRight className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+            </EnhancedButton>
+          )}
+        </div>
+      </CardHeader>
+      
+      <CardContent className="pt-0">
+        <p className="text-sm text-blue-700 leading-relaxed mb-3">{description}</p>
+        
+        {tips && isExpanded && (
+          <FadeIn>
+            <div className="space-y-2">
+              <h4 className="text-xs font-medium text-blue-800 uppercase tracking-wide">Tips:</h4>
+              <ul className="space-y-1">
+                {tips.map((tip, index) => (
+                  <li key={index} className="text-xs text-blue-600 flex items-start gap-2">
+                    <span className="w-1 h-1 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </FadeIn>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+interface FeatureBadgeProps {
+  children: React.ReactNode;
+  isNew?: boolean;
+  className?: string;
+}
+
+export function FeatureBadge({ children, isNew = false, className }: FeatureBadgeProps) {
+  return (
+    <div className={`relative ${className}`}>
       {children}
-    </Tooltip>
+      {isNew && (
+        <ScaleIn>
+          <Badge 
+            variant="default" 
+            className="absolute -top-2 -right-2 bg-green-600 text-white text-xs px-1.5 py-0.5 animate-pulse"
+          >
+            New
+          </Badge>
+        </ScaleIn>
+      )}
+    </div>
   );
 }

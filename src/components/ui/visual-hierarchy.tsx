@@ -1,18 +1,19 @@
 
 import { cn } from '@/lib/utils';
+import { ReactNode } from 'react';
 
 interface SectionProps {
-  children: React.ReactNode;
-  className?: string;
+  children: ReactNode;
   spacing?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
 }
 
-export function Section({ children, className, spacing = 'md' }: SectionProps) {
+export function Section({ children, spacing = 'md', className }: SectionProps) {
   const spacingClasses = {
-    sm: 'py-4',
-    md: 'py-8',
-    lg: 'py-12',
-    xl: 'py-16'
+    sm: 'py-8',
+    md: 'py-12',
+    lg: 'py-16',
+    xl: 'py-24'
   };
 
   return (
@@ -23,12 +24,12 @@ export function Section({ children, className, spacing = 'md' }: SectionProps) {
 }
 
 interface ContainerProps {
-  children: React.ReactNode;
-  className?: string;
+  children: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  className?: string;
 }
 
-export function Container({ children, className, size = 'lg' }: ContainerProps) {
+export function Container({ children, size = 'lg', className }: ContainerProps) {
   const sizeClasses = {
     sm: 'max-w-2xl',
     md: 'max-w-4xl',
@@ -44,141 +45,198 @@ export function Container({ children, className, size = 'lg' }: ContainerProps) 
   );
 }
 
-interface GridProps {
-  children: React.ReactNode;
+interface HeadingProps {
+  children: ReactNode;
+  level: 1 | 2 | 3 | 4 | 5 | 6;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  weight?: 'normal' | 'medium' | 'semibold' | 'bold';
+  align?: 'left' | 'center' | 'right';
   className?: string;
-  cols?: 1 | 2 | 3 | 4 | 6 | 12;
-  gap?: 'sm' | 'md' | 'lg';
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div';
 }
 
-export function Grid({ children, className, cols = 1, gap = 'md' }: GridProps) {
-  const colsClasses = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-    6: 'grid-cols-1 md:grid-cols-3 lg:grid-cols-6',
-    12: 'grid-cols-12'
-  };
-
-  const gapClasses = {
-    sm: 'gap-2',
-    md: 'gap-4',
-    lg: 'gap-6'
-  };
-
-  return (
-    <div className={cn('grid', colsClasses[cols], gapClasses[gap], className)}>
-      {children}
-    </div>
-  );
-}
-
-interface StackProps {
-  children: React.ReactNode;
-  className?: string;
-  direction?: 'vertical' | 'horizontal';
-  spacing?: 'sm' | 'md' | 'lg';
-  align?: 'start' | 'center' | 'end';
-}
-
-export function Stack({ 
+export function Heading({ 
   children, 
-  className, 
-  direction = 'vertical', 
-  spacing = 'md',
-  align = 'start'
-}: StackProps) {
-  const directionClasses = direction === 'vertical' ? 'flex-col' : 'flex-row';
+  level, 
+  size, 
+  weight = 'bold', 
+  align = 'left', 
+  className,
+  as 
+}: HeadingProps) {
+  const Component = as || `h${level}` as keyof JSX.IntrinsicElements;
   
-  const spacingClasses = {
-    sm: direction === 'vertical' ? 'space-y-2' : 'space-x-2',
-    md: direction === 'vertical' ? 'space-y-4' : 'space-x-4',
-    lg: direction === 'vertical' ? 'space-y-6' : 'space-x-6'
+  // Default sizes based on heading level
+  const defaultSizes = {
+    1: '3xl',
+    2: '2xl',
+    3: 'xl',
+    4: 'lg',
+    5: 'md',
+    6: 'sm'
+  };
+
+  const actualSize = size || defaultSizes[level];
+  
+  const sizeClasses = {
+    xs: 'text-xs',
+    sm: 'text-sm',
+    md: 'text-base',
+    lg: 'text-lg',
+    xl: 'text-xl',
+    '2xl': 'text-2xl sm:text-3xl',
+    '3xl': 'text-3xl sm:text-4xl lg:text-5xl'
+  };
+
+  const weightClasses = {
+    normal: 'font-normal',
+    medium: 'font-medium',
+    semibold: 'font-semibold',
+    bold: 'font-bold'
   };
 
   const alignClasses = {
-    start: 'items-start',
-    center: 'items-center',
-    end: 'items-end'
+    left: 'text-left',
+    center: 'text-center',
+    right: 'text-right'
   };
 
   return (
-    <div className={cn(
-      'flex',
-      directionClasses,
-      spacingClasses[spacing],
-      alignClasses[align],
-      className
-    )}>
+    <Component 
+      className={cn(
+        sizeClasses[actualSize],
+        weightClasses[weight],
+        alignClasses[align],
+        'leading-tight tracking-tight',
+        className
+      )}
+    >
       {children}
-    </div>
-  );
-}
-
-interface HeadingProps {
-  children: React.ReactNode;
-  level?: 1 | 2 | 3 | 4 | 5 | 6;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
-  className?: string;
-}
-
-export function Heading({ children, level = 1, size, className }: HeadingProps) {
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
-  
-  const defaultSizes = {
-    1: 'text-4xl font-bold tracking-tight lg:text-5xl',
-    2: 'text-3xl font-semibold tracking-tight',
-    3: 'text-2xl font-semibold tracking-tight',
-    4: 'text-xl font-semibold tracking-tight',
-    5: 'text-lg font-semibold tracking-tight',
-    6: 'text-base font-semibold tracking-tight'
-  };
-
-  const customSizes = {
-    sm: 'text-sm font-semibold tracking-tight',
-    md: 'text-base font-semibold tracking-tight',
-    lg: 'text-lg font-semibold tracking-tight',
-    xl: 'text-xl font-semibold tracking-tight',
-    '2xl': 'text-2xl font-semibold tracking-tight'
-  };
-
-  const finalClassName = size ? customSizes[size] : defaultSizes[level];
-
-  return (
-    <Tag className={cn(finalClassName, className)}>
-      {children}
-    </Tag>
+    </Component>
   );
 }
 
 interface TextProps {
-  children: React.ReactNode;
-  variant?: 'body' | 'small' | 'large' | 'muted';
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  children: ReactNode;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  weight?: 'normal' | 'medium' | 'semibold' | 'bold';
+  variant?: 'default' | 'muted' | 'subtle' | 'accent';
+  align?: 'left' | 'center' | 'right';
+  className?: string;
+  as?: 'p' | 'span' | 'div';
+}
+
+export function Text({ 
+  children, 
+  size = 'md', 
+  weight = 'normal', 
+  variant = 'default',
+  align = 'left',
+  className,
+  as = 'p'
+}: TextProps) {
+  const Component = as;
+  
+  const sizeClasses = {
+    xs: 'text-xs',
+    sm: 'text-sm',
+    md: 'text-base',
+    lg: 'text-lg',
+    xl: 'text-xl'
+  };
+
+  const weightClasses = {
+    normal: 'font-normal',
+    medium: 'font-medium',
+    semibold: 'font-semibold',
+    bold: 'font-bold'
+  };
+
+  const variantClasses = {
+    default: 'text-foreground',
+    muted: 'text-muted-foreground',
+    subtle: 'text-muted-foreground/80',
+    accent: 'text-primary'
+  };
+
+  const alignClasses = {
+    left: 'text-left',
+    center: 'text-center',
+    right: 'text-right'
+  };
+
+  return (
+    <Component 
+      className={cn(
+        sizeClasses[size],
+        weightClasses[weight],
+        variantClasses[variant],
+        alignClasses[align],
+        'leading-relaxed',
+        className
+      )}
+    >
+      {children}
+    </Component>
+  );
+}
+
+interface SpacerProps {
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
 }
 
-export function Text({ children, variant = 'body', size, className }: TextProps) {
-  const variantClasses = {
-    body: 'text-base leading-7',
-    small: 'text-sm leading-6',
-    large: 'text-lg leading-8',
-    muted: 'text-sm text-muted-foreground leading-6'
-  };
-
+export function Spacer({ size = 'md', className }: SpacerProps) {
   const sizeClasses = {
-    sm: 'text-sm leading-6',
-    md: 'text-base leading-7',
-    lg: 'text-lg leading-8',
-    xl: 'text-xl leading-9'
+    xs: 'h-2',
+    sm: 'h-4',
+    md: 'h-6',
+    lg: 'h-8',
+    xl: 'h-12',
+    '2xl': 'h-16'
   };
 
-  const finalClassName = size ? sizeClasses[size] : variantClasses[variant];
+  return <div className={cn(sizeClasses[size], className)} />;
+}
+
+interface DividerProps {
+  orientation?: 'horizontal' | 'vertical';
+  variant?: 'default' | 'dashed' | 'dotted';
+  spacing?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+export function Divider({ 
+  orientation = 'horizontal', 
+  variant = 'default',
+  spacing = 'md',
+  className 
+}: DividerProps) {
+  const spacingClasses = {
+    sm: orientation === 'horizontal' ? 'my-4' : 'mx-4',
+    md: orientation === 'horizontal' ? 'my-6' : 'mx-6',
+    lg: orientation === 'horizontal' ? 'my-8' : 'mx-8'
+  };
+
+  const variantClasses = {
+    default: 'border-border',
+    dashed: 'border-border border-dashed',
+    dotted: 'border-border border-dotted'
+  };
+
+  const orientationClasses = {
+    horizontal: 'border-t w-full',
+    vertical: 'border-l h-full'
+  };
 
   return (
-    <p className={cn(finalClassName, className)}>
-      {children}
-    </p>
+    <div 
+      className={cn(
+        spacingClasses[spacing],
+        variantClasses[variant],
+        orientationClasses[orientation],
+        className
+      )}
+    />
   );
 }
