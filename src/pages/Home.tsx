@@ -8,6 +8,7 @@ import { FeaturesSection } from '@/components/home/FeaturesSection';
 import { EnhancedCTASection } from '@/components/home/EnhancedCTASection';
 import { EnhancedOnboarding } from '@/components/onboarding/EnhancedOnboarding';
 import { EnhancedBreadcrumb } from '@/components/ui/enhanced-navigation';
+import { PageTransition } from '@/components/ui/enhanced-transitions';
 import { useHomePage } from '@/hooks/useHomePage';
 
 export default function Home() {
@@ -25,7 +26,7 @@ export default function Home() {
   if (user && showOnboarding) {
     return (
       <ErrorBoundary>
-        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+        <PageTransition className="min-h-screen bg-gradient-to-b from-background to-muted/20">
           <SkipLink href="#main-content" />
           <EnhancedBreadcrumb 
             items={[{ label: 'Enterprise Setup', icon: Zap }]} 
@@ -35,14 +36,14 @@ export default function Home() {
           <main id="main-content" role="main" className="container mx-auto px-6 py-12">
             <EnhancedOnboarding />
           </main>
-        </div>
+        </PageTransition>
       </ErrorBoundary>
     );
   }
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen">
+      <PageTransition className="min-h-screen">
         <SkipLink href="#main-content" />
         
         <main id="main-content" role="main">
@@ -68,7 +69,7 @@ export default function Home() {
             onNavigateToLearn={() => navigate('/learn')}
           />
         </main>
-      </div>
+      </PageTransition>
     </ErrorBoundary>
   );
 }

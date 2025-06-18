@@ -1,100 +1,83 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
-interface Shortcut {
+interface ShortcutConfig {
   key: string;
-  ctrl?: boolean;
-  alt?: boolean;
-  shift?: boolean;
-  description: string;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
   action: () => void;
+  description: string;
 }
 
 export function useKeyboardShortcuts() {
   const navigate = useNavigate();
 
-  const shortcuts: Shortcut[] = [
+  const shortcuts: ShortcutConfig[] = [
     {
       key: 'h',
-      ctrl: true,
-      description: 'Go to Home/Dashboard',
-      action: () => navigate('/')
-    },
-    {
-      key: 'q',
-      ctrl: true,
-      description: 'Go to Queries',
-      action: () => navigate('/queries')
-    },
-    {
-      key: 'r',
-      ctrl: true,
-      description: 'Go to Reports',
-      action: () => navigate('/reports')
+      ctrlKey: true,
+      action: () => navigate('/'),
+      description: 'Go to Home'
     },
     {
       key: 'd',
-      ctrl: true,
-      description: 'Go to Database Import',
-      action: () => navigate('/db-import')
+      ctrlKey: true,
+      action: () => navigate('/dashboard'),
+      description: 'Go to Dashboard'
     },
     {
-      key: 'a',
-      ctrl: true,
-      alt: true,
-      description: 'Go to AI Features',
-      action: () => navigate('/ai-features')
+      key: 'q',
+      ctrlKey: true,
+      action: () => navigate('/query-builder'),
+      description: 'Open Query Builder'
     },
     {
       key: 's',
-      ctrl: true,
-      description: 'Go to Settings',
-      action: () => navigate('/settings')
+      ctrlKey: true,
+      action: () => navigate('/settings'),
+      description: 'Open Settings'
     },
     {
       key: '/',
-      ctrl: true,
-      description: 'Show keyboard shortcuts',
+      ctrlKey: true,
       action: () => {
         enhancedToast.info({
           title: 'Keyboard Shortcuts',
-          description: 'Ctrl+H: Home | Ctrl+Q: Queries | Ctrl+R: Reports | Ctrl+D: DB Import | Ctrl+Alt+A: AI Features | Ctrl+S: Settings'
+          description: 'Ctrl+H: Home, Ctrl+D: Dashboard, Ctrl+Q: Query Builder, Ctrl+S: Settings'
         });
-      }
+      },
+      description: 'Show shortcuts help'
     }
   ];
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in input fields
-      if (
-        event.target instanceof HTMLInputElement ||
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    // Don't trigger shortcuts when typing in inputs
+    if (event.target instanceof HTMLInputElement || 
         event.target instanceof HTMLTextAreaElement ||
-        (event.target as HTMLElement)?.contentEditable === 'true'
-      ) {
-        return;
-      }
+        event.target instanceof HTMLSelectElement) {
+      return;
+    }
 
-      const matchingShortcut = shortcuts.find(shortcut => {
-        return (
-          event.key.toLowerCase() === shortcut.key.toLowerCase() &&
-          !!event.ctrlKey === !!shortcut.ctrl &&
-          !!event.altKey === !!shortcut.alt &&
-          !!event.shiftKey === !!shortcut.shift
-        );
-      });
+    const shortcut = shortcuts.find(s => 
+      s.key.toLowerCase() === event.key.toLowerCase() &&
+      !!s.ctrlKey === event.ctrlKey &&
+      !!s.altKey === event.altKey &&
+      !!s.shiftKey === event.shiftKey
+    );
 
-      if (matchingShortcut) {
-        event.preventDefault();
-        matchingShortcut.action();
-      }
-    };
+    if (shortcut) {
+      event.preventDefault();
+      shortcut.action();
+    }
+  }, [shortcuts]);
 
+  useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  }, [handleKeyDown]);
 
   return { shortcuts };
 }

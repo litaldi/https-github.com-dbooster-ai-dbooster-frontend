@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import './components/ui/enhanced-interactions.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,21 +21,17 @@
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 210 40% 96%;
     --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72.22% 50.59%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    
-    /* Accessibility variables */
-    --accessibility-font-size: 100%;
-    --accessibility-line-height: 1.5;
   }
 
   .dark {
@@ -62,74 +60,131 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
-  
+
   body {
-    @apply bg-background text-foreground;
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: var(--accessibility-font-size);
-    line-height: var(--accessibility-line-height);
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
+  /* Enhanced focus styles */
+  *:focus-visible {
+    @apply focus-ring;
+  }
+
+  /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 2rem;
   }
 
-  /* Focus styles for accessibility */
-  :focus-visible {
-    @apply outline-2 outline-offset-2 outline-ring;
+  /* Enhanced typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
   }
 
-  /* Accessibility: High contrast mode */
-  .accessibility-high-contrast {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 0%;
-    --card-foreground: 0 0% 100%;
-    --border: 0 0% 100%;
-    --primary: 60 100% 50%;
-    --primary-foreground: 0 0% 0%;
+  /* Performance optimizations */
+  img {
+    @apply will-change-transform;
   }
 
-  /* Accessibility: Large text mode */
-  .accessibility-large-text {
-    --accessibility-font-size: 125%;
+  /* Enhanced animations */
+  .animate-float {
+    animation: float-gentle 6s ease-in-out infinite;
   }
 
-  /* Accessibility: Reduced motion */
-  .accessibility-reduce-motion * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite alternate;
   }
 
-  /* Skip link for screen readers */
-  .skip-link {
-    @apply absolute left-0 top-0 z-50 -translate-y-full transform bg-primary px-4 py-2 text-primary-foreground transition-transform focus:translate-y-0;
+  @keyframes glow-pulse {
+    from {
+      box-shadow: 0 0 5px rgba(var(--primary) / 0.3);
+    }
+    to {
+      box-shadow: 0 0 20px rgba(var(--primary) / 0.6);
+    }
   }
 }
 
-/* Reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+@layer components {
+  /* Enhanced button styles */
+  .btn-enhanced {
+    @apply btn-hover-lift focus-ring gpu-accelerated;
+  }
+
+  /* Enhanced card styles */
+  .card-enhanced {
+    @apply card-interactive focus-ring gpu-accelerated;
+  }
+
+  /* Enhanced input styles */
+  .input-enhanced {
+    @apply focus-ring transition-all duration-200 will-change-transform;
+  }
+
+  .input-enhanced:focus {
+    @apply scale-[1.02] shadow-md;
   }
 }
 
-/* High contrast preferences */
-@media (prefers-contrast: high) {
-  :root {
-    --border: 0 0% 20%;
+@layer utilities {
+  /* Text gradient utilities */
+  .text-gradient-primary {
+    @apply gradient-text-premium;
+  }
+
+  /* Animation utilities */
+  .animate-stagger {
+    @apply stagger-children;
+  }
+
+  /* Glass effect utilities */
+  .bg-glass {
+    @apply glass-card;
+  }
+
+  /* Performance utilities */
+  .optimize-performance {
+    @apply gpu-accelerated will-change-transform;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
   }
   
-  .dark {
-    --border: 0 0% 80%;
+  * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* Enhanced mobile experience */
+@media (max-width: 768px) {
+  /* Larger touch targets */
+  button, 
+  a[role="button"], 
+  input[type="button"], 
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better mobile scrolling */
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduced animations on mobile to save battery */
+  .float-gentle,
+  .animate-glow-pulse {
+    animation-duration: 8s;
   }
 }

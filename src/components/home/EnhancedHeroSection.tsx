@@ -7,8 +7,9 @@ import { FadeIn, ScaleIn, HoverScale } from '@/components/ui/enhanced-animations
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
 import { TooltipGuidance, UserGuidance } from '@/components/ui/user-guidance';
 import { FloatingQuerySnippets } from './FloatingQuerySnippets';
-import { PerformanceCounter } from './PerformanceCounter';
+import { EnhancedPerformanceCounters } from './EnhancedPerformanceCounters';
 import { InteractiveQueryInput } from './InteractiveQueryInput';
+import { InteractiveButton } from '@/components/ui/micro-interactions';
 
 interface EnhancedHeroSectionProps {
   user: any;
@@ -78,32 +79,32 @@ export function EnhancedHeroSection({
         <FadeIn delay={0.8}>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <TooltipGuidance content="Start your enterprise database optimization journey">
-              <HoverScale>
-                <EnhancedButton 
-                  size="xl" 
-                  onClick={onGetStarted} 
-                  className="text-lg px-8 min-h-[56px] min-w-[220px] shadow-lg hover:shadow-xl transition-all duration-300"
-                  loading={isLoading}
-                  loadingText="Starting optimization..."
-                  aria-label={user ? 'Access Dashboard' : 'Start Free Enterprise Trial'}
-                >
-                  {user ? 'Access Dashboard' : 'Start Free Enterprise Trial'}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </EnhancedButton>
-              </HoverScale>
+              <InteractiveButton
+                onClick={onGetStarted}
+                className="bg-primary text-primary-foreground shadow-lg hover:shadow-xl text-lg px-8 min-h-[56px] min-w-[220px] rounded-lg transition-all duration-300"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+                    Starting optimization...
+                  </>
+                ) : (
+                  <>
+                    {user ? 'Access Dashboard' : 'Start Free Enterprise Trial'}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </InteractiveButton>
             </TooltipGuidance>
             
-            <HoverScale>
-              <EnhancedButton 
-                size="xl" 
-                variant="outline" 
-                onClick={onNavigateToLogin} 
-                className="text-lg px-8 min-h-[56px] transition-all duration-300"
-                aria-label={user ? 'Account Settings' : 'Enterprise Sign In'}
-              >
-                {user ? 'Settings' : 'Enterprise Sign In'}
-              </EnhancedButton>
-            </HoverScale>
+            <InteractiveButton
+              onClick={onNavigateToLogin}
+              variant="subtle"
+              className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground text-lg px-8 min-h-[56px] rounded-lg transition-all duration-300"
+            >
+              {user ? 'Settings' : 'Enterprise Sign In'}
+            </InteractiveButton>
 
             <UserGuidance
               title="Enterprise Setup Guide"
@@ -111,27 +112,22 @@ export function EnhancedHeroSection({
               steps={guidanceSteps}
               trigger={
                 <TooltipGuidance content="Need help with enterprise setup?">
-                  <EnhancedButton 
-                    variant="ghost" 
-                    size="xl" 
-                    className="text-lg px-4"
-                    aria-label="Open enterprise setup guide"
+                  <InteractiveButton
+                    variant="subtle"
+                    className="text-lg px-4 min-h-[56px] hover:bg-accent rounded-lg"
                   >
                     <HelpCircle className="h-6 w-6" />
-                  </EnhancedButton>
+                  </InteractiveButton>
                 </TooltipGuidance>
               }
             />
           </div>
         </FadeIn>
 
-        {/* Performance Metrics */}
+        {/* Enhanced Performance Metrics */}
         <FadeIn delay={1.0}>
           <div className="mb-12">
-            <Text size="sm" variant="muted" className="mb-6 font-medium">
-              Trusted by Fortune 500 companies and enterprise development teams worldwide
-            </Text>
-            <PerformanceCounter />
+            <EnhancedPerformanceCounters />
           </div>
         </FadeIn>
 
