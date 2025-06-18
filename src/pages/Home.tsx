@@ -1,16 +1,16 @@
-
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { Database, Zap, Shield, TrendingUp, Users, Code } from 'lucide-react';
 import { showSuccess } from '@/components/ui/feedback-toast';
-import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
-import { SkipLink } from '@/components/ui/accessibility-helpers';
+import { SkipLink } from '@/components/ui/enhanced-accessibility';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { HeroSection } from '@/components/home/HeroSection';
 import { QuickActions } from '@/components/home/QuickActions';
 import { FeaturesSection } from '@/components/home/FeaturesSection';
+import { StreamlinedOnboarding } from '@/components/onboarding/StreamlinedOnboarding';
+import { EnhancedBreadcrumb } from '@/components/ui/enhanced-navigation';
 import { FadeIn, HoverScale } from '@/components/ui/enhanced-animations';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { ArrowRight } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function Home() {
   const { user, loginDemo } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(!user);
 
   const handleGetStarted = async () => {
     setIsLoading(true);
@@ -33,10 +34,10 @@ export default function Home() {
       } else {
         await loginDemo();
         showSuccess({ 
-          title: 'Demo Started!', 
-          description: 'Welcome to the DBooster demo experience.' 
+          title: 'Welcome to DBooster!', 
+          description: 'You\'re now exploring our demo environment.' 
         });
-        navigate('/dashboard');
+        setShowOnboarding(true);
       }
     } catch (error) {
       console.error('Navigation error:', error);
@@ -147,11 +148,28 @@ export default function Home() {
     }
   ], []);
 
+  if (user && showOnboarding) {
+    return (
+      <ErrorBoundary>
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+          <SkipLink href="#main-content" />
+          <EnhancedBreadcrumb 
+            items={[{ label: 'Getting Started', icon: Zap }]} 
+            className="p-6"
+          />
+          
+          <main id="main-content" role="main" className="container mx-auto px-6 py-12">
+            <StreamlinedOnboarding />
+          </main>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <div className="min-h-screen">
-        <SkipLink href="#main-content">Skip to main content</SkipLink>
-        <BreadcrumbNav />
+        <SkipLink href="#main-content" />
         
         <main id="main-content" role="main">
           <HeroSection
@@ -169,8 +187,8 @@ export default function Home() {
             onViewAllFeatures={() => navigate('/features')} 
           />
 
-          {/* CTA Section */}
-          <Section spacing="lg" className="bg-muted/50">
+          {/* Enhanced CTA Section */}
+          <Section spacing="lg" className="bg-gradient-to-r from-primary/5 to-purple-500/5">
             <Container className="text-center">
               <FadeIn>
                 <Heading level={2} size="xl" className="mb-4">
@@ -179,25 +197,38 @@ export default function Home() {
               </FadeIn>
               
               <FadeIn delay={0.2}>
-                <Text size="lg" variant="muted" className="mb-8">
-                  Join thousands of developers who have improved their database performance with DBooster.
+                <Text size="lg" variant="muted" className="mb-8 max-w-2xl mx-auto">
+                  Join thousands of developers who have improved their database performance with DBooster's AI-powered optimization tools.
                 </Text>
               </FadeIn>
               
               <FadeIn delay={0.4}>
-                <HoverScale>
-                  <EnhancedButton 
-                    size="lg" 
-                    onClick={handleGetStarted} 
-                    className="text-lg px-8 min-h-[48px] transition-all duration-300 shadow-lg hover:shadow-xl"
-                    loading={isLoading}
-                    loadingText="Getting Started..."
-                    aria-label="Get started with DBooster now"
-                  >
-                    Get Started Now
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </EnhancedButton>
-                </HoverScale>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <HoverScale>
+                    <EnhancedButton 
+                      size="xl" 
+                      onClick={handleGetStarted} 
+                      className="min-w-[200px]"
+                      loading={isLoading}
+                      loadingText="Getting Started..."
+                      aria-label="Start optimizing your database now"
+                    >
+                      Start Optimizing Now
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </EnhancedButton>
+                  </HoverScale>
+                  
+                  <HoverScale>
+                    <EnhancedButton 
+                      variant="outline" 
+                      size="xl"
+                      onClick={() => navigate('/learn')}
+                      className="min-w-[200px]"
+                    >
+                      Learn More
+                    </EnhancedButton>
+                  </HoverScale>
+                </div>
               </FadeIn>
             </Container>
           </Section>

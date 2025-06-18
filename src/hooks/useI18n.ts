@@ -1,98 +1,44 @@
 
-import { useState, useEffect, useCallback } from 'react';
-
-export type Language = 'en' | 'he' | 'ar' | 'fa' | 'ur';
+import { useState, useEffect } from 'react';
 
 interface I18nConfig {
   language: string;
   direction: 'ltr' | 'rtl';
+  dateFormat: string;
+  numberFormat: string;
 }
 
-interface TranslationMap {
-  [key: string]: {
-    [key: string]: string;
-  };
-}
-
-const RTL_LANGUAGES: readonly string[] = ['ar', 'he', 'fa', 'ur'];
-const STORAGE_KEY = 'dbooster-language';
-const DEFAULT_LANGUAGE = 'en';
-
-// Translation system - can be expanded with actual translations
-const translations: TranslationMap = {
-  en: {
-    // English translations
-    'common.loading': 'Loading...',
-    'common.error': 'Error',
-    'auth.signin': 'Sign In',
-    'auth.signup': 'Sign Up',
-  },
-  he: {
-    // Hebrew translations
-    'common.loading': 'טוען...',
-    'common.error': 'שגיאה',
-    'auth.signin': 'התחברות',
-    'auth.signup': 'הרשמה',
-  }
+const DEFAULT_CONFIG: I18nConfig = {
+  language: 'en',
+  direction: 'ltr',
+  dateFormat: 'MM/dd/yyyy',
+  numberFormat: 'en-US'
 };
 
 export function useI18n() {
   const [config, setConfig] = useState<I18nConfig>(() => {
-    const savedLanguage = typeof window !== 'undefined' 
-      ? localStorage.getItem(STORAGE_KEY) || DEFAULT_LANGUAGE
-      : DEFAULT_LANGUAGE;
-    
-    return {
-      language: savedLanguage,
-      direction: RTL_LANGUAGES.includes(savedLanguage) ? 'rtl' : 'ltr'
-    };
+    const saved = localStorage.getItem('i18n-config');
+    return saved ? { ...DEFAULT_CONFIG, ...JSON.parse(saved) } : DEFAULT_CONFIG;
   });
 
-  const setLanguage = useCallback((language: string) => {
-    const newConfig: I18nConfig = {
-      language,
-      direction: RTL_LANGUAGES.includes(language) ? 'rtl' : 'ltr'
-    };
-    
-    setConfig(newConfig);
-    
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, language);
-    }
-  }, []);
-
-  const changeLanguage = useCallback((language: Language) => {
-    setLanguage(language);
-  }, [setLanguage]);
-
-  const t = useCallback((key: string, fallback?: string): string => {
-    const languageTranslations = translations[config.language];
-    if (languageTranslations && languageTranslations[key]) {
-      return languageTranslations[key];
-    }
-    
-    // Fallback to English if available
-    if (config.language !== 'en' && translations.en && translations.en[key]) {
-      return translations.en[key];
-    }
-    
-    // Return fallback or key if no translation found
-    return fallback || key;
-  }, [config.language]);
-
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.dir = config.direction;
-      document.documentElement.lang = config.language;
-    }
+    localStorage.setItem('i18n-config', JSON.stringify(config));
+    document.documentElement.lang = config.language;
+    document.documentElement.dir = config.direction;
   }, [config]);
+
+  const updateLanguage = (language: string) => {
+    setConfig(prev => ({ ...prev, language }));
+  };
+
+  const updateDirection = (direction: 'ltr' | 'rtl') => {
+    setConfig(prev => ({ ...prev, direction }));
+  };
 
   return {
     ...config,
-    setLanguage,
-    changeLanguage,
-    t,
-    isRTL: config.direction === 'rtl',
-    isLTR: config.direction === 'ltr'
+    updateLanguage,
+    updateDirection,
+    setConfig
   };
 }
