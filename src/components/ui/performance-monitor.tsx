@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Zap, Clock } from 'lucide-react';
 
-interface Performance Metrics {
+interface PerformanceMetrics {
   lcp: number; // Largest Contentful Paint
   fid: number; // First Input delay
   cls: number; // Cumulative Layout Shift
