@@ -9,9 +9,7 @@ import {
   AlertCircle, 
   Info, 
   X, 
-  Bell,
-  Settings,
-  Zap
+  Bell
 } from 'lucide-react';
 
 interface Notification {
@@ -117,11 +115,8 @@ export function NotificationCenter({
                       {notifications.map((notification) => {
                         const Icon = icons[notification.type];
                         return (
-                          <motion.div
+                          <div
                             key={notification.id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
                             className={`p-4 border-l-4 ${colors[notification.type]} hover:bg-opacity-80 transition-colors`}
                           >
                             <div className="flex items-start gap-3">
@@ -136,22 +131,6 @@ export function NotificationCenter({
                                 <p className="text-xs opacity-70 mt-2">
                                   {notification.timestamp.toLocaleTimeString()}
                                 </p>
-                                
-                                {notification.actions && (
-                                  <div className="flex gap-2 mt-3">
-                                    {notification.actions.map((action, index) => (
-                                      <EnhancedButton
-                                        key={index}
-                                        size="sm"
-                                        variant={action.variant || 'outline'}
-                                        onClick={action.action}
-                                        className="h-6 px-2 text-xs"
-                                      >
-                                        {action.label}
-                                      </EnhancedButton>
-                                    ))}
-                                  </div>
-                                )}
                               </div>
                               <EnhancedButton
                                 variant="ghost"
@@ -162,7 +141,7 @@ export function NotificationCenter({
                                 <X className="h-3 w-3" />
                               </EnhancedButton>
                             </div>
-                          </motion.div>
+                          </div>
                         );
                       })}
                     </div>
@@ -177,7 +156,6 @@ export function NotificationCenter({
   );
 }
 
-// Hook for managing notifications
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -198,7 +176,6 @@ export function useNotifications() {
     setNotifications([]);
   };
 
-  // Auto-dismiss success notifications after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setNotifications(prev => 

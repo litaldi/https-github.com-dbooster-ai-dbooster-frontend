@@ -11,8 +11,8 @@ interface AuthContextType {
   isDemo: boolean;
   login: (email: string, password: string) => Promise<{ error?: any }>;
   signup: (email: string, password: string, name: string) => Promise<{ error?: any }>;
-  signIn: (email: string, password: string) => Promise<{ error?: any }>; // Alias for compatibility
-  signUp: (email: string, password: string, name: string) => Promise<{ error?: any }>; // Alias for compatibility
+  signIn: (email: string, password: string) => Promise<{ error?: any }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error?: any }>;
   loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
   githubAccessToken: string | null;
@@ -42,7 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -59,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (mounted) {
@@ -182,8 +180,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isDemo,
       login,
       signup,
-      signIn: login, // Alias for compatibility
-      signUp: signup, // Alias for compatibility
+      signIn: login,
+      signUp: signup,
       loginDemo,
       logout,
       githubAccessToken
