@@ -1,3 +1,5 @@
+
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -8,6 +10,8 @@ import Layout from '@/components/layout';
 import { PublicLayout } from '@/components/PublicLayout';
 import ProtectedRoute from '@/components/protected-route';
 import { LiveChatWidget } from '@/components/support/LiveChatWidget';
+import { setupEnhancedGlobalErrorHandling } from '@/utils/enhancedErrorHandling';
+import { performanceMonitor } from '@/utils/advancedPerformanceMonitor';
 
 // Pages
 import Home from '@/pages/Home';
