@@ -19,6 +19,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transform transition-all duration-200",
         ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02] active:scale-[0.98] transform transition-all duration-200",
         link: "text-primary underline-offset-4 hover:underline hover:text-primary/80 transition-colors duration-200",
+        gradient: "bg-gradient-to-r from-primary to-purple-600 text-primary-foreground shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transform transition-all duration-200",
+        glow: "bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transform transition-all duration-200",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -43,6 +45,8 @@ export interface EnhancedButtonProps
   loadingText?: string
   success?: boolean
   successText?: string
+  icon?: React.ReactNode
+  iconPosition?: 'left' | 'right'
 }
 
 const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
@@ -56,7 +60,9 @@ const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
     success,
     successText,
     disabled, 
-    children, 
+    children,
+    icon,
+    iconPosition = 'left',
     ...props 
   }, ref) => {
     const Comp = asChild ? Slot : "button"
@@ -85,7 +91,11 @@ const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
             <span>{successText || "Success!"}</span>
           </>
         ) : (
-          children
+          <>
+            {icon && iconPosition === 'left' && <span className="[&_svg]:size-4">{icon}</span>}
+            {children}
+            {icon && iconPosition === 'right' && <span className="[&_svg]:size-4">{icon}</span>}
+          </>
         )}
       </Comp>
     )

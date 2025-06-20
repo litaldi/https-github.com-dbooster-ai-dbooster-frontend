@@ -9,13 +9,25 @@ export interface EnhancedCheckboxProps
   label?: string
   description?: string
   size?: 'sm' | 'md' | 'lg'
-  variant?: 'default' | 'card'
+  variant?: 'default' | 'card' | 'switch'
+  color?: 'default' | 'success' | 'warning' | 'error'
+  icon?: React.ReactNode
 }
 
 const EnhancedCheckbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   EnhancedCheckboxProps
->(({ className, label, description, size = 'md', variant = 'default', id, ...props }, ref) => {
+>(({ 
+  className, 
+  label, 
+  description, 
+  size = 'md', 
+  variant = 'default',
+  color = 'default',
+  icon,
+  id, 
+  ...props 
+}, ref) => {
   const checkboxId = id || React.useId()
   
   const sizeClasses = {
@@ -30,13 +42,22 @@ const EnhancedCheckbox = React.forwardRef<
     lg: 'h-5 w-5'
   }
 
+  const colorClasses = {
+    default: 'data-[state=checked]:bg-primary data-[state=checked]:border-primary',
+    success: 'data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600',
+    warning: 'data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600',
+    error: 'data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600'
+  }
+
   const checkbox = (
     <CheckboxPrimitive.Root
       ref={ref}
       id={checkboxId}
       className={cn(
-        "peer shrink-0 rounded-md border-2 border-primary/20 shadow-sm ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary hover:border-primary/40 hover:shadow-md",
+        "peer shrink-0 rounded-md border-2 border-primary/20 shadow-sm ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-primary-foreground hover:border-primary/40 hover:shadow-md",
         sizeClasses[size],
+        colorClasses[color],
+        variant === 'switch' && 'rounded-full',
         className
       )}
       {...props}
@@ -44,7 +65,9 @@ const EnhancedCheckbox = React.forwardRef<
       <CheckboxPrimitive.Indicator
         className={cn("flex items-center justify-center text-current animate-in zoom-in-75 duration-200")}
       >
-        {props.checked === 'indeterminate' ? (
+        {icon ? (
+          <span className={iconSizes[size]}>{icon}</span>
+        ) : props.checked === 'indeterminate' ? (
           <Minus className={iconSizes[size]} />
         ) : (
           <Check className={iconSizes[size]} />

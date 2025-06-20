@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { EnhancedButton } from './enhanced-button';
 
 interface InteractiveButtonProps {
   children: ReactNode;
@@ -9,6 +10,8 @@ interface InteractiveButtonProps {
   className?: string;
   variant?: 'default' | 'subtle' | 'bounce';
   disabled?: boolean;
+  buttonVariant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'gradient' | 'glow';
+  size?: 'default' | 'sm' | 'lg' | 'xl' | 'icon';
 }
 
 export function InteractiveButton({ 
@@ -16,7 +19,9 @@ export function InteractiveButton({
   onClick, 
   className,
   variant = 'default',
-  disabled = false
+  disabled = false,
+  buttonVariant = 'default',
+  size = 'default'
 }: InteractiveButtonProps) {
   const variants = {
     default: {
@@ -34,19 +39,24 @@ export function InteractiveButton({
   };
 
   return (
-    <motion.button
-      className={cn(
-        'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
-        disabled && 'opacity-50 cursor-not-allowed',
-        className
-      )}
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
+    <motion.div
       {...(disabled ? {} : variants[variant])}
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
     >
-      {children}
-    </motion.button>
+      <EnhancedButton
+        variant={buttonVariant}
+        size={size}
+        onClick={disabled ? undefined : onClick}
+        disabled={disabled}
+        className={cn(
+          'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+          disabled && 'opacity-50 cursor-not-allowed',
+          className
+        )}
+      >
+        {children}
+      </EnhancedButton>
+    </motion.div>
   );
 }
 
@@ -134,6 +144,42 @@ export function GlowEffect({
         boxShadow: `0 0 20px var(--${color})`,
         transition: { duration: 0.3 }
       }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Enhanced card interaction
+interface InteractiveCardProps {
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+}
+
+export function InteractiveCard({
+  children,
+  className,
+  onClick,
+  disabled = false
+}: InteractiveCardProps) {
+  return (
+    <motion.div
+      className={cn(
+        'rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300',
+        !disabled && 'cursor-pointer hover:shadow-lg',
+        disabled && 'opacity-50 cursor-not-allowed',
+        className
+      )}
+      whileHover={disabled ? {} : { 
+        scale: 1.02,
+        y: -4,
+        boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+      }}
+      whileTap={disabled ? {} : { scale: 0.98 }}
+      onClick={disabled ? undefined : onClick}
+      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
     >
       {children}
     </motion.div>

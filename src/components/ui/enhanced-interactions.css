@@ -6,37 +6,6 @@
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all duration-200;
 }
 
-/* Button hover enhancements */
-.btn-hover-lift {
-  @apply transform transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg;
-}
-
-.btn-hover-glow {
-  @apply relative overflow-hidden transition-all duration-300;
-}
-
-.btn-hover-glow::before {
-  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] transition-transform duration-500;
-  content: '';
-}
-
-.btn-hover-glow:hover::before {
-  @apply translate-x-[100%];
-}
-
-/* Card interactions */
-.card-interactive {
-  @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer;
-}
-
-.card-glow {
-  @apply relative transition-all duration-300;
-}
-
-.card-glow:hover {
-  box-shadow: 0 10px 25px -5px rgba(var(--primary) / 0.1), 0 10px 10px -5px rgba(var(--primary) / 0.04);
-}
-
 /* Loading state enhancements */
 .loading-shimmer {
   background: linear-gradient(90deg, 
@@ -163,8 +132,7 @@
     animation: none !important;
   }
   
-  .card-interactive:hover,
-  .btn-hover-lift:hover {
+  .hover:hover {
     transform: none !important;
   }
 }
