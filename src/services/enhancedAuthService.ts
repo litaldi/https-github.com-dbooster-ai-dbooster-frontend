@@ -1,168 +1,80 @@
-import { AuthService } from '@/services/authService';
-import { securityService } from '@/services/securityService';
-import { enhancedRateLimiter } from '@/utils/enhancedRateLimiting';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
-import type { OAuthProvider, AuthCredentials } from '@/types/auth';
 
-export class EnhancedAuthService extends AuthService {
-  private async validateAuthInput(credentials: AuthCredentials): Promise<{ valid: boolean; errors?: string[] }> {
-    const errors: string[] = [];
+import { supabase } from '@/integrations/supabase/client';
+import { AuthError } from '@supabase/supabase-js';
+import { RateLimiter } from '@/utils/rateLimiting';
 
-    if (credentials.email) {
-      const emailValidation = await securityService.validateUserInput(credentials.email, 'email_input');
-      if (!emailValidation.valid && emailValidation.errors) {
-        errors.push(...emailValidation.errors);
-      }
+const rateLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
+
+export class EnhancedAuthService {
+  private static instance: EnhancedAuthService;
+
+  public static getInstance(): EnhancedAuthService {
+    if (!EnhancedAuthService.instance) {
+      EnhancedAuthService.instance = new EnhancedAuthService();
     }
-
-    if (credentials.phone) {
-      const phoneValidation = await securityService.validateUserInput(credentials.phone, 'phone_input');
-      if (!phoneValidation.valid && phoneValidation.errors) {
-        errors.push(...phoneValidation.errors);
-      }
-    }
-
-    if (credentials.password) {
-      const passwordValidation = await securityService.validateUserInput(credentials.password, 'password_input');
-      if (!passwordValidation.valid && passwordValidation.errors) {
-        errors.push(...passwordValidation.errors);
-      }
-    }
-
-    if (credentials.name) {
-      const nameValidation = await securityService.validateUserInput(credentials.name, 'name_input');
-      if (!nameValidation.valid && nameValidation.errors) {
-        errors.push(...nameValidation.errors);
-      }
-    }
-
-    return { valid: errors.length === 0, errors: errors.length > 0 ? errors : undefined };
+    return EnhancedAuthService.instance;
   }
 
-  private sanitizeCredentials(credentials: AuthCredentials): AuthCredentials {
-    return {
-      email: credentials.email ? securityService.sanitizeInput(credentials.email) : undefined,
-      phone: credentials.phone ? securityService.sanitizeInput(credentials.phone) : undefined,
-      password: credentials.password, // Don't sanitize passwords
-      name: credentials.name ? securityService.sanitizeInput(credentials.name) : undefined,
-    };
-  }
-
-  async loginWithOAuth(provider: OAuthProvider): Promise<void> {
-    // Check rate limit
-    const rateLimitCheck = await enhancedRateLimiter.checkRateLimit('login');
-    if (!rateLimitCheck.allowed) {
-      const message = `Too many login attempts. Please try again in ${rateLimitCheck.retryAfter} seconds.`;
-      enhancedToast.error({ title: 'Rate Limited', description: message });
-      throw new Error(message);
-    }
-
+  async signIn(email: string, password: string) {
     try {
-      await securityService.logAuthEvent('oauth_attempt', true, { provider });
-      await super.loginWithOAuth(provider);
-      await securityService.logAuthEvent('oauth_success', true, { provider });
+      rateLimiter.checkRateLimit(`signin_${email}`);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      return { data, error: null };
     } catch (error) {
-      await securityService.logAuthEvent('oauth_failure', false, { provider, error: error instanceof Error ? error.message : 'Unknown error' });
-      throw error;
+      console.error('Enhanced auth sign in error:', error);
+      return { data: null, error: error as AuthError };
     }
   }
 
-  async loginWithCredentials(credentials: AuthCredentials): Promise<void> {
-    // Check rate limit
-    const rateLimitCheck = await enhancedRateLimiter.checkRateLimit('login');
-    if (!rateLimitCheck.allowed) {
-      const message = `Too many login attempts. Please try again in ${rateLimitCheck.retryAfter} seconds.`;
-      enhancedToast.error({ title: 'Rate Limited', description: message });
-      throw new Error(message);
-    }
-
-    // Validate input
-    const validation = await this.validateAuthInput(credentials);
-    if (!validation.valid) {
-      const message = validation.errors?.join(', ') || 'Invalid input';
-      enhancedToast.error({ title: 'Validation Error', description: message });
-      throw new Error(message);
-    }
-
-    // Sanitize input
-    const sanitizedCredentials = this.sanitizeCredentials(credentials);
-
+  async signUp(email: string, password: string, metadata?: Record<string, any>) {
     try {
-      await securityService.logAuthEvent('login_attempt', true, { 
-        method: credentials.email ? 'email' : 'phone',
-        email: credentials.email 
+      rateLimiter.checkRateLimit(`signup_${email}`);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata
+        }
       });
-      
-      await super.loginWithCredentials(sanitizedCredentials);
-      
-      await securityService.logAuthEvent('login_success', true, { 
-        method: credentials.email ? 'email' : 'phone' 
-      });
-      
-      // Reset rate limit on successful login
-      await enhancedRateLimiter.resetRateLimit('login');
+
+      if (error) throw error;
+      return { data, error: null };
     } catch (error) {
-      await securityService.logAuthEvent('login_failure', false, { 
-        method: credentials.email ? 'email' : 'phone',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-      throw error;
+      console.error('Enhanced auth sign up error:', error);
+      return { data: null, error: error as AuthError };
     }
   }
 
-  async signupWithCredentials(credentials: AuthCredentials): Promise<void> {
-    // Check rate limit
-    const rateLimitCheck = await enhancedRateLimiter.checkRateLimit('signup');
-    if (!rateLimitCheck.allowed) {
-      const message = `Too many signup attempts. Please try again in ${rateLimitCheck.retryAfter} seconds.`;
-      enhancedToast.error({ title: 'Rate Limited', description: message });
-      throw new Error(message);
-    }
-
-    // Validate input
-    const validation = await this.validateAuthInput(credentials);
-    if (!validation.valid) {
-      const message = validation.errors?.join(', ') || 'Invalid input';
-      enhancedToast.error({ title: 'Validation Error', description: message });
-      throw new Error(message);
-    }
-
-    // Sanitize input
-    const sanitizedCredentials = this.sanitizeCredentials(credentials);
-
+  async signOut() {
     try {
-      await securityService.logAuthEvent('signup_attempt', true, { 
-        method: credentials.email ? 'email' : 'phone',
-        email: credentials.email 
-      });
-      
-      await super.signupWithCredentials(sanitizedCredentials);
-      
-      await securityService.logAuthEvent('signup_success', true, { 
-        method: credentials.email ? 'email' : 'phone' 
-      });
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      return { error: null };
     } catch (error) {
-      await securityService.logAuthEvent('signup_failure', false, { 
-        method: credentials.email ? 'email' : 'phone',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-      throw error;
+      console.error('Enhanced auth sign out error:', error);
+      return { error: error as AuthError };
     }
   }
 
-  async logout(isDemo: boolean = false): Promise<void> {
+  async resetPassword(email: string) {
     try {
-      await securityService.logAuthEvent('logout_attempt', true, { isDemo });
-      await super.logout(isDemo);
-      await securityService.logAuthEvent('logout_success', true, { isDemo });
+      rateLimiter.checkRateLimit(`reset_${email}`);
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      return { error: null };
     } catch (error) {
-      await securityService.logAuthEvent('logout_failure', false, { 
-        isDemo,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-      throw error;
+      console.error('Enhanced auth password reset error:', error);
+      return { error: error as AuthError };
     }
   }
 }
 
-export const enhancedAuthService = new EnhancedAuthService();
+export const enhancedAuthService = EnhancedAuthService.getInstance();
