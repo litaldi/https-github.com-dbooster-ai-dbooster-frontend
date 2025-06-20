@@ -7,7 +7,7 @@ export interface AuthFormData {
   confirmPassword: string;
 }
 
-export type AuthMode = 'login' | 'signup';
+export type AuthMode = 'login' | 'signup' | 'reset';
 export type LoginType = 'email' | 'phone';
 export type OAuthProvider = 'github' | 'google';
 

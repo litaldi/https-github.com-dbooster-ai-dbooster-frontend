@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { useAuth } from './useAuth';
+import { enhancedAuthService } from '@/services/enhancedAuthService';
 import { RateLimiter } from '@/utils/rateLimiting';
 import type { AuthMode } from '@/types/auth';
 
@@ -25,7 +25,6 @@ interface UseEnhancedAuthReturn {
 const authRateLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
 
 export function useEnhancedAuth(): UseEnhancedAuthReturn {
-  const { signIn, signUp } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,15 +38,30 @@ export function useEnhancedAuth(): UseEnhancedAuthReturn {
       authRateLimiter.checkRateLimit(data.email);
 
       if (authMode === 'login') {
-        await signIn(data.email, data.password);
+        const result = await enhancedAuthService.signIn(data.email, data.password);
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
       } else if (authMode === 'signup') {
         if (!data.firstName || !data.lastName) {
           throw new Error('First name and last name are required');
         }
-        await signUp(data.email, data.password, {
+        const result = await enhancedAuthService.signUp(data.email, data.password, {
           firstName: data.firstName,
           lastName: data.lastName
         });
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+      } else if (authMode === 'reset') {
+        const result = await enhancedAuthService.resetPassword(data.email);
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+        setError(null);
+        // Show success message for password reset
+        console.log('Password reset email sent successfully');
+        return;
       }
 
       // Reset rate limiter on successful auth
@@ -59,7 +73,7 @@ export function useEnhancedAuth(): UseEnhancedAuthReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [authMode, signIn, signUp]);
+  }, [authMode]);
 
   const clearError = useCallback(() => {
     setError(null);
