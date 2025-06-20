@@ -3,14 +3,17 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { unifiedAuthService } from '@/services/unifiedAuthService';
+import { getDemoUser, loginDemoUser, logoutDemoUser, isDemoMode } from '@/services/demo';
 import { logger } from '@/utils/logger';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isDemo: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: { message: string } }>;
   signUp: (userData: { email: string; password: string; name?: string }) => Promise<{ error?: { message: string } }>;
+  loginDemo: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -20,11 +23,24 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener
+    // Check for demo mode first
+    if (isDemoMode()) {
+      const demoUser = getDemoUser();
+      if (mounted) {
+        setUser(demoUser);
+        setSession(null);
+        setIsDemo(true);
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Set up auth state listener for real auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         logger.info('Auth state changed', { event, hasUser: !!session?.user }, 'SimpleAuthProvider');
@@ -32,6 +48,7 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
+          setIsDemo(false);
           setIsLoading(false);
         }
       }
@@ -49,6 +66,7 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
+          setIsDemo(false);
           setIsLoading(false);
         }
       } catch (error) {
@@ -77,16 +95,38 @@ export function SimpleAuthProvider({ children }: { children: ReactNode }) {
     return result.error ? { error: result.error } : {};
   };
 
+  const loginDemo = async () => {
+    try {
+      const { user: demoUser } = await loginDemoUser();
+      setUser(demoUser);
+      setSession(null);
+      setIsDemo(true);
+      logger.info('Demo login successful', {}, 'SimpleAuthProvider');
+    } catch (error) {
+      logger.error('Demo login failed', error, 'SimpleAuthProvider');
+      throw error;
+    }
+  };
+
   const signOut = async () => {
-    await unifiedAuthService.signOut();
+    if (isDemo) {
+      logoutDemoUser();
+      setUser(null);
+      setSession(null);
+      setIsDemo(false);
+    } else {
+      await unifiedAuthService.signOut();
+    }
   };
 
   const value: AuthContextType = {
     user,
     session,
     isLoading,
+    isDemo,
     signIn,
     signUp,
+    loginDemo,
     signOut
   };
 

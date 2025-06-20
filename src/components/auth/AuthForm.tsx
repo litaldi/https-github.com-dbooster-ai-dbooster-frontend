@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useAuthValidation } from '@/hooks/useAuthValidation';
 import { AuthFormHeader } from './AuthFormHeader';
 import { AuthFormFields } from './AuthFormFields';
 import { AuthFormActions } from './AuthFormActions';
@@ -22,10 +23,11 @@ export function AuthForm() {
     name: '',
     confirmPassword: ''
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof AuthFormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
+  
   const { signIn, signUp } = useSimpleAuth();
   const { toast } = useToast();
+  const { errors, validateAll, clearErrors } = useAuthValidation(mode);
 
   const handleFormDataChange = (data: Partial<AuthFormData>) => {
     setFormData(prev => ({ ...prev, ...data }));
@@ -34,7 +36,18 @@ export function AuthForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrors({});
+
+    // Validate form
+    const isValid = validateAll(formData, loginType);
+    if (!isValid) {
+      setIsLoading(false);
+      toast({
+        title: 'Validation Error',
+        description: 'Please fix the errors in the form and try again.',
+        variant: 'destructive'
+      });
+      return;
+    }
 
     try {
       if (mode === 'login') {
@@ -88,7 +101,15 @@ export function AuthForm() {
 
   const toggleMode = () => {
     setMode(mode === 'login' ? 'register' : 'login');
-    setErrors({});
+    clearErrors();
+    // Reset form data when switching modes
+    setFormData({
+      email: '',
+      password: '',
+      phone: '',
+      name: '',
+      confirmPassword: ''
+    });
   };
 
   return (
@@ -101,6 +122,7 @@ export function AuthForm() {
       </CardHeader>
       <CardContent className="space-y-4">
         <SocialAuth />
+        
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <Separator className="w-full" />
