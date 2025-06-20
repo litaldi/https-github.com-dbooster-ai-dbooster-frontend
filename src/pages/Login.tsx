@@ -1,11 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth-context';
-import { EnhancedAuthForm } from '@/components/auth/EnhancedAuthForm';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { SimpleAuthForm } from '@/components/auth/SimpleAuthForm';
 
 export default function Login() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useSimpleAuth();
   const [isLogin, setIsLogin] = useState(true);
 
   if (isLoading) {
@@ -22,7 +22,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <EnhancedAuthForm 
+      <SimpleAuthForm 
         isLogin={isLogin} 
         onToggleMode={() => setIsLogin(!isLogin)} 
       />

@@ -1,66 +1,67 @@
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug';
-
-interface LogEntry {
-  level: LogLevel;
+export interface LogEntry {
+  level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
   data?: any;
-  timestamp: string;
   component?: string;
+  timestamp?: number;
 }
 
-class Logger {
+export class Logger {
+  private static instance: Logger;
   private isDevelopment = import.meta.env.DEV;
 
-  private formatMessage(level: LogLevel, message: string, data?: any, component?: string): LogEntry {
-    return {
+  static getInstance(): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger();
+    }
+    return Logger.instance;
+  }
+
+  private log(level: LogEntry['level'], message: string, data?: any, component?: string) {
+    const entry: LogEntry = {
       level,
       message,
       data,
-      timestamp: new Date().toISOString(),
-      component
+      component,
+      timestamp: Date.now()
     };
-  }
 
-  error(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('error', message, data, component);
-    
-    // Always log errors, even in production
-    console.error(`[${entry.timestamp}] ERROR${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
-    
-    // In production, send to monitoring service
-    if (!this.isDevelopment) {
-      // Here you could send to external logging service
-      // this.sendToMonitoringService(entry);
-    }
-  }
-
-  warn(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('warn', message, data, component);
-    
-    // Only log warnings in development
     if (this.isDevelopment) {
-      console.warn(`[${entry.timestamp}] WARN${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
-    }
-  }
-
-  info(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('info', message, data, component);
-    
-    // Only log info in development
-    if (this.isDevelopment) {
-      console.info(`[${entry.timestamp}] INFO${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
+      const prefix = `[${level.toUpperCase()}]${component ? ` [${component}]` : ''}`;
+      
+      switch (level) {
+        case 'error':
+          console.error(prefix, message, data);
+          break;
+        case 'warn':
+          console.warn(prefix, message, data);
+          break;
+        case 'info':
+          console.info(prefix, message, data);
+          break;
+        case 'debug':
+          console.debug(prefix, message, data);
+          break;
+      }
     }
   }
 
   debug(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('debug', message, data, component);
-    
-    // Only log debug in development
-    if (this.isDevelopment) {
-      console.debug(`[${entry.timestamp}] DEBUG${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
-    }
+    this.log('debug', message, data, component);
+  }
+
+  info(message: string, data?: any, component?: string) {
+    this.log('info', message, data, component);
+  }
+
+  warn(message: string, data?: any, component?: string) {
+    this.log('warn', message, data, component);
+  }
+
+  error(message: string, data?: any, component?: string) {
+    this.log('error', message, data, component);
   }
 }
 
-export const logger = new Logger();
+export const logger = Logger.getInstance();
