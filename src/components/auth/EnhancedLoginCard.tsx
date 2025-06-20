@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { EnhancedAuthForm } from '@/components/auth/EnhancedAuthForm';
+import { AuthForm } from '@/components/auth/AuthForm';
 import { SocialAuth } from '@/components/auth/SocialAuth';
 import { Separator } from '@/components/ui/separator';
 import { AuthFormHeader } from '@/components/auth/AuthFormHeader';
@@ -86,7 +86,7 @@ export function EnhancedLoginCard({ authMode, onAuthModeChange }: EnhancedLoginC
           <Separator className="my-4" />
 
           <section id="auth-form" role="tabpanel">
-            <EnhancedAuthForm mode={authMode} onModeChange={onAuthModeChange} />
+            <AuthForm />
           </section>
 
           <section className="space-y-4">
