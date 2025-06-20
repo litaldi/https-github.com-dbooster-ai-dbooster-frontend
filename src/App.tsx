@@ -4,10 +4,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
-import { Toaster as Sonner } from '@/components/ui/sonner';
-import Layout from '@/components/layout';
-import { PublicLayout } from '@/components/PublicLayout';
 import ProtectedRoute from '@/components/protected-route';
 
 // Pages
@@ -39,6 +35,8 @@ import Privacy from '@/pages/Privacy';
 import Accessibility from '@/pages/Accessibility';
 import AIFeatures from '@/pages/AIFeatures';
 import Error404 from '@/pages/Error404';
+import Layout from '@/components/layout';
+import { PublicLayout } from '@/components/PublicLayout';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,8 +94,6 @@ function App() {
               <Route path="*" element={<Error404 />} />
             </Routes>
           </Router>
-          <Toaster />
-          <Sonner />
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

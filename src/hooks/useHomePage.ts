@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
-import { showSuccess } from '@/components/ui/feedback-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { features, getQuickActions, guidanceSteps } from '@/data/homePageData';
 
 export function useHomePage() {
@@ -16,14 +16,14 @@ export function useHomePage() {
     
     try {
       if (user) {
-        showSuccess({ 
+        enhancedToast.success({ 
           title: 'Taking you to your dashboard', 
           description: 'Your personalized database optimization workspace awaits!' 
         });
         navigate('/dashboard');
       } else {
         await loginDemo();
-        showSuccess({ 
+        enhancedToast.success({ 
           title: 'Welcome to DBooster!', 
           description: 'You\'re now exploring our full-featured demo environment.' 
         });

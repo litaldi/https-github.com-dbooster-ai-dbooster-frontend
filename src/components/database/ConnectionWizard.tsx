@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Database, CheckCircle, AlertCircle, Loader2, Shield } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface ConnectionConfig {
   type: string;
@@ -21,7 +20,6 @@ interface ConnectionConfig {
 }
 
 export function ConnectionWizard() {
-  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionResult, setConnectionResult] = useState<'success' | 'error' | null>(null);
@@ -66,15 +64,14 @@ export function ConnectionWizard() {
     setIsConnecting(false);
 
     if (success) {
-      toast({
+      enhancedToast.success({
         title: "Connection successful!",
         description: "Your database connection has been established.",
       });
     } else {
-      toast({
+      enhancedToast.error({
         title: "Connection failed",
         description: "Please check your credentials and try again.",
-        variant: "destructive",
       });
     }
   };

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from '@/hooks/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { githubService } from '@/services/github';
 import { repositoryService } from '@/services/repository';
@@ -37,16 +37,15 @@ export function useRepositories() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repositories'] });
-      toast({
+      enhancedToast.success({
         title: "Repository Added",
         description: "Repository has been connected to DBooster.",
       });
     },
     onError: (error: any) => {
-      toast({
+      enhancedToast.error({
         title: "Error Adding Repository",
         description: error.message || "Failed to add repository.",
-        variant: "destructive",
       });
     }
   });
@@ -55,16 +54,15 @@ export function useRepositories() {
     mutationFn: repositoryService.scanRepository,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repositories'] });
-      toast({
+      enhancedToast.success({
         title: "Scan Started",
         description: "Repository scan has been initiated.",
       });
     },
     onError: (error: any) => {
-      toast({
+      enhancedToast.error({
         title: "Scan Failed",
         description: error.message || "Failed to start repository scan.",
-        variant: "destructive",
       });
     }
   });
@@ -73,27 +71,24 @@ export function useRepositories() {
     mutationFn: repositoryService.deleteRepository,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repositories'] });
-      toast({
+      enhancedToast.error({
         title: "Repository Removed",
         description: "Repository has been disconnected from DBooster.",
-        variant: "destructive",
       });
     },
     onError: (error: any) => {
-      toast({
+      enhancedToast.error({
         title: "Error Removing Repository",
         description: error.message || "Failed to remove repository.",
-        variant: "destructive",
       });
     }
   });
 
   const handleAddRepo = async () => {
     if (!githubAccessToken) {
-      toast({
+      enhancedToast.error({
         title: "GitHub Not Connected",
         description: "Please connect your GitHub account first.",
-        variant: "destructive",
       });
       return;
     }
@@ -108,16 +103,15 @@ export function useRepositories() {
       if (availableRepo) {
         addRepositoryMutation.mutate(availableRepo);
       } else {
-        toast({
+        enhancedToast.info({
           title: "No New Repositories",
           description: "All your repositories are already connected.",
         });
       }
     } catch (error: any) {
-      toast({
+      enhancedToast.error({
         title: "Error Fetching Repositories",
         description: error.message || "Failed to fetch GitHub repositories.",
-        variant: "destructive",
       });
     }
   };
