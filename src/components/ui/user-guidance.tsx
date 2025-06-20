@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { EnhancedButton } from './enhanced-button';
@@ -7,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tool
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './dialog';
 import { Progress } from './progress';
 import { HelpCircle, ChevronRight, ChevronLeft, X, CheckCircle } from 'lucide-react';
-import { FadeIn, ScaleIn } from './enhanced-animations';
+import { FadeIn, ScaleIn } from './animations';
 
 interface GuidanceStep {
   id: string;

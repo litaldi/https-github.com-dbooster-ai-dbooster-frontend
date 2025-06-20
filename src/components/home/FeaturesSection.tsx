@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { ArrowRight } from 'lucide-react';
-import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/enhanced-animations';
+import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/animations';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
 import { ProgressiveDisclosure } from '@/components/ui/accessibility-helpers';
 

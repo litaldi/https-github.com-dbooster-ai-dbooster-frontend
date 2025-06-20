@@ -14,7 +14,7 @@ import {
   Activity,
   BarChart3
 } from 'lucide-react';
-import { FadeIn, ScaleIn } from '@/components/ui/enhanced-animations';
+import { FadeIn, ScaleIn } from '@/components/ui/animations';
 import { useAuth } from '@/contexts/auth-context';
 
 interface MetricCardProps {

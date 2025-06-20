@@ -5,7 +5,7 @@ import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code, Palette, Accessibility, ArrowRight } from 'lucide-react';
-import { FadeIn, HoverScale } from '@/components/ui/enhanced-animations';
+import { FadeIn, HoverScale } from '@/components/ui/animations';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
 import { useTheme } from 'next-themes';
 

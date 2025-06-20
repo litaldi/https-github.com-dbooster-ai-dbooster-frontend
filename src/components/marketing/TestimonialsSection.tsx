@@ -1,10 +1,9 @@
-
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Star, Quote } from 'lucide-react';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
-import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/enhanced-animations';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/animations';
 
 interface Testimonial {
   id: string;

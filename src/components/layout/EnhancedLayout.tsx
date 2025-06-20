@@ -1,7 +1,7 @@
 
 import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import { PageTransition } from '@/components/ui/enhanced-transitions';
+import { PageTransition } from '@/components/ui/page-transition';
 import { ContextualHelp } from '@/components/ui/contextual-help';
 import { ContentSkeleton } from '@/components/ui/enhanced-skeleton';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlayCircle, BookOpen, DollarSign } from 'lucide-react';
-import { FadeIn, HoverScale } from '@/components/ui/enhanced-animations';
+import { FadeIn, HoverScale } from '@/components/ui/animations';
 import { Text } from '@/components/ui/visual-hierarchy';
 
 interface QuickAction {

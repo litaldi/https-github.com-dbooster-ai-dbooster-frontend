@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
@@ -16,7 +15,7 @@ import {
   Activity,
   Shield
 } from 'lucide-react';
-import { FadeIn } from '@/components/ui/enhanced-animations';
+import { FadeIn } from '@/components/ui/animations';
 
 interface TeamMember {
   id: string;

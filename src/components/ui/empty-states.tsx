@@ -1,8 +1,7 @@
-
 import { Card, CardContent } from './card';
 import { EnhancedButton } from './enhanced-button';
 import { Database, Zap, BarChart, Users, Plus, Search, FileText } from 'lucide-react';
-import { FadeIn } from './enhanced-animations';
+import { FadeIn } from './animations';
 
 interface EmptyStateProps {
   icon?: React.ComponentType<{ className?: string }>;

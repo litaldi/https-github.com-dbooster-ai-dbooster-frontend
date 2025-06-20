@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
@@ -17,7 +16,7 @@ import {
   CheckCircle,
   AlertTriangle
 } from 'lucide-react';
-import { FadeIn } from '@/components/ui/enhanced-animations';
+import { FadeIn } from '@/components/ui/animations';
 
 export function VisualQueryBuilder() {
   const [naturalLanguage, setNaturalLanguage] = useState('');

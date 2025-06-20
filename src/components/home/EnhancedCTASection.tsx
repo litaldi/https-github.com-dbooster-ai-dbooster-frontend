@@ -2,7 +2,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
-import { FadeIn, HoverScale } from '@/components/ui/enhanced-animations';
+import { FadeIn, HoverScale } from '@/components/ui/animations';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 
 interface EnhancedCTASectionProps {
