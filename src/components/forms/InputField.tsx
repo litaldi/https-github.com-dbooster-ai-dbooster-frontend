@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { cn } from '@/lib/utils';
 
 interface InputFieldProps {
@@ -16,6 +15,11 @@ interface InputFieldProps {
   required?: boolean;
   autoComplete?: string;
   className?: string;
+  variant?: 'default' | 'filled' | 'outline' | 'floating';
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+  maxLength?: number;
+  showCharCount?: boolean;
 }
 
 export function InputField({
@@ -29,42 +33,34 @@ export function InputField({
   error,
   required = false,
   autoComplete,
-  className
+  className,
+  variant = 'default',
+  startIcon,
+  endIcon,
+  maxLength,
+  showCharCount
 }: InputFieldProps) {
   return (
     <div className={cn('space-y-2', className)}>
-      <Label 
-        htmlFor={id} 
-        className="text-sm font-medium text-left block"
-      >
-        {label}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </Label>
-      <Input
+      <EnhancedInput
         id={id}
         type={type}
+        label={label}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
+        error={error}
+        required={required}
         autoComplete={autoComplete}
-        className={cn(
-          'transition-colors duration-200',
-          error && 'border-destructive focus:border-destructive',
-          'focus:ring-2 focus:ring-primary/20'
-        )}
-        aria-invalid={error ? 'true' : 'false'}
-        aria-describedby={error ? `${id}-error` : undefined}
+        variant={variant}
+        startIcon={startIcon}
+        endIcon={endIcon}
+        maxLength={maxLength}
+        showCharCount={showCharCount}
+        isValid={!error && value.length > 0}
+        showValidation={true}
       />
-      {error && (
-        <p 
-          id={`${id}-error`}
-          className="text-sm text-destructive text-left"
-          role="alert"
-        >
-          {error}
-        </p>
-      )}
     </div>
   );
 }
