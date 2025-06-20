@@ -1,57 +1,75 @@
 
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/auth-context';
 import { AuthFormHeader } from './AuthFormHeader';
 import { AuthFormFields } from './AuthFormFields';
 import { AuthFormActions } from './AuthFormActions';
-import { AuthFormFooter } from './AuthFormFooter';
-import { useAuth } from '@/hooks/useAuth';
-import { useAuthValidation } from '@/hooks/useAuthValidation';
-import type { AuthMode } from '@/types/auth';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export function AuthForm() {
-  const [mode, setMode] = useState<AuthMode>('login');
+  const { login, signup } = useAuth();
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const {
-    loginType,
-    setLoginType,
-    rememberMe,
-    setRememberMe,
-    formData,
-    handleInputChange,
-    handleRememberMe
-  } = useAuth(mode);
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
 
-  const {
-    errors,
-    handleBlur,
-    validateAll,
-    getFieldValidation
-  } = useAuthValidation(mode);
+    if (mode === 'signup' && !formData.name.trim()) {
+      newErrors.name = 'Full name is required';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required';
+    } else if (mode === 'signup' && formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (mode === 'signup' && formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateAll(formData, loginType)) {
-      return;
-    }
-    setIsLoading(true);
     
+    if (!validateForm()) return;
+
+    setIsLoading(true);
     try {
-      // Handle authentication logic here
-      console.log('Form submitted:', { mode, formData });
-      
-      if (mode === 'login' && rememberMe) {
-        handleRememberMe();
+      if (mode === 'login') {
+        await login(formData.email, formData.password);
+      } else {
+        await signup(formData.email, formData.password, formData.name);
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      // Error is already handled in the auth context
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handlePasswordReset = () => {
-    console.log('Password reset requested');
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   return (
@@ -59,33 +77,29 @@ export function AuthForm() {
       <AuthFormHeader mode={mode} onModeChange={setMode} />
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <AuthFormFields 
+        <AuthFormFields
           mode={mode}
-          loginType={loginType}
-          setLoginType={setLoginType}
           formData={formData}
           errors={errors}
-          onInputChange={handleInputChange}
-          onBlur={(field) => handleBlur(field, formData, loginType)}
-          getFieldValidation={(field) => getFieldValidation(field, formData, loginType)}
+          onChange={handleInputChange}
         />
-        
-        <AuthFormActions 
+
+        {Object.keys(errors).length > 0 && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Please fix the errors above and try again.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <AuthFormActions
           mode={mode}
           isLoading={isLoading}
-          rememberMe={rememberMe}
-          onRememberMeChange={setRememberMe}
+          onSubmit={handleSubmit}
           onModeChange={setMode}
         />
       </form>
-      
-      <AuthFormFooter 
-        mode={mode}
-        onModeChange={setMode}
-        rememberMe={rememberMe}
-        onRememberMeChange={setRememberMe}
-        onPasswordReset={handlePasswordReset}
-      />
     </div>
   );
 }

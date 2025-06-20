@@ -1,10 +1,8 @@
 
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   ArrowRight, 
   Database, 
@@ -26,17 +24,11 @@ import { EnhancedPerformanceCounters } from '@/components/home/EnhancedPerforman
 import { TestimonialsSection } from '@/components/marketing/TestimonialsSection';
 import { NewsletterSignup } from '@/components/marketing/NewsletterSignup';
 import { ResourcesSection } from '@/components/marketing/ResourcesSection';
-import { useHomePage } from '@/hooks/useHomePage';
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loginDemo } = useAuth();
   const navigate = useNavigate();
-  const { 
-    isLoading, 
-    features, 
-    guidanceSteps, 
-    handleGetStarted 
-  } = useHomePage();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -45,10 +37,53 @@ export default function Home() {
     }
   }, [user, navigate]);
 
+  const handleGetStarted = async () => {
+    if (user) {
+      navigate('/app');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await loginDemo();
+      navigate('/app');
+    } catch (error) {
+      // Error handled in auth context
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Don't render if user is authenticated (will redirect)
   if (user) {
     return null;
   }
+
+  const features = [
+    {
+      icon: Database,
+      title: "Smart Query Analysis",
+      description: "AI-powered analysis identifies performance bottlenecks and optimization opportunities automatically."
+    },
+    {
+      icon: Zap,
+      title: "Instant Optimization",
+      description: "Get immediate suggestions to improve query performance with one-click implementation."
+    },
+    {
+      icon: TrendingUp,
+      title: "Performance Monitoring",
+      description: "Real-time monitoring and alerts keep your database running at peak efficiency."
+    }
+  ];
+
+  const guidanceSteps = [
+    {
+      target: '[data-tour="get-started"]',
+      title: "Welcome to DBooster!",
+      content: "Start your journey by exploring our demo environment with real database scenarios."
+    }
+  ];
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -9,8 +9,6 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import Layout from '@/components/layout';
 import { PublicLayout } from '@/components/PublicLayout';
 import ProtectedRoute from '@/components/protected-route';
-import { setupEnhancedGlobalErrorHandling } from '@/utils/enhancedErrorHandling';
-import { performanceMonitor } from '@/utils/advancedPerformanceMonitor';
 
 // Pages
 import Home from '@/pages/Home';
@@ -52,16 +50,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  // Initialize enhanced error handling
-  React.useEffect(() => {
-    setupEnhancedGlobalErrorHandling();
-    performanceMonitor.startMonitoring();
-    
-    return () => {
-      performanceMonitor.stopMonitoring();
-    };
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
