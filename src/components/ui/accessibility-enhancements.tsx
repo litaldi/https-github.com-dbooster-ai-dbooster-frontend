@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useI18n } from '@/hooks/useI18n';
 
 export function AccessibilityEnhancements() {
