@@ -7,10 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth-context";
 import { EnhancedSecurityHeaders } from "@/middleware/enhancedSecurityHeaders";
 import { SecurityEnhancementBanner } from "@/components/security/SecurityEnhancementBanner";
-import Index from "./pages/Index";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/protected-route";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient();
@@ -30,7 +30,7 @@ function App() {
           <BrowserRouter>
             <SecurityEnhancementBanner />
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Login />} />
               <Route 
                 path="/app/*" 

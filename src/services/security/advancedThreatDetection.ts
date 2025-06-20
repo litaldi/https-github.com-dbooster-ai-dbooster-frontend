@@ -69,6 +69,11 @@ export class AdvancedThreatDetection {
         riskLevel = riskLevel === 'high' ? 'high' : 'medium';
       }
 
+      // Critical threat indicators
+      if (reasons.length > 3 || (reasons.includes('Automated client detected') && recentFailures > 5)) {
+        riskLevel = 'critical';
+      }
+
       const isSuspicious = reasons.length > 0;
       const blockAction = riskLevel === 'critical' || (riskLevel === 'high' && reasons.length > 2);
 

@@ -7,26 +7,25 @@ import { AuthFormHeader } from '@/components/auth/AuthFormHeader';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Zap, Users, Building } from 'lucide-react';
-import type { AuthMode } from '@/types/auth';
 
 interface EnhancedLoginCardProps {
-  authMode: AuthMode;
-  onAuthModeChange: (mode: AuthMode) => void;
+  isLogin: boolean;
+  onAuthModeChange: (isLogin: boolean) => void;
 }
 
-export function EnhancedLoginCard({ authMode, onAuthModeChange }: EnhancedLoginCardProps) {
+export function EnhancedLoginCard({ isLogin, onAuthModeChange }: EnhancedLoginCardProps) {
   const cardConfig = {
-    login: {
+    true: {
       title: 'Welcome back to DBQuery Optimizer',
       description: 'Continue optimizing your database performance with AI'
     },
-    signup: {
+    false: {
       title: 'Transform Your Database Performance',
       description: 'Join enterprises reducing query response times by up to 73%'
     }
   };
 
-  const config = cardConfig[authMode];
+  const config = cardConfig[isLogin.toString() as 'true' | 'false'];
 
   return (
     <div className="space-y-6">
@@ -81,12 +80,8 @@ export function EnhancedLoginCard({ authMode, onAuthModeChange }: EnhancedLoginC
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <AuthFormHeader mode={authMode} onModeChange={onAuthModeChange} />
-          
-          <Separator className="my-4" />
-
           <section id="auth-form" role="tabpanel">
-            <EnhancedAuthForm mode={authMode} onModeChange={onAuthModeChange} />
+            <EnhancedAuthForm isLogin={isLogin} onToggleMode={() => onAuthModeChange(!isLogin)} />
           </section>
 
           <section className="space-y-4">
