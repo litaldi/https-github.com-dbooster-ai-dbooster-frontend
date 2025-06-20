@@ -9,10 +9,10 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isDemo: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>; // Alias for compatibility
-  signUp: (email: string, password: string, name: string) => Promise<void>; // Alias for compatibility
+  login: (email: string, password: string) => Promise<{ error?: any }>;
+  signup: (email: string, password: string, name: string) => Promise<{ error?: any }>;
+  signIn: (email: string, password: string) => Promise<{ error?: any }>; // Alias for compatibility
+  signUp: (email: string, password: string, name: string) => Promise<{ error?: any }>; // Alias for compatibility
   loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
   githubAccessToken: string | null;
@@ -93,13 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login Failed",
         description: error.message,
       });
-      throw error;
+      return { error };
     }
 
     enhancedToast.success({
       title: "Welcome back!",
       description: "You have been successfully signed in.",
     });
+    
+    return {};
   };
 
   const signup = async (email: string, password: string, name: string) => {
@@ -117,13 +119,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Signup Failed",
         description: error.message,
       });
-      throw error;
+      return { error };
     }
 
     enhancedToast.success({
       title: "Account Created!",
       description: "Please check your email to verify your account.",
     });
+    
+    return {};
   };
 
   const loginDemo = async () => {
