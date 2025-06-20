@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, X, History, TrendingUp, Command } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -278,7 +277,7 @@ export function EnhancedSearch({
               </div>
             )}
           </CardContent>
-        </Car>
+        </Card>
       )}
     </div>
   );
