@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -25,10 +26,17 @@ import { EnhancedPerformanceCounters } from '@/components/home/EnhancedPerforman
 import { TestimonialsSection } from '@/components/marketing/TestimonialsSection';
 import { NewsletterSignup } from '@/components/marketing/NewsletterSignup';
 import { ResourcesSection } from '@/components/marketing/ResourcesSection';
+import { useHomePage } from '@/hooks/useHomePage';
 
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { 
+    isLoading, 
+    features, 
+    guidanceSteps, 
+    handleGetStarted 
+  } = useHomePage();
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -44,9 +52,18 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <EnhancedHeroSection />
+      <EnhancedHeroSection 
+        user={user}
+        isLoading={isLoading}
+        onGetStarted={handleGetStarted}
+        onNavigateToLogin={() => navigate('/login')}
+        guidanceSteps={guidanceSteps}
+      />
       <EnhancedPerformanceCounters />
-      <FeaturesSection />
+      <FeaturesSection 
+        features={features}
+        onViewAllFeatures={() => navigate('/features')}
+      />
       <TestimonialsSection />
       <ResourcesSection />
       <div className="py-16 bg-muted/30">
@@ -56,7 +73,12 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <EnhancedCTASection />
+      <EnhancedCTASection 
+        user={user}
+        isLoading={isLoading}
+        onGetStarted={handleGetStarted}
+        onNavigateToLearn={() => navigate('/learn')}
+      />
     </div>
   );
 }
