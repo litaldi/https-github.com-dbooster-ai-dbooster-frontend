@@ -1,11 +1,16 @@
 
 import { Shield } from 'lucide-react';
+import type { AuthMode } from '@/types/auth';
+import { Dispatch, SetStateAction } from 'react';
 
 interface AuthFormHeaderProps {
-  isLogin: boolean;
+  mode: AuthMode;
+  onModeChange: Dispatch<SetStateAction<AuthMode>>;
 }
 
-export function AuthFormHeader({ isLogin }: AuthFormHeaderProps) {
+export function AuthFormHeader({ mode, onModeChange }: AuthFormHeaderProps) {
+  const isLogin = mode === 'login';
+  
   return (
     <div className="text-center space-y-2">
       <div className="flex items-center justify-center gap-2">
