@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,8 @@ import {
   Mail,
   Shield,
   FileCheck,
-  ChevronDown
+  ChevronDown,
+  Info
 } from 'lucide-react';
 import { DemoBadge } from '@/components/demo-badge';
 import {
@@ -40,43 +42,45 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { KeyboardShortcutsHelper } from '@/components/layout/KeyboardShortcutsHelper';
 
 const publicNavItems = [
-  { href: '/home', label: 'Home', icon: Home },
+  { href: '/', label: 'Home', icon: Home },
   { href: '/features', label: 'Features', icon: Zap },
-  { href: '/learn', label: 'Learn', icon: BookOpen },
-  { href: '/how-it-works', label: 'How It Works', icon: TrendingUp },
+  { href: '/how-it-works', label: 'How It Works', icon: Info },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
+  { href: '/learn', label: 'Learn', icon: BookOpen },
   { href: '/blog', label: 'Blog', icon: FileText },
 ];
 
 const authenticatedNavItems = [
-  { href: '/', label: 'Dashboard', icon: BarChart3 },
-  { href: '/repositories', label: 'Repositories', icon: FolderOpen },
-  { href: '/queries', label: 'Queries', icon: Search },
-  { href: '/ai-features', label: 'AI Features', icon: TestTube },
-  { href: '/reports', label: 'Reports', icon: TrendingUp },
-  { href: '/approvals', label: 'Approvals', icon: CheckSquare },
-  { href: '/teams', label: 'Teams', icon: Users },
-  { href: '/db-import', label: 'DB Import', icon: Upload },
-  { href: '/sandbox', label: 'Sandbox', icon: TestTube },
-  { href: '/audit-log', label: 'Audit Log', icon: FileText },
-  { href: '/support', label: 'Support', icon: HelpCircle },
-  { href: '/docs-help', label: 'Docs & Help', icon: BookOpen },
+  { href: '/app', label: 'Dashboard', icon: BarChart3 },
+  { href: '/app/queries', label: 'Queries', icon: Search },
+  { href: '/app/repositories', label: 'Repositories', icon: FolderOpen },
+  { href: '/app/query-optimization', label: 'AI Optimization', icon: TestTube },
+  { href: '/app/reports', label: 'Reports', icon: TrendingUp },
+  { href: '/app/approvals', label: 'Approvals', icon: CheckSquare },
+  { href: '/app/teams', label: 'Teams', icon: Users },
+  { href: '/app/sandbox', label: 'Sandbox', icon: TestTube },
 ];
 
 const userMenuItems = [
-  { href: '/account', label: 'Profile', icon: User },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/app/account', label: 'Profile', icon: User },
+  { href: '/app/settings', label: 'Settings', icon: Settings },
 ];
 
-const moreMenuItems = [
+const companyMenuItems = [
   { href: '/about', label: 'About', icon: Briefcase },
   { href: '/contact', label: 'Contact', icon: Mail },
+  { href: '/support', label: 'Support', icon: HelpCircle },
+];
+
+const legalMenuItems = [
   { href: '/privacy', label: 'Privacy', icon: Shield },
   { href: '/terms', label: 'Terms', icon: FileCheck },
+  { href: '/accessibility', label: 'Accessibility', icon: Info },
 ];
 
 export function MainNav() {
@@ -101,7 +105,7 @@ export function MainNav() {
       "flex gap-1",
       mobile ? "flex-col space-y-1" : "items-center"
     )}>
-      {navItems.slice(0, mobile ? navItems.length : 5).map((item) => (
+      {navItems.map((item) => (
         <Link
           key={item.href}
           to={item.href}
@@ -121,89 +125,6 @@ export function MainNav() {
           {item.label}
         </Link>
       ))}
-      
-      {/* More Menu for Desktop */}
-      {!mobile && !user && navItems.length > 5 && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="flex items-center gap-1">
-              More
-              <ChevronDown className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {navItems.slice(5).map((item) => (
-              <DropdownMenuItem key={item.href} asChild>
-                <Link to={item.href} className="flex items-center gap-2">
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuItem asChild>
-              <hr className="my-1" />
-            </DropdownMenuItem>
-            {moreMenuItems.map((item) => (
-              <DropdownMenuItem key={item.href} asChild>
-                <Link to={item.href} className="flex items-center gap-2">
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-      
-      {/* Show remaining items on mobile */}
-      {mobile && navItems.length > 5 && (
-        <>
-          {navItems.slice(5).map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md",
-                "hover:bg-accent hover:text-accent-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                location.pathname === item.href 
-                  ? "bg-accent text-accent-foreground" 
-                  : "text-muted-foreground hover:text-foreground",
-                "justify-start w-full"
-              )}
-              onClick={closeMenu}
-              aria-current={location.pathname === item.href ? 'page' : undefined}
-            >
-              <item.icon className="h-4 w-4" aria-hidden="true" />
-              {item.label}
-            </Link>
-          ))}
-          
-          {/* Additional pages on mobile */}
-          <div className="border-t pt-2 mt-2">
-            {moreMenuItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md",
-                  "hover:bg-accent hover:text-accent-foreground",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  location.pathname === item.href 
-                    ? "bg-accent text-accent-foreground" 
-                    : "text-muted-foreground hover:text-foreground",
-                  "justify-start w-full"
-                )}
-                onClick={closeMenu}
-                aria-current={location.pathname === item.href ? 'page' : undefined}
-              >
-                <item.icon className="h-4 w-4" aria-hidden="true" />
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
     </div>
   );
 
@@ -233,7 +154,6 @@ export function MainNav() {
         </Link>
       ))}
       
-      {/* Add keyboard shortcuts helper for authenticated users */}
       {user && !mobile && <KeyboardShortcutsHelper />}
       
       <Button
@@ -265,23 +185,12 @@ export function MainNav() {
           {mobile && <span>Logout</span>}
         </Button>
       ) : (
-        <Link
-          to="/login"
-          className={cn(
-            "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md",
-            "hover:bg-accent hover:text-accent-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            location.pathname === '/login' 
-              ? "bg-accent text-accent-foreground" 
-              : "text-muted-foreground hover:text-foreground",
-            mobile && "justify-start w-full"
-          )}
-          onClick={closeMenu}
-          aria-current={location.pathname === '/login' ? 'page' : undefined}
-        >
-          <LogIn className="h-4 w-4" />
-          Login
-        </Link>
+        <Button asChild>
+          <Link to="/login">
+            <LogIn className="h-4 w-4 mr-2" />
+            Sign In
+          </Link>
+        </Button>
       )}
     </div>
   );
@@ -296,7 +205,7 @@ export function MainNav() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link 
-            to={user ? "/" : "/home"} 
+            to={user ? "/app" : "/"} 
             className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
           >
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
@@ -351,6 +260,38 @@ export function MainNav() {
                   
                   <div className="flex flex-col space-y-4">
                     <NavLinks mobile closeMenu={() => setIsOpen(false)} />
+                    
+                    {/* Additional menu sections for mobile */}
+                    <div className="border-t pt-4 space-y-1">
+                      <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Company</h4>
+                      {companyMenuItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          to={item.href}
+                          className="flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                    
+                    <div className="border-t pt-4 space-y-1">
+                      <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Legal</h4>
+                      {legalMenuItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          to={item.href}
+                          className="flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                    
                     <UserMenu mobile closeMenu={() => setIsOpen(false)} />
                   </div>
                 </div>

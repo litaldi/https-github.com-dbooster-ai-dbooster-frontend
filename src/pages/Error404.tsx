@@ -1,82 +1,126 @@
 
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { Home, ArrowLeft, Search, HelpCircle } from 'lucide-react';
+import { Home, ArrowLeft, Search, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function Error404() {
+  const { user } = useAuth();
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted/20">
-      <Card className="max-w-2xl w-full text-center">
-        <CardHeader className="pb-4">
-          <div className="mx-auto mb-6">
-            <div className="text-8xl font-bold text-muted-foreground/30 mb-2">404</div>
-            <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
-          </div>
-          <CardTitle className="text-2xl mb-2">Page Not Found</CardTitle>
-          <p className="text-muted-foreground">
-            The page you're looking for doesn't exist or has been moved. 
-            Let's get you back on track with DBooster.
-          </p>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button asChild className="gap-2">
-              <Link to="/">
-                <Home className="h-4 w-4" />
-                Go Home
-              </Link>
-            </Button>
-            
-            <Button variant="outline" onClick={() => window.history.back()} className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Go Back
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl text-center space-y-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            animate={{
+              y: [0, -10, 0],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="text-8xl font-bold text-primary/20 mb-4"
+          >
+            404
+          </motion.div>
+        </motion.div>
 
-          <div className="border-t pt-6">
-            <h3 className="font-semibold mb-4">Popular Pages</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-              <Link to="/dashboard" className="text-primary hover:underline">
-                Dashboard
-              </Link>
-              <Link to="/repositories" className="text-primary hover:underline">
-                Repositories
-              </Link>
-              <Link to="/queries" className="text-primary hover:underline">
-                Query Optimization
-              </Link>
-              <Link to="/ai-features" className="text-primary hover:underline">
-                AI Features
-              </Link>
-              <Link to="/features" className="text-primary hover:underline">
-                Features
-              </Link>
-              <Link to="/support" className="text-primary hover:underline">
-                Support
-              </Link>
-            </div>
-          </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/80">
+            <CardHeader>
+              <CardTitle className="text-3xl font-bold">
+                Page Not Found
+              </CardTitle>
+              <CardDescription className="text-lg">
+                The page you're looking for seems to have wandered off into the database void.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-muted-foreground">
+                Don't worry, even the best queries sometimes return empty results. 
+                Let's get you back on track to optimizing your database performance.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild size="lg">
+                  <Link to={user ? "/app" : "/"}>
+                    <Home className="mr-2 h-4 w-4" />
+                    {user ? "Back to Dashboard" : "Back to Home"}
+                  </Link>
+                </Button>
+                
+                {!user && (
+                  <Button asChild variant="outline" size="lg">
+                    <Link to="/features">
+                      <Search className="mr-2 h-4 w-4" />
+                      Explore Features
+                    </Link>
+                  </Button>
+                )}
+                
+                {user && (
+                  <Button asChild variant="outline" size="lg">
+                    <Link to="/app/queries">
+                      <Search className="mr-2 h-4 w-4" />
+                      Go to Queries
+                    </Link>
+                  </Button>
+                )}
+              </div>
 
-          <div className="flex justify-center gap-4 pt-4 border-t">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/support" className="gap-2">
-                <HelpCircle className="h-4 w-4" />
-                Get Help
-              </Link>
-            </Button>
-            
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/contact" className="gap-2">
-                <Search className="h-4 w-4" />
-                Contact Us
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Popular destinations:
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {user ? (
+                    <>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/app/repositories">Repositories</Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/app/reports">Reports</Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/app/settings">Settings</Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/support">Support</Link>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/features">Features</Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/pricing">Pricing</Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/how-it-works">How it Works</Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link to="/support">Support</Link>
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   );
 }

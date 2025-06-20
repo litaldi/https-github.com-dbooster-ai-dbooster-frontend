@@ -23,7 +23,7 @@
 - **Security First**: Enterprise-grade security with SOC 2 compliance
 
 ### 🎨 Beautiful User Experience
-- **Vercel-Inspired Design**: Clean, modern interface with thoughtful animations
+- **Modern Design**: Clean, responsive interface with thoughtful animations
 - **Accessibility First**: WCAG 2.1 AA compliant with full keyboard navigation
 - **Responsive Design**: Perfect experience across all devices
 - **Performance Optimized**: Sub-100ms load times with intelligent caching
@@ -88,14 +88,42 @@ src/
 │   ├── ui/             # Base UI components (shadcn/ui)
 │   ├── auth/           # Authentication components
 │   ├── dashboard/      # Dashboard-specific components
-│   └── navigation/     # Navigation components
+│   ├── navigation/     # Navigation & layout components
+│   ├── testing/        # QA testing suite
+│   └── ...            # Feature-specific components
 ├── pages/              # Route components
+│   ├── Home.tsx        # Landing page
+│   ├── Login.tsx       # Authentication
+│   ├── Dashboard.tsx   # Main dashboard
+│   ├── Features.tsx    # Features showcase
+│   ├── Pricing.tsx     # Pricing information
+│   └── ...            # Other pages
 ├── hooks/              # Custom React hooks
 ├── utils/              # Utility functions
+│   ├── performanceOptimizer.ts  # Performance monitoring
+│   ├── resourcePreloader.ts     # Resource preloading
+│   ├── browserCompatibility.ts  # Browser support
+│   └── ...            # Other utilities
 ├── services/           # API services
 ├── contexts/           # React contexts
-└── types/              # TypeScript type definitions
+├── types/              # TypeScript type definitions
+└── integrations/       # External service integrations
 ```
+
+### Component Architecture
+
+#### Navigation System
+- **MainNav**: Primary navigation for public pages
+- **AppSidebar**: Dashboard sidebar navigation
+- **Footer**: Comprehensive footer with links and info
+- **PublicLayout**: Layout wrapper for marketing pages
+- **Layout**: Dashboard layout with sidebar
+
+#### Page Organization
+- **Public Pages**: Marketing, pricing, features, etc.
+- **Protected Pages**: Dashboard, queries, reports, etc.
+- **Authentication**: Login, signup, and auth flows
+- **Error Handling**: 404, error boundaries
 
 ## 🎨 Design System
 
@@ -117,9 +145,10 @@ src/
 - **Scale**: Fluid typography with responsive sizing
 - **Line Height**: Optimized for readability (1.7 for body text)
 
-### Spacing
+### Spacing & Layout
 - **Base Unit**: 4px (0.25rem)
-- **Scale**: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96
+- **Responsive Grid**: CSS Grid and Flexbox
+- **Consistent Spacing**: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96
 
 ## 🔐 Security
 
@@ -128,6 +157,13 @@ src/
 - **Authentication**: Secure multi-factor authentication with OAuth providers
 - **Query Isolation**: SQL queries are sandboxed and never stored permanently
 - **Privacy First**: No sensitive data is logged or transmitted to external services
+
+### Security Features
+- **Row-Level Security (RLS)**: Database-level access control
+- **Rate Limiting**: API protection against abuse
+- **Input Validation**: Comprehensive sanitization
+- **Security Headers**: CSP, HSTS, and other protective headers
+- **Audit Logging**: Complete activity tracking
 
 ### Compliance
 - **GDPR**: Full compliance with European data protection regulations
@@ -183,13 +219,22 @@ bun run audit
 bun run test:performance
 ```
 
-## 🧪 Testing
+## 🧪 Testing & QA
 
-### Test Coverage
+### Comprehensive Testing Suite
 - **Unit Tests**: Component and utility function testing
 - **Integration Tests**: API and user interaction testing
 - **E2E Tests**: Critical user journey testing
 - **Accessibility Tests**: Automated a11y testing
+- **Performance Tests**: Core Web Vitals monitoring
+
+### QA Testing Suite
+Built-in comprehensive QA testing dashboard available in development:
+- Browser compatibility testing
+- Accessibility auditing
+- Performance analysis
+- Duplicate detection
+- Image optimization verification
 
 ### Running Tests
 ```bash
@@ -204,6 +249,9 @@ bun test:e2e
 
 # Generate coverage report
 bun test:coverage
+
+# Access QA suite (development)
+# Open browser console and run: showQASuite()
 ```
 
 ## 🚀 Deployment
@@ -217,6 +265,12 @@ vercel --prod
 vercel domains add yourdomain.com
 ```
 
+### Environment Variables
+Ensure these are set in your deployment environment:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_APP_URL` (for OAuth redirects)
+
 ### Manual Deployment
 ```bash
 # Build for production
@@ -225,15 +279,8 @@ bun run build
 # Preview production build
 bun run preview
 
-# Deploy to your hosting provider
-# Upload the dist/ folder contents
+# Deploy the dist/ folder to your hosting provider
 ```
-
-### Environment Variables
-Ensure these are set in your deployment environment:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_APP_URL` (for OAuth redirects)
 
 ## 🤝 Contributing
 
@@ -276,25 +323,36 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - [ ] Performance regression detection
 - [ ] Custom optimization rules
 
-## 📚 Documentation
+## 📚 API Reference
 
-- [User Guide](./docs/user-guide.md)
-- [API Documentation](./docs/api.md)
-- [Architecture Overview](./docs/architecture.md)
-- [Security Guide](./docs/security.md)
-- [Deployment Guide](./docs/deployment.md)
+### Authentication
+```javascript
+// Login with email/password
+const { user, session } = await supabase.auth.signInWithPassword({
+  email: 'user@example.com',
+  password: 'password'
+});
 
-## 📄 License
+// OAuth login
+const { user, session } = await supabase.auth.signInWithOAuth({
+  provider: 'github'
+});
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Query Management
+```javascript
+// Analyze query
+const analysis = await fetch('/api/queries/analyze', {
+  method: 'POST',
+  body: JSON.stringify({ query: 'SELECT * FROM users;' })
+});
 
-## 🙏 Acknowledgments
-
-- [Vercel](https://vercel.com) for deployment and inspiration
-- [Supabase](https://supabase.com) for backend infrastructure
-- [Radix UI](https://radix-ui.com) for accessible components
-- [Tailwind CSS](https://tailwindcss.com) for styling system
-- [Framer Motion](https://framer.com/motion) for animations
+// Get optimization suggestions
+const suggestions = await fetch('/api/queries/optimize', {
+  method: 'POST',
+  body: JSON.stringify({ queryId: '123' })
+});
+```
 
 ## 📞 Support
 
@@ -304,6 +362,19 @@ Need help? We're here for you:
 - 💬 **Discord**: [Join our community](https://discord.gg/dbooster)
 - 📖 **Documentation**: [docs.dbooster.ai](https://docs.dbooster.ai)
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/dbooster/issues)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Vercel](https://vercel.com) for deployment platform
+- [Supabase](https://supabase.com) for backend infrastructure
+- [Radix UI](https://radix-ui.com) for accessible components
+- [Tailwind CSS](https://tailwindcss.com) for styling system
+- [Framer Motion](https://framer.com/motion) for animations
+- [Lucide](https://lucide.dev) for beautiful icons
 
 ---
 

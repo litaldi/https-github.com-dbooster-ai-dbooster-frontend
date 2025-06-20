@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -5,6 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import Layout from '@/components/layout';
+import { PublicLayout } from '@/components/PublicLayout';
 import ProtectedRoute from '@/components/protected-route';
 
 // Pages
@@ -53,24 +55,26 @@ function App() {
         <AuthProvider>
           <Router>
             <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/learn" element={<Learn />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/docs" element={<DocsHelp />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/accessibility" element={<Accessibility />} />
-              <Route path="/ai-features" element={<AIFeatures />} />
+              {/* Public routes with PublicLayout */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<Home />} />
+                <Route path="login" element={<Login />} />
+                <Route path="how-it-works" element={<HowItWorks />} />
+                <Route path="features" element={<Features />} />
+                <Route path="pricing" element={<Pricing />} />
+                <Route path="learn" element={<Learn />} />
+                <Route path="about" element={<About />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="support" element={<Support />} />
+                <Route path="blog" element={<Blog />} />
+                <Route path="docs" element={<DocsHelp />} />
+                <Route path="terms" element={<Terms />} />
+                <Route path="privacy" element={<Privacy />} />
+                <Route path="accessibility" element={<Accessibility />} />
+                <Route path="ai-features" element={<AIFeatures />} />
+              </Route>
 
-              {/* Protected routes */}
+              {/* Protected routes with app layout */}
               <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route index element={<Dashboard />} />
                 <Route path="dashboard" element={<Dashboard />} />
@@ -87,7 +91,7 @@ function App() {
                 <Route path="db-import" element={<DbImport />} />
               </Route>
 
-              {/* 404 - Updated to use Error404 instead of NotFound */}
+              {/* 404 route */}
               <Route path="*" element={<Error404 />} />
             </Routes>
           </Router>
