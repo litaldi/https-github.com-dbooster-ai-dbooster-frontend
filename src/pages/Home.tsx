@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/contexts/auth-context';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ import { ResourcesSection } from '@/components/marketing/ResourcesSection';
 import { useHomePage } from '@/hooks/useHomePage';
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user } = useSimpleAuth();
   const navigate = useNavigate();
   const { 
     isLoading, 
@@ -56,7 +56,7 @@ export default function Home() {
         user={user}
         isLoading={isLoading}
         onGetStarted={handleGetStarted}
-        onNavigateToLogin={() => navigate('/login')}
+        onNavigateToLogin={() => navigate('/auth')}
         guidanceSteps={guidanceSteps}
       />
       <EnhancedPerformanceCounters />
