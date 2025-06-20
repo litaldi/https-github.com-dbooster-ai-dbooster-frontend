@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +7,7 @@ import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Database, Zap, BarChart, CheckCircle, ArrowRight, Sparkles, Target, TrendingUp } from 'lucide-react';
-import { FadeIn, ScaleIn } from '@/components/ui/enhanced-animations';
+import { FadeIn, ScaleIn } from '@/components/ui/animations';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface OnboardingStep {

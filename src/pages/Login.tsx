@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { LoginCard } from '@/components/auth/LoginCard';
 import { DemoWalkthrough } from '@/components/demo-walkthrough';
-import { FadeIn } from '@/components/ui/enhanced-animations';
+import { FadeIn } from '@/components/ui/animations';
 import type { AuthMode } from '@/types/auth';
 
 export default function Login() {

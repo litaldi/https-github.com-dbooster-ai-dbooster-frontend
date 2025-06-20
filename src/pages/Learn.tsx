@@ -1,26 +1,35 @@
-
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
   Video, 
   FileText, 
-  Download, 
+  Code, 
   Search, 
-  Clock, 
-  Users, 
+  Filter, 
+  Clock,
+  User,
   Star,
-  ArrowRight,
   Play,
+  Download,
   ExternalLink,
-  Lightbulb,
+  TrendingUp,
+  Zap,
+  Database,
+  Users,
   Target,
-  TrendingUp
+  CheckCircle,
+  ArrowRight,
+  Lightbulb,
+  Trophy,
+  Calendar
 } from 'lucide-react';
-import { FadeIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/enhanced-animations';
+import { FadeIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/animations';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
 
 export default function Learn() {

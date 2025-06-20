@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { ArrowRight, Star, HelpCircle } from 'lucide-react';
-import { FadeIn, ScaleIn, HoverScale } from '@/components/ui/enhanced-animations';
+import { FadeIn, ScaleIn, HoverScale } from '@/components/ui/animations';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
 import { TooltipGuidance, UserGuidance } from '@/components/ui/user-guidance';
 import { FloatingQuerySnippets } from './FloatingQuerySnippets';

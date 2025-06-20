@@ -16,7 +16,7 @@ import {
   DollarSign,
   Clock
 } from 'lucide-react';
-import { FadeIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/enhanced-animations';
+import { FadeIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/animations';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
 
 interface Feature {

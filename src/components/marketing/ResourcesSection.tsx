@@ -12,7 +12,7 @@ import {
   Shield
 } from 'lucide-react';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
-import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/enhanced-animations';
+import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/animations';
 
 interface Resource {
   id: string;
