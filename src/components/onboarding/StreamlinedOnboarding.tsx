@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Database, Zap, BarChart, CheckCircle, ArrowRight } from 'lucide-react';
 import { FadeIn, ScaleIn } from '@/components/ui/enhanced-animations';
-import { showSuccess } from '@/components/ui/feedback-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface OnboardingStep {
   id: string;
@@ -56,7 +55,7 @@ export function StreamlinedOnboarding() {
   const handleStepAction = (step: OnboardingStep) => {
     if (!completedSteps.includes(step.id)) {
       setCompletedSteps([...completedSteps, step.id]);
-      showSuccess({
+      enhancedToast.success({
         title: 'Great Progress!',
         description: `${step.title} completed. You're optimizing like a pro!`
       });
@@ -65,7 +64,7 @@ export function StreamlinedOnboarding() {
   };
 
   const handleSkipOnboarding = () => {
-    showSuccess({
+    enhancedToast.success({
       title: 'Welcome to DBooster!',
       description: 'You can access all features from the dashboard.'
     });

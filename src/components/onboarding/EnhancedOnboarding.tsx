@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Database, Zap, BarChart, CheckCircle, ArrowRight, Sparkles, Target, TrendingUp } from 'lucide-react';
 import { FadeIn, ScaleIn } from '@/components/ui/enhanced-animations';
-import { showSuccess } from '@/components/ui/feedback-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface OnboardingStep {
   id: string;
@@ -56,18 +55,18 @@ export function EnhancedOnboarding() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [showMetrics, setShowMetrics] = useState(false);
+    const [showMetrics, setShowMetrics] = useState(false);
 
-  useEffect(() => {
-    // Show animated metrics after component mounts
-    const timer = setTimeout(() => setShowMetrics(true), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    useEffect(() => {
+        // Show animated metrics after component mounts
+        const timer = setTimeout(() => setShowMetrics(true), 1000);
+        return () => clearTimeout(timer);
+    }, []);
 
   const handleStepAction = (step: OnboardingStep) => {
     if (!completedSteps.includes(step.id)) {
       setCompletedSteps([...completedSteps, step.id]);
-      showSuccess({
+      enhancedToast.success({
         title: 'Excellent Progress!',
         description: `${step.title} completed. ${step.benefit}`
       });
@@ -76,7 +75,7 @@ export function EnhancedOnboarding() {
   };
 
   const handleSkipOnboarding = () => {
-    showSuccess({
+    enhancedToast.success({
       title: 'Welcome to DBQuery Optimizer!',
       description: 'Ready to transform your database performance with AI.'
     });
@@ -133,28 +132,28 @@ export function EnhancedOnboarding() {
         </div>
       </FadeIn>
 
-      {/* Performance Metrics Preview */}
-      {showMetrics && (
-        <FadeIn delay={0.3}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card className="text-center p-4">
-              <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-green-600">73%</div>
-              <div className="text-sm text-muted-foreground">Faster Query Response</div>
-            </Card>
-            <Card className="text-center p-4">
-              <Database className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-blue-600">60%</div>
-              <div className="text-sm text-muted-foreground">Database Cost Reduction</div>
-            </Card>
-            <Card className="text-center p-4">
-              <Zap className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-purple-600">80%</div>
-              <div className="text-sm text-muted-foreground">Performance Tasks Automated</div>
-            </Card>
-          </div>
-        </FadeIn>
-      )}
+        {/* Performance Metrics Preview */}
+        {showMetrics && (
+            <FadeIn delay={0.3}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <Card className="text-center p-4">
+                        <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold text-green-600">73%</div>
+                        <div className="text-sm text-muted-foreground">Faster Query Response</div>
+                    </Card>
+                    <Card className="text-center p-4">
+                        <Database className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold text-blue-600">60%</div>
+                        <div className="text-sm text-muted-foreground">Database Cost Reduction</div>
+                    </Card>
+                    <Card className="text-center p-4">
+                        <Zap className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold text-purple-600">80%</div>
+                        <div className="text-sm text-muted-foreground">Performance Tasks Automated</div>
+                    </Card>
+                </div>
+            </FadeIn>
+        )}
 
       <div className="grid gap-6">
         {ONBOARDING_STEPS.map((step, index) => {

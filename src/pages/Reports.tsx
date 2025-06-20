@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Download, Share, TrendingUp, Clock, Database } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export default function Reports() {
   const timeSavedData = [
@@ -33,14 +33,14 @@ export default function Reports() {
   ];
 
   const handleExport = (format: string) => {
-    toast({
+    enhancedToast.success({
       title: "Export Started",
       description: `Generating ${format.toUpperCase()} report...`,
     });
   };
 
   const handleShare = () => {
-    toast({
+    enhancedToast.success({
       title: "Report Shared",
       description: "Report link has been copied to clipboard.",
     });

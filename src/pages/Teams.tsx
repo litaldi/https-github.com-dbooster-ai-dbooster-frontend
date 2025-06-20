@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Users, Plus, Settings, Activity } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export default function Teams() {
   const [selectedTeam, setSelectedTeam] = useState('frontend');
@@ -56,7 +56,7 @@ export default function Teams() {
   ];
 
   const handleCreateTeam = () => {
-    toast({
+    enhancedToast.success({
       title: "Team Created",
       description: "New team has been created successfully.",
     });

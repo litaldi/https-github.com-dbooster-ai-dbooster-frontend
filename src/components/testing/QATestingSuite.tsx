@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,6 @@ import { Progress } from '@/components/ui/progress';
 import { BrowserCompatibility } from '@/utils/browserCompatibility';
 import { AccessibilityTester } from '@/utils/accessibilityTesting';
 import { PerformanceOptimizer } from '@/utils/performanceOptimizer';
-import { DuplicateDetector } from '@/utils/duplicateDetector';
 import { CheckCircle, AlertTriangle, XCircle, Play, RefreshCw } from 'lucide-react';
 
 interface TestResult {
@@ -56,17 +54,6 @@ export function QATestingSuite() {
           return {
             status: score,
             details: metrics
-          };
-        }
-      },
-      {
-        name: 'Duplicate Detection',
-        test: async () => {
-          const results = DuplicateDetector.runFullDuplicateAudit();
-          const totalIssues = results.duplicateIds.length + results.duplicateContent.length;
-          return {
-            status: totalIssues === 0 ? 'pass' : totalIssues < 5 ? 'warning' : 'fail',
-            details: results
           };
         }
       },

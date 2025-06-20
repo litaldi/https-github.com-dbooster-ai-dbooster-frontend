@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { CheckCircle, X, Eye, Clock, TrendingUp } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export default function Approvals() {
   const [approvals, setApprovals] = useState([
@@ -41,7 +41,7 @@ export default function Approvals() {
 
   const handleApprove = (id: number) => {
     setApprovals(prev => prev.filter(approval => approval.id !== id));
-    toast({
+    enhancedToast.success({
       title: "Optimization approved",
       description: "The query optimization will be applied to your repository.",
     });
@@ -49,7 +49,7 @@ export default function Approvals() {
 
   const handleReject = (id: number) => {
     setApprovals(prev => prev.filter(approval => approval.id !== id));
-    toast({
+    enhancedToast.error({
       title: "Optimization rejected",
       description: "The query optimization has been rejected.",
     });
@@ -57,7 +57,7 @@ export default function Approvals() {
 
   const handleApproveAll = () => {
     setApprovals([]);
-    toast({
+    enhancedToast.success({
       title: "All optimizations approved",
       description: "All pending optimizations will be applied to your repositories.",
     });

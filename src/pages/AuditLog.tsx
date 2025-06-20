@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Download, Search, CalendarIcon, Filter } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from '@/components/ui/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { DateRange } from 'react-day-picker';
 
 export default function AuditLog() {
@@ -70,7 +71,7 @@ export default function AuditLog() {
   );
 
   const handleExport = () => {
-    toast({
+    enhancedToast.success({
       title: "Exporting audit log",
       description: "Your CSV file will be downloaded shortly.",
     });

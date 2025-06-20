@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { HelpCircle, Mail, MessageSquare, Bug, BookOpen, Phone } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export default function Support() {
   const [contactForm, setContactForm] = useState({
@@ -19,7 +19,7 @@ export default function Support() {
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate sending contact form
-    toast({
+    enhancedToast.success({
       title: "Support request sent",
       description: "We'll get back to you within 24 hours.",
     });

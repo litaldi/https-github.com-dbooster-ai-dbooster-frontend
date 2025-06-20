@@ -6,11 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bell, Key, Users, Slack, MessageSquare } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export default function Settings() {
   const handleSave = () => {
-    toast({
+    enhancedToast.success({
       title: "Settings saved",
       description: "Your preferences have been updated successfully.",
     });

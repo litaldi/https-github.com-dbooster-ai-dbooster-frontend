@@ -1,13 +1,12 @@
-
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Play, Save, Share, Clock, Database, TrendingUp } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function Sandbox() {
   const [query, setQuery] = useState('SELECT * FROM users WHERE created_at > NOW() - INTERVAL \'7 days\';');
@@ -50,7 +49,7 @@ export default function Sandbox() {
     setTimeout(() => {
       setResults(mockResults);
       setIsRunning(false);
-      toast({
+      enhancedToast.success({
         title: "Query executed",
         description: "Query completed in 234ms",
       });
@@ -58,14 +57,14 @@ export default function Sandbox() {
   };
 
   const handleSaveQuery = () => {
-    toast({
+    enhancedToast.success({
       title: "Query saved",
       description: "Your query has been saved to your collection.",
     });
   };
 
   const handleShareQuery = () => {
-    toast({
+    enhancedToast.success({
       title: "Query shared",
       description: "Share link copied to clipboard.",
     });
@@ -246,8 +245,8 @@ export default function Sandbox() {
                 <div key={savedQuery.id} className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <div className="font-medium text-sm mb-1">{savedQuery.name}</div>
                   <div className="text-xs text-muted-foreground mb-2">
-                    {savedQuery.query.length > 40 
-                      ? `${savedQuery.query.substring(0, 40)}...` 
+                    {savedQuery.query.length > 40
+                      ? `${savedQuery.query.substring(0, 40)}...`
                       : savedQuery.query
                     }
                   </div>
