@@ -44,8 +44,12 @@ export function EnhancedAuthForm({ isLogin, onToggleMode }: EnhancedAuthFormProp
         // Rotate session after successful login
         await rotateSensitiveSession();
       } else {
-        // Fix: signUp expects email and password, not email, password, and name
-        await signUp(sanitizedEmail, password);
+        // Fix: signUp expects a single object parameter
+        await signUp({
+          email: sanitizedEmail,
+          password: password,
+          name: sanitizedName || ''
+        });
       }
     } catch (error) {
       console.error('Authentication error:', error);
