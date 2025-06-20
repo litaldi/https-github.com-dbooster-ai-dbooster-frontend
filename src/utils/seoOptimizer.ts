@@ -97,7 +97,7 @@ export class SEOOptimizer {
       }
     };
 
-    let script = document.querySelector('script[type="application/ld+json"]');
+    let script = document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement;
     if (!script) {
       script = document.createElement('script');
       script.type = 'application/ld+json';
@@ -120,7 +120,7 @@ export class SEOOptimizer {
     let meta = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
     if (!meta) {
       meta = document.createElement('meta');
-      meta.property = property;
+      meta.setAttribute('property', property);
       document.head.appendChild(meta);
     }
     meta.content = content;
