@@ -22,7 +22,7 @@ export function QATestingSuite() {
     setIsRunning(true);
     setTestResults([]);
     
-    const tests = [
+    const tests: TestResult[] = [
       { name: 'Browser Compatibility', status: 'pass' },
       { name: 'Accessibility Audit', status: 'pass' },
       { name: 'Performance Analysis', status: 'warning' },
@@ -35,7 +35,7 @@ export function QATestingSuite() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       setTestResults(prev => 
-        prev.map(r => r.name === test.name ? { ...test } : r)
+        prev.map(r => r.name === test.name ? { ...r, status: test.status } : r)
       );
     }
     
