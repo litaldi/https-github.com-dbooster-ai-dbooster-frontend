@@ -4,14 +4,10 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { ErrorBoundary } from '@/components/ui/error-boundary.tsx'
-import { initializeProductionEnvironment } from '@/utils/productionCleanup';
-import { SecurityHeaders } from '@/middleware/securityHeaders';
-import { setupGlobalErrorHandling } from '@/utils/errorRecovery';
+import { productionInitializer } from '@/utils/productionInit';
 
-// Initialize production environment and security
-initializeProductionEnvironment();
-SecurityHeaders.applyToDocument();
-setupGlobalErrorHandling();
+// Initialize production environment immediately
+productionInitializer.initialize();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -20,3 +16,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </React.StrictMode>,
 )
+
+// Run health checks after app loads (production only)
+if (import.meta.env.PROD) {
+  window.addEventListener('load', async () => {
+    try {
+      const healthChecks = await productionInitializer.runHealthChecks();
+      console.log('Health checks completed:', healthChecks);
+    } catch (error) {
+      console.error('Health checks failed:', error);
+    }
+  });
+}
