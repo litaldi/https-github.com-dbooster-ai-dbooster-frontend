@@ -11,13 +11,13 @@ interface FormData {
 
 export function validateForm(
   formData: FormData, 
-  mode: 'login' | 'register', 
+  mode: 'login' | 'signup', 
   loginType: 'email' | 'phone'
 ): Record<string, string> {
   const errors: Record<string, string> = {};
 
   // Name validation for signup
-  if (mode === 'register') {
+  if (mode === 'signup') {
     if (!formData.name?.trim()) {
       errors.name = 'Full name is required';
     } else if (formData.name.length < 2) {
@@ -43,7 +43,7 @@ export function validateForm(
   // Password validation
   if (!formData.password?.trim()) {
     errors.password = 'Password is required';
-  } else if (mode === 'register') {
+  } else if (mode === 'signup') {
     const passwordError = passwordValidator(formData.password);
     if (passwordError) {
       errors.password = passwordError;
@@ -51,7 +51,7 @@ export function validateForm(
   }
 
   // Confirm password validation for signup
-  if (mode === 'register' && formData.password) {
+  if (mode === 'signup' && formData.password) {
     if (!formData.confirmPassword?.trim()) {
       errors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {

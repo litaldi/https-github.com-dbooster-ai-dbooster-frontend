@@ -1,32 +1,21 @@
 
 import { useState } from 'react';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TestTube, Loader2, Sparkles } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 export function DemoModeButton() {
-  const { loginDemo, isLoading } = useSimpleAuth();
+  const { loginDemo, isLoading } = useAuth();
   const [isDemoLoading, setIsDemoLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleDemoLogin = async () => {
     setIsDemoLoading(true);
     try {
       await loginDemo();
-      toast({
-        title: 'Demo mode activated!',
-        description: 'You can now explore DBooster with sample data.',
-      });
     } catch (error) {
       console.error('Demo login failed:', error);
-      toast({
-        title: 'Demo mode failed',
-        description: 'Unable to start demo mode. Please try again.',
-        variant: 'destructive',
-      });
     } finally {
       setIsDemoLoading(false);
     }

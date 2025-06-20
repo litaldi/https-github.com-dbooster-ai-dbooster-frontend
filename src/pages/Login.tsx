@@ -1,30 +1,26 @@
 
-import { Navigate } from 'react-router-dom';
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
-import { AuthForm } from '@/components/auth/AuthForm';
-import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { EnhancedLoginCard } from '@/components/auth/EnhancedLoginCard';
+import { DemoWalkthrough } from '@/components/demo-walkthrough';
+import { FadeIn } from '@/components/ui/enhanced-animations';
+import type { AuthMode } from '@/types/auth';
 
 export default function Login() {
-  const { user, isDemo, isLoading } = useSimpleAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (user || isDemo) {
-    return <Navigate to="/app" replace />;
-  }
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <AuthForm />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto">
+          <FadeIn>
+            <EnhancedLoginCard 
+              authMode={authMode} 
+              onAuthModeChange={setAuthMode} 
+            />
+          </FadeIn>
+        </div>
+      </div>
+      <DemoWalkthrough />
     </div>
   );
 }

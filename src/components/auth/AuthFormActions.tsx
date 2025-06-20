@@ -1,41 +1,96 @@
 
-import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { EnhancedCheckbox } from '@/components/ui/enhanced-checkbox';
+import { Loader2, UserPlus, LogIn } from 'lucide-react';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 import type { AuthMode } from '@/types/auth';
 
 interface AuthFormActionsProps {
   mode: AuthMode;
   isLoading: boolean;
-  onToggleMode: () => void;
+  rememberMe: boolean;
+  onRememberMeChange: (checked: boolean) => void;
+  onModeChange: (mode: AuthMode) => void;
 }
 
-export function AuthFormActions({ mode, isLoading, onToggleMode }: AuthFormActionsProps) {
-  const isLogin = mode === 'login';
+export function AuthFormActions({
+  mode,
+  isLoading,
+  rememberMe,
+  onRememberMeChange,
+  onModeChange
+}: AuthFormActionsProps) {
+  const handleForgotPassword = () => {
+    enhancedToast.info({
+      title: "Feature Coming Soon",
+      description: "Password reset functionality will be available soon.",
+    });
+  };
 
   return (
-    <div className="space-y-4">
+    <>
+      {/* Remember Me & Forgot Password */}
+      {mode === 'login' && (
+        <div className="flex items-center justify-between">
+          <EnhancedCheckbox
+            id="remember"
+            checked={rememberMe}
+            onCheckedChange={(checked) => onRememberMeChange(checked === true)}
+            label="Remember me"
+            size="sm"
+          />
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            onClick={handleForgotPassword}
+            className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+            disabled={isLoading}
+          >
+            Forgot password?
+          </Button>
+        </div>
+      )}
+
+      {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full"
+        className="w-full hover:scale-[1.02] transition-transform"
         disabled={isLoading}
+        size="lg"
       >
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isLogin ? 'Sign In' : 'Create Account'}
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+            {mode === 'login' ? 'Signing in...' : 'Creating account...'}
+          </>
+        ) : (
+          <>
+            {mode === 'login' ? (
+              <LogIn className="w-4 h-4 mr-2" aria-hidden="true" />
+            ) : (
+              <UserPlus className="w-4 h-4 mr-2" aria-hidden="true" />
+            )}
+            {mode === 'login' ? 'Sign In' : 'Create Account'}
+          </>
+        )}
       </Button>
 
-      <div className="text-center">
-        <button
+      {/* Mode Switch */}
+      <div className="text-center text-sm">
+        <span className="text-muted-foreground">
+          {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+        </span>
+        <Button
           type="button"
-          onClick={onToggleMode}
-          className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
+          variant="link"
+          onClick={() => onModeChange(mode === 'login' ? 'signup' : 'login')}
+          className="px-0 text-blue-600 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+          disabled={isLoading}
         >
-          {isLogin 
-            ? "Don't have an account? Sign up" 
-            : "Already have an account? Sign in"
-          }
-        </button>
+          {mode === 'login' ? 'Sign up' : 'Sign in'}
+        </Button>
       </div>
-    </div>
+    </>
   );
 }

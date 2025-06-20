@@ -1,30 +1,38 @@
 
-import { Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { KeyRound, UserPlus } from 'lucide-react';
 import type { AuthMode } from '@/types/auth';
-import { Dispatch, SetStateAction } from 'react';
 
 interface AuthFormHeaderProps {
   mode: AuthMode;
-  onModeChange: Dispatch<SetStateAction<AuthMode>>;
+  onModeChange: (mode: AuthMode) => void;
 }
 
 export function AuthFormHeader({ mode, onModeChange }: AuthFormHeaderProps) {
-  const isLogin = mode === 'login';
-  
   return (
-    <div className="text-center space-y-2">
-      <div className="flex items-center justify-center gap-2">
-        <Shield className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold">
-          {isLogin ? 'Welcome Back' : 'Get Started'}
-        </h1>
-      </div>
-      <p className="text-muted-foreground">
-        {isLogin 
-          ? 'Sign in to your account to continue' 
-          : 'Create your account to get started'
-        }
-      </p>
+    <div className="grid grid-cols-2 gap-3" role="tablist" aria-label="Authentication mode">
+      <Button
+        variant={mode === 'login' ? 'default' : 'outline'}
+        onClick={() => onModeChange('login')}
+        className="flex items-center gap-2 transition-all duration-200 hover-scale focus-visible:ring-2 focus-visible:ring-blue-500"
+        role="tab"
+        aria-selected={mode === 'login'}
+        aria-controls="auth-form"
+      >
+        <KeyRound className="h-4 w-4" aria-hidden="true" />
+        Sign In
+      </Button>
+      <Button
+        variant={mode === 'signup' ? 'default' : 'outline'}
+        onClick={() => onModeChange('signup')}
+        className="flex items-center gap-2 transition-all duration-200 hover-scale focus-visible:ring-2 focus-visible:ring-blue-500"
+        role="tab"
+        aria-selected={mode === 'signup'}
+        aria-controls="auth-form"
+      >
+        <UserPlus className="h-4 w-4" aria-hidden="true" />
+        Sign Up
+      </Button>
     </div>
   );
 }

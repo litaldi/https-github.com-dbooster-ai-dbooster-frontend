@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { Mail, Phone } from 'lucide-react';
 import type { LoginType } from '@/types/auth';
 
@@ -11,30 +11,30 @@ interface LoginTypeSelectorProps {
 
 export function LoginTypeSelector({ loginType, onTypeChange }: LoginTypeSelectorProps) {
   return (
-    <div className="space-y-2">
-      <p className="text-sm font-medium">Sign in with</p>
-      <div className="flex space-x-2">
-        <Button
-          type="button"
-          variant={loginType === 'email' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onTypeChange('email')}
-          className="flex-1"
-        >
-          <Mail className="w-4 h-4 mr-2" />
-          Email
-        </Button>
-        <Button
-          type="button"
-          variant={loginType === 'phone' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onTypeChange('phone')}
-          className="flex-1"
-        >
-          <Phone className="w-4 h-4 mr-2" />
-          Phone
-        </Button>
-      </div>
+    <div className="space-y-3">
+      <Label className="text-sm font-medium text-foreground">
+        Sign in with
+      </Label>
+      <RadioGroup
+        value={loginType}
+        onValueChange={(value) => onTypeChange(value as LoginType)}
+        className="flex space-x-4"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="email" id="email-option" />
+          <Label htmlFor="email-option" className="flex items-center gap-2 cursor-pointer">
+            <Mail className="h-4 w-4" />
+            Email
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="phone" id="phone-option" />
+          <Label htmlFor="phone-option" className="flex items-center gap-2 cursor-pointer">
+            <Phone className="h-4 w-4" />
+            Phone
+          </Label>
+        </div>
+      </RadioGroup>
     </div>
   );
 }

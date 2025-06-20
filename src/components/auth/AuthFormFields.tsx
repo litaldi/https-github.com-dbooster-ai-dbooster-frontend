@@ -1,111 +1,123 @@
 
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LoginTypeSelector } from './LoginTypeSelector';
-import { PasswordField } from './PasswordField';
-import type { AuthMode, AuthFormData, LoginType } from '@/types/auth';
+import { EnhancedInput } from '@/components/ui/enhanced-input';
+import { PasswordField } from '@/components/auth/PasswordField';
+import { LoginTypeSelector } from '@/components/auth/LoginTypeSelector';
+import { formatPhoneNumber } from '@/utils/validation';
+import type { AuthFormData, AuthMode, LoginType, ValidationResult } from '@/types/auth';
 
 interface AuthFormFieldsProps {
   mode: AuthMode;
   loginType: LoginType;
-  onLoginTypeChange: (type: LoginType) => void;
+  setLoginType: (type: LoginType) => void;
   formData: AuthFormData;
-  onChange: (data: Partial<AuthFormData>) => void;
   errors: Partial<Record<keyof AuthFormData, string>>;
+  onInputChange: (field: keyof AuthFormData, value: string) => void;
+  onBlur: (field: keyof AuthFormData) => void;
+  getFieldValidation: (field: keyof AuthFormData) => ValidationResult;
 }
 
 export function AuthFormFields({
   mode,
   loginType,
-  onLoginTypeChange,
+  setLoginType,
   formData,
-  onChange,
-  errors
+  errors,
+  onInputChange,
+  onBlur,
+  getFieldValidation
 }: AuthFormFieldsProps) {
-  const handleInputChange = (field: keyof AuthFormData, value: string) => {
-    onChange({ [field]: value });
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value);
+    onInputChange('phone', formatted);
   };
-
-  const isSignup = mode === 'register';
 
   return (
     <div className="space-y-4">
-      {mode === 'login' && (
-        <LoginTypeSelector
-          loginType={loginType}
-          onTypeChange={onLoginTypeChange}
+      <LoginTypeSelector 
+        loginType={loginType} 
+        onTypeChange={setLoginType} 
+      />
+
+      {/* Name field for signup */}
+      {mode === 'signup' && (
+        <EnhancedInput
+          id="name"
+          type="text"
+          label="Full Name"
+          placeholder="Enter your full name"
+          value={formData.name}
+          onChange={(e) => onInputChange('name', e.target.value)}
+          onBlur={() => onBlur('name')}
+          error={getFieldValidation('name').errorMessage}
+          isValid={getFieldValidation('name').isValid}
+          showValidation={true}
+          autoComplete="name"
+          required
+          aria-describedby={errors.name ? "name-error" : undefined}
+          className="transition-all duration-200"
         />
       )}
 
-      {isSignup && (
-        <div className="space-y-2">
-          <Label htmlFor="name">Full Name</Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Enter your full name"
-            value={formData.name}
-            onChange={(e) => handleInputChange('name', e.target.value)}
-            required
-          />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name}</p>
-          )}
-        </div>
+      {/* Email/Phone Field */}
+      {loginType === 'email' ? (
+        <EnhancedInput
+          id="email"
+          type="email"
+          label="Email Address"
+          placeholder="Enter your email address"
+          value={formData.email}
+          onChange={(e) => onInputChange('email', e.target.value)}
+          onBlur={() => onBlur('email')}
+          error={getFieldValidation('email').errorMessage}
+          isValid={getFieldValidation('email').isValid}
+          showValidation={true}
+          autoComplete="email"
+          required
+          aria-describedby={errors.email ? "email-error" : undefined}
+          className="transition-all duration-200"
+        />
+      ) : (
+        <EnhancedInput
+          id="phone"
+          type="tel"
+          label="Phone Number"
+          placeholder="(555) 123-4567"
+          value={formData.phone}
+          onChange={(e) => handlePhoneChange(e.target.value)}
+          onBlur={() => onBlur('phone')}
+          error={getFieldValidation('phone').errorMessage}
+          isValid={getFieldValidation('phone').isValid}
+          showValidation={true}
+          autoComplete="tel"
+          helperText="We'll send you a verification code"
+          required
+          aria-describedby={errors.phone ? "phone-error" : undefined}
+          className="transition-all duration-200"
+        />
       )}
 
-      {(mode === 'register' || loginType === 'email') && (
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            value={formData.email}
-            onChange={(e) => handleInputChange('email', e.target.value)}
-            required
-          />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email}</p>
-          )}
-        </div>
-      )}
-
-      {mode === 'login' && loginType === 'phone' && (
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input
-            id="phone"
-            type="tel"
-            placeholder="Enter your phone number"
-            value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            required
-          />
-          {errors.phone && (
-            <p className="text-sm text-destructive">{errors.phone}</p>
-          )}
-        </div>
-      )}
-
+      {/* Password Field */}
       <PasswordField
         id="password"
-        value={formData.password}
-        onChange={(value) => handleInputChange('password', value)}
-        error={errors.password}
         label="Password"
-        placeholder="Enter your password"
+        value={formData.password}
+        onChange={(value) => onInputChange('password', value)}
+        placeholder={mode === 'login' ? 'Enter your password' : 'Create a strong password'}
+        error={getFieldValidation('password').errorMessage}
+        autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+        showStrength={mode === 'signup'}
       />
 
-      {isSignup && (
+      {/* Confirm Password for signup */}
+      {mode === 'signup' && (
         <PasswordField
           id="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={(value) => handleInputChange('confirmPassword', value)}
-          error={errors.confirmPassword}
           label="Confirm Password"
+          value={formData.confirmPassword}
+          onChange={(value) => onInputChange('confirmPassword', value)}
           placeholder="Confirm your password"
+          error={getFieldValidation('confirmPassword').errorMessage}
+          autoComplete="new-password"
         />
       )}
     </div>

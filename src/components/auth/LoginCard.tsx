@@ -4,25 +4,26 @@ import { EnhancedAuthForm } from '@/components/auth/EnhancedAuthForm';
 import { SocialAuth } from '@/components/auth/SocialAuth';
 import { Separator } from '@/components/ui/separator';
 import { AuthFormHeader } from '@/components/auth/AuthFormHeader';
+import type { AuthMode } from '@/types/auth';
 
 interface LoginCardProps {
-  isLogin: boolean;
-  onAuthModeChange: (isLogin: boolean) => void;
+  authMode: AuthMode;
+  onAuthModeChange: (mode: AuthMode) => void;
 }
 
-export function LoginCard({ isLogin, onAuthModeChange }: LoginCardProps) {
+export function LoginCard({ authMode, onAuthModeChange }: LoginCardProps) {
   const cardConfig = {
-    true: {
+    login: {
       title: 'Welcome back',
       description: 'Sign in to your account to continue optimizing'
     },
-    false: {
+    signup: {
       title: 'Get started today',
       description: 'Create your account and start optimizing queries'
     }
   };
 
-  const config = cardConfig[isLogin.toString() as 'true' | 'false'];
+  const config = cardConfig[authMode];
 
   return (
     <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm animate-scale-in">
@@ -35,10 +36,12 @@ export function LoginCard({ isLogin, onAuthModeChange }: LoginCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <AuthFormHeader mode={authMode} onModeChange={onAuthModeChange} />
+        
         <Separator className="my-4" />
 
         <section id="auth-form" role="tabpanel">
-          <EnhancedAuthForm isLogin={isLogin} onToggleMode={() => onAuthModeChange(!isLogin)} />
+          <EnhancedAuthForm mode={authMode} onModeChange={onAuthModeChange} />
         </section>
 
         <section className="space-y-4">

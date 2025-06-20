@@ -1,7 +1,22 @@
 
-import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { 
+  ArrowRight, 
+  Database, 
+  Zap, 
+  TrendingUp, 
+  Shield, 
+  Users, 
+  Clock,
+  CheckCircle,
+  Star,
+  BarChart3
+} from 'lucide-react';
 import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/enhanced-animations';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
 import { EnhancedHeroSection } from '@/components/home/EnhancedHeroSection';
@@ -14,7 +29,7 @@ import { ResourcesSection } from '@/components/marketing/ResourcesSection';
 import { useHomePage } from '@/hooks/useHomePage';
 
 export default function Home() {
-  const { user, isDemo } = useSimpleAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { 
     isLoading, 
@@ -25,13 +40,13 @@ export default function Home() {
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
-    if (user || isDemo) {
+    if (user) {
       navigate('/app');
     }
-  }, [user, isDemo, navigate]);
+  }, [user, navigate]);
 
   // Don't render if user is authenticated (will redirect)
-  if (user || isDemo) {
+  if (user) {
     return null;
   }
 
@@ -41,7 +56,7 @@ export default function Home() {
         user={user}
         isLoading={isLoading}
         onGetStarted={handleGetStarted}
-        onNavigateToLogin={() => navigate('/auth')}
+        onNavigateToLogin={() => navigate('/login')}
         guidanceSteps={guidanceSteps}
       />
       <EnhancedPerformanceCounters />
