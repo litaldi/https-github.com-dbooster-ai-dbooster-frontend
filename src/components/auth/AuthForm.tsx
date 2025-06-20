@@ -7,7 +7,6 @@ import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { AuthFormHeader } from './AuthFormHeader';
 import { AuthFormFields } from './AuthFormFields';
 import { AuthFormActions } from './AuthFormActions';
-import { AuthFormFooter } from './AuthFormFooter';
 import { SocialAuth } from './SocialAuth';
 import { DemoModeButton } from './DemoModeButton';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +26,10 @@ export function AuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp } = useSimpleAuth();
   const { toast } = useToast();
+
+  const handleFormDataChange = (data: Partial<AuthFormData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +118,7 @@ export function AuthForm() {
             loginType={loginType}
             onLoginTypeChange={setLoginType}
             formData={formData}
-            onChange={setFormData}
+            onChange={handleFormDataChange}
             errors={errors}
           />
           
@@ -138,8 +141,6 @@ export function AuthForm() {
         </div>
         
         <DemoModeButton />
-        
-        <AuthFormFooter />
       </CardContent>
     </Card>
   );

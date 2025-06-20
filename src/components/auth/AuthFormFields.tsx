@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoginTypeSelector } from './LoginTypeSelector';
 import { PasswordField } from './PasswordField';
-import type { AuthMode, AuthFormData, LoginType, ValidationResult } from '@/types/auth';
+import type { AuthMode, AuthFormData, LoginType } from '@/types/auth';
 
 interface AuthFormFieldsProps {
   mode: AuthMode;
@@ -34,7 +34,7 @@ export function AuthFormFields({
       {mode === 'login' && (
         <LoginTypeSelector
           loginType={loginType}
-          onLoginTypeChange={onLoginTypeChange}
+          onTypeChange={onLoginTypeChange}
         />
       )}
 
@@ -95,7 +95,6 @@ export function AuthFormFields({
         error={errors.password}
         label="Password"
         placeholder="Enter your password"
-        required
       />
 
       {isSignup && (
@@ -105,7 +104,6 @@ export function AuthFormFields({
           error={errors.confirmPassword}
           label="Confirm Password"
           placeholder="Confirm your password"
-          required
         />
       )}
     </div>

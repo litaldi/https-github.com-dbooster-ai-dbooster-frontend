@@ -1,13 +1,14 @@
 
 import React, { useState, useMemo } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { useNavigate } from 'react-router-dom';
-import { showSuccess } from '@/components/ui/feedback-toast';
+import { useToast } from '@/hooks/use-toast';
 import { features, getQuickActions, guidanceSteps } from '@/data/homePageData';
 
 export function useHomePage() {
-  const { user, loginDemo } = useAuth();
+  const { user } = useSimpleAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(!user);
 
@@ -16,17 +17,17 @@ export function useHomePage() {
     
     try {
       if (user) {
-        showSuccess({ 
-          title: 'Taking you to your dashboard', 
-          description: 'Your personalized database optimization workspace awaits!' 
+        toast({
+          title: 'Taking you to your dashboard',
+          description: 'Your personalized database optimization workspace awaits!'
         });
-        navigate('/dashboard');
+        navigate('/app');
       } else {
-        await loginDemo();
-        showSuccess({ 
-          title: 'Welcome to DBooster!', 
-          description: 'You\'re now exploring our full-featured demo environment.' 
+        toast({
+          title: 'Welcome to DBooster!',
+          description: 'You\'re now exploring our full-featured demo environment.'
         });
+        navigate('/auth');
         setShowOnboarding(true);
       }
     } catch (error) {
