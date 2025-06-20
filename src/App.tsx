@@ -49,6 +49,16 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // Initialize enhanced error handling
+  React.useEffect(() => {
+    setupEnhancedGlobalErrorHandling();
+    performanceMonitor.startMonitoring();
+    
+    return () => {
+      performanceMonitor.stopMonitoring();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
