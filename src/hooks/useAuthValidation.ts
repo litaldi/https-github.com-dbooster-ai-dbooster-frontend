@@ -8,7 +8,8 @@ export function useAuthValidation(mode: AuthMode) {
   const [touched, setTouched] = useState<Partial<Record<keyof AuthFormData, boolean>>>({});
 
   const validateField = (field: keyof AuthFormData, formData: AuthFormData, loginType: LoginType): ValidationResult => {
-    const fieldErrors = validateForm(formData, mode, loginType);
+    const validationMode = mode === 'register' ? 'register' : 'login';
+    const fieldErrors = validateForm(formData, validationMode, loginType);
     const hasError = !!fieldErrors[field];
     const isValid = touched[field] && !hasError && !!formData[field];
     
@@ -29,7 +30,8 @@ export function useAuthValidation(mode: AuthMode) {
   };
 
   const validateAll = (formData: AuthFormData, loginType: LoginType): boolean => {
-    const newErrors = validateForm(formData, mode, loginType);
+    const validationMode = mode === 'register' ? 'register' : 'login';
+    const newErrors = validateForm(formData, validationMode, loginType);
     setErrors(newErrors);
     setTouched(Object.keys(formData).reduce((acc, key) => ({ 
       ...acc, 

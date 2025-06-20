@@ -90,6 +90,7 @@ export function AuthFormFields({
       )}
 
       <PasswordField
+        id="password"
         value={formData.password}
         onChange={(value) => handleInputChange('password', value)}
         error={errors.password}
@@ -99,6 +100,7 @@ export function AuthFormFields({
 
       {isSignup && (
         <PasswordField
+          id="confirmPassword"
           value={formData.confirmPassword}
           onChange={(value) => handleInputChange('confirmPassword', value)}
           error={errors.confirmPassword}
