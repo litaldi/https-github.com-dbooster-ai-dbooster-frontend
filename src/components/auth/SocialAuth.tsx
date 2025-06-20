@@ -7,7 +7,7 @@ import { Github, Chrome, User, Loader2 } from 'lucide-react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export function SocialAuth() {
-  const { login, loginDemo, isLoading } = useAuth();
+  const { loginDemo, isLoading } = useAuth();
   const [error, setError] = useState('');
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
@@ -15,7 +15,11 @@ export function SocialAuth() {
     try {
       setError('');
       setLoadingProvider(provider);
-      await login(provider);
+      // OAuth login would be implemented here when needed
+      enhancedToast.info({
+        title: "Coming Soon",
+        description: `${provider} login will be available soon.`,
+      });
     } catch (error: any) {
       const errorMessage = error.message || `Failed to sign in with ${provider}`;
       setError(errorMessage);
@@ -33,10 +37,6 @@ export function SocialAuth() {
       setError('');
       setLoadingProvider('demo');
       await loginDemo();
-      enhancedToast.success({
-        title: "Demo Mode Activated",
-        description: "Welcome to the demo environment!",
-      });
     } catch (error: any) {
       const errorMessage = error.message || 'Failed to start demo';
       setError(errorMessage);

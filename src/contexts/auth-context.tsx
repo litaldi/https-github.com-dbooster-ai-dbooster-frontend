@@ -11,17 +11,21 @@ interface AuthContextType {
   isDemo: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>; // Alias for compatibility
+  signUp: (email: string, password: string, name: string) => Promise<void>; // Alias for compatibility
   loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
+  githubAccessToken: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo user data
+// Demo user data with proper User type structure
 const DEMO_USER = {
   id: 'demo-user-id',
   email: 'demo@example.com',
   user_metadata: { full_name: 'Demo User' },
+  app_metadata: {},
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   aud: 'authenticated',
@@ -33,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
+  const [githubAccessToken, setGithubAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -173,8 +178,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isDemo,
       login,
       signup,
+      signIn: login, // Alias for compatibility
+      signUp: signup, // Alias for compatibility
       loginDemo,
-      logout
+      logout,
+      githubAccessToken
     }}>
       {children}
     </AuthContext.Provider>

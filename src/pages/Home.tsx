@@ -63,17 +63,23 @@ export default function Home() {
     {
       icon: Database,
       title: "Smart Query Analysis",
-      description: "AI-powered analysis identifies performance bottlenecks and optimization opportunities automatically."
+      description: "AI-powered analysis identifies performance bottlenecks and optimization opportunities automatically.",
+      highlight: "AI-Powered",
+      details: "Advanced machine learning algorithms analyze your queries in real-time"
     },
     {
       icon: Zap,
       title: "Instant Optimization",
-      description: "Get immediate suggestions to improve query performance with one-click implementation."
+      description: "Get immediate suggestions to improve query performance with one-click implementation.",
+      highlight: "One-Click Fix",
+      details: "Automated optimization suggestions with instant implementation"
     },
     {
       icon: TrendingUp,
       title: "Performance Monitoring",
-      description: "Real-time monitoring and alerts keep your database running at peak efficiency."
+      description: "Real-time monitoring and alerts keep your database running at peak efficiency.",
+      highlight: "Real-Time",
+      details: "Continuous monitoring with intelligent alerting system"
     }
   ];
 
