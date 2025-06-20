@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -144,7 +143,13 @@ export default function Dashboard() {
           ))}
         </div>
         
-        <LoadingState message="Loading your enterprise dashboard..." variant="database" />
+        <LoadingState 
+          isLoading={true} 
+          message="Loading your enterprise dashboard..." 
+          variant="database"
+        >
+          <div />
+        </LoadingState>
       </div>
     );
   }

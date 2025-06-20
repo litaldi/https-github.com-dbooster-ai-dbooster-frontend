@@ -11,7 +11,7 @@ interface LazyLoadingWrapperProps {
 
 export function LazyLoadingWrapper({ 
   children, 
-  fallback = <LoadingSpinner size="lg" text="Loading component..." />,
+  fallback = <LoadingSpinner size="lg" />,
   errorFallback = <div className="p-4 text-center text-muted-foreground">Failed to load component</div>
 }: LazyLoadingWrapperProps) {
   return (

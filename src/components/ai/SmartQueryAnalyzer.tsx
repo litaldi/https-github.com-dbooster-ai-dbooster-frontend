@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -170,9 +169,12 @@ ORDER BY order_count DESC;`,
 
       {isAnalyzing && (
         <LoadingState 
+          isLoading={true}
           message="Analyzing your query for performance insights..."
-          variant="analysis"
-        />
+          variant="analytics"
+        >
+          <div />
+        </LoadingState>
       )}
 
       {analysis && (
