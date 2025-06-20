@@ -1,20 +1,13 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  MessageCircle, 
-  X, 
-  Send, 
-  Bot, 
-  User, 
-  Minimize2,
-  Maximize2
-} from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ChatHeader } from './chat/ChatHeader';
+import { ChatMessages } from './chat/ChatMessages';
+import { ChatInput } from './chat/ChatInput';
 
 interface Message {
   id: string;
@@ -36,15 +29,6 @@ export function LiveChatWidget() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -95,13 +79,6 @@ export function LiveChatWidget() {
     return "Thanks for your message! For detailed assistance, please contact our support team at support@dbooster.ai or check our documentation. Is there anything specific about DBooster I can help explain?";
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
   if (!isOpen) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
@@ -129,110 +106,22 @@ export function LiveChatWidget() {
         "w-80 shadow-2xl transition-all duration-300",
         isMinimized ? "h-16" : "h-96"
       )}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
-              <Bot className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <div>
-              <CardTitle className="text-sm">DBooster Support</CardTitle>
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                <span className="text-xs text-muted-foreground">Online</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMinimized(!isMinimized)}
-              className="h-8 w-8 p-0"
-            >
-              {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(false)}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+        <CardHeader className="p-4">
+          <ChatHeader
+            isMinimized={isMinimized}
+            onToggleMinimize={() => setIsMinimized(!isMinimized)}
+            onClose={() => setIsOpen(false)}
+          />
         </CardHeader>
         
         {!isMinimized && (
           <CardContent className="p-0 flex flex-col h-80">
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      "flex gap-2",
-                      message.sender === 'user' ? "justify-end" : "justify-start"
-                    )}
-                  >
-                    {message.sender === 'bot' && (
-                      <div className="h-6 w-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <Bot className="h-3 w-3 text-primary-foreground" />
-                      </div>
-                    )}
-                    <div
-                      className={cn(
-                        "max-w-[80%] p-3 rounded-lg text-sm",
-                        message.sender === 'user'
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      )}
-                    >
-                      {message.content}
-                    </div>
-                    {message.sender === 'user' && (
-                      <div className="h-6 w-6 bg-muted rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <User className="h-3 w-3" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-                
-                {isTyping && (
-                  <div className="flex gap-2 justify-start">
-                    <div className="h-6 w-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <Bot className="h-3 w-3 text-primary-foreground" />
-                    </div>
-                    <div className="bg-muted p-3 rounded-lg">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-            
-            <div className="p-4 border-t">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Type your message..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim()}
-                  size="sm"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <ChatMessages messages={messages} isTyping={isTyping} />
+            <ChatInput
+              value={inputValue}
+              onChange={setInputValue}
+              onSend={handleSendMessage}
+            />
           </CardContent>
         )}
       </Card>
