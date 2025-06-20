@@ -1,173 +1,149 @@
 
 import { useState } from 'react';
-import { useAuth as useAuthContext } from '@/contexts/auth-context';
-import { LoginTypeSelector } from '@/components/auth/LoginTypeSelector';
-import { AuthFormFields } from '@/components/auth/AuthFormFields';
-import { AuthFormActions } from '@/components/auth/AuthFormActions';
-import { useAuth } from '@/hooks/useAuth';
-import { useAuthValidation } from '@/hooks/useAuthValidation';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import type { AuthMode } from '@/types/auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/auth-context';
+import { useEnhancedSecurity } from '@/hooks/useEnhancedSecurity';
+import { Loader2, Shield } from 'lucide-react';
 
 interface EnhancedAuthFormProps {
-  mode: AuthMode;
-  onModeChange: (mode: AuthMode) => void;
+  isLogin: boolean;
+  onToggleMode: () => void;
 }
 
-export function EnhancedAuthForm({ mode, onModeChange }: EnhancedAuthFormProps) {
-  const { signIn, signUp } = useAuthContext();
+export function EnhancedAuthForm({ isLogin, onToggleMode }: EnhancedAuthFormProps) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [submitError, setSubmitError] = useState<string>('');
-
-  const {
-    loginType,
-    setLoginType,
-    rememberMe,
-    setRememberMe,
-    formData,
-    handleInputChange,
-    handleRememberMe,
-    resetForm
-  } = useAuth(mode);
-
-  const {
-    errors,
-    handleBlur,
-    validateAll,
-    getFieldValidation,
-    clearErrors
-  } = useAuthValidation(mode);
+  const { signIn, signUp } = useAuth();
+  const { validateInput, detectThreatOnLogin, rotateSensitiveSession } = useEnhancedSecurity();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateAll(formData, loginType)) {
-      enhancedToast.error({
-        title: "Validation Error",
-        description: "Please fix the errors below and try again.",
-      });
-      return;
-    }
-
     setIsLoading(true);
-    clearErrors();
-    setSubmitError('');
 
     try {
-      const identifier = loginType === 'email' ? formData.email : formData.phone;
-      
-      if (mode === 'login') {
-        const { error } = await signIn(identifier, formData.password);
-        if (error) {
-          const errorMessage = error.message.includes('Invalid login credentials') 
-            ? 'Invalid email or password. Please check your credentials and try again.'
-            : error.message;
-          setSubmitError(errorMessage);
-          enhancedToast.error({
-            title: "Login Failed",
-            description: errorMessage,
-          });
-        } else {
-          if (rememberMe) {
-            handleRememberMe();
-          }
-          enhancedToast.success({
-            title: "Welcome back!",
-            description: "You have been successfully signed in.",
-          });
-        }
-      } else {
-        const userData: any = {
-          [loginType]: identifier,
-          password: formData.password,
-        };
-        
-        if (formData.name) {
-          userData.options = {
-            data: { full_name: formData.name },
-            emailRedirectTo: `${window.location.origin}/`
-          };
-        }
+      // Validate and sanitize inputs
+      const sanitizedEmail = await validateInput(email, 'auth_email');
+      const sanitizedName = name ? await validateInput(name, 'auth_name') : '';
 
-        const { error } = await signUp(userData);
-        if (error) {
-          const errorMessage = error.message.includes('User already registered')
-            ? 'An account with this email already exists. Please try logging in instead.'
-            : error.message;
-          setSubmitError(errorMessage);
-          enhancedToast.error({
-            title: "Signup Failed",
-            description: errorMessage,
-          });
-        } else {
-          enhancedToast.success({
-            title: "Account Created!",
-            description: "Please check your email to verify your account.",
-          });
-          resetForm();
-        }
+      if (!sanitizedEmail || (name && !sanitizedName)) {
+        return;
       }
-    } catch (error: any) {
-      const errorMessage = error?.message || 'An unexpected error occurred. Please try again.';
-      setSubmitError(errorMessage);
-      enhancedToast.error({
-        title: "Error",
-        description: errorMessage,
-      });
+
+      // Detect potential threats
+      const isSafeToLogin = await detectThreatOnLogin(sanitizedEmail);
+      if (!isSafeToLogin) {
+        return;
+      }
+
+      if (isLogin) {
+        await signIn(sanitizedEmail, password);
+        // Rotate session after successful login
+        await rotateSensitiveSession();
+      } else {
+        await signUp(sanitizedEmail, password, sanitizedName || '');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className="space-y-6" 
-      role="form" 
-      aria-label={`${mode === 'login' ? 'Sign in' : 'Sign up'} form`}
-      noValidate
-    >
-      <LoginTypeSelector 
-        loginType={loginType} 
-        onTypeChange={setLoginType} 
-      />
-
-      <AuthFormFields
-        mode={mode}
-        loginType={loginType}
-        setLoginType={setLoginType}
-        formData={formData}
-        errors={errors}
-        onInputChange={handleInputChange}
-        onBlur={(field) => handleBlur(field, formData, loginType)}
-        getFieldValidation={(field) => getFieldValidation(field, formData, loginType)}
-      />
-
-      {submitError && (
-        <Alert variant="destructive" role="alert" className="animate-fade-in">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{submitError}</AlertDescription>
-        </Alert>
-      )}
-
-      {isLoading && (
-        <div className="flex items-center justify-center py-4" role="status" aria-live="polite">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          <span className="text-sm text-muted-foreground">
-            {mode === 'login' ? 'Signing you in...' : 'Creating your account...'}
-          </span>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="space-y-1">
+        <div className="flex items-center gap-2">
+          <Shield className="h-5 w-5 text-primary" />
+          <CardTitle className="text-2xl">
+            {isLogin ? 'Sign In' : 'Create Account'}
+          </CardTitle>
         </div>
-      )}
-
-      <AuthFormActions
-        mode={mode}
-        isLoading={isLoading}
-        rememberMe={rememberMe}
-        onRememberMeChange={setRememberMe}
-        onModeChange={onModeChange}
-      />
-    </form>
+        <CardDescription>
+          {isLogin 
+            ? 'Welcome back! Please sign in to your account.' 
+            : 'Create a new account to get started with DBooster.'
+          }
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">
+                Full Name
+              </label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium">
+              Email Address
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+          
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isLogin ? 'Signing In...' : 'Creating Account...'}
+              </>
+            ) : (
+              <>
+                <Shield className="mr-2 h-4 w-4" />
+                {isLogin ? 'Sign In Securely' : 'Create Secure Account'}
+              </>
+            )}
+          </Button>
+        </form>
+        
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={onToggleMode}
+            className="text-sm text-primary hover:underline"
+          >
+            {isLogin 
+              ? "Don't have an account? Sign up" 
+              : 'Already have an account? Sign in'
+            }
+          </button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
