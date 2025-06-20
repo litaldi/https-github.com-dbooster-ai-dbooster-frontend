@@ -6,10 +6,11 @@ import { AuthFormFields } from './AuthFormFields';
 import { AuthFormActions } from './AuthFormActions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import type { AuthMode } from '@/types/auth';
 
 export function AuthForm() {
   const { login, signup } = useAuth();
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -55,7 +56,7 @@ export function AuthForm() {
     try {
       if (mode === 'login') {
         await login(formData.email, formData.password);
-      } else {
+      } else if (mode === 'signup') {
         await signup(formData.email, formData.password, formData.name);
       }
     } catch (error) {
@@ -72,13 +73,21 @@ export function AuthForm() {
     }
   };
 
+  const handleModeChange = (newMode: AuthMode) => {
+    // Only handle login and signup modes in this component
+    if (newMode === 'login' || newMode === 'signup') {
+      setMode(newMode);
+      setErrors({});
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <AuthFormHeader mode={mode} onModeChange={setMode} />
+      <AuthFormHeader mode={mode} onModeChange={handleModeChange} />
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthFormFields
-          mode={mode}
+          mode={mode === 'reset' ? 'login' : mode}
           formData={formData}
           errors={errors}
           onChange={handleInputChange}
@@ -94,10 +103,10 @@ export function AuthForm() {
         )}
 
         <AuthFormActions
-          mode={mode}
+          mode={mode === 'reset' ? 'login' : mode}
           isLoading={isLoading}
           onSubmit={handleSubmit}
-          onModeChange={setMode}
+          onModeChange={handleModeChange}
         />
       </form>
     </div>

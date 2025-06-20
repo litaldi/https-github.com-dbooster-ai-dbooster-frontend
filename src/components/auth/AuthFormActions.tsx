@@ -1,12 +1,13 @@
 
 import { Button } from '@/components/ui/button';
 import { Loader2, UserPlus, LogIn } from 'lucide-react';
+import type { AuthMode } from '@/types/auth';
 
 interface AuthFormActionsProps {
   mode: 'login' | 'signup';
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => void;
-  onModeChange: (mode: 'login' | 'signup') => void;
+  onModeChange: (mode: AuthMode) => void;
 }
 
 export function AuthFormActions({ mode, isLoading, onSubmit, onModeChange }: AuthFormActionsProps) {

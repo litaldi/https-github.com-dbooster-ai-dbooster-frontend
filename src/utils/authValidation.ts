@@ -11,7 +11,7 @@ interface FormData {
 
 export function validateForm(
   formData: FormData, 
-  mode: 'login' | 'signup', 
+  mode: 'login' | 'signup' | 'reset', 
   loginType: 'email' | 'phone'
 ): Record<string, string> {
   const errors: Record<string, string> = {};
@@ -40,22 +40,24 @@ export function validateForm(
     }
   }
 
-  // Password validation
-  if (!formData.password?.trim()) {
-    errors.password = 'Password is required';
-  } else if (mode === 'signup') {
-    const passwordError = passwordValidator(formData.password);
-    if (passwordError) {
-      errors.password = passwordError;
+  // Password validation - skip for reset mode
+  if (mode !== 'reset') {
+    if (!formData.password?.trim()) {
+      errors.password = 'Password is required';
+    } else if (mode === 'signup') {
+      const passwordError = passwordValidator(formData.password);
+      if (passwordError) {
+        errors.password = passwordError;
+      }
     }
-  }
 
-  // Confirm password validation for signup
-  if (mode === 'signup' && formData.password) {
-    if (!formData.confirmPassword?.trim()) {
-      errors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+    // Confirm password validation for signup
+    if (mode === 'signup' && formData.password) {
+      if (!formData.confirmPassword?.trim()) {
+        errors.confirmPassword = 'Please confirm your password';
+      } else if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = 'Passwords do not match';
+      }
     }
   }
 
