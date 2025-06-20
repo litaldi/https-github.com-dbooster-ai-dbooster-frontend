@@ -1,280 +1,216 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { 
-  Database, 
   Zap, 
+  Brain, 
   Shield, 
-  TrendingUp, 
+  BarChart, 
   Users, 
-  Code, 
-  ArrowRight, 
-  Star,
-  Brain,
-  BarChart3,
+  Rocket, 
+  Database, 
+  Search, 
+  GitBranch, 
   Clock,
-  GitBranch,
-  Search,
-  Target
+  CheckCircle,
+  ArrowRight
 } from 'lucide-react';
-import { FadeIn, ScaleIn, StaggerContainer, StaggerItem, HoverScale } from '@/components/ui/enhanced-animations';
-import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
+import { Link } from 'react-router-dom';
+import { SocialShare } from '@/components/marketing/SocialShare';
+import { NewsletterSignup } from '@/components/marketing/NewsletterSignup';
+
+const features = [
+  {
+    icon: Brain,
+    title: 'AI-Powered Analysis',
+    description: 'Advanced machine learning algorithms analyze your queries and suggest optimal improvements automatically.',
+    benefits: ['Real-time query analysis', 'Performance predictions', 'Automated recommendations'],
+    category: 'AI & ML'
+  },
+  {
+    icon: Zap,
+    title: 'Lightning Fast Optimization',
+    description: 'Get instant query optimizations that can reduce response times by up to 10x without changing your application code.',
+    benefits: ['10x faster queries', 'Zero code changes', 'Instant results'],
+    category: 'Performance'
+  },
+  {
+    icon: Database,
+    title: 'Multi-Database Support',
+    description: 'Works seamlessly with PostgreSQL, MySQL, SQL Server, and other popular database systems.',
+    benefits: ['PostgreSQL support', 'MySQL compatibility', 'SQL Server integration'],
+    category: 'Compatibility'
+  },
+  {
+    icon: Shield,
+    title: 'Enterprise Security',
+    description: 'Bank-grade security with encryption, audit logs, and compliance with industry standards.',
+    benefits: ['End-to-end encryption', 'Audit logging', 'SOC 2 compliance'],
+    category: 'Security'
+  },
+  {
+    icon: BarChart,
+    title: 'Performance Monitoring',
+    description: 'Real-time monitoring and alerting to catch performance issues before they impact users.',
+    benefits: ['Real-time alerts', 'Performance dashboards', 'Historical analysis'],
+    category: 'Monitoring'
+  },
+  {
+    icon: Users,
+    title: 'Team Collaboration',
+    description: 'Share optimizations, collaborate on queries, and maintain team knowledge bases effortlessly.',
+    benefits: ['Team workspaces', 'Knowledge sharing', 'Collaborative optimization'],
+    category: 'Collaboration'
+  },
+  {
+    icon: GitBranch,
+    title: 'Repository Integration',
+    description: 'Scan entire codebases to identify optimization opportunities across all your applications.',
+    benefits: ['Codebase scanning', 'Bulk optimization', 'CI/CD integration'],
+    category: 'Integration'
+  },
+  {
+    icon: Search,
+    title: 'Smart Query Builder',
+    description: 'Visual query builder with AI assistance to help create optimized queries from scratch.',
+    benefits: ['Visual interface', 'AI assistance', 'Query templates'],
+    category: 'Development'
+  },
+  {
+    icon: Clock,
+    title: 'Historical Analysis',
+    description: 'Track query performance over time and identify trends and patterns in your database usage.',
+    benefits: ['Performance trends', 'Usage patterns', 'Historical reports'],
+    category: 'Analytics'
+  }
+];
 
 export default function Features() {
-  const navigate = useNavigate();
-
-  const features = [
-    {
-      icon: Brain,
-      title: "AI Prompt Analyzer",
-      description: "Advanced AI analysis of your database queries to identify performance bottlenecks and optimization opportunities.",
-      category: "Core AI",
-      highlight: true,
-      benefits: ["10x faster queries", "Automated optimization", "Real-time analysis"]
-    },
-    {
-      icon: Zap,
-      title: "Smart Query Suggestions",
-      description: "Get intelligent recommendations to improve query performance with detailed execution plans.",
-      category: "Optimization",
-      highlight: true,
-      benefits: ["Instant suggestions", "Performance metrics", "Best practices"]
-    },
-    {
-      icon: Clock,
-      title: "Query History Tracking",
-      description: "Track and analyze your query performance trends over time with comprehensive analytics.",
-      category: "Analytics",
-      highlight: false,
-      benefits: ["Historical data", "Performance trends", "Usage analytics"]
-    },
-    {
-      icon: Target,
-      title: "Smart Collections",
-      description: "Organize and categorize your queries into intelligent collections for better management.",
-      category: "Organization",
-      highlight: false,
-      benefits: ["Auto-categorization", "Smart tagging", "Quick access"]
-    },
-    {
-      icon: BarChart3,
-      title: "Insights Dashboard",
-      description: "Comprehensive dashboard with real-time metrics and performance insights.",
-      category: "Analytics",
-      highlight: true,
-      benefits: ["Real-time metrics", "Custom reports", "Data visualization"]
-    },
-    {
-      icon: Search,
-      title: "Query Search & Discovery",
-      description: "Powerful search capabilities to find and discover relevant queries and patterns.",
-      category: "Discovery",
-      highlight: false,
-      benefits: ["Full-text search", "Pattern matching", "Smart filters"]
-    },
-    {
-      icon: Shield,
-      title: "Enterprise Security",
-      description: "SOC2 compliant with enterprise-grade security features and team collaboration tools.",
-      category: "Security",
-      highlight: false,
-      benefits: ["SOC2 compliance", "Encryption", "Audit logs"]
-    },
-    {
-      icon: Users,
-      title: "Team Collaboration",
-      description: "Share optimizations, review queries, and collaborate with your team on database improvements.",
-      category: "Collaboration",
-      highlight: false,
-      benefits: ["Team workspaces", "Code reviews", "Shared collections"]
-    },
-    {
-      icon: GitBranch,
-      title: "GitHub Integration",
-      description: "Seamlessly connect your repositories and automatically scan for SQL queries that need optimization.",
-      category: "Integration",
-      highlight: false,
-      benefits: ["Auto-scanning", "PR integration", "CI/CD support"]
-    }
-  ];
-
-  const categories = ["Core AI", "Optimization", "Analytics", "Organization", "Security", "Collaboration", "Integration", "Discovery"];
-
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <Section spacing="lg" className="text-center bg-gradient-to-b from-background to-muted/30">
-        <Container>
-          <FadeIn delay={0.2}>
-            <Badge variant="secondary" className="mb-6">
-              <Star className="h-3 w-3 mr-1" />
-              All Features
+      <section className="pt-24 pb-16 bg-gradient-to-b from-background to-muted/20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <Badge variant="secondary" className="mb-4">
+              <Rocket className="h-3 w-3 mr-1" />
+              Advanced Features
             </Badge>
-          </FadeIn>
-          
-          <FadeIn delay={0.4}>
-            <Heading level={1} size="2xl" className="mb-6">
-              Everything You Need for Database Optimization
-            </Heading>
-          </FadeIn>
-          
-          <FadeIn delay={0.6}>
-            <Text size="lg" variant="muted" className="mb-8 max-w-3xl mx-auto">
-              Comprehensive AI-powered tools and insights to help you optimize your database performance, 
-              reduce costs, and improve query efficiency across your entire development workflow.
-            </Text>
-          </FadeIn>
-          
-          <FadeIn delay={0.8}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <HoverScale>
-                <EnhancedButton 
-                  size="lg" 
-                  onClick={() => navigate('/login')} 
-                  className="text-lg px-8"
-                >
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              Everything You Need for 
+              <span className="text-primary"> Database Excellence</span>
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              Discover the comprehensive suite of tools and features that make DBooster 
+              the ultimate database optimization platform for modern development teams.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" asChild>
+                <Link to="/pricing">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </EnhancedButton>
-              </HoverScale>
-              
-              <HoverScale>
-                <EnhancedButton 
-                  size="lg" 
-                  variant="outline" 
-                  onClick={() => navigate('/pricing')} 
-                  className="text-lg px-8"
-                >
-                  View Pricing
-                </EnhancedButton>
-              </HoverScale>
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/contact">Schedule Demo</Link>
+              </Button>
             </div>
-          </FadeIn>
-        </Container>
-      </Section>
-
-      {/* Categories Filter */}
-      <Section spacing="sm" className="border-b">
-        <Container>
-          <div className="flex flex-wrap justify-center gap-2">
-            {categories.map((category) => (
-              <Badge key={category} variant="outline" className="cursor-pointer hover:bg-accent">
-                {category}
-              </Badge>
-            ))}
           </div>
-        </Container>
-      </Section>
+        </div>
+      </section>
 
       {/* Features Grid */}
-      <Section spacing="lg">
-        <Container>
-          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <StaggerItem key={index}>
-                <HoverScale>
-                  <Card 
-                    className={`h-full transition-all duration-300 cursor-pointer group border-2 hover:border-primary/20 ${
-                      feature.highlight ? 'ring-2 ring-primary/20 bg-primary/5 border-primary/30' : 'hover:shadow-xl'
-                    }`}
-                  >
-                    <CardHeader className="pb-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <ScaleIn delay={index * 0.1}>
-                            <div className={`p-3 rounded-xl transition-all duration-300 ${
-                              feature.highlight 
-                                ? 'bg-primary/15 text-primary shadow-lg' 
-                                : 'bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary group-hover:shadow-md'
-                            }`}>
-                              <feature.icon className="h-6 w-6" />
-                            </div>
-                          </ScaleIn>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          {feature.highlight && (
-                            <Badge variant="default" className="text-xs">
-                              Popular
-                            </Badge>
-                          )}
-                          <Badge variant="outline" className="text-xs">
-                            {feature.category}
-                          </Badge>
-                        </div>
-                      </div>
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors duration-300">
-                        {feature.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <CardDescription className="text-sm leading-relaxed">
-                        {feature.description}
-                      </CardDescription>
-                      
-                      <div className="space-y-2">
-                        <Text size="sm" className="font-medium">Key Benefits:</Text>
-                        <ul className="space-y-1">
-                          {feature.benefits.map((benefit, i) => (
-                            <li key={i} className="text-xs text-muted-foreground flex items-center gap-2">
-                              <div className="w-1 h-1 bg-primary rounded-full" />
-                              {benefit}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </HoverScale>
-              </StaggerItem>
+              <Card key={index} className="h-full hover:shadow-lg transition-all duration-300">
+                <CardHeader>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <feature.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <Badge variant="outline">{feature.category}</Badge>
+                  </div>
+                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardDescription className="text-base">
+                    {feature.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {feature.benefits.map((benefit, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        {benefit}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             ))}
-          </StaggerContainer>
-        </Container>
-      </Section>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Share Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold mb-4">Love What You See?</h2>
+              <p className="text-muted-foreground">
+                Share DBooster with your team and help them discover the power of AI-driven database optimization.
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <SocialShare 
+                title="DBooster Features - AI-Powered Database Optimization"
+                description="Discover comprehensive database optimization features that reduce query times by 10x and cut costs by 60%."
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
+              <p className="text-muted-foreground">
+                Get the latest feature updates and optimization tips delivered to your inbox.
+              </p>
+            </div>
+            <NewsletterSignup />
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
-      <Section spacing="lg" className="bg-muted/50">
-        <Container className="text-center">
-          <FadeIn>
-            <Heading level={2} size="xl" className="mb-4">
-              Ready to Optimize Your Database?
-            </Heading>
-          </FadeIn>
-          
-          <FadeIn delay={0.2}>
-            <Text size="lg" variant="muted" className="mb-8">
-              Join thousands of developers who have improved their database performance with DBooster.
-            </Text>
-          </FadeIn>
-          
-          <FadeIn delay={0.4}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <HoverScale>
-                <EnhancedButton 
-                  size="lg" 
-                  onClick={() => navigate('/login')} 
-                  className="text-lg px-8"
-                >
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </EnhancedButton>
-              </HoverScale>
-              
-              <HoverScale>
-                <EnhancedButton 
-                  size="lg" 
-                  variant="outline" 
-                  onClick={() => navigate('/contact')} 
-                  className="text-lg px-8"
-                >
-                  Contact Sales
-                </EnhancedButton>
-              </HoverScale>
-            </div>
-          </FadeIn>
-        </Container>
-      </Section>
+      <section className="py-16 bg-primary text-primary-foreground">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to Transform Your Database Performance?
+          </h2>
+          <p className="text-xl mb-8 opacity-90">
+            Join thousands of developers who have already optimized their databases with DBooster.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="secondary" asChild>
+              <Link to="/pricing">
+                Start Free Trial
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
+              <Link to="/contact">Contact Sales</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

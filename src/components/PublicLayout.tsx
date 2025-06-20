@@ -5,6 +5,7 @@ import { Footer } from '@/components/navigation/Footer';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import { ScrollToTop } from '@/components/ui/scroll-to-top';
 import { SkipLink } from '@/components/ui/accessibility-helpers';
+import { LiveChatWidget } from '@/components/support/LiveChatWidget';
 
 export function PublicLayout() {
   return (
@@ -19,6 +20,7 @@ export function PublicLayout() {
         </main>
         <Footer />
         <ScrollToTop />
+        <LiveChatWidget />
       </div>
     </EnhancedErrorBoundary>
   );
