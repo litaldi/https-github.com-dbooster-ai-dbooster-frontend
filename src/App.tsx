@@ -9,7 +9,6 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import Layout from '@/components/layout';
 import { PublicLayout } from '@/components/PublicLayout';
 import ProtectedRoute from '@/components/protected-route';
-import { LiveChatWidget } from '@/components/support/LiveChatWidget';
 import { setupEnhancedGlobalErrorHandling } from '@/utils/enhancedErrorHandling';
 import { performanceMonitor } from '@/utils/advancedPerformanceMonitor';
 
@@ -108,8 +107,6 @@ function App() {
               {/* 404 route */}
               <Route path="*" element={<Error404 />} />
             </Routes>
-            {/* Global LiveChatWidget for protected routes */}
-            <LiveChatWidget />
           </Router>
           <Toaster />
           <Sonner />

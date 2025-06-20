@@ -7,15 +7,17 @@ import { ScrollToTop } from '@/components/ui/scroll-to-top';
 import { SkipLink } from '@/components/ui/accessibility-helpers';
 import { LiveChatWidget } from '@/components/support/LiveChatWidget';
 import { EnhancedAccessibilityMenu } from '@/components/ui/enhanced-accessibility-menu';
+import { AccessibilityEnhancements } from '@/components/ui/accessibility-enhancements';
 
 export function PublicLayout() {
   return (
     <EnhancedErrorBoundary>
       <div className="min-h-screen flex flex-col bg-background">
+        <AccessibilityEnhancements />
         <SkipLink href="#main-content">Skip to main content</SkipLink>
         
-        {/* Accessibility Menu - Fixed position */}
-        <div className="fixed top-4 right-4 z-40">
+        {/* Accessibility Menu - Fixed position with improved z-index */}
+        <div className="fixed top-4 right-4 z-[100]">
           <EnhancedAccessibilityMenu />
         </div>
         
