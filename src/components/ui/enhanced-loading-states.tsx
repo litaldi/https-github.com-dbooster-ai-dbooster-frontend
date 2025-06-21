@@ -7,7 +7,10 @@ import { PulseElement } from '@/components/ui/micro-interactions';
 interface LoadingStateProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'minimal' | 'branded';
+  variant?: 'default' | 'minimal' | 'branded' | 'database' | 'analytics';
+  isLoading?: boolean;
+  message?: string;
+  children?: React.ReactNode;
 }
 
 export function LoadingSpinner({ className, size = 'md', variant = 'default' }: LoadingStateProps) {
@@ -20,7 +23,9 @@ export function LoadingSpinner({ className, size = 'md', variant = 'default' }: 
   const variants = {
     default: 'text-primary',
     minimal: 'text-muted-foreground',
-    branded: 'text-blue-600'
+    branded: 'text-blue-600',
+    database: 'text-green-600',
+    analytics: 'text-purple-600'
   };
 
   return (
@@ -51,6 +56,43 @@ export function LoadingSkeleton({ className }: { className?: string }) {
     <PulseElement intensity="low">
       <div className={cn("bg-muted rounded animate-pulse", className)} />
     </PulseElement>
+  );
+}
+
+export function SkeletonCard({ className }: { className?: string }) {
+  return (
+    <div className={cn("p-6 rounded-lg border bg-card space-y-4", className)}>
+      <div className="space-y-2">
+        <LoadingSkeleton className="h-4 w-3/4" />
+        <LoadingSkeleton className="h-4 w-1/2" />
+      </div>
+      <LoadingSkeleton className="h-32 w-full" />
+      <div className="flex justify-between">
+        <LoadingSkeleton className="h-8 w-20" />
+        <LoadingSkeleton className="h-8 w-16" />
+      </div>
+    </div>
+  );
+}
+
+export function LoadingState({ 
+  isLoading, 
+  message = "Loading...", 
+  variant = 'default',
+  className,
+  children 
+}: LoadingStateProps) {
+  if (!isLoading) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className={cn("flex flex-col items-center justify-center p-8 space-y-4", className)}>
+      <LoadingSpinner size="lg" variant={variant} />
+      <div className="text-center">
+        <p className="text-sm font-medium text-muted-foreground">{message}</p>
+      </div>
+    </div>
   );
 }
 
