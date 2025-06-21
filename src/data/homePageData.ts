@@ -75,18 +75,27 @@ export const guidanceSteps = [
     id: 'welcome',
     title: 'Welcome to DBooster',
     description: 'Get started by exploring our AI-powered database optimization platform.',
-    content: 'Click "Try Free Demo" to experience DBooster without signing up.'
+    content: 'Click "Try Free Demo" to experience DBooster without signing up.',
+    target: '[data-tour="get-started"]'
   },
   {
     id: 'features',
     title: 'Explore Features',
     description: 'Discover the powerful tools available to optimize your database performance.',
-    content: 'Scroll down to see our comprehensive feature set and how they can help your team.'
+    content: 'Scroll down to see our comprehensive feature set and how they can help your team.',
+    target: '[data-tour="features"]'
   },
   {
     id: 'get-started',
     title: 'Get Started',
     description: 'Ready to optimize? Start your journey with DBooster.',
-    content: 'Use the demo mode to explore or sign up for full access to all features.'
+    content: 'Use the demo mode to explore or sign up for full access to all features.',
+    target: '[data-tour="cta"]'
   }
 ];
+
+export default {
+  features,
+  getQuickActions,
+  guidanceSteps
+};

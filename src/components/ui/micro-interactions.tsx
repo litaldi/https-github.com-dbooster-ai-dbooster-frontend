@@ -97,3 +97,44 @@ export function PulseElement({
     </motion.div>
   );
 }
+
+// Additional micro-interaction components
+export function HoverLift({ 
+  children, 
+  className,
+  liftHeight = 4
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+  liftHeight?: number;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -liftHeight }}
+      transition={{ duration: 0.2 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function ScaleOnHover({ 
+  children, 
+  className,
+  scale = 1.05
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+  scale?: number;
+}) {
+  return (
+    <motion.div
+      whileHover={{ scale }}
+      transition={{ duration: 0.2 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}

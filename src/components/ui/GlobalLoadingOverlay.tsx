@@ -1,26 +1,22 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { useLocation, useNavigationType } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 export function GlobalLoadingOverlay() {
   const [show, setShow] = useState(false);
-  // Use refs & navigation events to show loader on page navigation
   const location = useLocation();
-  const navigationType = useNavigationType();
   const timer = useRef<number | undefined>();
 
   useEffect(() => {
     setShow(true);
-    // Always show for at least 300ms (prevents flashes)
     timer.current = window.setTimeout(() => setShow(false), 700);
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
   }, [location]);
 
-  // Optionally, only show overlay for PUSH/REPLACE, not POP (back button etc)
   if (!show) return null;
 
   return (
