@@ -54,3 +54,46 @@ export function FloatingElement({
     </motion.div>
   );
 }
+
+export function PulseElement({ 
+  children, 
+  className, 
+  intensity = 'normal' 
+}: { 
+  children: React.ReactNode; 
+  className?: string; 
+  intensity?: 'low' | 'medium' | 'high' 
+}) {
+  const getScaleRange = () => {
+    switch (intensity) {
+      case 'low': return [1, 1.02, 1];
+      case 'high': return [1, 1.08, 1];
+      default: return [1, 1.05, 1];
+    }
+  };
+
+  const getOpacityRange = () => {
+    switch (intensity) {
+      case 'low': return [1, 0.9, 1];
+      case 'high': return [1, 0.6, 1];
+      default: return [1, 0.8, 1];
+    }
+  };
+
+  return (
+    <motion.div
+      animate={{
+        scale: getScaleRange(),
+        opacity: getOpacityRange(),
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}

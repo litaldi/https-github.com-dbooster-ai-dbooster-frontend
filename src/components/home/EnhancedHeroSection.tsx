@@ -100,8 +100,8 @@ export function EnhancedHeroSection({
             
             <InteractiveButton
               onClick={onNavigateToLogin}
-              variant="subtle"
-              className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground text-lg px-8 min-h-[56px] rounded-lg transition-all duration-300"
+              variant="outline"
+              className="text-lg px-8 min-h-[56px] rounded-lg transition-all duration-300"
             >
               {user ? 'Settings' : 'Enterprise Sign In'}
             </InteractiveButton>
@@ -113,7 +113,7 @@ export function EnhancedHeroSection({
               trigger={
                 <TooltipGuidance content="Need help with enterprise setup?">
                   <InteractiveButton
-                    variant="subtle"
+                    variant="ghost"
                     className="text-lg px-4 min-h-[56px] hover:bg-accent rounded-lg"
                   >
                     <HelpCircle className="h-6 w-6" />
