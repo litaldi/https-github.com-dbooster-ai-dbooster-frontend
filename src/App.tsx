@@ -34,7 +34,7 @@ import Terms from '@/pages/Terms';
 import Privacy from '@/pages/Privacy';
 import Accessibility from '@/pages/Accessibility';
 import AIFeatures from '@/pages/AIFeatures';
-import Error404 from '@/pages/Error404';
+import { NotFound } from '@/components/error/NotFound';
 import Layout from '@/components/layout';
 import { PublicLayout } from '@/components/PublicLayout';
 
@@ -91,7 +91,7 @@ function App() {
               </Route>
 
               {/* 404 route */}
-              <Route path="*" element={<Error404 />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
         </AuthProvider>

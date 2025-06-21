@@ -1,26 +1,41 @@
 
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
 
-interface StaggerProps {
-  children: ReactNode;
+export interface StaggerProps {
+  children: React.ReactNode;
   className?: string;
+  delay?: number;
   staggerDelay?: number;
 }
 
-export function StaggerContainer({ children, className, staggerDelay = 0.1 }: StaggerProps) {
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+    },
+  },
+};
+
+export function StaggerContainer({ children, className }: StaggerProps) {
   return (
     <motion.div
+      variants={containerVariants}
       initial="hidden"
-      animate="show"
-      variants={{
-        hidden: {},
-        show: {
-          transition: {
-            staggerChildren: staggerDelay
-          }
-        }
-      }}
+      animate="visible"
       className={className}
     >
       {children}
@@ -28,21 +43,14 @@ export function StaggerContainer({ children, className, staggerDelay = 0.1 }: St
   );
 }
 
-export function StaggerItem({ children, className }: { children: ReactNode; className?: string }) {
+export function StaggerItem({ children, className }: StaggerProps) {
   return (
-    <motion.div
-      variants={{
-        hidden: { opacity: 0, y: 20 },
-        show: { opacity: 1, y: 0 }
-      }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className={className}
-    >
+    <motion.div variants={itemVariants} className={className}>
       {children}
     </motion.div>
   );
 }
 
-// Legacy support for existing code
+// Legacy aliases for backward compatibility
 export const StaggerChildren = StaggerContainer;
 export const StaggerChild = StaggerItem;

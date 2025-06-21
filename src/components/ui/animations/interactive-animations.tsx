@@ -1,18 +1,26 @@
 
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
 
-interface InteractiveAnimationProps {
-  children: ReactNode;
+export interface InteractiveAnimationProps {
+  children: React.ReactNode;
   className?: string;
+  intensity?: 'subtle' | 'normal' | 'strong';
 }
 
-export function HoverScale({ children, className }: InteractiveAnimationProps) {
+export function HoverScale({ children, className, intensity = 'normal' }: InteractiveAnimationProps) {
+  const getScale = () => {
+    switch (intensity) {
+      case 'subtle': return 1.02;
+      case 'strong': return 1.1;
+      default: return 1.05;
+    }
+  };
+
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+      whileHover={{ scale: getScale() }}
+      transition={{ duration: 0.2 }}
       className={className}
     >
       {children}
@@ -20,16 +28,24 @@ export function HoverScale({ children, className }: InteractiveAnimationProps) {
   );
 }
 
-export function FloatingElement({ children, className }: InteractiveAnimationProps) {
+export function FloatingElement({ children, className, intensity = 'normal' }: InteractiveAnimationProps) {
+  const getFloatDistance = () => {
+    switch (intensity) {
+      case 'subtle': return 5;
+      case 'strong': return 15;
+      default: return 10;
+    }
+  };
+
   return (
     <motion.div
-      animate={{ 
-        y: [0, -10, 0],
+      animate={{
+        y: [0, -getFloatDistance(), 0],
       }}
-      transition={{ 
+      transition={{
         duration: 3,
         repeat: Infinity,
-        ease: 'easeInOut'
+        ease: "easeInOut"
       }}
       className={className}
     >
@@ -41,14 +57,14 @@ export function FloatingElement({ children, className }: InteractiveAnimationPro
 export function Pulse({ children, className }: InteractiveAnimationProps) {
   return (
     <motion.div
-      animate={{ 
+      animate={{
         scale: [1, 1.05, 1],
-        opacity: [1, 0.8, 1]
+        opacity: [1, 0.8, 1],
       }}
-      transition={{ 
+      transition={{
         duration: 2,
         repeat: Infinity,
-        ease: 'easeInOut'
+        ease: "easeInOut"
       }}
       className={className}
     >

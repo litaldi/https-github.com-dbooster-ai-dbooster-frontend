@@ -1,3 +1,4 @@
+
 // Enhanced production console cleanup utility
 export class ProductionConsoleManager {
   private static instance: ProductionConsoleManager;
@@ -65,7 +66,9 @@ export class ProductionConsoleManager {
 
   // Emergency restore function for debugging
   restoreConsole() {
-    Object.assign(console, this.originalMethods);
+    if (this.originalMethods.log) {
+      Object.assign(console, this.originalMethods);
+    }
   }
 }
 

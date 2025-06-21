@@ -1,9 +1,9 @@
 
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
 
-interface AnimationProps {
-  children: ReactNode;
+export interface AnimationProps {
+  children: React.ReactNode;
   delay?: number;
   duration?: number;
   className?: string;
@@ -14,7 +14,7 @@ export function FadeIn({ children, delay = 0, duration = 0.5, className }: Anima
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration, delay, ease: 'easeOut' }}
+      transition={{ duration, delay }}
       className={className}
     >
       {children}
@@ -25,9 +25,9 @@ export function FadeIn({ children, delay = 0, duration = 0.5, className }: Anima
 export function ScaleIn({ children, delay = 0, duration = 0.3, className }: AnimationProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration, delay, ease: 'easeOut' }}
+      transition={{ duration, delay }}
       className={className}
     >
       {children}
@@ -35,25 +35,21 @@ export function ScaleIn({ children, delay = 0, duration = 0.3, className }: Anim
   );
 }
 
-export function SlideIn({ 
-  children, 
-  delay = 0, 
-  duration = 0.5, 
-  direction = 'left',
-  className 
-}: AnimationProps & { direction?: 'left' | 'right' | 'up' | 'down' }) {
-  const directions = {
-    left: { x: -50, y: 0 },
-    right: { x: 50, y: 0 },
-    up: { x: 0, y: 50 },
-    down: { x: 0, y: -50 }
+export function SlideIn({ children, delay = 0, duration = 0.4, className, direction = 'left' }: AnimationProps & { direction?: 'left' | 'right' | 'up' | 'down' }) {
+  const getInitialPosition = () => {
+    switch (direction) {
+      case 'right': return { x: 100 };
+      case 'up': return { y: -100 };
+      case 'down': return { y: 100 };
+      default: return { x: -100 };
+    }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, ...directions[direction] }}
+      initial={{ opacity: 0, ...getInitialPosition() }}
       animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ duration, delay, ease: 'easeOut' }}
+      transition={{ duration, delay }}
       className={className}
     >
       {children}
