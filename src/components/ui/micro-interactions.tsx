@@ -58,7 +58,7 @@ export function FloatingElement({
 export function PulseElement({ 
   children, 
   className, 
-  intensity = 'normal' 
+  intensity = 'medium' 
 }: { 
   children: React.ReactNode; 
   className?: string; 
