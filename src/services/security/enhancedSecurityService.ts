@@ -2,6 +2,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { auditLogger } from '../auditLogger';
 import { productionLogger } from '@/utils/productionLogger';
+import { advancedThreatDetectionService } from './advancedThreatDetectionService';
+import { inputSanitizationService } from './inputSanitizationService';
+import { environmentSecurityService } from './environmentSecurityService';
 
 interface SecurityThreat {
   level: 'low' | 'medium' | 'high' | 'critical';
@@ -15,52 +18,31 @@ interface EnhancedSecurityValidation {
   threats: SecurityThreat[];
   riskScore: number;
   blockRequest: boolean;
+  sanitizedInput?: string;
 }
 
 export class EnhancedSecurityService {
   private static instance: EnhancedSecurityService;
 
-  // Enhanced SQL injection patterns
-  private readonly SQL_INJECTION_PATTERNS = [
-    /(\b(union|select|insert|update|delete|drop|create|alter|exec|execute)\s)/gi,
-    /(\b(or|and)\s+[\w\s]*\s*=\s*[\w\s]*)/gi,
-    /(--|\/\*|\*\/|;)/g,
-    /(\b(script|javascript|vbscript|onload|onerror)\b)/gi,
-    /('|\"|`)(.*?)\1\s*(or|and)\s*\1/gi,
-    /(0x[0-9a-f]+)/gi,
-    /(\b(char|nchar|varchar|nvarchar)\s*\(\s*\d+\s*\))/gi
-  ];
-
-  // Enhanced XSS patterns
-  private readonly XSS_PATTERNS = [
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    /javascript:/gi,
-    /on\w+\s*=/gi,
-    /<iframe\b[^>]*>/gi,
-    /<object\b[^>]*>/gi,
-    /<embed\b[^>]*>/gi,
-    /<applet\b[^>]*>/gi,
-    /<meta\b[^>]*>/gi,
-    /vbscript:/gi,
-    /expression\s*\(/gi
-  ];
-
-  // Suspicious user agent patterns
+  // Enhanced suspicious user agent patterns
   private readonly SUSPICIOUS_USER_AGENTS = [
     /bot|crawler|spider|scraper/i,
-    /sqlmap|nmap|nikto|burp|owasp/i,
-    /python-requests|curl|wget/i,
+    /sqlmap|nmap|nikto|burp|owasp|acunetix/i,
+    /python-requests|curl|wget|postman/i,
     /^$/,
-    /.{0,10}$|.{500,}$/
+    /.{0,10}$|.{500,}$/,
+    /masscan|zmap|gobuster|dirb/i
   ];
 
-  // Suspicious email patterns
+  // Enhanced suspicious email patterns
   private readonly SUSPICIOUS_EMAIL_PATTERNS = [
-    /^(admin|root|test|demo|null|undefined)@/i,
+    /^(admin|root|test|demo|null|undefined|system|service)@/i,
     /\+.*\+.*@/,
-    /@(temp|trash|guerrilla|10minute)/i,
+    /@(temp|trash|guerrilla|10minute|throwaway|disposable)/i,
     /\d{10,}@/,
-    /(.)\1{5,}@/
+    /(.)\1{5,}@/,
+    /@[0-9]+\./,
+    /\.(tk|ml|ga|cf)$/i
   ];
 
   static getInstance(): EnhancedSecurityService {
@@ -77,25 +59,40 @@ export class EnhancedSecurityService {
     try {
       const inputString = typeof input === 'string' ? input : JSON.stringify(input);
 
-      // SQL Injection Detection
-      const sqlThreats = this.detectSQLInjection(inputString);
-      threats.push(...sqlThreats);
-      riskScore += sqlThreats.length * 30;
+      // Use advanced threat detection
+      const threatAnalysis = await advancedThreatDetectionService.analyzeInput(inputString, context);
+      
+      // Convert threat analysis to SecurityThreat format
+      for (const threat of threatAnalysis.threats) {
+        threats.push({
+          level: threat.severity as 'low' | 'medium' | 'high' | 'critical',
+          type: threat.type,
+          description: threat.description,
+          recommended_action: this.getRecommendedAction(threat.severity)
+        });
+      }
 
-      // XSS Detection
-      const xssThreats = this.detectXSS(inputString);
-      threats.push(...xssThreats);
-      riskScore += xssThreats.length * 25;
+      riskScore = threatAnalysis.riskScore;
 
-      // Path Traversal Detection
-      const pathThreats = this.detectPathTraversal(inputString);
-      threats.push(...pathThreats);
-      riskScore += pathThreats.length * 20;
+      // Additional context-specific validation
+      if (context === 'email') {
+        const emailThreats = await this.validateEmailSecurity(inputString);
+        if (!emailThreats.isSecure) {
+          threats.push({
+            level: 'medium',
+            type: 'suspicious_email',
+            description: 'Suspicious email pattern detected',
+            recommended_action: 'Block registration and log incident'
+          });
+          riskScore += 20;
+        }
+      }
 
-      // Command Injection Detection
-      const cmdThreats = this.detectCommandInjection(inputString);
-      threats.push(...cmdThreats);
-      riskScore += cmdThreats.length * 35;
+      // Sanitize input if not blocking
+      let sanitizedInput: string | undefined;
+      if (!threatAnalysis.shouldBlock) {
+        sanitizedInput = inputSanitizationService.sanitizeInput(inputString);
+      }
 
       // Log security validation
       if (threats.length > 0) {
@@ -105,7 +102,8 @@ export class EnhancedSecurityService {
             context,
             threatCount: threats.length,
             riskScore,
-            threatTypes: threats.map(t => t.type)
+            threatTypes: threats.map(t => t.type),
+            blocked: threatAnalysis.shouldBlock
           }
         });
       }
@@ -114,7 +112,8 @@ export class EnhancedSecurityService {
         isValid: threats.length === 0,
         threats,
         riskScore,
-        blockRequest: riskScore >= 50 || threats.some(t => t.level === 'critical')
+        blockRequest: threatAnalysis.shouldBlock,
+        sanitizedInput
       };
     } catch (error) {
       productionLogger.error('Enhanced security validation failed', error, 'EnhancedSecurityService');
@@ -127,144 +126,170 @@ export class EnhancedSecurityService {
     }
   }
 
-  async validateUserAgent(userAgent: string): Promise<{ isSuspicious: boolean; reason?: string }> {
+  async validateUserAgent(userAgent: string): Promise<{ isSuspicious: boolean; reason?: string; riskLevel?: string }> {
     for (const pattern of this.SUSPICIOUS_USER_AGENTS) {
       if (pattern.test(userAgent)) {
         await auditLogger.logSecurityEvent({
           event_type: 'suspicious_user_agent',
           event_data: {
-            userAgent: userAgent.substring(0, 100), // Truncate for security
-            pattern: pattern.source
+            userAgent: userAgent.substring(0, 100),
+            pattern: pattern.source,
+            riskLevel: 'high'
           }
         });
         
         return {
           isSuspicious: true,
-          reason: 'Suspicious user agent pattern detected'
+          reason: 'Suspicious user agent pattern detected',
+          riskLevel: 'high'
         };
       }
     }
+
+    // Check for anomalous user agent characteristics
+    if (userAgent.length > 1000) {
+      return {
+        isSuspicious: true,
+        reason: 'Unusually long user agent string',
+        riskLevel: 'medium'
+      };
+    }
+
     return { isSuspicious: false };
   }
 
-  async validateEmailSecurity(email: string): Promise<{ isSecure: boolean; reason?: string }> {
+  async validateEmailSecurity(email: string): Promise<{ isSecure: boolean; reason?: string; riskLevel?: string }> {
     for (const pattern of this.SUSPICIOUS_EMAIL_PATTERNS) {
       if (pattern.test(email)) {
         await auditLogger.logSecurityEvent({
           event_type: 'suspicious_email_pattern',
           event_data: {
             email: email.replace(/(.{2}).*(@.*)/, "$1***$2"),
-            pattern: pattern.source
+            pattern: pattern.source,
+            riskLevel: 'medium'
           }
         });
         
         return {
           isSecure: false,
-          reason: 'Suspicious email pattern detected'
+          reason: 'Suspicious email pattern detected',
+          riskLevel: 'medium'
         };
       }
     }
+
+    // Additional email validation
+    const sanitizedEmail = inputSanitizationService.sanitizeEmail(email);
+    if (sanitizedEmail !== email.toLowerCase().trim()) {
+      return {
+        isSecure: false,
+        reason: 'Email contains suspicious characters',
+        riskLevel: 'low'
+      };
+    }
+
     return { isSecure: true };
   }
 
   async getUserSecurityRiskLevel(userId: string): Promise<'low' | 'medium' | 'high'> {
     try {
-      const { data: violations } = await supabase
-        .from('security_audit_log')
-        .select('event_type')
-        .eq('user_id', userId)
-        .like('event_type', '%violation%')
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-
-      const violationCount = violations?.length || 0;
-
-      if (violationCount >= 10) return 'high';
-      if (violationCount >= 5) return 'medium';
-      return 'low';
+      // Use the database function we created
+      const { data } = await supabase.rpc('get_user_security_risk_level', { user_id: userId });
+      return data || 'low';
     } catch (error) {
       productionLogger.error('Failed to get user security risk level', error, 'EnhancedSecurityService');
       return 'low';
     }
   }
 
-  private detectSQLInjection(input: string): SecurityThreat[] {
-    const threats: SecurityThreat[] = [];
-
-    for (const pattern of this.SQL_INJECTION_PATTERNS) {
-      if (pattern.test(input)) {
-        threats.push({
-          level: 'high',
-          type: 'sql_injection',
-          description: 'Potential SQL injection pattern detected',
-          recommended_action: 'Block request and log incident'
-        });
-      }
-    }
-
-    return threats;
+  async validateEnvironmentSecurity(): Promise<{ isSecure: boolean; issues: string[]; score: number }> {
+    const result = await environmentSecurityService.validateEnvironment();
+    return {
+      isSecure: result.isSecure,
+      issues: [...result.issues, ...result.warnings],
+      score: result.score
+    };
   }
 
-  private detectXSS(input: string): SecurityThreat[] {
-    const threats: SecurityThreat[] = [];
+  async performSecurityHealthCheck(): Promise<{
+    overall: 'healthy' | 'warning' | 'critical';
+    checks: Array<{ name: string; status: 'pass' | 'warn' | 'fail'; message: string }>;
+    score: number;
+  }> {
+    const checks: Array<{ name: string; status: 'pass' | 'warn' | 'fail'; message: string }> = [];
+    let totalScore = 0;
 
-    for (const pattern of this.XSS_PATTERNS) {
-      if (pattern.test(input)) {
-        threats.push({
-          level: 'high',
-          type: 'xss_attempt',
-          description: 'Potential XSS attack pattern detected',
-          recommended_action: 'Sanitize input and block request'
+    try {
+      // Environment security check
+      const envCheck = await environmentSecurityService.validateEnvironment();
+      checks.push({
+        name: 'Environment Security',
+        status: envCheck.isSecure ? 'pass' : envCheck.issues.length > 0 ? 'fail' : 'warn',
+        message: envCheck.isSecure ? 'Environment is secure' : `${envCheck.issues.length} issues, ${envCheck.warnings.length} warnings`
+      });
+      totalScore += envCheck.score * 0.3;
+
+      // Session security check
+      const sessionValid = await environmentSecurityService.validateSessionSecurity();
+      checks.push({
+        name: 'Session Security',
+        status: sessionValid ? 'pass' : 'fail',
+        message: sessionValid ? 'Session is secure' : 'Session security issues detected'
+      });
+      totalScore += sessionValid ? 30 : 0;
+
+      // Database connectivity check
+      try {
+        const { error } = await supabase.from('security_audit_log').select('id').limit(1);
+        checks.push({
+          name: 'Database Security',
+          status: error ? 'fail' : 'pass',
+          message: error ? 'Database connection issues' : 'Database is accessible'
+        });
+        totalScore += error ? 0 : 20;
+      } catch {
+        checks.push({
+          name: 'Database Security',
+          status: 'fail',
+          message: 'Cannot connect to database'
         });
       }
-    }
 
-    return threats;
+      // Security headers check
+      const hasCSP = !!document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+      checks.push({
+        name: 'Security Headers',
+        status: hasCSP ? 'pass' : 'warn',
+        message: hasCSP ? 'CSP is configured' : 'Missing Content Security Policy'
+      });
+      totalScore += hasCSP ? 20 : 10;
+
+      const overall = totalScore >= 80 ? 'healthy' : totalScore >= 60 ? 'warning' : 'critical';
+
+      return { overall, checks, score: Math.round(totalScore) };
+    } catch (error) {
+      productionLogger.error('Security health check failed', error, 'EnhancedSecurityService');
+      return {
+        overall: 'critical',
+        checks: [{ name: 'Health Check', status: 'fail', message: 'Security health check failed' }],
+        score: 0
+      };
+    }
   }
 
-  private detectPathTraversal(input: string): SecurityThreat[] {
-    const threats: SecurityThreat[] = [];
-    const pathTraversalPatterns = [
-      /\.\.\//g,
-      /\.\.\\/g,
-      /%2e%2e%2f/gi,
-      /%2e%2e%5c/gi,
-      /\.\./g
-    ];
-
-    for (const pattern of pathTraversalPatterns) {
-      if (pattern.test(input)) {
-        threats.push({
-          level: 'medium',
-          type: 'path_traversal',
-          description: 'Potential path traversal attack detected',
-          recommended_action: 'Block file system access and log incident'
-        });
-      }
+  private getRecommendedAction(severity: string): string {
+    switch (severity) {
+      case 'critical':
+        return 'Immediately block request and alert security team';
+      case 'high':
+        return 'Block request and log incident';
+      case 'medium':
+        return 'Log incident and monitor user';
+      case 'low':
+        return 'Log for analysis';
+      default:
+        return 'Monitor activity';
     }
-
-    return threats;
-  }
-
-  private detectCommandInjection(input: string): SecurityThreat[] {
-    const threats: SecurityThreat[] = [];
-    const cmdPatterns = [
-      /[;&|`$(){}[\]]/g,
-      /\b(rm|del|format|exec|eval|system)\b/gi,
-      /\b(chmod|chown|sudo|passwd)\b/gi
-    ];
-
-    for (const pattern of cmdPatterns) {
-      if (pattern.test(input)) {
-        threats.push({
-          level: 'critical',
-          type: 'command_injection',
-          description: 'Potential command injection attack detected',
-          recommended_action: 'Immediately block request and alert security team'
-        });
-      }
-    }
-
-    return threats;
   }
 }
 
