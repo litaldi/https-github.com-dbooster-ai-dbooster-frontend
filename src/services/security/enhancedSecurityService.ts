@@ -65,7 +65,7 @@ export class EnhancedSecurityService {
       
       // Convert threat analysis to SecurityThreat format
       for (const threat of threatAnalysis.threats) {
-        const severity = threat.severity as SeverityLevel;
+        const severity = this.normalizeSeverityLevel(threat.severity);
         threats.push({
           level: severity,
           type: threat.type,
@@ -84,7 +84,7 @@ export class EnhancedSecurityService {
             level: 'medium',
             type: 'suspicious_email',
             description: 'Suspicious email pattern detected',
-            recommended_action: this.getRecommendedAction('medium' as SeverityLevel)
+            recommended_action: this.getRecommendedAction('medium')
           });
           riskScore += 20;
         }
@@ -277,6 +277,14 @@ export class EnhancedSecurityService {
         score: 0
       };
     }
+  }
+
+  private normalizeSeverityLevel(severity: any): SeverityLevel {
+    const validLevels: SeverityLevel[] = ['low', 'medium', 'high', 'critical'];
+    if (typeof severity === 'string' && validLevels.includes(severity as SeverityLevel)) {
+      return severity as SeverityLevel;
+    }
+    return 'low'; // Default fallback
   }
 
   private getRecommendedAction(severity: SeverityLevel): string {
