@@ -1,8 +1,13 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { environmentSecurityService } from './environmentSecurityService';
 import { productionLogger } from '@/utils/productionLogger';
-import type { SecurityHealthCheck } from './types';
+import { securityHeadersService } from './securityHeadersService';
+import { environmentSecurityService } from './environmentSecurityService';
+
+interface HealthCheck {
+  name: string;
+  status: 'pass' | 'warn' | 'fail';
+  message: string;
+}
 
 export class SecurityHealthCheckService {
   private static instance: SecurityHealthCheckService;
@@ -14,75 +19,142 @@ export class SecurityHealthCheckService {
     return SecurityHealthCheckService.instance;
   }
 
-  async performSecurityHealthCheck(): Promise<SecurityHealthCheck> {
-    const checks: Array<{ name: string; status: 'pass' | 'warn' | 'fail'; message: string }> = [];
-    let totalScore = 0;
+  async validateEnvironmentSecurity(): Promise<{ isSecure: boolean; issues: string[]; score: number }> {
+    const checks = await this.performSecurityHealthCheck();
+    const passedChecks = checks.checks.filter(check => check.status === 'pass').length;
+    const score = Math.round((passedChecks / checks.checks.length) * 100);
+    const issues = checks.checks.filter(check => check.status === 'fail').map(check => check.message);
+
+    return {
+      isSecure: checks.overall === 'healthy',
+      issues,
+      score
+    };
+  }
+
+  async performSecurityHealthCheck(): Promise<{
+    overall: 'healthy' | 'warning' | 'critical';
+    checks: HealthCheck[];
+    score: number;
+  }> {
+    const checks: HealthCheck[] = [];
 
     try {
-      // Environment security check
-      const envCheck = await environmentSecurityService.validateEnvironment();
-      checks.push({
-        name: 'Environment Security',
-        status: envCheck.isSecure ? 'pass' : envCheck.issues.length > 0 ? 'fail' : 'warn',
-        message: envCheck.isSecure ? 'Environment is secure' : `${envCheck.issues.length} issues, ${envCheck.warnings.length} warnings`
-      });
-      totalScore += envCheck.score * 0.3;
-
-      // Session security check
-      const sessionValid = await environmentSecurityService.validateSessionSecurity();
-      checks.push({
-        name: 'Session Security',
-        status: sessionValid ? 'pass' : 'fail',
-        message: sessionValid ? 'Session is secure' : 'Session security issues detected'
-      });
-      totalScore += sessionValid ? 30 : 0;
-
-      // Database connectivity check
-      try {
-        const { error } = await supabase.from('security_audit_log').select('id').limit(1);
+      // Check HTTPS
+      if (location.protocol === 'https:' || location.hostname === 'localhost') {
         checks.push({
-          name: 'Database Security',
-          status: error ? 'fail' : 'pass',
-          message: error ? 'Database connection issues' : 'Database is accessible'
+          name: 'HTTPS',
+          status: 'pass',
+          message: 'Site is served over HTTPS'
         });
-        totalScore += error ? 0 : 20;
-      } catch {
+      } else {
         checks.push({
-          name: 'Database Security',
+          name: 'HTTPS',
           status: 'fail',
-          message: 'Cannot connect to database'
+          message: 'Site is not served over HTTPS'
         });
       }
 
-      // Security headers check
-      const hasCSP = !!document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-      checks.push({
-        name: 'Security Headers',
-        status: hasCSP ? 'pass' : 'warn',
-        message: hasCSP ? 'CSP is configured' : 'Missing Content Security Policy'
-      });
-      totalScore += hasCSP ? 20 : 10;
+      // Check security headers
+      const headersValidation = securityHeadersService.validateSecurityHeaders();
+      if (headersValidation.isSecure) {
+        checks.push({
+          name: 'Security Headers',
+          status: 'pass',
+          message: 'All security headers are present'
+        });
+      } else {
+        checks.push({
+          name: 'Security Headers',
+          status: 'warn',
+          message: `Missing headers: ${headersValidation.missingHeaders.join(', ')}`
+        });
+      }
 
-      const overall = totalScore >= 80 ? 'healthy' : totalScore >= 60 ? 'warning' : 'critical';
+      // Check environment security
+      const envValidation = environmentSecurityService.validateEnvironment();
+      if (envValidation.isSecure) {
+        checks.push({
+          name: 'Environment Security',
+          status: 'pass',
+          message: 'Environment is secure'
+        });
+      } else {
+        checks.push({
+          name: 'Environment Security',
+          status: 'warn',
+          message: `Issues: ${envValidation.issues.join(', ')}`
+        });
+      }
 
-      return { overall, checks, score: Math.round(totalScore) };
+      // Check for development tools in production
+      if (process.env.NODE_ENV === 'production') {
+        if (!(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ || (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__.isDisabled) {
+          checks.push({
+            name: 'Development Tools',
+            status: 'pass',
+            message: 'Development tools are disabled in production'
+          });
+        } else {
+          checks.push({
+            name: 'Development Tools',
+            status: 'fail',
+            message: 'Development tools are active in production'
+          });
+        }
+      } else {
+        checks.push({
+          name: 'Development Tools',
+          status: 'pass',
+          message: 'Running in development mode'
+        });
+      }
+
+      // Check CSP
+      const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+      if (cspMeta) {
+        checks.push({
+          name: 'Content Security Policy',
+          status: 'pass',
+          message: 'CSP header is present'
+        });
+      } else {
+        checks.push({
+          name: 'Content Security Policy',
+          status: 'warn',
+          message: 'CSP header is missing'
+        });
+      }
+
+      // Calculate overall status
+      const failedChecks = checks.filter(check => check.status === 'fail').length;
+      const warningChecks = checks.filter(check => check.status === 'warn').length;
+      const passedChecks = checks.filter(check => check.status === 'pass').length;
+
+      let overall: 'healthy' | 'warning' | 'critical';
+      if (failedChecks > 0) {
+        overall = 'critical';
+      } else if (warningChecks > 0) {
+        overall = 'warning';
+      } else {
+        overall = 'healthy';
+      }
+
+      const score = Math.round((passedChecks / checks.length) * 100);
+
+      return { overall, checks, score };
     } catch (error) {
       productionLogger.error('Security health check failed', error, 'SecurityHealthCheckService');
       return {
         overall: 'critical',
-        checks: [{ name: 'Health Check', status: 'fail', message: 'Security health check failed' }],
+        checks: [{
+          name: 'Health Check',
+          status: 'fail',
+          message: 'Security health check failed to execute'
+        }],
         score: 0
       };
     }
-  }
-
-  async validateEnvironmentSecurity(): Promise<{ isSecure: boolean; issues: string[]; score: number }> {
-    const result = await environmentSecurityService.validateEnvironment();
-    return {
-      isSecure: result.isSecure,
-      issues: [...result.issues, ...result.warnings],
-      score: result.score
-    };
   }
 }
 

@@ -1,18 +1,14 @@
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useDebounce } from '@/hooks/useDebounce';
-import { logger } from '@/utils/logger';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface SecurityEvent {
   id: string;
   event_type: string;
-  event_data: any;
-  ip_address: string | null;
-  user_agent: string | null;
+  event_data?: Record<string, any>;
   created_at: string;
-  user_id: string | null;
+  user_id?: string;
 }
 
 interface SecurityStats {
@@ -22,105 +18,75 @@ interface SecurityStats {
   recentActivity: number;
 }
 
-export function useSecurityEvents(refreshInterval = 30000) {
-  const [limit, setLimit] = useState(50);
-  const [filter, setFilter] = useState<string>('');
-  const debouncedFilter = useDebounce(filter, 300);
-
-  const fetchSecurityEvents = useCallback(async (): Promise<SecurityEvent[]> => {
-    try {
-      let query = supabase
-        .from('security_audit_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (debouncedFilter) {
-        query = query.ilike('event_type', `%${debouncedFilter}%`);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        logger.error('Error fetching security events', error, 'useSecurityEvents');
-        throw error;
-      }
-
-      // Transform the data to match our SecurityEvent interface
-      return (data || []).map(item => ({
-        id: item.id,
-        event_type: item.event_type,
-        event_data: item.event_data,
-        ip_address: item.ip_address ? String(item.ip_address) : null,
-        user_agent: item.user_agent,
-        created_at: item.created_at,
-        user_id: item.user_id
-      }));
-    } catch (error) {
-      logger.error('Failed to fetch security events', error, 'useSecurityEvents');
-      return [];
-    }
-  }, [limit, debouncedFilter]);
-
-  const {
-    data: events = [],
-    isLoading,
-    error,
-    refetch
-  } = useQuery({
-    queryKey: ['security-events', limit, debouncedFilter],
-    queryFn: fetchSecurityEvents,
-    refetchInterval: refreshInterval,
-    staleTime: 10000, // Consider data stale after 10 seconds
-    retry: 3,
+export function useSecurityEvents() {
+  const [events, setEvents] = useState<SecurityEvent[]>([]);
+  const [stats, setStats] = useState<SecurityStats>({
+    totalEvents: 0,
+    securityViolations: 0,
+    rateLimitHits: 0,
+    recentActivity: 0
   });
+  const [loading, setLoading] = useState(true);
 
-  const stats = useMemo((): SecurityStats => {
-    const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+  const fetchEvents = useCallback(async () => {
+    try {
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('security_audit_log')
+        .select('id, event_type, event_data, created_at, user_id')
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-    const recentEvents = events.filter(event => 
-      new Date(event.created_at) > oneHourAgo
-    );
+      if (eventsError) {
+        productionLogger.error('Failed to fetch security events', eventsError, 'useSecurityEvents');
+        return;
+      }
 
-    const securityViolations = events.filter(event =>
-      event.event_type.includes('violation') || 
-      event.event_type.includes('suspicious') ||
-      event.event_type.includes('failure')
-    ).length;
+      setEvents(eventsData || []);
 
-    const rateLimitHits = events.filter(event =>
-      event.event_type.includes('rate_limit')
-    ).length;
+      // Calculate stats
+      const totalEvents = eventsData?.length || 0;
+      const securityViolations = eventsData?.filter(event => 
+        event.event_type.includes('violation') || 
+        event.event_type.includes('threat') || 
+        event.event_type.includes('suspicious')
+      ).length || 0;
+      
+      const rateLimitHits = eventsData?.filter(event => 
+        event.event_type.includes('rate_limit') || 
+        event.event_type.includes('blocked')
+      ).length || 0;
 
-    return {
-      totalEvents: events.length,
-      securityViolations,
-      rateLimitHits,
-      recentActivity: recentEvents.length,
-    };
-  }, [events]);
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentActivity = eventsData?.filter(event => 
+        new Date(event.created_at) > oneHourAgo
+      ).length || 0;
 
-  const refreshEvents = useCallback(() => {
-    refetch();
-  }, [refetch]);
-
-  const updateLimit = useCallback((newLimit: number) => {
-    setLimit(newLimit);
+      setStats({
+        totalEvents,
+        securityViolations,
+        rateLimitHits,
+        recentActivity
+      });
+    } catch (error) {
+      productionLogger.error('Error fetching security events', error, 'useSecurityEvents');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const updateFilter = useCallback((newFilter: string) => {
-    setFilter(newFilter);
-  }, []);
+  const refreshEvents = useCallback(async () => {
+    setLoading(true);
+    await fetchEvents();
+  }, [fetchEvents]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   return {
     events,
     stats,
-    loading: isLoading,
-    error,
-    refreshEvents,
-    updateLimit,
-    updateFilter,
-    filter,
+    loading,
+    refreshEvents
   };
 }

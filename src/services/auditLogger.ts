@@ -19,26 +19,33 @@ export class AuditLogger {
     return AuditLogger.instance;
   }
 
-  private getClientInfo() {
-    return {
-      ip_address: this.getClientIP(),
-      user_agent: navigator.userAgent,
-    };
+  private async getClientIP(): Promise<string | null> {
+    // In a real production environment, this would get the actual client IP
+    // For now, we'll return null to prevent database errors
+    // The IP should ideally be set by server-side middleware or edge functions
+    try {
+      // This could be enhanced to call an IP detection service
+      // For example: const response = await fetch('https://api.ipify.org?format=json');
+      return null;
+    } catch (error) {
+      productionLogger.error('Failed to get client IP', error, 'AuditLogger');
+      return null;
+    }
   }
 
-  private getClientIP(): string | null {
-    // In production, IP should be set by server-side middleware
-    // For now, we'll return null to avoid database errors
-    // The server should set this via headers or edge functions
-    return null;
+  private getClientInfo() {
+    return {
+      user_agent: navigator.userAgent,
+    };
   }
 
   async logSecurityEvent(event: SecurityEvent): Promise<void> {
     try {
       const clientInfo = this.getClientInfo();
       const { data: { user } } = await supabase.auth.getUser();
+      const clientIP = await this.getClientIP();
       
-      // Only include IP address if it's valid
+      // Prepare log data - only include IP if we have one
       const logData: any = {
         user_id: user?.id || null,
         event_type: event.event_type,
@@ -47,11 +54,16 @@ export class AuditLogger {
       };
 
       // Only add IP address if we have a valid one
-      if (event.ip_address || clientInfo.ip_address) {
-        logData.ip_address = event.ip_address || clientInfo.ip_address;
+      if (event.ip_address || clientIP) {
+        logData.ip_address = event.ip_address || clientIP;
       }
 
-      await supabase.from('security_audit_log').insert(logData);
+      const { error } = await supabase.from('security_audit_log').insert(logData);
+      
+      if (error) {
+        productionLogger.error('Failed to insert security event', error, 'AuditLogger');
+        return;
+      }
 
       // Use production-safe logging
       productionLogger.secureInfo('Security event logged', { eventType: event.event_type }, 'AuditLogger');
