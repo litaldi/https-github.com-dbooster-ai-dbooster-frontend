@@ -45,12 +45,12 @@ export class EnhancedSecurityService {
       if (context === 'email') {
         const emailThreats = await securityValidationService.validateEmailSecurity(inputString);
         if (!emailThreats.isSecure) {
-          const mediumSeverity: SeverityLevel = 'medium';
+          const severity: SeverityLevel = 'medium';
           threats.push({
-            level: mediumSeverity,
+            level: severity,
             type: 'suspicious_email',
             description: 'Suspicious email pattern detected',
-            recommended_action: securityValidationService.getRecommendedAction(mediumSeverity)
+            recommended_action: securityValidationService.getRecommendedAction(severity)
           });
           riskScore += 20;
         }
