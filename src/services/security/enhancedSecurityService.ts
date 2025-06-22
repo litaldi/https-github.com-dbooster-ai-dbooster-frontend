@@ -106,7 +106,7 @@ export class EnhancedSecurityService {
     try {
       // Use the database function we created
       const { data } = await supabase.rpc('get_user_security_risk_level', { user_id: userId });
-      return data || 'low';
+      return (data as 'low' | 'medium' | 'high') || 'low';
     } catch (error) {
       productionLogger.error('Failed to get user security risk level', error, 'EnhancedSecurityService');
       return 'low';

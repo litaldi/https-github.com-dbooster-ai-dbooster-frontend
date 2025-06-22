@@ -26,10 +26,11 @@ export class AuditLogger {
     };
   }
 
-  private getClientIP(): string {
-    // In a real application, this would come from the server
-    // For now, we'll use a placeholder that would be set by the server
-    return 'client-ip-placeholder';
+  private getClientIP(): string | null {
+    // In production, IP should be set by server-side middleware
+    // For now, we'll return null to avoid database errors
+    // The server should set this via headers or edge functions
+    return null;
   }
 
   async logSecurityEvent(event: SecurityEvent): Promise<void> {
@@ -37,13 +38,20 @@ export class AuditLogger {
       const clientInfo = this.getClientInfo();
       const { data: { user } } = await supabase.auth.getUser();
       
-      await supabase.from('security_audit_log').insert({
+      // Only include IP address if it's valid
+      const logData: any = {
         user_id: user?.id || null,
         event_type: event.event_type,
         event_data: event.event_data || {},
-        ip_address: event.ip_address || clientInfo.ip_address,
         user_agent: event.user_agent || clientInfo.user_agent,
-      });
+      };
+
+      // Only add IP address if we have a valid one
+      if (event.ip_address || clientInfo.ip_address) {
+        logData.ip_address = event.ip_address || clientInfo.ip_address;
+      }
+
+      await supabase.from('security_audit_log').insert(logData);
 
       // Use production-safe logging
       productionLogger.secureInfo('Security event logged', { eventType: event.event_type }, 'AuditLogger');

@@ -1,6 +1,7 @@
 
 import { productionSecurityHardening } from '@/services/security/productionSecurityHardening';
 import { environmentSecurityService } from '@/services/security/environmentSecurityService';
+import { securityHeadersService } from '@/services/security/securityHeadersService';
 import { productionLogger } from './productionLogger';
 
 export function initializeEnhancedSecurity(): void {
@@ -11,11 +12,14 @@ export function initializeEnhancedSecurity(): void {
     // Initialize environment security headers
     environmentSecurityService.initializeSecurityHeaders();
     
+    // Initialize additional security headers
+    securityHeadersService.initializeSecurityHeaders();
+    
     // Log security initialization
     productionLogger.warn('Enhanced security features initialized', {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
-      features: ['productionHardening', 'environmentValidation', 'threatDetection']
+      features: ['productionHardening', 'environmentValidation', 'threatDetection', 'securityHeaders']
     }, 'EnhancedSecurityInit');
 
     // Set up enhanced global error handlers for security
