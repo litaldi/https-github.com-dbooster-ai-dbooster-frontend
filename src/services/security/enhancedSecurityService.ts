@@ -225,7 +225,7 @@ export class EnhancedSecurityService {
     const threats: SecurityThreat[] = [];
     const pathTraversalPatterns = [
       /\.\.\//g,
-      /\.\.\\g,
+      /\.\.\\/g,
       /%2e%2e%2f/gi,
       /%2e%2e%5c/gi,
       /\.\./g
