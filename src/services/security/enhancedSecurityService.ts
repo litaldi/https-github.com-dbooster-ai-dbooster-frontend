@@ -20,6 +20,8 @@ interface EnhancedSecurityValidation {
   sanitizedInput?: string;
 }
 
+type SeverityLevel = 'low' | 'medium' | 'high' | 'critical';
+
 export class EnhancedSecurityService {
   private static instance: EnhancedSecurityService;
 
@@ -63,11 +65,12 @@ export class EnhancedSecurityService {
       
       // Convert threat analysis to SecurityThreat format
       for (const threat of threatAnalysis.threats) {
+        const severity = threat.severity as SeverityLevel;
         threats.push({
-          level: threat.severity as 'low' | 'medium' | 'high' | 'critical',
+          level: severity,
           type: threat.type,
           description: threat.description,
-          recommended_action: this.getRecommendedAction(threat.severity as 'low' | 'medium' | 'high' | 'critical')
+          recommended_action: this.getRecommendedAction(severity)
         });
       }
 
@@ -276,7 +279,7 @@ export class EnhancedSecurityService {
     }
   }
 
-  private getRecommendedAction(severity: 'low' | 'medium' | 'high' | 'critical'): string {
+  private getRecommendedAction(severity: SeverityLevel): string {
     switch (severity) {
       case 'critical':
         return 'Immediately block request and alert security team';
