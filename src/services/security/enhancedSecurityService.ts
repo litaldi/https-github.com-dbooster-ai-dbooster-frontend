@@ -104,9 +104,33 @@ export class EnhancedSecurityService {
 
   async getUserSecurityRiskLevel(userId: string): Promise<'low' | 'medium' | 'high'> {
     try {
-      // Use the database function we created
-      const { data } = await supabase.rpc('get_user_security_risk_level', { user_id: userId });
-      return (data as 'low' | 'medium' | 'high') || 'low';
+      // Since the database function doesn't exist yet, we'll implement basic logic
+      // based on recent security events from the audit log
+      const { data: recentEvents } = await supabase
+        .from('security_audit_log')
+        .select('event_type, created_at')
+        .eq('user_id', userId)
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
+        .order('created_at', { ascending: false });
+
+      if (!recentEvents || recentEvents.length === 0) {
+        return 'low';
+      }
+
+      // Count security violations in the last 24 hours
+      const securityViolations = recentEvents.filter(event => 
+        event.event_type.includes('violation') || 
+        event.event_type.includes('blocked') ||
+        event.event_type.includes('threat')
+      );
+
+      if (securityViolations.length >= 5) {
+        return 'high';
+      } else if (securityViolations.length >= 2) {
+        return 'medium';
+      }
+
+      return 'low';
     } catch (error) {
       productionLogger.error('Failed to get user security risk level', error, 'EnhancedSecurityService');
       return 'low';
