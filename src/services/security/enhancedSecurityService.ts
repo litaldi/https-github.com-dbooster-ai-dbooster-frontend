@@ -68,7 +68,7 @@ export class EnhancedSecurityService {
           level: threat.severity as 'low' | 'medium' | 'high' | 'critical',
           type: threat.type,
           description: threat.description,
-          recommended_action: this.getRecommendedAction(threat.severity)
+          recommended_action: this.getRecommendedAction(threat.severity as 'low' | 'medium' | 'high' | 'critical')
         });
       }
 
@@ -277,7 +277,7 @@ export class EnhancedSecurityService {
     }
   }
 
-  private getRecommendedAction(severity: string): string {
+  private getRecommendedAction(severity: 'low' | 'medium' | 'high' | 'critical'): string {
     switch (severity) {
       case 'critical':
         return 'Immediately block request and alert security team';
