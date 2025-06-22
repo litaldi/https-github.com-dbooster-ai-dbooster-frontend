@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { auditLogger } from '../auditLogger';
 import { productionLogger } from '@/utils/productionLogger';
@@ -82,7 +81,7 @@ export class EnhancedSecurityService {
             level: 'medium',
             type: 'suspicious_email',
             description: 'Suspicious email pattern detected',
-            recommended_action: 'Block registration and log incident'
+            recommended_action: this.getRecommendedAction('medium')
           });
           riskScore += 20;
         }
