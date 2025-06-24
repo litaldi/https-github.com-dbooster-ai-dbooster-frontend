@@ -24,7 +24,7 @@ export class SecureRateLimitService {
     return SecureRateLimitService.instance;
   }
 
-  async checkRateLimit(identifier: string, action: string): Promise<{ allowed: boolean; remainingAttempts?: number; resetTime?: Date }> {
+  async checkRateLimit(identifier: string, action: string): Promise<{ allowed: boolean; remainingAttempts?: number; retryAfter?: number }> {
     try {
       const config = DEFAULT_CONFIGS[action] || DEFAULT_CONFIGS.api;
       const windowStart = new Date(Date.now() - config.windowMinutes * 60 * 1000);
@@ -45,9 +45,10 @@ export class SecureRateLimitService {
 
       // Check if currently blocked
       if (existing?.blocked_until && new Date(existing.blocked_until) > new Date()) {
+        const retryAfter = Math.ceil((new Date(existing.blocked_until).getTime() - Date.now()) / 1000);
         return {
           allowed: false,
-          resetTime: new Date(existing.blocked_until)
+          retryAfter
         };
       }
 
@@ -63,6 +64,7 @@ export class SecureRateLimitService {
       // Check if limit exceeded
       if (existing.attempt_count >= config.maxAttempts) {
         const blockUntil = new Date(Date.now() + config.blockDurationMinutes * 60 * 1000);
+        const retryAfter = config.blockDurationMinutes * 60;
         
         await supabase
           .from('rate_limit_tracking')
@@ -71,7 +73,7 @@ export class SecureRateLimitService {
 
         return {
           allowed: false,
-          resetTime: blockUntil
+          retryAfter
         };
       }
 

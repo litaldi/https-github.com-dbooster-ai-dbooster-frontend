@@ -3,11 +3,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import type { Json } from '@/integrations/supabase/types';
 
 interface SecurityEvent {
   id: string;
   event_type: string;
-  event_data: any;
+  event_data: Json;
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;
@@ -38,6 +39,18 @@ export function SecurityEventsTable({ events }: SecurityEventsTableProps) {
     return 'default';
   };
 
+  const formatEventData = (eventData: Json): string => {
+    if (!eventData) return 'N/A';
+    
+    try {
+      if (typeof eventData === 'string') return eventData.slice(0, 100);
+      if (typeof eventData === 'object') return JSON.stringify(eventData).slice(0, 100) + '...';
+      return String(eventData).slice(0, 100);
+    } catch {
+      return 'Invalid data';
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -63,7 +76,7 @@ export function SecurityEventsTable({ events }: SecurityEventsTableProps) {
             </TableCell>
             <TableCell className="max-w-xs">
               <div className="truncate">
-                {event.event_data ? JSON.stringify(event.event_data).slice(0, 100) + '...' : 'N/A'}
+                {formatEventData(event.event_data)}
               </div>
             </TableCell>
             <TableCell className="font-mono text-sm">

@@ -2,13 +2,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
+import type { Json } from '@/integrations/supabase/types';
 
 interface SecurityEvent {
   id: string;
   event_type: string;
-  event_data?: Record<string, any>;
+  event_data?: Json;
   created_at: string;
   user_id?: string;
+  ip_address?: string;
+  user_agent?: string;
 }
 
 interface SecurityStats {
@@ -32,7 +35,7 @@ export function useSecurityEvents() {
     try {
       const { data: eventsData, error: eventsError } = await supabase
         .from('security_audit_log')
-        .select('id, event_type, event_data, created_at, user_id')
+        .select('id, event_type, event_data, created_at, user_id, ip_address, user_agent')
         .order('created_at', { ascending: false })
         .limit(50);
 
