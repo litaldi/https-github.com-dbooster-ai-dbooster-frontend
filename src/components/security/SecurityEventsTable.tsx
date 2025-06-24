@@ -4,15 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Json } from '@/integrations/supabase/types';
-
-interface SecurityEvent {
-  id: string;
-  event_type: string;
-  event_data: Json;
-  ip_address: string | null;
-  user_agent: string | null;
-  created_at: string;
-}
+import type { SecurityEvent } from '@/hooks/useSecurityEvents';
 
 interface SecurityEventsTableProps {
   events: SecurityEvent[];

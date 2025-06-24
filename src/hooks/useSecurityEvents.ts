@@ -4,14 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import type { Json } from '@/integrations/supabase/types';
 
-interface SecurityEvent {
+export interface SecurityEvent {
   id: string;
   event_type: string;
-  event_data?: Json;
+  event_data: Json;
   created_at: string;
   user_id?: string;
-  ip_address?: string;
-  user_agent?: string;
+  ip_address?: string | null;
+  user_agent?: string | null;
 }
 
 interface SecurityStats {
@@ -35,7 +35,7 @@ export function useSecurityEvents() {
     try {
       const { data: eventsData, error: eventsError } = await supabase
         .from('security_audit_log')
-        .select('id, event_type, event_data, created_at, user_id, ip_address, user_agent')
+        .select('id, event_type, event_data, created_at, user_id, ip_address::text, user_agent')
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -44,25 +44,36 @@ export function useSecurityEvents() {
         return;
       }
 
-      setEvents(eventsData || []);
+      // Map the data to ensure proper types
+      const mappedEvents: SecurityEvent[] = (eventsData || []).map(event => ({
+        id: event.id,
+        event_type: event.event_type,
+        event_data: event.event_data || {},
+        created_at: event.created_at,
+        user_id: event.user_id || undefined,
+        ip_address: event.ip_address || null,
+        user_agent: event.user_agent || null
+      }));
+
+      setEvents(mappedEvents);
 
       // Calculate stats
-      const totalEvents = eventsData?.length || 0;
-      const securityViolations = eventsData?.filter(event => 
+      const totalEvents = mappedEvents.length;
+      const securityViolations = mappedEvents.filter(event => 
         event.event_type.includes('violation') || 
         event.event_type.includes('threat') || 
         event.event_type.includes('suspicious')
-      ).length || 0;
+      ).length;
       
-      const rateLimitHits = eventsData?.filter(event => 
+      const rateLimitHits = mappedEvents.filter(event => 
         event.event_type.includes('rate_limit') || 
         event.event_type.includes('blocked')
-      ).length || 0;
+      ).length;
 
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const recentActivity = eventsData?.filter(event => 
+      const recentActivity = mappedEvents.filter(event => 
         new Date(event.created_at) > oneHourAgo
-      ).length || 0;
+      ).length;
 
       setStats({
         totalEvents,
