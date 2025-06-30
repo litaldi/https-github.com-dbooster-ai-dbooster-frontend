@@ -132,15 +132,12 @@ export class AuthenticationSecurity {
         };
       }
 
-      // Attempt login
+      // Attempt login with proper options structure
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
         options: {
-          data: {
-            deviceFingerprint: options.deviceFingerprint,
-            rememberMe: options.rememberMe
-          }
+          captchaToken: undefined
         }
       });
 

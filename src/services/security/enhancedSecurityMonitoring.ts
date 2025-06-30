@@ -145,10 +145,14 @@ export class EnhancedSecurityMonitoring {
         rateLimitViolations: events?.filter(e => 
           e.event_type.includes('rate_limit')
         ).length || 0,
-        authenticationFailures: events?.filter(e => 
-          e.event_type.includes('auth') && 
-          e.event_data?.success === false
-        ).length || 0,
+        authenticationFailures: events?.filter(e => {
+          if (!e.event_type.includes('auth')) return false;
+          // Safely check event_data
+          if (typeof e.event_data === 'object' && e.event_data !== null) {
+            return (e.event_data as any).success === false;
+          }
+          return false;
+        }).length || 0,
         suspiciousActivity: events?.filter(e => 
           e.event_type.includes('suspicious') ||
           e.event_type.includes('anomaly')
@@ -197,7 +201,6 @@ export class EnhancedSecurityMonitoring {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .eq('event_type', 'auth_login')
-        .eq('event_data->success', false)
         .gte('created_at', oneHourAgo.toISOString());
 
       if (error) {

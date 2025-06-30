@@ -18,14 +18,13 @@ export function useSecureInputValidation() {
 
   const validateInput = useCallback(async (
     value: any, 
-    rules: ValidationRule, 
-    fieldName: string,
-    context: string = 'form'
+    type: 'email' | 'url' | 'filename' | 'sql' | 'general' = 'general',
+    fieldName: string
   ): Promise<{ isValid: boolean; sanitizedValue: any; riskLevel: 'low' | 'medium' | 'high' }> => {
     setIsValidating(true);
     
     try {
-      const result = await comprehensiveInputValidation.validateInput(value, rules, `${context}.${fieldName}`);
+      const result = comprehensiveInputValidation.validateInput(value, type);
       
       // Update field-specific errors
       setValidationErrors(prev => ({
@@ -33,13 +32,24 @@ export function useSecureInputValidation() {
         [fieldName]: result.errors
       }));
 
+      // Determine risk level based on errors
+      let riskLevel: 'low' | 'medium' | 'high' = 'low';
+      if (result.errors.length > 0) {
+        const hasHighRiskPatterns = result.errors.some(error => 
+          error.includes('SQL injection') || 
+          error.includes('script') || 
+          error.includes('dangerous pattern')
+        );
+        riskLevel = hasHighRiskPatterns ? 'high' : 'medium';
+      }
+
       // Show security warnings for high-risk inputs
-      if (result.riskLevel === 'high') {
+      if (riskLevel === 'high') {
         enhancedToast.error({
           title: "Security Alert",
           description: "Potentially dangerous input detected and blocked.",
         });
-      } else if (result.riskLevel === 'medium') {
+      } else if (riskLevel === 'medium') {
         enhancedToast.warning({
           title: "Security Warning",
           description: "Input appears suspicious. Please review your data.",
@@ -48,8 +58,8 @@ export function useSecureInputValidation() {
 
       return {
         isValid: result.isValid,
-        sanitizedValue: result.sanitizedValue,
-        riskLevel: result.riskLevel
+        sanitizedValue: result.sanitized,
+        riskLevel
       };
     } catch (error) {
       enhancedToast.error({
@@ -69,8 +79,7 @@ export function useSecureInputValidation() {
 
   const validateForm = useCallback(async (
     data: Record<string, any>,
-    rules: Record<string, ValidationRule>,
-    context: string = 'form'
+    rules: Record<string, { type?: 'email' | 'url' | 'filename' | 'sql' | 'general' }> = {}
   ): Promise<{
     isValid: boolean;
     sanitizedData: Record<string, any>;
@@ -79,17 +88,44 @@ export function useSecureInputValidation() {
     setIsValidating(true);
     
     try {
-      const result = await comprehensiveInputValidation.validateForm(data, rules, context);
-      
-      setValidationErrors(result.errors);
+      const sanitizedData: Record<string, any> = {};
+      const allErrors: Record<string, string[]> = {};
+      let overallRiskLevel: 'low' | 'medium' | 'high' = 'low';
+
+      // Validate each field
+      for (const [fieldName, value] of Object.entries(data)) {
+        const fieldType = rules[fieldName]?.type || 'general';
+        const result = comprehensiveInputValidation.validateInput(value, fieldType);
+        
+        sanitizedData[fieldName] = result.sanitized;
+        allErrors[fieldName] = result.errors;
+
+        // Determine risk level
+        if (result.errors.length > 0) {
+          const hasHighRiskPatterns = result.errors.some(error => 
+            error.includes('SQL injection') || 
+            error.includes('script') || 
+            error.includes('dangerous pattern')
+          );
+          if (hasHighRiskPatterns && overallRiskLevel !== 'high') {
+            overallRiskLevel = 'high';
+          } else if (overallRiskLevel === 'low') {
+            overallRiskLevel = 'medium';
+          }
+        }
+      }
+
+      setValidationErrors(allErrors);
+
+      const isValid = Object.values(allErrors).every(errors => errors.length === 0);
 
       // Show appropriate security messages
-      if (result.overallRiskLevel === 'high') {
+      if (overallRiskLevel === 'high') {
         enhancedToast.error({
           title: "Security Alert",
           description: "Form contains potentially dangerous content and has been blocked.",
         });
-      } else if (result.overallRiskLevel === 'medium') {
+      } else if (overallRiskLevel === 'medium') {
         enhancedToast.warning({
           title: "Security Warning",
           description: "Form contains suspicious content. Please review your data.",
@@ -97,9 +133,9 @@ export function useSecureInputValidation() {
       }
 
       return {
-        isValid: result.isValid,
-        sanitizedData: result.sanitizedData,
-        overallRiskLevel: result.overallRiskLevel
+        isValid,
+        sanitizedData,
+        overallRiskLevel
       };
     } catch (error) {
       enhancedToast.error({
