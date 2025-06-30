@@ -42,7 +42,7 @@ const DATABASE_TYPES = [
   { value: 'oracle', label: 'Oracle', icon: '🔴', port: 1521 },
   { value: 'mongodb', label: 'MongoDB', icon: '🍃', port: 27017 },
   { value: 'redis', label: 'Redis', icon: '🔴', port: 6379 }
-];
+] as const;
 
 export function EnhancedConnectionWizard() {
   const [step, setStep] = useState(1);
@@ -80,7 +80,7 @@ export function EnhancedConnectionWizard() {
   const validateStep = (stepNumber: number): boolean => {
     switch (stepNumber) {
       case 1:
-        return config.name.trim() !== '' && config.type !== '';
+        return config.name.trim() !== '' && config.type !== null && config.type !== undefined;
       case 2:
         return config.host.trim() !== '' && config.port > 0 && config.database.trim() !== '';
       case 3:

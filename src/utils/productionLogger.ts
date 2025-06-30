@@ -1,100 +1,80 @@
 
-import { logger } from './logger';
+interface LogLevel {
+  ERROR: 'error';
+  WARN: 'warn';
+  INFO: 'info';
+  DEBUG: 'debug';
+}
 
-type ProductionLogLevel = 'error' | 'warn' | 'critical';
-
-interface ProductionLogEntry {
-  level: ProductionLogLevel;
-  message: string;
-  data?: any;
+interface LogEntry {
   timestamp: string;
-  component?: string;
+  level: string;
+  message: string;
+  context?: string;
+  error?: any;
+  metadata?: Record<string, any>;
 }
 
 class ProductionLogger {
-  private isDevelopment = import.meta.env.DEV;
+  private logLevel: string = 'info';
+  private logs: LogEntry[] = [];
 
-  private formatMessage(level: ProductionLogLevel, message: string, data?: any, component?: string): ProductionLogEntry {
-    return {
+  constructor() {
+    // In production, you might want to send logs to a service
+    this.logLevel = process.env.NODE_ENV === 'production' ? 'warn' : 'debug';
+  }
+
+  private log(level: string, message: string, error?: any, context?: string, metadata?: Record<string, any>) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
       level,
       message,
-      data: this.sanitizeData(data),
-      timestamp: new Date().toISOString(),
-      component
+      context,
+      error,
+      metadata
     };
-  }
 
-  // Sanitize sensitive data in production
-  private sanitizeData(data: any): any {
-    if (!data || this.isDevelopment) return data;
-    
-    const sensitiveKeys = ['password', 'token', 'apiKey', 'secret', 'authorization'];
-    const sanitized = { ...data };
-    
-    for (const key of sensitiveKeys) {
-      if (key in sanitized) {
-        sanitized[key] = '[REDACTED]';
-      }
+    this.logs.push(entry);
+
+    // Console output for development
+    if (process.env.NODE_ENV === 'development') {
+      const consoleMethod = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log';
+      console[consoleMethod](`[${level.toUpperCase()}] ${message}`, error || '', metadata || '');
     }
-    
-    return sanitized;
-  }
 
-  critical(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('critical', message, data, component);
-    
-    // Always log critical issues
-    console.error(`[${entry.timestamp}] CRITICAL${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
-    
     // In production, send to monitoring service
-    if (!this.isDevelopment) {
+    if (process.env.NODE_ENV === 'production' && (level === 'error' || level === 'warn')) {
       this.sendToMonitoringService(entry);
     }
   }
 
-  error(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('error', message, data, component);
-    
-    // Always log errors
-    console.error(`[${entry.timestamp}] ERROR${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
-    
-    if (!this.isDevelopment) {
-      this.sendToMonitoringService(entry);
-    }
+  private sendToMonitoringService(entry: LogEntry) {
+    // Implement actual monitoring service integration here
+    // e.g., Sentry, DataDog, etc.
   }
 
-  warn(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('warn', message, data, component);
-    
-    // Log warnings in production for security monitoring
-    console.warn(`[${entry.timestamp}] WARN${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
-    
-    if (!this.isDevelopment) {
-      this.sendToMonitoringService(entry);
-    }
+  error(message: string, error?: any, context?: string, metadata?: Record<string, any>) {
+    this.log('error', message, error, context, metadata);
   }
 
-  // Secure info logging - only in development
-  secureInfo(message: string, data?: any, component?: string) {
-    if (this.isDevelopment) {
-      logger.info(message, data, component);
-    }
+  warn(message: string, error?: any, context?: string, metadata?: Record<string, any>) {
+    this.log('warn', message, error, context, metadata);
   }
 
-  // Secure debug logging - only in development
-  secureDebug(message: string, data?: any, component?: string) {
-    if (this.isDevelopment) {
-      logger.debug(message, data, component);
-    }
+  info(message: string, metadata?: Record<string, any>, context?: string) {
+    this.log('info', message, undefined, context, metadata);
   }
 
-  private sendToMonitoringService(entry: ProductionLogEntry): void {
-    // In production, integrate with monitoring service like Sentry
-    // For now, we'll prepare the structure
-    if (entry.level === 'critical' || entry.level === 'error') {
-      // Could integrate with external monitoring here
-      // Example: Sentry.captureException(new Error(entry.message), { extra: entry.data });
-    }
+  debug(message: string, metadata?: Record<string, any>, context?: string) {
+    this.log('debug', message, undefined, context, metadata);
+  }
+
+  getLogs(): LogEntry[] {
+    return [...this.logs];
+  }
+
+  clearLogs() {
+    this.logs = [];
   }
 }
 

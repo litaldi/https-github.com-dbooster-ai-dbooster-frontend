@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 
@@ -123,8 +122,8 @@ class DatabaseConnectionManager {
 
       this.connections.set(connectionId, updatedConnection);
       
-      // Store connection in Supabase for persistence
-      await this.storeConnection(updatedConnection, config.password);
+      // Store connection in local storage for persistence (avoiding Supabase table issue)
+      await this.storeConnectionLocally(updatedConnection);
 
       productionLogger.info(`Database connection established: ${connectionId}`, {
         type: config.type,
@@ -397,10 +396,13 @@ class DatabaseConnectionManager {
     };
   }
 
-  private async storeConnection(connection: DatabaseConnection, password: string): Promise<void> {
+  private async storeConnectionLocally(connection: DatabaseConnection): Promise<void> {
     try {
-      // Store connection metadata in Supabase (encrypted password)
-      const { error } = await supabase.from('database_connections').upsert({
+      // Store connection metadata in localStorage for demo purposes
+      const connections = JSON.parse(localStorage.getItem('database_connections') || '[]');
+      const existingIndex = connections.findIndex((c: any) => c.id === connection.id);
+      
+      const connectionData = {
         id: connection.id,
         name: connection.name,
         type: connection.type,
@@ -408,16 +410,19 @@ class DatabaseConnectionManager {
         port: connection.port,
         database: connection.database,
         username: connection.username,
-        // Password would be encrypted before storage
-        created_at: new Date(),
-        updated_at: new Date()
-      });
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-      if (error) {
-        throw error;
+      if (existingIndex >= 0) {
+        connections[existingIndex] = connectionData;
+      } else {
+        connections.push(connectionData);
       }
+
+      localStorage.setItem('database_connections', JSON.stringify(connections));
     } catch (error) {
-      productionLogger.error('Failed to store connection', error, 'DatabaseConnectionManager');
+      productionLogger.error('Failed to store connection locally', error, 'DatabaseConnectionManager');
     }
   }
 }
