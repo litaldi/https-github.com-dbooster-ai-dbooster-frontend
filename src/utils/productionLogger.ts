@@ -69,6 +69,41 @@ class ProductionLogger {
     this.log('debug', message, undefined, context, metadata);
   }
 
+  // Add the missing secure logging methods
+  secureInfo(message: string, metadata?: Record<string, any>, context?: string) {
+    // For secure info logging, we sanitize sensitive data
+    const sanitizedMetadata = this.sanitizeMetadata(metadata);
+    this.log('info', message, undefined, context, sanitizedMetadata);
+  }
+
+  secureDebug(message: string, metadata?: Record<string, any>, context?: string) {
+    // For secure debug logging, we sanitize sensitive data
+    const sanitizedMetadata = this.sanitizeMetadata(metadata);
+    this.log('debug', message, undefined, context, sanitizedMetadata);
+  }
+
+  private sanitizeMetadata(metadata?: Record<string, any>): Record<string, any> | undefined {
+    if (!metadata) return undefined;
+
+    const sanitized: Record<string, any> = {};
+    const sensitiveKeys = ['password', 'token', 'secret', 'key', 'email', 'phone', 'ssn', 'credit'];
+
+    for (const [key, value] of Object.entries(metadata)) {
+      const isSensitive = sensitiveKeys.some(sensitiveKey => 
+        key.toLowerCase().includes(sensitiveKey)
+      );
+
+      if (isSensitive && typeof value === 'string') {
+        // Mask sensitive data
+        sanitized[key] = value.length > 0 ? '*'.repeat(Math.min(value.length, 8)) : '';
+      } else {
+        sanitized[key] = value;
+      }
+    }
+
+    return sanitized;
+  }
+
   getLogs(): LogEntry[] {
     return [...this.logs];
   }
