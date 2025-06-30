@@ -19,9 +19,11 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
-  Activity
+  Activity,
+  Brain
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { RealTimeMetrics } from '@/components/dashboard/RealTimeMetrics';
 import { DatabaseStatus } from '@/components/dashboard/DatabaseStatus';
 import { QueryAnalytics } from '@/components/dashboard/QueryAnalytics';
@@ -40,6 +42,13 @@ function QuickActions() {
   const { startTour } = useTour();
 
   const actions = [
+    {
+      title: 'AI Optimization Studio',
+      description: 'Next-gen predictive optimization',
+      icon: Brain,
+      href: '/ai-studio',
+      highlight: true
+    },
     {
       title: 'Connect Database',
       description: 'Enterprise database integration',
@@ -69,12 +78,6 @@ function QuickActions() {
         title: 'Report Generated',
         message: 'Enterprise performance report ready for download.'
       })
-    },
-    {
-      title: 'Interactive Tour',
-      description: 'Learn enterprise features',
-      icon: Activity,
-      onClick: () => startTour('basic')
     }
   ];
 
@@ -82,12 +85,29 @@ function QuickActions() {
     <div data-tour="quick-actions" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {actions.map((action, index) => {
         const Icon = action.icon;
+        const CardComponent = action.href ? Link : 'div';
+        
         return (
-          <Card key={index} className="cursor-pointer hover:shadow-md transition-all hover:scale-105">
-            <CardContent className="p-4 text-center" onClick={action.onClick}>
-              <Icon className="h-8 w-8 mx-auto mb-2 text-primary" />
+          <Card 
+            key={index} 
+            className={`cursor-pointer hover:shadow-md transition-all hover:scale-105 ${
+              action.highlight ? 'border-2 border-primary bg-primary/5' : ''
+            }`}
+          >
+            <CardContent 
+              className="p-4 text-center" 
+              onClick={action.onClick}
+              {...(action.href ? { as: CardComponent, to: action.href } : {})}
+            >
+              <Icon className={`h-8 w-8 mx-auto mb-2 ${action.highlight ? 'text-primary' : 'text-primary'}`} />
               <h3 className="font-medium text-sm">{action.title}</h3>
               <p className="text-xs text-muted-foreground mt-1">{action.description}</p>
+              {action.highlight && (
+                <Badge variant="secondary" className="mt-2">
+                  <Zap className="h-3 w-3 mr-1" />
+                  NEW
+                </Badge>
+              )}
             </CardContent>
           </Card>
         );
@@ -166,6 +186,12 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Button asChild className="bg-gradient-to-r from-primary to-blue-600">
+              <Link to="/ai-studio">
+                <Brain className="h-4 w-4 mr-2" />
+                AI Studio
+              </Link>
+            </Button>
             <UniversalSearch />
             <NotificationCenter />
           </div>

@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -22,6 +21,7 @@ import Support from '@/pages/Support';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Accessibility from '@/pages/Accessibility';
+import AIOptimizationStudio from '@/pages/AIOptimizationStudio';
 import { NotFound } from '@/components/error/NotFound';
 
 const queryClient = new QueryClient({
@@ -56,6 +56,7 @@ function App() {
                 <Route path="terms" element={<Terms />} />
                 <Route path="accessibility" element={<Accessibility />} />
                 <Route path="app/*" element={<Dashboard />} />
+                <Route path="ai-studio" element={<AIOptimizationStudio />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
