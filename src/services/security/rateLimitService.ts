@@ -22,7 +22,9 @@ export class RateLimitService {
   private readonly defaultConfigs: Record<string, RateLimitConfig> = {
     login: { maxAttempts: 5, windowMs: 15 * 60 * 1000, blockDurationMs: 15 * 60 * 1000 },
     signup: { maxAttempts: 3, windowMs: 60 * 60 * 1000, blockDurationMs: 30 * 60 * 1000 },
+    password_reset: { maxAttempts: 3, windowMs: 60 * 60 * 1000, blockDurationMs: 30 * 60 * 1000 },
     api: { maxAttempts: 100, windowMs: 60 * 1000, blockDurationMs: 5 * 60 * 1000 },
+    api_call: { maxAttempts: 100, windowMs: 60 * 1000, blockDurationMs: 5 * 60 * 1000 },
     form_submission: { maxAttempts: 10, windowMs: 5 * 60 * 1000, blockDurationMs: 10 * 60 * 1000 }
   };
 
