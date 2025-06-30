@@ -19,6 +19,14 @@ interface ThreatDetectionResult {
   recommendations: string[];
 }
 
+interface SecurityAlert {
+  id: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  timestamp: Date;
+  resolved: boolean;
+}
+
 export class EnhancedSecurityMonitoring {
   private static instance: EnhancedSecurityMonitoring;
   private metrics: SecurityMetrics = {
@@ -149,7 +157,8 @@ export class EnhancedSecurityMonitoring {
           if (!e.event_type.includes('auth')) return false;
           // Safely check event_data
           if (typeof e.event_data === 'object' && e.event_data !== null) {
-            return (e.event_data as any).success === false;
+            const eventData = e.event_data as Record<string, any>;
+            return eventData.success === false;
           }
           return false;
         }).length || 0,
@@ -216,20 +225,14 @@ export class EnhancedSecurityMonitoring {
   }
 
   // Generate security alerts for dashboard
-  async generateSecurityAlerts(): Promise<Array<{
-    id: string;
-    severity: 'low' | 'medium' | 'high' | 'critical';
-    message: string;
-    timestamp: Date;
-    resolved: boolean;
-  }>> {
+  async generateSecurityAlerts(): Promise<SecurityAlert[]> {
     const metrics = await this.getSecurityMetrics();
-    const alerts = [];
+    const alerts: SecurityAlert[] = [];
 
     if (metrics.criticalEvents > 0) {
       alerts.push({
         id: `critical-${Date.now()}`,
-        severity: 'critical' as const,
+        severity: 'critical',
         message: `${metrics.criticalEvents} critical security events detected in the last hour`,
         timestamp: new Date(),
         resolved: false
@@ -239,7 +242,7 @@ export class EnhancedSecurityMonitoring {
     if (metrics.rateLimitViolations > 10) {
       alerts.push({
         id: `rate-limit-${Date.now()}`,
-        severity: 'medium' as const,
+        severity: 'medium',
         message: `High number of rate limit violations: ${metrics.rateLimitViolations}`,
         timestamp: new Date(),
         resolved: false
@@ -249,7 +252,7 @@ export class EnhancedSecurityMonitoring {
     if (metrics.authenticationFailures > 20) {
       alerts.push({
         id: `auth-failures-${Date.now()}`,
-        severity: 'high' as const,
+        severity: 'high',
         message: `Unusual number of authentication failures: ${metrics.authenticationFailures}`,
         timestamp: new Date(),
         resolved: false

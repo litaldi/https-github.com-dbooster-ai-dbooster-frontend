@@ -3,15 +3,6 @@ import { useState, useCallback } from 'react';
 import { comprehensiveInputValidation } from '@/services/security/comprehensiveInputValidation';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
-interface ValidationRule {
-  required?: boolean;
-  type?: 'email' | 'phone' | 'password' | 'url' | 'text' | 'number';
-  minLength?: number;
-  maxLength?: number;
-  pattern?: RegExp;
-  customValidator?: (value: any) => boolean;
-}
-
 export function useSecureInputValidation() {
   const [isValidating, setIsValidating] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
