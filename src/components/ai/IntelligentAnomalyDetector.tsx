@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
@@ -11,87 +10,21 @@ import {
   Shield, 
   Database,
   Zap,
-  Eye,
-  Brain,
   Clock
 } from 'lucide-react';
-import { nextGenAIService } from '@/services/ai/nextGenAIService';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { FadeIn, ScaleIn } from '@/components/ui/animations';
-
-interface AnomalyData {
-  anomalies: Array<{
-    type: 'performance' | 'security' | 'resource';
-    severity: 'critical' | 'warning' | 'info';
-    description: string;
-    timestamp: Date;
-    recommendedAction: string;
-  }>;
-  trend: 'improving' | 'stable' | 'degrading';
-  forecast: {
-    nextHour: string;
-    nextDay: string;
-    nextWeek: string;
-  };
-}
+import { useAnomalyDetection } from '@/hooks/useAnomalyDetection';
+import { AnomalyControlPanel } from './anomaly/AnomalyControlPanel';
 
 export function IntelligentAnomalyDetector() {
-  const [anomalyData, setAnomalyData] = useState<AnomalyData | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [autoScanEnabled, setAutoScanEnabled] = useState(true);
-  const [lastScan, setLastScan] = useState<Date | null>(null);
-
-  useEffect(() => {
-    // Auto-scan on component mount
-    if (autoScanEnabled) {
-      scanForAnomalies();
-      
-      // Set up periodic scanning every 5 minutes
-      const interval = setInterval(scanForAnomalies, 5 * 60 * 1000);
-      return () => clearInterval(interval);
-    }
-  }, [autoScanEnabled]);
-
-  const scanForAnomalies = async () => {
-    setIsScanning(true);
-    
-    try {
-      // Generate mock metrics for demo
-      const mockMetrics = Array.from({ length: 100 }, (_, i) => ({
-        timestamp: new Date(Date.now() - i * 60000),
-        executionTime: Math.random() * 1000 + 100,
-        cpuUsage: Math.random() * 80 + 20,
-        memoryUsage: Math.random() * 70 + 30,
-        activeConnections: Math.floor(Math.random() * 100) + 10
-      }));
-
-      const result = await nextGenAIService.detectAnomalies(mockMetrics);
-      setAnomalyData(result);
-      setLastScan(new Date());
-
-      if (result.anomalies.length > 0) {
-        const criticalCount = result.anomalies.filter(a => a.severity === 'critical').length;
-        if (criticalCount > 0) {
-          enhancedToast.error({
-            title: "Critical Anomalies Detected",
-            description: `${criticalCount} critical anomalies found in your database`,
-          });
-        } else {
-          enhancedToast.warning({
-            title: "Anomalies Detected",
-            description: `${result.anomalies.length} anomalies detected`,
-          });
-        }
-      }
-    } catch (error) {
-      enhancedToast.error({
-        title: "Anomaly Detection Failed",
-        description: "Unable to scan for anomalies. Please try again.",
-      });
-    } finally {
-      setIsScanning(false);
-    }
-  };
+  const {
+    anomalyData,
+    isScanning,
+    autoScanEnabled,
+    setAutoScanEnabled,
+    lastScan,
+    scanForAnomalies
+  } = useAnomalyDetection();
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -141,63 +74,13 @@ export function IntelligentAnomalyDetector() {
   return (
     <div className="space-y-6">
       <FadeIn>
-        <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-red-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="h-6 w-6 text-orange-600" />
-              Intelligent Anomaly Detector
-              <Badge variant="secondary" className="ml-2">
-                <Brain className="h-3 w-3 mr-1" />
-                AI-Powered
-              </Badge>
-            </CardTitle>
-            <CardDescription>
-              Machine learning-based anomaly detection with predictive forecasting
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">Auto-Scan Status</div>
-                <div className={`text-xs ${autoScanEnabled ? 'text-green-600' : 'text-gray-600'}`}>
-                  {autoScanEnabled ? 'Active - Scanning every 5 minutes' : 'Disabled'}
-                </div>
-              </div>
-              <Button
-                variant={autoScanEnabled ? "default" : "outline"}
-                size="sm"
-                onClick={() => setAutoScanEnabled(!autoScanEnabled)}
-              >
-                {autoScanEnabled ? 'Disable Auto-Scan' : 'Enable Auto-Scan'}
-              </Button>
-            </div>
-
-            {lastScan && (
-              <div className="text-sm text-muted-foreground">
-                Last scan: {lastScan.toLocaleString()}
-              </div>
-            )}
-
-            <Button 
-              onClick={scanForAnomalies} 
-              disabled={isScanning}
-              className="w-full"
-              size="lg"
-            >
-              {isScanning ? (
-                <>
-                  <Activity className="mr-2 h-4 w-4 animate-pulse" />
-                  Scanning for Anomalies...
-                </>
-              ) : (
-                <>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Scan Now
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+        <AnomalyControlPanel
+          autoScanEnabled={autoScanEnabled}
+          setAutoScanEnabled={setAutoScanEnabled}
+          lastScan={lastScan}
+          isScanning={isScanning}
+          onScan={scanForAnomalies}
+        />
       </FadeIn>
 
       {anomalyData && (
@@ -265,7 +148,7 @@ export function IntelligentAnomalyDetector() {
                         </div>
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">
-                            <Badge variant={getSeverityColor(anomaly.severity)}>
+                            <Badge variant={getSeverityColor(anomaly.severity) as any}>
                               {getSeverityIcon(anomaly.severity)}
                               {anomaly.severity}
                             </Badge>
