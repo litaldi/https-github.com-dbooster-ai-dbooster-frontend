@@ -1,9 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { AuthError } from '@supabase/supabase-js';
-import { RateLimiter } from '@/utils/rateLimiting';
-
-const rateLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
+import { rateLimitService } from '@/services/security/rateLimitService';
 
 export class EnhancedAuthService {
   private static instance: EnhancedAuthService;
@@ -17,7 +15,10 @@ export class EnhancedAuthService {
 
   async signIn(email: string, password: string) {
     try {
-      rateLimiter.checkRateLimit(`signin_${email}`);
+      const rateLimitResult = await rateLimitService.checkRateLimit(email, 'login');
+      if (!rateLimitResult.allowed) {
+        throw new Error(`Too many attempts. Try again in ${rateLimitResult.retryAfter} seconds.`);
+      }
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -34,7 +35,10 @@ export class EnhancedAuthService {
 
   async signUp(email: string, password: string, metadata?: Record<string, any>) {
     try {
-      rateLimiter.checkRateLimit(`signup_${email}`);
+      const rateLimitResult = await rateLimitService.checkRateLimit(email, 'signup');
+      if (!rateLimitResult.allowed) {
+        throw new Error(`Too many attempts. Try again in ${rateLimitResult.retryAfter} seconds.`);
+      }
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -65,7 +69,10 @@ export class EnhancedAuthService {
 
   async resetPassword(email: string) {
     try {
-      rateLimiter.checkRateLimit(`reset_${email}`);
+      const rateLimitResult = await rateLimitService.checkRateLimit(email, 'password_reset');
+      if (!rateLimitResult.allowed) {
+        throw new Error(`Too many attempts. Try again in ${rateLimitResult.retryAfter} seconds.`);
+      }
       
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;

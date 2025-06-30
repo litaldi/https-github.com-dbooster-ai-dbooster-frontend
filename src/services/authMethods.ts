@@ -1,19 +1,16 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { RateLimiter } from '@/utils/rateLimiting';
+import { rateLimitService } from '@/services/security/rateLimitService';
 import { normalizeEmail, cleanPhoneNumber, getAuthRedirectUrl, createUserMetadata } from '@/utils/authUtils';
 import { AUTH_CONFIG, type OAuthProvider } from '@/config/auth';
 import type { AuthResult, AuthCredentials } from '@/types/auth';
 
 export class AuthMethods {
-  private rateLimiter: RateLimiter;
-
-  constructor(rateLimiter: RateLimiter) {
-    this.rateLimiter = rateLimiter;
-  }
-
-  private checkRateLimit(): void {
-    this.rateLimiter.checkRateLimit();
+  private async checkRateLimit(identifier: string, action: string): Promise<void> {
+    const result = await rateLimitService.checkRateLimit(identifier, action);
+    if (!result.allowed) {
+      throw new Error(`Rate limit exceeded. Try again in ${result.retryAfter} seconds.`);
+    }
   }
 
   private handleAuthError(error: any, context: string): never {
@@ -22,7 +19,7 @@ export class AuthMethods {
   }
 
   async loginWithOAuth(provider: OAuthProvider): Promise<void> {
-    this.checkRateLimit();
+    await this.checkRateLimit(`oauth_${provider}`, 'login');
     console.log(`Attempting to sign in with ${provider}`);
     
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -41,7 +38,8 @@ export class AuthMethods {
   }
 
   async loginWithCredentials(credentials: AuthCredentials): Promise<void> {
-    this.checkRateLimit();
+    const identifier = credentials.email || credentials.phone || 'unknown';
+    await this.checkRateLimit(identifier, 'login');
     
     const { email, phone, password } = credentials;
     const loginData = email 
@@ -58,7 +56,8 @@ export class AuthMethods {
   }
 
   async signupWithCredentials(credentials: AuthCredentials): Promise<void> {
-    this.checkRateLimit();
+    const identifier = credentials.email || credentials.phone || 'unknown';
+    await this.checkRateLimit(identifier, 'signup');
     
     const { email, phone, password, name } = credentials;
     const signupData = email 

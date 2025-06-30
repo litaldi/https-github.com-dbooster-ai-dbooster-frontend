@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { enhancedAuthService } from '@/services/enhancedAuthService';
-import { RateLimiter } from '@/utils/rateLimiting';
+import { rateLimitService } from '@/services/security/rateLimitService';
 import type { AuthMode } from '@/types/auth';
 
 interface AuthFormData {
@@ -22,8 +22,6 @@ interface UseEnhancedAuthReturn {
   clearError: () => void;
 }
 
-const authRateLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
-
 export function useEnhancedAuth(): UseEnhancedAuthReturn {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,8 +32,11 @@ export function useEnhancedAuth(): UseEnhancedAuthReturn {
     setError(null);
 
     try {
-      // Rate limiting
-      authRateLimiter.checkRateLimit(data.email);
+      // Rate limiting using consolidated service
+      const rateLimitResult = await rateLimitService.checkRateLimit(data.email, authMode);
+      if (!rateLimitResult.allowed) {
+        throw new Error(`Too many attempts. Try again in ${rateLimitResult.retryAfter} seconds.`);
+      }
 
       if (authMode === 'login') {
         const result = await enhancedAuthService.signIn(data.email, data.password);
@@ -59,13 +60,9 @@ export function useEnhancedAuth(): UseEnhancedAuthReturn {
           throw new Error(result.error.message);
         }
         setError(null);
-        // Show success message for password reset
         console.log('Password reset email sent successfully');
         return;
       }
-
-      // Reset rate limiter on successful auth
-      authRateLimiter.resetAttempts(data.email);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
       setError(errorMessage);

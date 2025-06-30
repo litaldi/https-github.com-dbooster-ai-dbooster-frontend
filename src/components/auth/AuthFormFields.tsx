@@ -1,6 +1,5 @@
-
 import { EnhancedInput } from '@/components/ui/enhanced-input';
-import { PasswordField } from '@/components/auth/PasswordField';
+import { PasswordField } from '@/components/forms/PasswordField';
 
 interface AuthFormFieldsProps {
   mode: 'login' | 'signup';

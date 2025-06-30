@@ -1,4 +1,3 @@
-
 export interface AuthFormData {
   name: string;
   email: string;
@@ -31,6 +30,7 @@ export interface AuthResult {
 export interface AuthCredentials {
   email?: string;
   phone?: string;
-  password: string;
+  password?: string;
   name?: string;
+  rememberMe?: boolean;
 }
