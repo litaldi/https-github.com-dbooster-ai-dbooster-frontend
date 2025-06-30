@@ -1,15 +1,12 @@
-import { useAuth } from '@/contexts/auth-context';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { QuickStartGuide } from '@/components/onboarding/QuickStartGuide';
 import { QueryHistory } from '@/components/queries/QueryHistory';
 import { FeedbackButton } from '@/components/feedback/FeedbackButton';
-import { KeyboardShortcutsHelper } from '@/components/layout/KeyboardShortcutsHelper';
-import { LoadingState, SkeletonCard } from '@/components/ui/enhanced-loading-states';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useDashboardData } from '@/hooks/useDashboardData';
 import { 
   Database, 
   Zap, 
@@ -22,7 +19,6 @@ import {
   Activity,
   Brain
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RealTimeMetrics } from '@/components/dashboard/RealTimeMetrics';
 import { DatabaseStatus } from '@/components/dashboard/DatabaseStatus';
@@ -30,172 +26,29 @@ import { QueryAnalytics } from '@/components/dashboard/QueryAnalytics';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import { VisualQueryBuilder } from '@/components/query/VisualQueryBuilder';
 import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
-import { UniversalSearch } from '@/components/search/UniversalSearch';
 import { NotificationCenter, useNotifications } from '@/components/notifications/SmartNotifications';
 import { TourMenu, useTour } from '@/components/onboarding/InteractiveTour';
 import { EnhancedMetrics } from '@/components/dashboard/EnhancedMetrics';
+import { QuickActions } from '@/components/dashboard/QuickActions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-// Quick Actions Component
-function QuickActions() {
-  const { addNotification } = useNotifications();
-  const { startTour } = useTour();
-
-  const actions = [
-    {
-      title: 'AI Optimization Studio',
-      description: 'Next-gen predictive optimization',
-      icon: Brain,
-      href: '/ai-studio',
-      highlight: true
-    },
-    {
-      title: 'Connect Database',
-      description: 'Enterprise database integration',
-      icon: Database,
-      onClick: () => addNotification({
-        type: 'info',
-        title: 'Database Connection',
-        message: 'Opening enterprise database connection wizard...'
-      })
-    },
-    {
-      title: 'AI Query Optimization',
-      description: '73% faster query performance',
-      icon: Zap,
-      onClick: () => addNotification({
-        type: 'info',
-        title: 'AI Optimization',
-        message: 'Starting enterprise AI query analysis...'
-      })
-    },
-    {
-      title: 'Performance Report',
-      description: 'Generate executive summary',
-      icon: BarChart3,
-      onClick: () => addNotification({
-        type: 'success',
-        title: 'Report Generated',
-        message: 'Enterprise performance report ready for download.'
-      })
-    }
-  ];
-
-  return (
-    <div data-tour="quick-actions" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {actions.map((action, index) => {
-        const Icon = action.icon;
-        const CardComponent = action.href ? Link : 'div';
-        
-        return (
-          <Card 
-            key={index} 
-            className={`cursor-pointer hover:shadow-md transition-all hover:scale-105 ${
-              action.highlight ? 'border-2 border-primary bg-primary/5' : ''
-            }`}
-          >
-            <CardContent 
-              className="p-4 text-center" 
-              onClick={action.onClick}
-              {...(action.href ? { as: CardComponent, to: action.href } : {})}
-            >
-              <Icon className={`h-8 w-8 mx-auto mb-2 ${action.highlight ? 'text-primary' : 'text-primary'}`} />
-              <h3 className="font-medium text-sm">{action.title}</h3>
-              <p className="text-xs text-muted-foreground mt-1">{action.description}</p>
-              {action.highlight && (
-                <Badge variant="secondary" className="mt-2">
-                  <Zap className="h-3 w-3 mr-1" />
-                  NEW
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
-  );
-}
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
 
 export default function Dashboard() {
-  const { user, isDemo } = useAuth();
   const { status, overallStatus } = useSystemStatus();
-  const [isLoading, setIsLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState<any>(null);
+  const { isLoading, dashboardData } = useDashboardData();
 
   // Initialize keyboard shortcuts
   useKeyboardShortcuts();
 
-  useEffect(() => {
-    // Simulate loading dashboard data
-    const loadDashboardData = async () => {
-      setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock dashboard data with enterprise focus
-      setDashboardData({
-        totalDatabases: isDemo ? 12 : 0,
-        totalQueries: isDemo ? 1247 : 0,
-        avgPerformance: isDemo ? 73 : 0,
-        optimizedQueries: isDemo ? 415 : 0,
-        activeTeamMembers: isDemo ? 24 : 1,
-        costSavings: isDemo ? 62450 : 0
-      });
-      setIsLoading(false);
-    };
-
-    loadDashboardData();
-  }, [isDemo]);
-
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-48"></div>
-          </div>
-          <div className="h-8 bg-gray-200 rounded w-32"></div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-        
-        <LoadingState 
-          isLoading={true} 
-          message="Loading your enterprise dashboard..." 
-          variant="database"
-        >
-          <div />
-        </LoadingState>
-      </div>
-    );
+    return <DashboardLoading />;
   }
 
   return (
     <EnhancedErrorBoundary>
       <div className="space-y-6">
-        {/* Header with Search and Notifications */}
-        <div className="flex items-center justify-between">
-          <div data-tour="dashboard">
-            <h1 className="text-3xl font-bold tracking-tight">Enterprise Dashboard</h1>
-            <p className="text-muted-foreground">
-              AI-powered database optimization center - reducing query times by 73%
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button asChild className="bg-gradient-to-r from-primary to-blue-600">
-              <Link to="/ai-studio">
-                <Brain className="h-4 w-4 mr-2" />
-                AI Studio
-              </Link>
-            </Button>
-            <UniversalSearch />
-            <NotificationCenter />
-          </div>
-        </div>
+        <DashboardHeader />
 
         {/* Enhanced Performance Metrics */}
         <EnhancedMetrics />
