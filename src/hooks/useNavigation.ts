@@ -3,35 +3,31 @@ import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/components/theme-provider';
+import { useMenuState } from './useMenuState';
 
 export function useNavigation() {
-  const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
-  const location = useLocation();
+  const menuState = useMenuState();
 
   const handleLogout = async () => {
-    await logout();
-    setIsOpen(false);
+    try {
+      await logout();
+      menuState.closeMenu();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
-  const closeMenu = () => setIsOpen(false);
-
-  const isCurrentRoute = (path: string) => location.pathname === path;
-
   return {
-    isOpen,
-    setIsOpen,
+    ...menuState,
     user,
     theme,
-    location,
     handleLogout,
-    toggleTheme,
-    closeMenu,
-    isCurrentRoute
+    toggleTheme
   };
 }

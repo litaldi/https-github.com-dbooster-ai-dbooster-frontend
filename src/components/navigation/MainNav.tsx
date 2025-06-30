@@ -1,59 +1,29 @@
 
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu, Home, BarChart3, Search, FolderOpen, TrendingUp, User, Settings, Zap, DollarSign, Briefcase, Mail, HelpCircle, Shield, FileCheck, Info, CheckSquare, Users, TestTube } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { DemoBadge } from '@/components/demo-badge';
 import { useNavigation } from '@/hooks/useNavigation';
-import { NavigationItems } from './NavigationItems';
-import { UserMenu } from './UserMenu';
+import { EnhancedNavigationItems } from './EnhancedNavigationItems';
+import { EnhancedUserMenu } from './EnhancedUserMenu';
 import { NavigationLogo } from './NavigationLogo';
-
-const publicNavItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/features', label: 'Features', icon: Zap },
-  { href: '/how-it-works', label: 'How It Works', icon: Info },
-  { href: '/pricing', label: 'Pricing', icon: DollarSign },
-  { href: '/learn', label: 'Learn', icon: Info },
-  { href: '/blog', label: 'Blog', icon: Info },
-];
-
-const authenticatedNavItems = [
-  { href: '/app', label: 'Dashboard', icon: BarChart3 },
-  { href: '/app/queries', label: 'Queries', icon: Search },
-  { href: '/app/repositories', label: 'Repositories', icon: FolderOpen },
-  { href: '/app/query-optimization', label: 'AI Optimization', icon: TestTube },
-  { href: '/app/reports', label: 'Reports', icon: TrendingUp },
-  { href: '/app/approvals', label: 'Approvals', icon: CheckSquare },
-  { href: '/app/teams', label: 'Teams', icon: Users },
-  { href: '/app/sandbox', label: 'Sandbox', icon: TestTube },
-];
-
-const userMenuItems = [
-  { href: '/app/account', label: 'Profile', icon: User },
-  { href: '/app/settings', label: 'Settings', icon: Settings },
-];
-
-const companyMenuItems = [
-  { href: '/about', label: 'About', icon: Briefcase },
-  { href: '/contact', label: 'Contact', icon: Mail },
-  { href: '/support', label: 'Support', icon: HelpCircle },
-];
-
-const legalMenuItems = [
-  { href: '/privacy', label: 'Privacy', icon: Shield },
-  { href: '/terms', label: 'Terms', icon: FileCheck },
-  { href: '/accessibility', label: 'Accessibility', icon: Info },
-];
+import { 
+  publicNavItems, 
+  authenticatedNavItems, 
+  userMenuItems, 
+  companyMenuItems, 
+  legalMenuItems 
+} from '@/config/navigation';
 
 export function MainNav() {
   const {
     isOpen,
-    setIsOpen,
+    toggleMenu,
+    closeMenu,
     user,
     theme,
     handleLogout,
     toggleTheme,
-    closeMenu,
     isCurrentRoute
   } = useNavigation();
 
@@ -75,12 +45,12 @@ export function MainNav() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
-            <NavigationItems 
+            <EnhancedNavigationItems 
               items={navItems} 
               isCurrentRoute={isCurrentRoute}
             />
-            <div className="mx-2 h-6 w-px bg-border" />
-            <UserMenu
+            <div className="mx-2 h-6 w-px bg-border" aria-hidden="true" />
+            <EnhancedUserMenu
               user={user}
               userMenuItems={userMenuItems}
               isCurrentRoute={isCurrentRoute}
@@ -92,7 +62,7 @@ export function MainNav() {
 
           {/* Mobile Navigation */}
           <div className="lg:hidden">
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <Sheet open={isOpen} onOpenChange={toggleMenu}>
               <SheetTrigger asChild>
                 <Button 
                   variant="ghost" 
@@ -108,7 +78,7 @@ export function MainNav() {
                   <NavigationLogo user={user} />
                   
                   <div className="flex flex-col space-y-4">
-                    <NavigationItems 
+                    <EnhancedNavigationItems 
                       items={navItems} 
                       mobile 
                       closeMenu={closeMenu}
@@ -118,7 +88,7 @@ export function MainNav() {
                     {/* Additional menu sections for mobile */}
                     <div className="border-t pt-4 space-y-1">
                       <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Company</h4>
-                      <NavigationItems 
+                      <EnhancedNavigationItems 
                         items={companyMenuItems}
                         mobile
                         closeMenu={closeMenu}
@@ -128,7 +98,7 @@ export function MainNav() {
                     
                     <div className="border-t pt-4 space-y-1">
                       <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Legal</h4>
-                      <NavigationItems 
+                      <EnhancedNavigationItems 
                         items={legalMenuItems}
                         mobile
                         closeMenu={closeMenu}
@@ -136,7 +106,7 @@ export function MainNav() {
                       />
                     </div>
                     
-                    <UserMenu
+                    <EnhancedUserMenu
                       user={user}
                       userMenuItems={userMenuItems}
                       mobile
