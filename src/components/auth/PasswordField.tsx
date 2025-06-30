@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { PasswordStrengthIndicator } from '@/components/security/PasswordStrengthIndicator';
+import { authenticationSecurity } from '@/services/security/authenticationSecurity';
 
 interface PasswordFieldProps {
   id: string;
@@ -24,6 +25,8 @@ export function PasswordField({
   autoComplete = 'current-password',
   showStrength = false
 }: PasswordFieldProps) {
+  const strengthResult = authenticationSecurity.validatePasswordStrength(value);
+
   return (
     <div>
       <EnhancedInput
@@ -38,7 +41,12 @@ export function PasswordField({
         autoComplete={autoComplete}
         required
       />
-      <PasswordStrengthIndicator password={value} show={showStrength} />
+      {showStrength && (
+        <PasswordStrengthIndicator 
+          password={value} 
+          strengthResult={strengthResult}
+        />
+      )}
     </div>
   );
 }
