@@ -22,6 +22,7 @@ import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Accessibility from '@/pages/Accessibility';
 import AIOptimizationStudio from '@/pages/AIOptimizationStudio';
+import EnhancedDashboard from '@/pages/EnhancedDashboard';
 import { NotFound } from '@/components/error/NotFound';
 
 const queryClient = new QueryClient({
@@ -55,7 +56,8 @@ function App() {
                 <Route path="privacy" element={<Privacy />} />
                 <Route path="terms" element={<Terms />} />
                 <Route path="accessibility" element={<Accessibility />} />
-                <Route path="app/*" element={<Dashboard />} />
+                <Route path="app" element={<EnhancedDashboard />} />
+                <Route path="app/*" element={<EnhancedDashboard />} />
                 <Route path="ai-studio" element={<AIOptimizationStudio />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
