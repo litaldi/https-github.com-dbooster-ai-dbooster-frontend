@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
+import { PasswordStrengthIndicator } from '@/components/security/PasswordStrengthIndicator';
+import { authenticationSecurity } from '@/services/security/authenticationSecurity';
 import { cn } from '@/lib/utils';
 
 interface PasswordFieldProps {
@@ -15,21 +17,27 @@ interface PasswordFieldProps {
   autoComplete?: string;
   className?: string;
   variant?: 'default' | 'filled' | 'outline' | 'floating';
+  showStrength?: boolean;
+  showPasswordToggle?: boolean;
 }
 
 export function PasswordField({
   id,
   label,
-  placeholder,
+  placeholder = 'Enter your password',
   value,
   onChange,
   onBlur,
   error,
   required = false,
-  autoComplete,
+  autoComplete = 'current-password',
   className,
-  variant = 'default'
+  variant = 'default',
+  showStrength = false,
+  showPasswordToggle = true
 }: PasswordFieldProps) {
+  const strengthResult = authenticationSecurity.validatePasswordStrength(value);
+
   return (
     <div className={cn('space-y-2', className)}>
       <EnhancedInput
@@ -44,10 +52,16 @@ export function PasswordField({
         required={required}
         autoComplete={autoComplete}
         variant={variant}
-        showPasswordToggle={true}
+        showPasswordToggle={showPasswordToggle}
         isValid={!error && value.length > 0}
         showValidation={true}
       />
+      {showStrength && (
+        <PasswordStrengthIndicator 
+          password={value} 
+          strengthResult={strengthResult}
+        />
+      )}
     </div>
   );
 }

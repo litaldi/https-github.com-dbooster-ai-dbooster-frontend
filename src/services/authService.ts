@@ -1,18 +1,14 @@
-
 import { loginDemoUser, logoutDemoUser } from '@/services/demo';
-import { RateLimiter } from '@/utils/rateLimiting';
-import { AuthMethods } from '@/services/authMethods';
+import { authenticationSecurity } from '@/services/security/authenticationSecurity';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { handleApiError } from '@/utils/errorHandling';
 import type { OAuthProvider, AuthCredentials } from '@/types/auth';
 
 export class AuthService {
-  private rateLimiter: RateLimiter;
-  private authMethods: AuthMethods;
+  private authenticationSecurity: typeof authenticationSecurity;
 
   constructor() {
-    this.rateLimiter = new RateLimiter();
-    this.authMethods = new AuthMethods(this.rateLimiter);
+    this.authenticationSecurity = authenticationSecurity;
   }
 
   private showSuccessToast(title: string, description: string): void {
@@ -28,7 +24,19 @@ export class AuthService {
 
   async loginWithOAuth(provider: OAuthProvider): Promise<void> {
     try {
-      await this.authMethods.loginWithOAuth(provider);
+      // Use Supabase OAuth directly for OAuth providers
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          scopes: provider === 'github' ? 'repo read:user user:email' : undefined,
+        },
+      });
+
+      if (error) throw error;
+
       this.showSuccessToast(
         'Signed in successfully',
         `Welcome back! You're now signed in with ${provider}.`
@@ -42,8 +50,16 @@ export class AuthService {
 
   async loginWithCredentials(credentials: AuthCredentials): Promise<void> {
     try {
-      await this.authMethods.loginWithCredentials(credentials);
-      this.rateLimiter.resetAttempts();
+      const result = await this.authenticationSecurity.secureLogin(
+        credentials.email!,
+        credentials.password!,
+        { rememberMe: credentials.rememberMe }
+      );
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
       this.showSuccessToast('Welcome back!', 'You have been signed in successfully.');
     } catch (error) {
       console.error('Login failed:', error);
@@ -54,7 +70,19 @@ export class AuthService {
 
   async signupWithCredentials(credentials: AuthCredentials): Promise<void> {
     try {
-      await this.authMethods.signupWithCredentials(credentials);
+      const result = await this.authenticationSecurity.secureSignup(
+        credentials.email!,
+        credentials.password!,
+        {
+          fullName: credentials.name,
+          acceptedTerms: true
+        }
+      );
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
       this.showSuccessToast(
         'Account created!',
         'Welcome to DBooster! Your account has been created successfully.'
@@ -94,7 +122,10 @@ export class AuthService {
         return;
       }
 
-      await this.authMethods.logout();
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
       this.showSuccessToast('Signed out', 'You have been signed out successfully.');
     } catch (error) {
       console.error('Logout failed:', error);

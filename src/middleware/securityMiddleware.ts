@@ -1,8 +1,8 @@
 
-import { secureRateLimitService } from '@/services/secureRateLimitService';
+import { rateLimitService } from '@/services/security/rateLimitService';
 import { productionLogger } from '@/utils/productionLogger';
 import { auditLogger } from '@/services/auditLogger';
-import { inputValidationService } from '@/services/inputValidationService';
+import { comprehensiveInputValidation } from '@/services/security/comprehensiveInputValidation';
 
 export interface SecurityMiddlewareOptions {
   rateLimitAction?: string;
@@ -22,8 +22,8 @@ export class SecurityMiddleware {
     } = options;
 
     try {
-      // Rate limiting using secure service
-      const rateLimitCheck = await secureRateLimitService.checkRateLimit('middleware', rateLimitAction);
+      // Rate limiting using consolidated service
+      const rateLimitCheck = await rateLimitService.checkRateLimit('middleware', rateLimitAction);
       if (!rateLimitCheck.allowed) {
         if (logEvents) {
           await auditLogger.logSecurityEvent({
@@ -37,14 +37,14 @@ export class SecurityMiddleware {
         };
       }
 
-      // Input validation
+      // Input validation using consolidated service
       if (validateInput && request.body) {
         const validationErrors: string[] = [];
         
         for (const [key, value] of Object.entries(request.body)) {
           if (typeof value === 'string') {
-            const sanitized = inputValidationService.sanitizeInput(value);
-            if (sanitized !== value) {
+            const validation = comprehensiveInputValidation.validateInput(value);
+            if (!validation.isValid) {
               validationErrors.push(`Field '${key}' contains potentially harmful content`);
             }
           }
@@ -64,7 +64,7 @@ export class SecurityMiddleware {
         }
       }
 
-      // Log successful request using production-safe logging
+      // Log successful request
       if (logEvents) {
         productionLogger.secureDebug('Middleware request allowed', { action: rateLimitAction }, 'SecurityMiddleware');
         await auditLogger.logSecurityEvent({

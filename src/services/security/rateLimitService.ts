@@ -15,56 +15,59 @@ interface RateLimitResult {
   retryAfter?: number;
 }
 
-export class ResilientRateLimitService {
-  private static instance: ResilientRateLimitService;
+export class RateLimitService {
+  private static instance: RateLimitService;
   private memoryCache = new Map<string, { count: number; windowStart: number; blockedUntil?: number }>();
-  private readonly defaultConfig: RateLimitConfig = {
-    maxAttempts: 5,
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    blockDurationMs: 15 * 60 * 1000 // 15 minutes
+  
+  private readonly defaultConfigs: Record<string, RateLimitConfig> = {
+    login: { maxAttempts: 5, windowMs: 15 * 60 * 1000, blockDurationMs: 15 * 60 * 1000 },
+    signup: { maxAttempts: 3, windowMs: 60 * 60 * 1000, blockDurationMs: 30 * 60 * 1000 },
+    api: { maxAttempts: 100, windowMs: 60 * 1000, blockDurationMs: 5 * 60 * 1000 },
+    form_submission: { maxAttempts: 10, windowMs: 5 * 60 * 1000, blockDurationMs: 10 * 60 * 1000 }
   };
 
-  static getInstance(): ResilientRateLimitService {
-    if (!ResilientRateLimitService.instance) {
-      ResilientRateLimitService.instance = new ResilientRateLimitService();
+  static getInstance(): RateLimitService {
+    if (!RateLimitService.instance) {
+      RateLimitService.instance = new RateLimitService();
     }
-    return ResilientRateLimitService.instance;
+    return RateLimitService.instance;
   }
 
   async checkRateLimit(
     identifier: string,
     action: string,
-    config: Partial<RateLimitConfig> = {}
+    customConfig?: Partial<RateLimitConfig>
   ): Promise<RateLimitResult> {
-    const finalConfig = { ...this.defaultConfig, ...config };
+    const config = { ...this.defaultConfigs[action] || this.defaultConfigs.api, ...customConfig };
     const key = `${identifier}:${action}`;
     const now = Date.now();
 
     try {
       // Try database first
-      const dbResult = await this.checkDatabaseRateLimit(key, finalConfig, now);
+      const dbResult = await this.checkDatabaseRateLimit(key, action, config, now);
       if (dbResult) {
         return dbResult;
       }
     } catch (error) {
-      productionLogger.warn('Database rate limit check failed, falling back to memory', error, 'ResilientRateLimitService');
+      productionLogger.warn('Database rate limit check failed, falling back to memory', error, 'RateLimitService');
     }
 
     // Fallback to memory-based rate limiting
-    return this.checkMemoryRateLimit(key, finalConfig, now);
+    return this.checkMemoryRateLimit(key, config, now);
   }
 
   private async checkDatabaseRateLimit(
     key: string,
+    action: string,
     config: RateLimitConfig,
     now: number
   ): Promise<RateLimitResult | null> {
     try {
-      // Check if currently blocked
       const { data: existing, error: selectError } = await supabase
         .from('rate_limit_tracking')
         .select('*')
         .eq('identifier', key)
+        .eq('action_type', action)
         .single();
 
       if (selectError && selectError.code !== 'PGRST116') {
@@ -142,7 +145,7 @@ export class ResilientRateLimitService {
           .from('rate_limit_tracking')
           .insert({
             identifier: key,
-            action_type: key.split(':')[1] || 'unknown',
+            action_type: action,
             attempt_count: 1,
             window_start: new Date(now).toISOString()
           });
@@ -156,7 +159,7 @@ export class ResilientRateLimitService {
         };
       }
     } catch (error) {
-      productionLogger.error('Database rate limit error', error, 'ResilientRateLimitService');
+      productionLogger.error('Database rate limit error', error, 'RateLimitService');
       return null;
     }
   }
@@ -224,7 +227,6 @@ export class ResilientRateLimitService {
     };
   }
 
-  // Clean up old memory entries
   cleanup(): void {
     const now = Date.now();
     const cutoff = now - (60 * 60 * 1000); // 1 hour
@@ -237,9 +239,9 @@ export class ResilientRateLimitService {
   }
 }
 
-export const resilientRateLimitService = ResilientRateLimitService.getInstance();
+export const rateLimitService = RateLimitService.getInstance();
 
 // Clean up memory cache every 30 minutes
 setInterval(() => {
-  resilientRateLimitService.cleanup();
+  rateLimitService.cleanup();
 }, 30 * 60 * 1000);

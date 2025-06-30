@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import { auditLogger } from '@/services/auditLogger';
+import { rateLimitService } from './rateLimitService';
 
 interface SecurityMetrics {
   totalEvents: number;
@@ -72,27 +73,15 @@ export class EnhancedSecurityMonitoring {
       }
     }
 
-    // Check for rapid requests from same IP
+    // Check for rapid requests from same IP using consolidated rate limiting
     if (eventData.ipAddress) {
-      const recentEvents = await this.getRecentEventsByIP(eventData.ipAddress);
-      if (recentEvents > 50) { // More than 50 events in last 5 minutes
+      const rateLimitResult = await rateLimitService.checkRateLimit(eventData.ipAddress, 'api');
+      if (!rateLimitResult.allowed) {
         threats.push({ 
           severity: 'high', 
           reason: 'Excessive requests from single IP address' 
         });
         recommendations.push('Consider IP-based rate limiting');
-      }
-    }
-
-    // Check for multiple failed authentication attempts
-    if (eventData.type.includes('auth') && eventData.data.success === false) {
-      const failedAttempts = await this.getFailedAuthAttempts(eventData.userId);
-      if (failedAttempts > 5) {
-        threats.push({ 
-          severity: 'medium', 
-          reason: 'Multiple failed authentication attempts' 
-        });
-        recommendations.push('Consider account lockout mechanisms');
       }
     }
 
@@ -174,53 +163,6 @@ export class EnhancedSecurityMonitoring {
     } catch (error) {
       productionLogger.error('Error calculating security metrics', error, 'EnhancedSecurityMonitoring');
       return this.metrics;
-    }
-  }
-
-  private async getRecentEventsByIP(ipAddress: string): Promise<number> {
-    try {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-      
-      const { count, error } = await supabase
-        .from('security_audit_log')
-        .select('*', { count: 'exact', head: true })
-        .eq('ip_address', ipAddress)
-        .gte('created_at', fiveMinutesAgo.toISOString());
-
-      if (error) {
-        productionLogger.error('Failed to get recent events by IP', error, 'EnhancedSecurityMonitoring');
-        return 0;
-      }
-
-      return count || 0;
-    } catch (error) {
-      productionLogger.error('Error getting recent events by IP', error, 'EnhancedSecurityMonitoring');
-      return 0;
-    }
-  }
-
-  private async getFailedAuthAttempts(userId?: string): Promise<number> {
-    if (!userId) return 0;
-
-    try {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      
-      const { count, error } = await supabase
-        .from('security_audit_log')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('event_type', 'auth_login')
-        .gte('created_at', oneHourAgo.toISOString());
-
-      if (error) {
-        productionLogger.error('Failed to get failed auth attempts', error, 'EnhancedSecurityMonitoring');
-        return 0;
-      }
-
-      return count || 0;
-    } catch (error) {
-      productionLogger.error('Error getting failed auth attempts', error, 'EnhancedSecurityMonitoring');
-      return 0;
     }
   }
 

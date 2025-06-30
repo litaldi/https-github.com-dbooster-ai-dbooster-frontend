@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import { auditLogger } from '@/services/auditLogger';
-import { resilientRateLimitService } from './resilientRateLimitService';
+import { rateLimitService } from './rateLimitService';
 
 interface PasswordStrengthResult {
   score: number; // 0-4
@@ -109,15 +109,8 @@ export class AuthenticationSecurity {
     const identifier = `login:${email}`;
     
     try {
-      // Check rate limiting
-      const rateLimitResult = await resilientRateLimitService.checkRateLimit(
-        identifier,
-        'login',
-        {
-          maxAttempts: this.defaultConfig.maxLoginAttempts,
-          blockDurationMs: this.defaultConfig.lockoutDurationMs
-        }
-      );
+      // Check rate limiting using consolidated service
+      const rateLimitResult = await rateLimitService.checkRateLimit(identifier, 'login');
 
       if (!rateLimitResult.allowed) {
         await auditLogger.logAuthEvent('login', false, {
@@ -205,11 +198,7 @@ export class AuthenticationSecurity {
       }
 
       // Check rate limiting for signup
-      const rateLimitResult = await resilientRateLimitService.checkRateLimit(
-        `signup:${email}`,
-        'signup',
-        { maxAttempts: 3, windowMs: 60 * 60 * 1000 } // 3 attempts per hour
-      );
+      const rateLimitResult = await rateLimitService.checkRateLimit(`signup:${email}`, 'signup');
 
       if (!rateLimitResult.allowed) {
         return {
@@ -271,11 +260,7 @@ export class AuthenticationSecurity {
     unlockTime?: Date;
     remainingAttempts?: number;
   }> {
-    const rateLimitResult = await resilientRateLimitService.checkRateLimit(
-      `login:${email}`,
-      'login',
-      { maxAttempts: 0 } // Just check, don't increment
-    );
+    const rateLimitResult = await rateLimitService.checkRateLimit(`login:${email}`, 'login');
 
     return {
       isLocked: !rateLimitResult.allowed,
