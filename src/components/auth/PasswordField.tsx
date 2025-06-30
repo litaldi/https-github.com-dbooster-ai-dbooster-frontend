@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
-import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
+import { PasswordStrengthIndicator } from '@/components/security/PasswordStrengthIndicator';
 
 interface PasswordFieldProps {
   id: string;
