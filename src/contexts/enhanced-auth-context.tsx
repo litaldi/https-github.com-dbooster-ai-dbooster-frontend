@@ -1,12 +1,13 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
-import { authenticationSecurity } from '@/services/security/authenticationSecurity';
-import { comprehensiveInputValidation } from '@/services/security/comprehensiveInputValidation';
 import { enhancedSecurityMonitoring } from '@/services/security/enhancedSecurityMonitoring';
-import { enhancedAuthenticationSecurity } from '@/services/security/enhancedAuthenticationSecurity';
 import { productionLogger } from '@/utils/productionLogger';
+import { useEnhancedAuthOperations } from '@/hooks/useEnhancedAuthOperations';
+import { DemoUserService } from '@/services/auth/demoUserService';
+import { PasswordValidationService } from '@/services/auth/passwordValidationService';
+import { SecurityMetricsService } from '@/services/auth/securityMetricsService';
 
 interface EnhancedAuthContextType {
   user: User | null;
@@ -24,24 +25,14 @@ interface EnhancedAuthContextType {
 
 const EnhancedAuthContext = createContext<EnhancedAuthContextType | undefined>(undefined);
 
-// Demo user data
-const DEMO_USER = {
-  id: 'demo-user-id',
-  email: 'demo@example.com',
-  user_metadata: { full_name: 'Demo User' },
-  app_metadata: {},
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  aud: 'authenticated',
-  role: 'authenticated'
-};
-
 export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
   const [githubAccessToken, setGithubAccessToken] = useState<string | null>(null);
+
+  const { secureLogin, secureSignup, logout: performLogout } = useEnhancedAuthOperations();
 
   useEffect(() => {
     let mounted = true;
@@ -97,169 +88,29 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
     };
   }, [isDemo]);
 
-  const secureLogin = async (email: string, password: string, options: { rememberMe?: boolean } = {}) => {
-    try {
-      // Use enhanced authentication security
-      const result = await enhancedAuthenticationSecurity.performSecureLogin(
-        email,
-        password,
-        {
-          rememberMe: options.rememberMe,
-          deviceFingerprint: authenticationSecurity.generateDeviceFingerprint()
-        }
-      );
-
-      if (!result.success) {
-        enhancedToast.error({
-          title: "Login Failed",
-          description: result.error || "Authentication failed",
-        });
-        return { error: result.error };
-      }
-
-      if (result.requiresVerification) {
-        enhancedToast.info({
-          title: "Verification Required",
-          description: "Please check your email to verify your account.",
-        });
-      } else {
-        enhancedToast.success({
-          title: "Welcome back!",
-          description: "You have been successfully signed in.",
-        });
-      }
-      
-      return {};
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
-      enhancedToast.error({
-        title: "Login Failed",
-        description: errorMessage,
-      });
-      return { error: errorMessage };
-    }
-  };
-
-  const secureSignup = async (email: string, password: string, name: string, acceptedTerms: boolean = false) => {
-    try {
-      // Validate password strength using enhanced security
-      const passwordValidation = await enhancedAuthenticationSecurity.validateStrongPassword(password, email);
-      
-      if (!passwordValidation.isValid) {
-        enhancedToast.error({
-          title: "Password Requirements Not Met",
-          description: passwordValidation.feedback.join('. '),
-        });
-        return { error: "Password does not meet security requirements" };
-      }
-
-      // Validate and sanitize inputs
-      const emailValidation = comprehensiveInputValidation.validateInput(email, 'email');
-      const nameValidation = comprehensiveInputValidation.validateInput(name, 'general');
-      
-      if (!emailValidation.isValid) {
-        throw new Error('Invalid email format');
-      }
-      
-      if (!nameValidation.isValid) {
-        throw new Error('Invalid name format');
-      }
-
-      const result = await authenticationSecurity.secureSignup(
-        emailValidation.sanitized,
-        password,
-        {
-          fullName: nameValidation.sanitized,
-          acceptedTerms
-        }
-      );
-
-      if (!result.success) {
-        enhancedToast.error({
-          title: "Signup Failed",
-          description: result.error || "Account creation failed",
-        });
-        return { error: result.error };
-      }
-
-      if (result.requiresVerification) {
-        enhancedToast.success({
-          title: "Account Created!",
-          description: "Please check your email to verify your account.",
-        });
-      } else {
-        enhancedToast.success({
-          title: "Welcome!",
-          description: "Your account has been created successfully.",
-        });
-      }
-      
-      return {};
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Signup failed';
-      enhancedToast.error({
-        title: "Signup Failed",
-        description: errorMessage,
-      });
-      return { error: errorMessage };
-    }
-  };
-
   const loginDemo = async () => {
+    const { user: demoUser, session: demoSession } = DemoUserService.createDemoSession();
     setIsDemo(true);
-    setUser(DEMO_USER as User);
-    setSession({
-      access_token: 'demo-token',
-      refresh_token: 'demo-refresh',
-      expires_in: 3600,
-      token_type: 'bearer',
-      user: DEMO_USER as User
-    } as Session);
-
-    enhancedToast.success({
-      title: "Demo Mode Activated",
-      description: "Welcome to the demo environment!",
-    });
+    setUser(demoUser);
+    setSession(demoSession);
+    DemoUserService.showDemoWelcomeMessage();
   };
 
   const logout = async () => {
+    await performLogout(isDemo);
     if (isDemo) {
       setIsDemo(false);
       setUser(null);
       setSession(null);
-      enhancedToast.info({
-        title: "Demo session ended",
-        description: "Thanks for trying the demo!"
-      });
-      return;
     }
-
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      enhancedToast.error({
-        title: "Logout Failed",
-        description: error.message,
-      });
-      throw error;
-    }
-
-    enhancedToast.success({
-      title: "Signed out",
-      description: "You have been signed out successfully.",
-    });
   };
 
   const checkPasswordStrength = async (password: string) => {
-    const result = await enhancedAuthenticationSecurity.validateStrongPassword(password);
-    return {
-      score: result.score,
-      feedback: result.feedback,
-      isValid: result.isValid
-    };
+    return await PasswordValidationService.checkPasswordStrength(password);
   };
 
   const getSecurityMetrics = async () => {
-    return await enhancedSecurityMonitoring.getSecurityMetrics();
+    return await SecurityMetricsService.getSecurityMetrics();
   };
 
   return (
@@ -268,112 +119,8 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
       session,
       isLoading,
       isDemo,
-      secureLogin: async (email: string, password: string, options: { rememberMe?: boolean } = {}) => {
-        try {
-          // Use enhanced authentication security
-          const result = await enhancedAuthenticationSecurity.performSecureLogin(
-            email,
-            password,
-            {
-              rememberMe: options.rememberMe,
-              deviceFingerprint: authenticationSecurity.generateDeviceFingerprint()
-            }
-          );
-
-          if (!result.success) {
-            enhancedToast.error({
-              title: "Login Failed",
-              description: result.error || "Authentication failed",
-            });
-            return { error: result.error };
-          }
-
-          if (result.requiresVerification) {
-            enhancedToast.info({
-              title: "Verification Required",
-              description: "Please check your email to verify your account.",
-            });
-          } else {
-            enhancedToast.success({
-              title: "Welcome back!",
-              description: "You have been successfully signed in.",
-            });
-          }
-          
-          return {};
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Login failed';
-          enhancedToast.error({
-            title: "Login Failed",
-            description: errorMessage,
-          });
-          return { error: errorMessage };
-        }
-      },
-      secureSignup: async (email: string, password: string, name: string, acceptedTerms: boolean = false) => {
-        try {
-          // Validate password strength using enhanced security
-          const passwordValidation = await enhancedAuthenticationSecurity.validateStrongPassword(password, email);
-          
-          if (!passwordValidation.isValid) {
-            enhancedToast.error({
-              title: "Password Requirements Not Met",
-              description: passwordValidation.feedback.join('. '),
-            });
-            return { error: "Password does not meet security requirements" };
-          }
-
-          // Validate and sanitize inputs
-          const emailValidation = comprehensiveInputValidation.validateInput(email, 'email');
-          const nameValidation = comprehensiveInputValidation.validateInput(name, 'general');
-          
-          if (!emailValidation.isValid) {
-            throw new Error('Invalid email format');
-          }
-          
-          if (!nameValidation.isValid) {
-            throw new Error('Invalid name format');
-          }
-
-          const result = await authenticationSecurity.secureSignup(
-            emailValidation.sanitized,
-            password,
-            {
-              fullName: nameValidation.sanitized,
-              acceptedTerms
-            }
-          );
-
-          if (!result.success) {
-            enhancedToast.error({
-              title: "Signup Failed",
-              description: result.error || "Account creation failed",
-            });
-            return { error: result.error };
-          }
-
-          if (result.requiresVerification) {
-            enhancedToast.success({
-              title: "Account Created!",
-              description: "Please check your email to verify your account.",
-            });
-          } else {
-            enhancedToast.success({
-              title: "Welcome!",
-              description: "Your account has been created successfully.",
-            });
-          }
-          
-          return {};
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Signup failed';
-          enhancedToast.error({
-            title: "Signup Failed",
-            description: errorMessage,
-          });
-          return { error: errorMessage };
-        }
-      },
+      secureLogin,
+      secureSignup,
       logout,
       loginDemo,
       checkPasswordStrength,
