@@ -81,9 +81,12 @@ export class EnhancedInputValidation {
       if (rule.type === 'custom' && rule.customValidator) {
         validationResult = rule.customValidator(stringValue);
         errors.push(...validationResult.errors);
-      } else {
+      } else if (rule.type !== 'custom') {
         validationResult = comprehensiveInputValidation.validateInput(stringValue, rule.type);
         errors.push(...validationResult.errors);
+      } else {
+        // Default validation for custom type without validator
+        validationResult = { errors: [], isValid: true, sanitized: stringValue };
       }
 
       // Determine risk level based on validation results

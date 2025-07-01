@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +17,7 @@ interface EnhancedAuthContextType {
   secureSignup: (email: string, password: string, name: string, acceptedTerms?: boolean) => Promise<{ error?: any }>;
   logout: () => Promise<void>;
   loginDemo: () => Promise<void>;
-  checkPasswordStrength: (password: string) => { score: number; feedback: string[]; isValid: boolean };
+  checkPasswordStrength: (password: string) => Promise<{ score: number; feedback: string[]; isValid: boolean }>;
   getSecurityMetrics: () => Promise<any>;
   githubAccessToken: string | null;
 }
@@ -250,8 +249,13 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const checkPasswordStrength = (password: string) => {
-    return authenticationSecurity.validatePasswordStrength(password);
+  const checkPasswordStrength = async (password: string) => {
+    const result = await enhancedAuthenticationSecurity.validateStrongPassword(password);
+    return {
+      score: result.score,
+      feedback: result.feedback,
+      isValid: result.isValid
+    };
   };
 
   const getSecurityMetrics = async () => {
@@ -264,18 +268,115 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
       session,
       isLoading,
       isDemo,
-      secureLogin,
-      secureSignup,
+      secureLogin: async (email: string, password: string, options: { rememberMe?: boolean } = {}) => {
+        try {
+          // Use enhanced authentication security
+          const result = await enhancedAuthenticationSecurity.performSecureLogin(
+            email,
+            password,
+            {
+              rememberMe: options.rememberMe,
+              deviceFingerprint: authenticationSecurity.generateDeviceFingerprint()
+            }
+          );
+
+          if (!result.success) {
+            enhancedToast.error({
+              title: "Login Failed",
+              description: result.error || "Authentication failed",
+            });
+            return { error: result.error };
+          }
+
+          if (result.requiresVerification) {
+            enhancedToast.info({
+              title: "Verification Required",
+              description: "Please check your email to verify your account.",
+            });
+          } else {
+            enhancedToast.success({
+              title: "Welcome back!",
+              description: "You have been successfully signed in.",
+            });
+          }
+          
+          return {};
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Login failed';
+          enhancedToast.error({
+            title: "Login Failed",
+            description: errorMessage,
+          });
+          return { error: errorMessage };
+        }
+      },
+      secureSignup: async (email: string, password: string, name: string, acceptedTerms: boolean = false) => {
+        try {
+          // Validate password strength using enhanced security
+          const passwordValidation = await enhancedAuthenticationSecurity.validateStrongPassword(password, email);
+          
+          if (!passwordValidation.isValid) {
+            enhancedToast.error({
+              title: "Password Requirements Not Met",
+              description: passwordValidation.feedback.join('. '),
+            });
+            return { error: "Password does not meet security requirements" };
+          }
+
+          // Validate and sanitize inputs
+          const emailValidation = comprehensiveInputValidation.validateInput(email, 'email');
+          const nameValidation = comprehensiveInputValidation.validateInput(name, 'general');
+          
+          if (!emailValidation.isValid) {
+            throw new Error('Invalid email format');
+          }
+          
+          if (!nameValidation.isValid) {
+            throw new Error('Invalid name format');
+          }
+
+          const result = await authenticationSecurity.secureSignup(
+            emailValidation.sanitized,
+            password,
+            {
+              fullName: nameValidation.sanitized,
+              acceptedTerms
+            }
+          );
+
+          if (!result.success) {
+            enhancedToast.error({
+              title: "Signup Failed",
+              description: result.error || "Account creation failed",
+            });
+            return { error: result.error };
+          }
+
+          if (result.requiresVerification) {
+            enhancedToast.success({
+              title: "Account Created!",
+              description: "Please check your email to verify your account.",
+            });
+          } else {
+            enhancedToast.success({
+              title: "Welcome!",
+              description: "Your account has been created successfully.",
+            });
+          }
+          
+          return {};
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Signup failed';
+          enhancedToast.error({
+            title: "Signup Failed",
+            description: errorMessage,
+          });
+          return { error: errorMessage };
+        }
+      },
       logout,
       loginDemo,
-      checkPasswordStrength: (password: string) => {
-        const result = enhancedAuthenticationSecurity.validateStrongPassword(password);
-        return {
-          score: result.score,
-          feedback: result.feedback,
-          isValid: result.isValid
-        };
-      },
+      checkPasswordStrength,
       getSecurityMetrics,
       githubAccessToken
     }}>

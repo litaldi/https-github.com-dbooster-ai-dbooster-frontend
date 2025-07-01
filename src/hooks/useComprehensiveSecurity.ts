@@ -1,7 +1,6 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { enhancedAuthenticationSecurity } from '@/services/security/enhancedAuthenticationSecurity';
-import { enhancedInputValidation } from '@/services/security/enhancedInputValidation';
+import { enhancedInputValidation, EnhancedInputValidation } from '@/services/security/enhancedInputValidation';
 import { securityHeaders } from '@/services/security/securityHeaders';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { productionLogger } from '@/utils/productionLogger';
@@ -219,6 +218,6 @@ export function useComprehensiveSecurity() {
     applySecurityHeaders,
     
     // Pre-configured validation rules
-    commonValidationRules: enhancedInputValidation.COMMON_RULES
+    commonValidationRules: EnhancedInputValidation.COMMON_RULES
   };
 }
