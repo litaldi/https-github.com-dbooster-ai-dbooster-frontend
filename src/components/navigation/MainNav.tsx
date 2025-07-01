@@ -1,12 +1,12 @@
 
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { DemoBadge } from '@/components/demo-badge';
 import { useNavigation } from '@/hooks/useNavigation';
 import { EnhancedNavigationItems } from './EnhancedNavigationItems';
 import { EnhancedUserMenu } from './EnhancedUserMenu';
 import { NavigationLogo } from './NavigationLogo';
+import { StandardizedButton } from '@/components/ui/standardized-button';
 import { 
   publicNavItems, 
   authenticatedNavItems, 
@@ -64,14 +64,14 @@ export function MainNav() {
           <div className="lg:hidden">
             <Sheet open={isOpen} onOpenChange={toggleMenu}>
               <SheetTrigger asChild>
-                <Button 
+                <StandardizedButton 
                   variant="ghost" 
                   size="icon" 
                   aria-label="Open navigation menu"
                   aria-expanded={isOpen}
                 >
                   <Menu className="h-5 w-5" />
-                </Button>
+                </StandardizedButton>
               </SheetTrigger>
               <SheetContent side="right" className="w-80 p-6">
                 <div className="flex flex-col space-y-6">
