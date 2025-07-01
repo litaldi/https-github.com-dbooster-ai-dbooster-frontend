@@ -99,20 +99,13 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
 
   const secureLogin = async (email: string, password: string, options: { rememberMe?: boolean } = {}) => {
     try {
-      // Validate and sanitize inputs
-      const emailValidation = comprehensiveInputValidation.validateInput(email, 'email');
-      if (!emailValidation.isValid) {
-        throw new Error('Invalid email format');
-      }
-
-      const deviceFingerprint = authenticationSecurity.generateDeviceFingerprint();
-      
-      const result = await authenticationSecurity.secureLogin(
-        emailValidation.sanitized,
+      // Use enhanced authentication security
+      const result = await enhancedAuthenticationSecurity.performSecureLogin(
+        email,
         password,
         {
           rememberMe: options.rememberMe,
-          deviceFingerprint
+          deviceFingerprint: authenticationSecurity.generateDeviceFingerprint()
         }
       );
 
@@ -149,6 +142,17 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
 
   const secureSignup = async (email: string, password: string, name: string, acceptedTerms: boolean = false) => {
     try {
+      // Validate password strength using enhanced security
+      const passwordValidation = await enhancedAuthenticationSecurity.validateStrongPassword(password, email);
+      
+      if (!passwordValidation.isValid) {
+        enhancedToast.error({
+          title: "Password Requirements Not Met",
+          description: passwordValidation.feedback.join('. '),
+        });
+        return { error: "Password does not meet security requirements" };
+      }
+
       // Validate and sanitize inputs
       const emailValidation = comprehensiveInputValidation.validateInput(email, 'email');
       const nameValidation = comprehensiveInputValidation.validateInput(name, 'general');
@@ -263,7 +267,14 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
       secureSignup,
       logout,
       loginDemo,
-      checkPasswordStrength,
+      checkPasswordStrength: (password: string) => {
+        const result = enhancedAuthenticationSecurity.validateStrongPassword(password);
+        return {
+          score: result.score,
+          feedback: result.feedback,
+          isValid: result.isValid
+        };
+      },
       getSecurityMetrics,
       githubAccessToken
     }}>
