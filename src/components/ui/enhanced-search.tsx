@@ -40,39 +40,63 @@ export function EnhancedSearch({
   const inputRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Mock search data
+  // Updated mock search results with existing routes only
   const mockResults: SearchResult[] = [
     {
       id: '1',
       title: 'Dashboard',
       description: 'AI-powered database optimization center',
       category: 'page',
-      url: '/app/dashboard',
+      url: '/app',
       relevance: 0.9
     },
     {
       id: '2',
-      title: 'Query Optimization',
-      description: 'Optimize your database queries with AI',
+      title: 'Queries',
+      description: 'Manage and optimize your database queries',
       category: 'feature',
-      url: '/app/query-optimization',
+      url: '/queries',
       relevance: 0.8
     },
     {
       id: '3',
-      title: 'Performance Monitor',
-      description: 'Real-time database performance monitoring',
+      title: 'Repositories',
+      description: 'Database connections and repositories',
       category: 'feature',
-      url: '/app/performance',
+      url: '/repositories',
       relevance: 0.85
     },
     {
       id: '4',
-      title: 'Visual Query Builder',
-      description: 'Build queries visually with drag-and-drop',
+      title: 'AI Studio',
+      description: 'AI-powered optimization tools',
       category: 'feature',
-      url: '/app/query-builder',
+      url: '/ai-studio',
+      relevance: 0.9
+    },
+    {
+      id: '5',
+      title: 'Reports',
+      description: 'Performance insights and analytics',
+      category: 'feature',
+      url: '/reports',
       relevance: 0.75
+    },
+    {
+      id: '6',
+      title: 'Features',
+      description: 'Explore DBooster features',
+      category: 'page',
+      url: '/features',
+      relevance: 0.7
+    },
+    {
+      id: '7',
+      title: 'Support',
+      description: 'Help and documentation',
+      category: 'docs',
+      url: '/support',
+      relevance: 0.6
     }
   ];
 

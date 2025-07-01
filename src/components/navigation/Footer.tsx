@@ -20,7 +20,6 @@ export function Footer() {
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact' },
     { href: '/support', label: 'Support' },
-    { href: '/docs', label: 'Documentation' },
   ];
 
   const legalLinks = [
@@ -31,9 +30,10 @@ export function Footer() {
 
   const dashboardLinks = user ? [
     { href: '/app', label: 'Dashboard' },
-    { href: '/app/queries', label: 'Queries' },
-    { href: '/app/repositories', label: 'Repositories' },
-    { href: '/app/reports', label: 'Reports' },
+    { href: '/queries', label: 'Queries' },
+    { href: '/repositories', label: 'Repositories' },
+    { href: '/reports', label: 'Reports' },
+    { href: '/ai-studio', label: 'AI Studio' },
   ] : [];
 
   return (
@@ -149,25 +149,25 @@ export function Footer() {
             <div className="space-y-2">
               <h4 className="text-sm font-medium">Resources</h4>
               <div className="flex flex-wrap gap-4 text-sm">
-                <a 
-                  href="/docs" 
+                <Link 
+                  to="/support" 
                   className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
                 >
-                  API Documentation
+                  Documentation
                   <ExternalLink className="h-3 w-3" />
-                </a>
-                <a 
-                  href="/support" 
+                </Link>
+                <Link 
+                  to="/support" 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Help Center
-                </a>
-                <a 
-                  href="/blog" 
+                </Link>
+                <Link 
+                  to="/blog" 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Blog
-                </a>
+                </Link>
               </div>
             </div>
           </div>

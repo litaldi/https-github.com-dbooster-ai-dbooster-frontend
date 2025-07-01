@@ -19,7 +19,11 @@ import {
   Users, 
   Brain,
   BookOpen,
-  Newspaper
+  Newspaper,
+  Database,
+  FileText,
+  Activity,
+  Globe
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -33,7 +37,7 @@ export interface NavigationItem {
 export const publicNavItems: NavigationItem[] = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/features', label: 'Features', icon: Zap },
-  { href: '/how-it-works', label: 'How It Works', icon: Info },
+  { href: '/how-it-works', label: 'How It Works', icon: Activity },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
   { href: '/learn', label: 'Learn', icon: BookOpen },
   { href: '/blog', label: 'Blog', icon: Newspaper },
@@ -41,13 +45,13 @@ export const publicNavItems: NavigationItem[] = [
 
 export const authenticatedNavItems: NavigationItem[] = [
   { href: '/app', label: 'Dashboard', icon: BarChart3 },
-  { href: '/app/queries', label: 'Queries', icon: Search },
-  { href: '/app/repositories', label: 'Repositories', icon: FolderOpen },
+  { href: '/queries', label: 'Queries', icon: Search },
+  { href: '/repositories', label: 'Repositories', icon: Database },
   { href: '/ai-studio', label: 'AI Studio', icon: Brain, badge: 'AI' },
-  { href: '/app/reports', label: 'Reports', icon: TrendingUp },
-  { href: '/app/approvals', label: 'Approvals', icon: CheckSquare },
-  { href: '/app/teams', label: 'Teams', icon: Users },
-  { href: '/app/sandbox', label: 'Sandbox', icon: Settings },
+  { href: '/reports', label: 'Reports', icon: FileText },
+  { href: '/approvals', label: 'Approvals', icon: CheckSquare },
+  { href: '/teams', label: 'Teams', icon: Users },
+  { href: '/sandbox', label: 'Sandbox', icon: Settings },
 ];
 
 export const userMenuItems: NavigationItem[] = [
@@ -64,5 +68,5 @@ export const companyMenuItems: NavigationItem[] = [
 export const legalMenuItems: NavigationItem[] = [
   { href: '/privacy', label: 'Privacy', icon: Shield },
   { href: '/terms', label: 'Terms', icon: FileCheck },
-  { href: '/accessibility', label: 'Accessibility', icon: Info },
+  { href: '/accessibility', label: 'Accessibility', icon: Globe },
 ];
