@@ -19,31 +19,33 @@ export function BreadcrumbNav({ className }: { className?: string }) {
       { label: 'Home', href: '/' }
     ];
 
-    // Route mapping for better labels
+    // Enhanced route mapping with better labels
     const routeLabels: Record<string, string> = {
-      'repositories': 'Repositories',
+      'app': 'Dashboard',
+      'repositories': 'Database Repositories',
       'queries': 'Query Manager',
       'optimization': 'Query Optimization',
-      'ai': 'AI Features',
-      'reports': 'Reports',
-      'settings': 'Settings',
-      'account': 'Account',
-      'teams': 'Teams',
-      'approvals': 'Approvals',
+      'ai-studio': 'AI Studio',
+      'reports': 'Performance Reports',
+      'settings': 'App Settings',
+      'account': 'Profile Settings',
+      'teams': 'Team Management',
+      'approvals': 'Query Approvals',
       'audit': 'Audit Log',
       'import': 'Database Import',
-      'sandbox': 'Sandbox',
-      'about': 'About',
-      'features': 'Features',
-      'pricing': 'Pricing',
-      'contact': 'Contact',
-      'how-it-works': 'How It Works',
-      'learn': 'Learning Hub',
-      'blog': 'Blog',
-      'support': 'Support',
+      'sandbox': 'Testing Sandbox',
+      'about': 'About DBooster',
+      'features': 'Features & Capabilities',
+      'pricing': 'Pricing Plans',
+      'contact': 'Contact Support',
+      'how-it-works': 'How DBooster Works',
+      'learn': 'Learning Center',
+      'blog': 'DBooster Blog',
+      'support': 'Help Center',
       'docs': 'Documentation',
       'terms': 'Terms of Service',
-      'privacy': 'Privacy Policy'
+      'privacy': 'Privacy Policy',
+      'accessibility': 'Accessibility Statement'
     };
 
     let currentPath = '';
@@ -52,7 +54,7 @@ export function BreadcrumbNav({ className }: { className?: string }) {
       const isLast = index === pathSegments.length - 1;
       
       breadcrumbs.push({
-        label: routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),
+        label: routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' '),
         href: currentPath,
         current: isLast
       });
@@ -69,8 +71,8 @@ export function BreadcrumbNav({ className }: { className?: string }) {
 
   return (
     <nav 
-      aria-label="Breadcrumb" 
-      className={cn("flex items-center space-x-1 text-sm text-muted-foreground mb-6", className)}
+      aria-label="Breadcrumb navigation" 
+      className={cn("flex items-center space-x-1 text-sm text-muted-foreground mb-6 p-2 bg-muted/30 rounded-lg", className)}
     >
       <ol className="flex items-center space-x-1">
         {breadcrumbs.map((item, index) => (
@@ -81,7 +83,7 @@ export function BreadcrumbNav({ className }: { className?: string }) {
             
             {item.current ? (
               <span 
-                className="font-medium text-foreground"
+                className="font-medium text-foreground px-2 py-1 bg-background rounded-md shadow-sm"
                 aria-current="page"
               >
                 {index === 0 && <Home className="h-4 w-4 inline mr-1" aria-hidden="true" />}
@@ -90,7 +92,7 @@ export function BreadcrumbNav({ className }: { className?: string }) {
             ) : (
               <Link
                 to={item.href}
-                className="hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm px-1 py-0.5"
+                className="hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm px-2 py-1 hover:bg-background/50"
               >
                 {index === 0 && <Home className="h-4 w-4 inline mr-1" aria-hidden="true" />}
                 {item.label}

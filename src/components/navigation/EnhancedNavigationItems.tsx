@@ -38,11 +38,11 @@ export function EnhancedNavigationItems({
             key={item.href}
             to={item.href}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md",
-              "hover:bg-accent hover:text-accent-foreground",
+              "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all duration-200 rounded-md",
+              "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isActive
-                ? "bg-accent text-accent-foreground" 
+                ? "bg-accent text-accent-foreground shadow-sm" 
                 : "text-muted-foreground hover:text-foreground",
               mobile && "justify-start w-full"
             )}
@@ -53,9 +53,14 @@ export function EnhancedNavigationItems({
             <Icon className="h-4 w-4" aria-hidden="true" />
             <span>{item.label}</span>
             {item.badge && (
-              <Badge variant="secondary" className="text-xs ml-auto">
+              <Badge variant="secondary" className="text-xs ml-auto bg-primary/10 text-primary border-primary/20">
                 {item.badge}
               </Badge>
+            )}
+            {mobile && item.description && (
+              <span className="text-xs text-muted-foreground block mt-1 ml-6">
+                {item.description}
+              </span>
             )}
           </Link>
         );

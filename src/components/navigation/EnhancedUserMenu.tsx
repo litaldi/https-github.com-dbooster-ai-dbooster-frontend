@@ -41,16 +41,17 @@ export function EnhancedUserMenu({
             key={item.href}
             to={item.href}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-md",
-              "hover:bg-accent hover:text-accent-foreground",
+              "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all duration-200 rounded-md",
+              "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isActive
-                ? "bg-accent text-accent-foreground" 
+                ? "bg-accent text-accent-foreground shadow-sm" 
                 : "text-muted-foreground hover:text-foreground",
               mobile && "justify-start w-full"
             )}
             onClick={closeMenu}
             aria-current={isActive ? 'page' : undefined}
+            title={item.description}
           >
             <Icon className="h-4 w-4" aria-hidden="true" />
             {item.label}
@@ -65,7 +66,7 @@ export function EnhancedUserMenu({
         size={mobile ? "default" : "icon"}
         onClick={toggleTheme}
         className={cn(
-          "flex items-center gap-2",
+          "flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]",
           mobile && "justify-start w-full"
         )}
         aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
@@ -81,19 +82,19 @@ export function EnhancedUserMenu({
           size={mobile ? "default" : "sm"}
           onClick={handleLogout}
           className={cn(
-            "flex items-center gap-2",
+            "flex items-center gap-2 transition-all duration-200 hover:scale-[1.02] hover:bg-destructive/10 hover:text-destructive",
             mobile && "justify-start w-full"
           )}
-          aria-label="Sign out"
+          aria-label="Sign out of DBooster"
         >
           <LogOut className="h-4 w-4" />
-          {mobile && <span>Logout</span>}
+          {mobile && <span>Sign Out</span>}
         </Button>
       ) : (
-        <Button asChild>
+        <Button asChild className="transition-all duration-200 hover:scale-[1.02]">
           <Link to="/login">
             <LogIn className="h-4 w-4 mr-2" />
-            Sign In
+            Get Started
           </Link>
         </Button>
       )}

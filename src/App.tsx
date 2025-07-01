@@ -41,11 +41,12 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
         <AuthProvider>
           <Router>
             <GlobalLoadingOverlay />
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<PublicLayout />}>
                 <Route index element={<Home />} />
                 <Route path="login" element={<Login />} />
@@ -62,15 +63,33 @@ function App() {
                 <Route path="accessibility" element={<Accessibility />} />
                 <Route path="ai-studio" element={<AIOptimizationStudio />} />
               </Route>
+              
+              {/* Authenticated app routes */}
               <Route path="/app" element={<Layout />}>
                 <Route index element={<EnhancedDashboard />} />
-                <Route path="queries" element={<Queries />} />
-                <Route path="repositories" element={<Repositories />} />
-                <Route path="reports" element={<Reports />} />
               </Route>
+              
+              {/* Additional authenticated routes */}
+              <Route path="/queries" element={<Layout />}>
+                <Route index element={<Queries />} />
+              </Route>
+              <Route path="/repositories" element={<Layout />}>
+                <Route index element={<Repositories />} />
+              </Route>
+              <Route path="/reports" element={<Layout />}>
+                <Route index element={<Reports />} />
+              </Route>
+              
+              {/* 404 fallback */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <Toaster />
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                className: 'bg-background border-border text-foreground'
+              }}
+            />
           </Router>
         </AuthProvider>
       </ThemeProvider>

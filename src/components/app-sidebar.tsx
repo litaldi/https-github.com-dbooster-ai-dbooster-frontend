@@ -1,5 +1,5 @@
 
-import { Home, Database, Search, FileText, BarChart3, Settings, Users, Shield, HelpCircle, Zap, BookOpen } from "lucide-react"
+import { Home, Database, Search, FileText, BarChart3, Settings, Users, Shield, HelpCircle, Zap, BookOpen, Brain } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import {
@@ -20,59 +20,59 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { NotificationTrigger } from "@/components/notifications/SmartNotifications"
 
-// Updated menu items with correct routes
+// Updated menu items with consistent branding and clearer labels
 const items = [
   {
     title: "Dashboard",
     url: "/app",
     icon: Home,
-    description: "Overview and metrics"
+    description: "Performance overview and key metrics"
   },
   {
-    title: "Repositories",
+    title: "Database Repositories",
     url: "/repositories",
     icon: Database,
-    description: "Database connections"
+    description: "Manage your database connections"
   },
   {
-    title: "Queries",
+    title: "Query Manager",
     url: "/queries",
     icon: Search,
-    description: "SQL optimization"
+    description: "Optimize and manage SQL queries"
   },
   {
     title: "AI Studio",
     url: "/ai-studio",
-    icon: Zap,
-    description: "AI-powered tools",
+    icon: Brain,
+    description: "AI-powered optimization tools",
     badge: "AI"
   },
   {
-    title: "Reports",
+    title: "Performance Reports",
     url: "/reports",
     icon: FileText,
-    description: "Performance insights"
+    description: "Detailed analytics and insights"
   },
 ]
 
 const managementItems = [
   {
-    title: "Teams",
+    title: "Team Management",
     url: "/teams",
     icon: Users,
-    description: "Team management"
+    description: "Manage team members and permissions"
   },
   {
-    title: "Settings",
+    title: "App Settings",
     url: "/app/settings",
     icon: Settings,
-    description: "Configuration"
+    description: "Configure DBooster preferences"
   },
   {
-    title: "Support",
+    title: "Help Center",
     url: "/support",
     icon: HelpCircle,
-    description: "Help and support"
+    description: "Documentation and support"
   },
 ]
 
@@ -83,16 +83,16 @@ export function AppSidebar() {
     <Sidebar data-tour="sidebar" className="border-r">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold shadow-sm">
             DB
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold">DBooster</span>
+            <span className="font-semibold text-foreground">DBooster</span>
             <span className="text-xs text-muted-foreground">AI Database Optimizer</span>
           </div>
         </div>
         {isDemo && (
-          <Badge variant="secondary" className="mt-2 text-xs">
+          <Badge variant="secondary" className="mt-2 text-xs bg-amber-100 text-amber-800 border-amber-200">
             Demo Mode
           </Badge>
         )}
@@ -100,7 +100,9 @@ export function AppSidebar() {
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Features</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Core Features
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -111,15 +113,15 @@ export function AppSidebar() {
                       end={item.url === "/app"}
                       className={({ isActive }) =>
                         cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
-                          isActive && "bg-accent text-accent-foreground"
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-accent hover:scale-[1.02]",
+                          isActive && "bg-accent text-accent-foreground shadow-sm"
                         )
                       }
                     >
                       <item.icon className="h-4 w-4" />
                       <span className="flex-1">{item.title}</span>
                       {item.badge && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20">
                           {item.badge}
                         </Badge>
                       )}
@@ -132,7 +134,9 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Management
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {managementItems.map((item) => (
@@ -142,8 +146,8 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",
-                          isActive && "bg-accent text-accent-foreground"
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-accent hover:scale-[1.02]",
+                          isActive && "bg-accent text-accent-foreground shadow-sm"
                         )
                       }
                     >
@@ -165,7 +169,7 @@ export function AppSidebar() {
           
           {/* User Info */}
           {user && (
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm bg-muted/50 rounded-lg p-2">
               <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">
                 {user.email?.[0]?.toUpperCase()}
               </div>
@@ -177,11 +181,11 @@ export function AppSidebar() {
           
           {/* Quick Links */}
           <div className="flex gap-1">
-            <Button variant="ghost" size="sm" className="flex-1 text-xs">
+            <Button variant="ghost" size="sm" className="flex-1 text-xs hover:bg-accent">
               <BookOpen className="h-3 w-3 mr-1" />
               Docs
             </Button>
-            <Button variant="ghost" size="sm" className="flex-1 text-xs">
+            <Button variant="ghost" size="sm" className="flex-1 text-xs hover:bg-accent">
               <Shield className="h-3 w-3 mr-1" />
               Security
             </Button>
