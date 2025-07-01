@@ -17,7 +17,9 @@ import {
   Info, 
   CheckSquare, 
   Users, 
-  TestTube 
+  Brain,
+  BookOpen,
+  Newspaper
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -33,19 +35,19 @@ export const publicNavItems: NavigationItem[] = [
   { href: '/features', label: 'Features', icon: Zap },
   { href: '/how-it-works', label: 'How It Works', icon: Info },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
-  { href: '/learn', label: 'Learn', icon: Info },
-  { href: '/blog', label: 'Blog', icon: Info },
+  { href: '/learn', label: 'Learn', icon: BookOpen },
+  { href: '/blog', label: 'Blog', icon: Newspaper },
 ];
 
 export const authenticatedNavItems: NavigationItem[] = [
   { href: '/app', label: 'Dashboard', icon: BarChart3 },
   { href: '/app/queries', label: 'Queries', icon: Search },
   { href: '/app/repositories', label: 'Repositories', icon: FolderOpen },
-  { href: '/app/query-optimization', label: 'AI Optimization', icon: TestTube, badge: 'AI' },
+  { href: '/ai-studio', label: 'AI Studio', icon: Brain, badge: 'AI' },
   { href: '/app/reports', label: 'Reports', icon: TrendingUp },
   { href: '/app/approvals', label: 'Approvals', icon: CheckSquare },
   { href: '/app/teams', label: 'Teams', icon: Users },
-  { href: '/app/sandbox', label: 'Sandbox', icon: TestTube },
+  { href: '/app/sandbox', label: 'Sandbox', icon: Settings },
 ];
 
 export const userMenuItems: NavigationItem[] = [

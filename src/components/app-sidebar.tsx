@@ -20,36 +20,36 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { NotificationTrigger } from "@/components/notifications/SmartNotifications"
 
-// Menu items
+// Updated menu items with correct routes
 const items = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/app",
     icon: Home,
     description: "Overview and metrics"
   },
   {
     title: "Repositories",
-    url: "/repositories",
+    url: "/app/repositories",
     icon: Database,
     description: "Database connections"
   },
   {
     title: "Queries",
-    url: "/queries",
+    url: "/app/queries",
     icon: Search,
     description: "SQL optimization"
   },
   {
     title: "AI Features",
-    url: "/ai-features",
+    url: "/ai-studio",
     icon: Zap,
     description: "AI-powered tools",
     badge: "New"
   },
   {
     title: "Reports",
-    url: "/reports",
+    url: "/app/reports",
     icon: BarChart3,
     description: "Performance insights"
   },
@@ -58,13 +58,13 @@ const items = [
 const managementItems = [
   {
     title: "Teams",
-    url: "/teams",
+    url: "/app/teams",
     icon: Users,
     description: "Team management"
   },
   {
     title: "Settings",
-    url: "/settings",
+    url: "/app/settings",
     icon: Settings,
     description: "Configuration"
   },
@@ -108,6 +108,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild tooltip={item.description}>
                     <NavLink 
                       to={item.url}
+                      end={item.url === "/app"}
                       className={({ isActive }) =>
                         cn(
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all hover:bg-accent",

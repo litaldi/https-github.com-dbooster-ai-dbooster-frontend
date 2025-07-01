@@ -36,7 +36,7 @@ export function NotFound() {
               </Button>
               
               <Button asChild variant="outline" className="flex items-center gap-2">
-                <Link to="/app/dashboard">
+                <Link to="/app">
                   <Search className="w-4 h-4" />
                   Dashboard
                 </Link>

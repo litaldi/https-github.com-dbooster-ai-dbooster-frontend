@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -5,11 +6,11 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
 import { PublicLayout } from '@/components/PublicLayout';
 import { GlobalLoadingOverlay } from '@/components/ui/GlobalLoadingOverlay';
+import Layout from '@/components/layout';
 
 // Pages
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
-import Dashboard from '@/pages/Dashboard';
 import Features from '@/pages/Features';
 import HowItWorks from '@/pages/HowItWorks';
 import Pricing from '@/pages/Pricing';
@@ -23,6 +24,9 @@ import Terms from '@/pages/Terms';
 import Accessibility from '@/pages/Accessibility';
 import AIOptimizationStudio from '@/pages/AIOptimizationStudio';
 import EnhancedDashboard from '@/pages/EnhancedDashboard';
+import Queries from '@/pages/Queries';
+import Repositories from '@/pages/Repositories';
+import Reports from '@/pages/Reports';
 import { NotFound } from '@/components/error/NotFound';
 
 const queryClient = new QueryClient({
@@ -56,11 +60,15 @@ function App() {
                 <Route path="privacy" element={<Privacy />} />
                 <Route path="terms" element={<Terms />} />
                 <Route path="accessibility" element={<Accessibility />} />
-                <Route path="app" element={<EnhancedDashboard />} />
-                <Route path="app/*" element={<EnhancedDashboard />} />
                 <Route path="ai-studio" element={<AIOptimizationStudio />} />
-                <Route path="*" element={<NotFound />} />
               </Route>
+              <Route path="/app" element={<Layout />}>
+                <Route index element={<EnhancedDashboard />} />
+                <Route path="queries" element={<Queries />} />
+                <Route path="repositories" element={<Repositories />} />
+                <Route path="reports" element={<Reports />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
           </Router>
