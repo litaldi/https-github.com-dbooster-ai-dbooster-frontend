@@ -6,6 +6,7 @@ import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { authenticationSecurity } from '@/services/security/authenticationSecurity';
 import { comprehensiveInputValidation } from '@/services/security/comprehensiveInputValidation';
 import { enhancedSecurityMonitoring } from '@/services/security/enhancedSecurityMonitoring';
+import { enhancedAuthenticationSecurity } from '@/services/security/enhancedAuthenticationSecurity';
 import { productionLogger } from '@/utils/productionLogger';
 
 interface EnhancedAuthContextType {

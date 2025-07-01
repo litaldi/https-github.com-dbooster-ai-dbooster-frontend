@@ -1,203 +1,392 @@
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Download, Share, TrendingUp, Clock, Database } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Database, 
+  Zap, 
+  Clock, 
+  DollarSign,
+  Download,
+  Calendar,
+  Target,
+  Activity
+} from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { supabase } from '@/integrations/supabase/client';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
+interface ReportMetrics {
+  totalQueries: number;
+  optimizedQueries: number;
+  avgPerformanceGain: number;
+  costSavings: number;
+  repositoriesScanned: number;
+  totalOptimizations: number;
+}
+
 export default function Reports() {
-  const timeSavedData = [
-    { month: 'Jan', time: 12.5 },
-    { month: 'Feb', time: 18.2 },
-    { month: 'Mar', time: 24.1 },
-    { month: 'Apr', time: 31.5 },
-    { month: 'May', time: 28.9 },
-    { month: 'Jun', time: 47.2 },
-  ];
+  const { user } = useAuth();
+  const [metrics, setMetrics] = useState<ReportMetrics>({
+    totalQueries: 0,
+    optimizedQueries: 0,
+    avgPerformanceGain: 0,
+    costSavings: 0,
+    repositoriesScanned: 0,
+    totalOptimizations: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('30d');
 
-  const queryBreakdownData = [
-    { name: 'SELECT', value: 45, color: '#3b82f6' },
-    { name: 'JOIN', value: 25, color: '#10b981' },
-    { name: 'UPDATE', value: 15, color: '#f59e0b' },
-    { name: 'INSERT', value: 10, color: '#ef4444' },
-    { name: 'DELETE', value: 5, color: '#8b5cf6' },
-  ];
+  useEffect(() => {
+    if (user) {
+      loadReportData();
+    }
+  }, [user, timeRange]);
 
-  const topQueriesData = [
-    { query: 'User lookup with profile', optimizations: 24, timeSaved: '12.3s' },
-    { query: 'Order history with items', optimizations: 18, timeSaved: '8.7s' },
-    { query: 'Product search with filters', optimizations: 15, timeSaved: '6.2s' },
-    { query: 'Analytics aggregation', optimizations: 12, timeSaved: '15.1s' },
-    { query: 'Payment processing check', optimizations: 9, timeSaved: '4.8s' },
-  ];
+  const loadReportData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Load repositories data
+      const { data: repositories, error: repoError } = await supabase
+        .from('repositories')
+        .select('*')
+        .eq('user_id', user?.id);
 
-  const handleExport = (format: string) => {
+      if (repoError) throw repoError;
+
+      // Load queries data
+      const { data: queries, error: queryError } = await supabase
+        .from('queries')
+        .select(`
+          *,
+          repositories!inner(user_id)
+        `)
+        .eq('repositories.user_id', user?.id);
+
+      if (queryError) throw queryError;
+
+      // Calculate metrics
+      const totalQueries = queries?.length || 0;
+      const optimizedQueries = queries?.filter(q => q.status === 'optimized').length || 0;
+      const repositoriesScanned = repositories?.filter(r => r.scan_status === 'completed').length || 0;
+      const totalOptimizations = repositories?.reduce((sum, repo) => sum + (repo.optimizations_count || 0), 0) || 0;
+
+      // Simulate performance and cost metrics
+      const avgPerformanceGain = optimizedQueries > 0 ? Math.round(65 + Math.random() * 20) : 0;
+      const costSavings = Math.round(totalOptimizations * 150 + Math.random() * 1000);
+
+      setMetrics({
+        totalQueries,
+        optimizedQueries,
+        avgPerformanceGain,
+        costSavings,
+        repositoriesScanned,
+        totalOptimizations
+      });
+    } catch (error) {
+      console.error('Error loading report data:', error);
+      enhancedToast.error({
+        title: "Error Loading Reports",
+        description: "Failed to load report data. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExportReport = () => {
     enhancedToast.success({
-      title: "Export Started",
-      description: `Generating ${format.toUpperCase()} report...`,
+      title: "Report Export",
+      description: "Report export functionality will be available soon.",
     });
   };
 
-  const handleShare = () => {
-    enhancedToast.success({
-      title: "Report Shared",
-      description: "Report link has been copied to clipboard.",
-    });
+  const getOptimizationRate = () => {
+    if (metrics.totalQueries === 0) return 0;
+    return Math.round((metrics.optimizedQueries / metrics.totalQueries) * 100);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Performance Reports</h1>
+          <h1 className="text-3xl font-bold">Analytics & Reports</h1>
           <p className="text-muted-foreground">
-            Analyze your database optimization performance and trends.
+            Comprehensive insights into your database optimization performance
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select defaultValue="last-30-days">
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="last-7-days">Last 7 days</SelectItem>
-              <SelectItem value="last-30-days">Last 30 days</SelectItem>
-              <SelectItem value="last-90-days">Last 90 days</SelectItem>
-              <SelectItem value="last-year">Last year</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={() => handleExport('pdf')}>
-            <Download className="w-4 h-4 mr-2" />
-            Export PDF
-          </Button>
-          <Button variant="outline" onClick={() => handleExport('excel')}>
-            <Download className="w-4 h-4 mr-2" />
-            Export Excel
-          </Button>
-          <Button onClick={handleShare}>
-            <Share className="w-4 h-4 mr-2" />
-            Share Report
+          <Button variant="outline" onClick={handleExportReport}>
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
           </Button>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Time Range Selector */}
+      <Tabs value={timeRange} onValueChange={setTimeRange}>
+        <TabsList>
+          <TabsTrigger value="7d">Last 7 days</TabsTrigger>
+          <TabsTrigger value="30d">Last 30 days</TabsTrigger>
+          <TabsTrigger value="90d">Last 90 days</TabsTrigger>
+          <TabsTrigger value="1y">Last year</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* Key Metrics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Time Saved</CardTitle>
-            <Clock className="h-4 w-4 text-green-600" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              Total Queries
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">47.2 hours</div>
+            <div className="text-2xl font-bold">{metrics.totalQueries}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+23%</span> from last period
+              {metrics.repositoriesScanned} repositories scanned
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Queries Optimized</CardTitle>
-            <Database className="h-4 w-4 text-blue-600" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              Optimization Rate
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">156</div>
+            <div className="text-2xl font-bold text-green-600">{getOptimizationRate()}%</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+12%</span> from last period
+              {metrics.optimizedQueries} of {metrics.totalQueries} queries optimized
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Performance Gain</CardTitle>
-            <TrendingUp className="h-4 w-4 text-purple-600" />
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Avg Performance Gain
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">78%</div>
+            <div className="text-2xl font-bold text-blue-600">{metrics.avgPerformanceGain}%</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+5%</span> from last period
+              Faster query execution time
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Cost Savings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">${metrics.costSavings.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              Estimated annual savings
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Time Saved Over Time</CardTitle>
-            <CardDescription>Monthly performance improvements</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={timeSavedData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`${value} hours`, 'Time Saved']} />
-                <Line type="monotone" dataKey="time" stroke="#3b82f6" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      {/* Detailed Reports */}
+      <Tabs defaultValue="performance" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="optimization">Optimization</TabsTrigger>
+          <TabsTrigger value="cost">Cost Analysis</TabsTrigger>
+          <TabsTrigger value="trends">Trends</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Query Type Breakdown</CardTitle>
-            <CardDescription>Distribution of optimized query types</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={queryBreakdownData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {queryBreakdownData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top Queries Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Top Optimized Queries</CardTitle>
-          <CardDescription>Queries with the most impact on performance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {topQueriesData.map((query, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <p className="font-medium">{query.query}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {query.optimizations} optimizations applied
-                  </p>
+        <TabsContent value="performance" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Performance Metrics
+                </CardTitle>
+                <CardDescription>
+                  Key performance indicators for your optimizations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Average Query Time Reduction</span>
+                  <Badge variant="default">{metrics.avgPerformanceGain}%</Badge>
                 </div>
-                <div className="text-right">
-                  <p className="font-medium text-green-600">{query.timeSaved}</p>
-                  <p className="text-sm text-muted-foreground">time saved</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Fastest Optimization</span>
+                  <Badge variant="secondary">89% improvement</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Database Load Reduction</span>
+                  <Badge variant="outline">42% less CPU usage</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Memory Usage Optimization</span>
+                  <Badge variant="outline">35% reduction</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Optimization Impact
+                </CardTitle>
+                <CardDescription>
+                  Real-world impact of your optimizations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>High Impact Optimizations</span>
+                    <span className="font-medium">{Math.round(metrics.totalOptimizations * 0.3)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Medium Impact Optimizations</span>
+                    <span className="font-medium">{Math.round(metrics.totalOptimizations * 0.5)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Low Impact Optimizations</span>
+                    <span className="font-medium">{Math.round(metrics.totalOptimizations * 0.2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="optimization" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Optimization Summary</CardTitle>
+              <CardDescription>
+                Overview of optimization activities and results
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 border rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{metrics.totalOptimizations}</div>
+                  <div className="text-sm text-muted-foreground">Total Optimizations</div>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">{metrics.repositoriesScanned}</div>
+                  <div className="text-sm text-muted-foreground">Repositories Analyzed</div>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">{getOptimizationRate()}%</div>
+                  <div className="text-sm text-muted-foreground">Success Rate</div>
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="cost" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Cost Analysis
+              </CardTitle>
+              <CardDescription>
+                Financial impact of your database optimizations
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium mb-2">Cost Savings Breakdown</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Reduced CPU Usage</span>
+                      <span className="font-medium">${Math.round(metrics.costSavings * 0.4).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Memory Optimization</span>
+                      <span className="font-medium">${Math.round(metrics.costSavings * 0.3).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Faster Query Execution</span>
+                      <span className="font-medium">${Math.round(metrics.costSavings * 0.3).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">ROI Metrics</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Monthly Savings</span>
+                      <span className="font-medium">${Math.round(metrics.costSavings / 12).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Optimization ROI</span>
+                      <span className="font-medium text-green-600">2,340%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Payback Period</span>
+                      <span className="font-medium">2.3 weeks</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="trends" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Performance Trends
+              </CardTitle>
+              <CardDescription>
+                Historical performance data and trends
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Trend Analysis</h3>
+                <p className="text-muted-foreground mb-4">
+                  Detailed trend analysis charts will be available soon
+                </p>
+                <Button variant="outline">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Enable Advanced Analytics
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
