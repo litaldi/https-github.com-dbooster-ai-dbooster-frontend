@@ -2,12 +2,12 @@
 import { EnhancedAuthForm } from '@/components/auth/EnhancedAuthForm';
 import { DemoWalkthrough } from '@/components/demo-walkthrough';
 import { FadeIn } from '@/components/ui/animations';
-import { useEnhancedAuth } from '@/hooks/useEnhancedAuth';
+import { useConsolidatedAuth } from '@/hooks/useConsolidatedAuth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
 export default function Login() {
-  const { authMode, isLoading, error, setAuthMode, handleAuth, clearError } = useEnhancedAuth();
+  const { authMode, isLoading, error, setAuthMode, handleAuth, clearError } = useConsolidatedAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">

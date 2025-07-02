@@ -7,6 +7,7 @@ import { Toaster } from 'sonner';
 import { PublicLayout } from '@/components/PublicLayout';
 import { GlobalLoadingOverlay } from '@/components/ui/GlobalLoadingOverlay';
 import Layout from '@/components/layout';
+import ProtectedRoute from '@/components/protected-route';
 
 // Pages
 import Home from '@/pages/Home';
@@ -64,19 +65,20 @@ function App() {
                 <Route path="ai-studio" element={<AIOptimizationStudio />} />
               </Route>
               
-              {/* Authenticated app routes */}
-              <Route path="/app" element={<Layout />}>
+              {/* Protected authenticated routes */}
+              <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route index element={<EnhancedDashboard />} />
               </Route>
               
-              {/* Additional authenticated routes */}
-              <Route path="/queries" element={<Layout />}>
+              <Route path="/queries" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route index element={<Queries />} />
               </Route>
-              <Route path="/repositories" element={<Layout />}>
+              
+              <Route path="/repositories" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route index element={<Repositories />} />
               </Route>
-              <Route path="/reports" element={<Layout />}>
+              
+              <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route index element={<Reports />} />
               </Route>
               

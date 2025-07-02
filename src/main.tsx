@@ -1,15 +1,15 @@
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { initializeEnhancedSecurity } from './utils/enhancedSecurityInit';
+import { initializeSecurityHardening } from '@/utils/securityHardening';
 
-// Initialize enhanced security features
-initializeEnhancedSecurity();
+// Initialize security hardening
+initializeSecurityHardening();
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
     <App />
-  </React.StrictMode>
+  </StrictMode>,
 );
