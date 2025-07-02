@@ -97,43 +97,6 @@ export function EnhancedAuthForm({
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Social Auth Buttons */}
-        <FadeIn delay={0.3}>
-          <div className="grid grid-cols-2 gap-3">
-            <EnhancedButton 
-              variant="outline" 
-              size="sm"
-              className="w-full"
-              disabled={isLoading}
-            >
-              <Github className="h-4 w-4" />
-              GitHub
-            </EnhancedButton>
-            <EnhancedButton 
-              variant="outline" 
-              size="sm"
-              className="w-full"
-              disabled={isLoading}
-            >
-              <Chrome className="h-4 w-4" />
-              Google
-            </EnhancedButton>
-          </div>
-        </FadeIn>
-
-        <FadeIn delay={0.4}>
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-        </FadeIn>
-
         {/* Form */}
         <FadeIn delay={0.5}>
           <form onSubmit={handleSubmit} className="space-y-4">

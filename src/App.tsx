@@ -28,6 +28,7 @@ import EnhancedDashboard from '@/pages/EnhancedDashboard';
 import Queries from '@/pages/Queries';
 import Repositories from '@/pages/Repositories';
 import Reports from '@/pages/Reports';
+import { SecurityDashboardPage } from '@/components/security/SecurityDashboardPage';
 import { NotFound } from '@/components/error/NotFound';
 
 const queryClient = new QueryClient({
@@ -80,6 +81,10 @@ function App() {
               
               <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route index element={<Reports />} />
+              </Route>
+
+              <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                <Route index element={<SecurityDashboardPage />} />
               </Route>
               
               {/* 404 fallback */}

@@ -1,214 +1,193 @@
 
-import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
-import { productionLogger } from '@/utils/productionLogger';
+import { Shield, CheckCircle, AlertTriangle, XCircle, Activity } from 'lucide-react';
+import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/auth-context';
 
 interface SecurityCheck {
   name: string;
-  status: 'pass' | 'fail' | 'warning';
-  message: string;
-  lastChecked: Date;
+  status: 'passed' | 'warning' | 'failed';
+  description: string;
+  score: number;
 }
 
 export function SecurityHealthMonitor() {
+  const { validateSession } = useConsolidatedSecurity();
+  const { user, session } = useAuth();
   const [securityChecks, setSecurityChecks] = useState<SecurityCheck[]>([]);
-  const [overallStatus, setOverallStatus] = useState<'healthy' | 'warning' | 'critical'>('healthy');
-  const [isLoading, setIsLoading] = useState(true);
+  const [overallScore, setOverallScore] = useState(0);
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    runSecurityChecks();
-    
-    // Run checks every 5 minutes
-    const interval = setInterval(runSecurityChecks, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const runSecurityChecks = async () => {
+      setIsChecking(true);
+      const checks: SecurityCheck[] = [];
 
-  const runSecurityChecks = async () => {
-    setIsLoading(true);
-    
-    const checks: SecurityCheck[] = [];
-    
-    try {
-      // Session security check
-      const sessionValid = await consolidatedAuthenticationSecurity.validateSessionSecurity();
-      checks.push({
-        name: 'Session Security',
-        status: sessionValid ? 'pass' : 'warning',
-        message: sessionValid ? 'Session is valid and secure' : 'Session validation issues detected',
-        lastChecked: new Date()
-      });
-
-      // Browser security features check
-      const hasSecureContext = window.isSecureContext;
-      checks.push({
-        name: 'Secure Context',
-        status: hasSecureContext ? 'pass' : 'fail',
-        message: hasSecureContext ? 'Running in secure context (HTTPS)' : 'Not running in secure context',
-        lastChecked: new Date()
-      });
-
-      // Local storage security check
-      const hasLocalStorage = typeof Storage !== 'undefined';
-      checks.push({
-        name: 'Storage Security',
-        status: hasLocalStorage ? 'pass' : 'warning',
-        message: hasLocalStorage ? 'Secure storage available' : 'Limited storage capabilities',
-        lastChecked: new Date()
-      });
-
-      // CSP check (basic)
-      const hasCsp = document.querySelector('meta[http-equiv="Content-Security-Policy"]') !== null;
-      checks.push({
-        name: 'Content Security Policy',
-        status: hasCsp ? 'pass' : 'warning',
-        message: hasCsp ? 'CSP header detected' : 'No CSP header detected',
-        lastChecked: new Date()
-      });
-
-      // Rate limiting check
-      checks.push({
-        name: 'Rate Limiting',
-        status: 'pass',
-        message: 'Rate limiting service operational',
-        lastChecked: new Date()
-      });
-
-      setSecurityChecks(checks);
-      
-      // Determine overall status
-      const failCount = checks.filter(c => c.status === 'fail').length;
-      const warningCount = checks.filter(c => c.status === 'warning').length;
-      
-      if (failCount > 0) {
-        setOverallStatus('critical');
-      } else if (warningCount > 0) {
-        setOverallStatus('warning');
-      } else {
-        setOverallStatus('healthy');
+      // Check 1: Session Validity
+      try {
+        const sessionValid = await validateSession();
+        checks.push({
+          name: 'Session Security',
+          status: sessionValid ? 'passed' : 'failed',
+          description: sessionValid ? 'Session is valid and secure' : 'Session validation failed',
+          score: sessionValid ? 25 : 0
+        });
+      } catch {
+        checks.push({
+          name: 'Session Security',
+          status: 'failed',
+          description: 'Unable to validate session',
+          score: 0
+        });
       }
 
-    } catch (error) {
-      productionLogger.error('Security health check failed', error, 'SecurityHealthMonitor');
-      
+      // Check 2: Authentication Status
       checks.push({
-        name: 'Health Check System',
-        status: 'fail',
-        message: 'Security monitoring system error',
-        lastChecked: new Date()
+        name: 'Authentication',
+        status: user && session ? 'passed' : 'failed',
+        description: user && session ? 'User is properly authenticated' : 'User authentication required',
+        score: user && session ? 25 : 0
       });
-      
+
+      // Check 3: HTTPS Check
+      const isHTTPS = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+      checks.push({
+        name: 'Secure Connection',
+        status: isHTTPS ? 'passed' : 'warning',
+        description: isHTTPS ? 'Connection is secure' : 'Consider using HTTPS in production',
+        score: isHTTPS ? 20 : 10
+      });
+
+      // Check 4: Local Storage Security
+      const hasSecureStorage = typeof Storage !== 'undefined';
+      checks.push({
+        name: 'Secure Storage',
+        status: hasSecureStorage ? 'passed' : 'warning',
+        description: hasSecureStorage ? 'Secure storage available' : 'Limited storage capabilities',
+        score: hasSecureStorage ? 15 : 5
+      });
+
+      // Check 5: Browser Security Features
+      const hasSecurityFeatures = 'crypto' in window && 'ServiceWorker' in window;
+      checks.push({
+        name: 'Browser Security',
+        status: hasSecurityFeatures ? 'passed' : 'warning',
+        description: hasSecurityFeatures ? 'Modern security features available' : 'Limited browser security features',
+        score: hasSecurityFeatures ? 15 : 8
+      });
+
       setSecurityChecks(checks);
-      setOverallStatus('critical');
-    } finally {
-      setIsLoading(false);
-    }
+      const totalScore = checks.reduce((sum, check) => sum + check.score, 0);
+      setOverallScore(totalScore);
+      setIsChecking(false);
+    };
+
+    runSecurityChecks();
+  }, [validateSession, user, session]);
+
+  const getScoreColor = (score: number) => {
+    if (score >= 85) return 'text-green-600';
+    if (score >= 70) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
-  const getStatusIcon = (status: string) => {
+  const getScoreStatus = (score: number) => {
+    if (score >= 85) return 'Excellent';
+    if (score >= 70) return 'Good';
+    if (score >= 50) return 'Fair';
+    return 'Poor';
+  };
+
+  const getStatusIcon = (status: SecurityCheck['status']) => {
     switch (status) {
-      case 'pass':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'passed':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'fail':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return <Shield className="h-4 w-4 text-gray-500" />;
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+      case 'failed':
+        return <XCircle className="h-4 w-4 text-red-600" />;
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pass: 'default',
-      warning: 'secondary',
-      fail: 'destructive'
-    } as const;
-    
-    return (
-      <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>
-        {status.toUpperCase()}
-      </Badge>
-    );
-  };
-
-  const getOverallStatusColor = () => {
-    switch (overallStatus) {
-      case 'healthy':
-        return 'text-green-600';
+  const getStatusBadge = (status: SecurityCheck['status']) => {
+    switch (status) {
+      case 'passed':
+        return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Passed</Badge>;
       case 'warning':
-        return 'text-yellow-600';
-      case 'critical':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">Warning</Badge>;
+      case 'failed':
+        return <Badge variant="destructive">Failed</Badge>;
     }
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          Security Health Monitor
-          <Badge 
-            variant={overallStatus === 'healthy' ? 'default' : overallStatus === 'warning' ? 'secondary' : 'destructive'}
-            className="ml-auto"
-          >
-            {overallStatus.toUpperCase()}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {overallStatus !== 'healthy' && (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              {overallStatus === 'critical' 
-                ? 'Critical security issues detected. Please review and address immediately.'
-                : 'Some security warnings detected. Review recommended.'}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {isLoading ? (
-          <div className="text-center py-4 text-muted-foreground">
-            Running security checks...
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Security Health Score
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold">
+                <span className={getScoreColor(overallScore)}>{overallScore}/100</span>
+              </span>
+              <Badge variant="outline" className={getScoreColor(overallScore)}>
+                {getScoreStatus(overallScore)}
+              </Badge>
+            </div>
+            <Progress value={overallScore} className="h-2" />
+            <p className="text-sm text-muted-foreground">
+              Security score based on current authentication and browser security features
+            </p>
           </div>
-        ) : (
-          <div className="space-y-3">
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Security Checks
+            {isChecking && <Badge variant="secondary">Checking...</Badge>}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
             {securityChecks.map((check, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
+              <div key={index} className="flex items-start justify-between p-3 border rounded-lg">
+                <div className="flex items-start gap-3">
                   {getStatusIcon(check.status)}
                   <div>
-                    <div className="font-medium">{check.name}</div>
-                    <div className="text-sm text-muted-foreground">{check.message}</div>
+                    <h4 className="font-medium">{check.name}</h4>
+                    <p className="text-sm text-muted-foreground">{check.description}</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{check.score}pts</span>
                   {getStatusBadge(check.status)}
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {check.lastChecked.toLocaleTimeString()}
-                  </div>
                 </div>
               </div>
             ))}
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        <div className="pt-4 border-t">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Overall Security Status:</span>
-            <span className={`font-medium ${getOverallStatusColor()}`}>
-              {overallStatus.charAt(0).toUpperCase() + overallStatus.slice(1)}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      {overallScore < 70 && (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Your security score is below recommended levels. Consider addressing the failed or warning items above to improve security.
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
   );
 }
