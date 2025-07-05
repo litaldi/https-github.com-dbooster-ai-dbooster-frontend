@@ -19,16 +19,19 @@ export class UnifiedSecurityService {
     return consolidatedInputValidation.validateAndSanitize(input, context);
   }
 
-  async checkRateLimit(key: string, action: string = 'api') {
-    return rateLimitService.checkRateLimit(key, action);
+  async checkRateLimit(key: string, limit: number = 10, windowMs: number = 60000) {
+    return rateLimitService.checkRateLimit(key, limit, windowMs);
   }
 
-  async secureLogin(email: string, password: string) {
+  async secureLogin(email: string, password: string, options?: { rememberMe?: boolean }) {
     return consolidatedAuthenticationSecurity.secureLogin(email, password);
   }
 
   async secureSignup(email: string, password: string, userData: { fullName: string; acceptedTerms: boolean }) {
-    return consolidatedAuthenticationSecurity.secureSignup(email, password, userData);
+    return consolidatedAuthenticationSecurity.secureSignup(email, password, { 
+      fullName: userData.fullName, 
+      acceptedTerms: userData.acceptedTerms 
+    });
   }
 
   initializeSecurityHeaders() {

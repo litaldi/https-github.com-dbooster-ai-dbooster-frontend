@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Database, Zap, Shield, TrendingUp } from 'lucide-react';
+import { ArrowRight, Play, Shield, Zap, TrendingUp, Star, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -13,122 +13,135 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onGetStarted, onWatchDemo, isLoading, user }: HeroSectionProps) {
-  const features = [
-    { icon: Database, text: "AI-Powered Query Optimization" },
-    { icon: TrendingUp, text: "Up to 73% Performance Boost" },
-    { icon: Shield, text: "Enterprise-Grade Security" },
-    { icon: Zap, text: "Real-time Monitoring" }
-  ];
-
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+    <section className="relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 py-20 md:py-32">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-blue-500/5" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-r from-primary/10 to-purple-500/10 blur-3xl rounded-full" />
       
-      <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          {/* Badge */}
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-5xl mx-auto">
+          {/* Trust Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-wrap justify-center gap-3 mb-8"
           >
-            <Badge variant="outline" className="px-4 py-2 text-sm bg-primary/10 border-primary/20 text-primary">
-              🇮🇱 Proudly Built in Israel • Trusted by Enterprise Teams
+            <Badge variant="secondary" className="px-4 py-2 bg-primary/10 text-primary border-primary/20">
+              <Star className="h-3 w-3 mr-2" />
+              50,000+ Developers Trust DBooster
+            </Badge>
+            <Badge variant="secondary" className="px-4 py-2 bg-green-50 text-green-700 border-green-200">
+              <Shield className="h-3 w-3 mr-2" />
+              SOC2 Certified
             </Badge>
           </motion.div>
 
           {/* Main Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+          >
+            <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+              Reduce Database Costs by{' '}
+            </span>
+            <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              60% with AI
+            </span>
+          </motion.h1>
+
+          {/* Value Proposition */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed"
+          >
+            Transform your database performance with enterprise-grade AI optimization. 
+            <strong className="text-foreground"> Reduce query times by 73%</strong>, 
+            <strong className="text-foreground"> cut infrastructure costs by 60%</strong>, and 
+            <strong className="text-foreground"> automate 80% of performance tuning tasks</strong>.
+          </motion.p>
+
+          {/* Key Benefits */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="space-y-6"
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-2xl mx-auto"
           >
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Transform Database
-              </span>
-              <br />
-              <span className="text-foreground">Performance with AI</span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Reduce query response times by <strong className="text-green-600">73%</strong> and 
-              cut infrastructure costs by <strong className="text-blue-600">60%</strong> with 
-              enterprise-grade AI optimization.
-            </p>
+            <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <Zap className="h-5 w-5 text-blue-600" />
+              <span className="text-sm font-medium text-blue-900">73% Faster Queries</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <span className="text-sm font-medium text-green-900">60% Cost Reduction</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <Building className="h-5 w-5 text-purple-600" />
+              <span className="text-sm font-medium text-purple-900">Enterprise Ready</span>
+            </div>
           </motion.div>
 
-          {/* Feature Pills */}
+          {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-wrap justify-center gap-3 mb-8"
-          >
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 px-4 py-2 bg-background/80 backdrop-blur-sm border rounded-full text-sm font-medium"
-              >
-                <feature.icon className="h-4 w-4 text-primary" />
-                {feature.text}
-              </div>
-            ))}
-          </motion.div>
-
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
           >
             <Button
               size="lg"
               onClick={onGetStarted}
               disabled={isLoading}
-              className="min-w-[200px] h-14 text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-xl hover:shadow-2xl transition-all duration-300"
+              className="min-w-[220px] h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
-              {user ? 'Open Dashboard' : 'Start Free Analysis'}
-              <ArrowRight className="ml-2 h-5 w-5" />
+              {isLoading ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="mr-2"
+                  >
+                    <Zap className="h-5 w-5" />
+                  </motion.div>
+                  Starting optimization...
+                </>
+              ) : (
+                <>
+                  {user ? 'Access Your Dashboard' : 'Start Free Optimization'}
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
             </Button>
             
             <Button
               variant="outline"
               size="lg"
               onClick={onWatchDemo}
-              className="min-w-[200px] h-14 text-lg font-semibold border-2 hover:bg-accent/50"
+              className="min-w-[220px] h-14 text-lg font-semibold border-2 hover:bg-accent/10"
             >
-              Watch Live Demo
+              <Play className="mr-2 h-5 w-5" />
+              Watch 2-Min Demo
             </Button>
           </motion.div>
-
-          {/* Trust Indicators */}
+          
+          {/* Trust Signals */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="pt-8 space-y-2"
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="text-sm text-muted-foreground"
           >
-            <p className="text-sm text-muted-foreground">
-              Trusted by 1,200+ companies worldwide
-            </p>
-            <div className="flex justify-center items-center gap-6 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Shield className="h-3 w-3" />
-                SOC 2 Compliant
-              </span>
-              <span className="flex items-center gap-1">
-                <Database className="h-3 w-3" />
-                GDPR Ready
-              </span>
-              <span className="flex items-center gap-1">
-                <Zap className="h-3 w-3" />
-                99.9% Uptime SLA
-              </span>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>No credit card required • 5-minute setup • Cancel anytime</span>
             </div>
+            <div>Join 50,000+ developers already optimizing with DBooster</div>
           </motion.div>
         </div>
       </div>
