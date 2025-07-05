@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Search, ExternalLink } from 'lucide-react';
+import { ChevronDown, Search, ExternalLink, Brain } from 'lucide-react';
 import { NavigationItem } from '@/config/navigation';
 
 interface MegaMenuProps {

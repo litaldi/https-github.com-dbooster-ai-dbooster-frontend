@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -27,7 +28,8 @@ import {
 import { dashboardSidebarNavigation, quickActions } from '@/config/navigation';
 
 export function EnhancedDashboardSidebar() {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
+  const isCollapsed = state === 'collapsed';
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['Overview', 'Optimization']);
@@ -63,14 +65,14 @@ export function EnhancedDashboardSidebar() {
   })).filter(group => group.items.length > 0);
 
   return (
-    <Sidebar className={cn(collapsed ? "w-16" : "w-72")} collapsible>
+    <Sidebar className={cn(isCollapsed ? "w-16" : "w-72")}>
       <SidebarContent className="p-4 space-y-6">
         {/* Logo/Brand */}
         <div className="flex items-center gap-3 px-2">
           <div className="p-2 bg-gradient-to-r from-primary to-blue-600 rounded-lg">
             <Zap className="h-5 w-5 text-white" />
           </div>
-          {!collapsed && (
+          {!isCollapsed && (
             <div>
               <h2 className="font-bold text-lg bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
                 DBooster
@@ -81,7 +83,7 @@ export function EnhancedDashboardSidebar() {
         </div>
 
         {/* Search */}
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -95,7 +97,7 @@ export function EnhancedDashboardSidebar() {
         )}
 
         {/* Quick Actions */}
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
               Quick Actions
@@ -134,12 +136,12 @@ export function EnhancedDashboardSidebar() {
                 <SidebarGroupLabel 
                   className={cn(
                     "flex items-center justify-between px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors",
-                    collapsed && "justify-center"
+                    isCollapsed && "justify-center"
                   )}
                   onClick={() => toggleGroup(group.group)}
                 >
-                  {!collapsed && <span>{group.group}</span>}
-                  {!collapsed && (
+                  {!isCollapsed && <span>{group.group}</span>}
+                  {!isCollapsed && (
                     <ChevronRight className={cn(
                       "h-3 w-3 transition-transform duration-200",
                       isExpanded && "rotate-90"
@@ -147,7 +149,7 @@ export function EnhancedDashboardSidebar() {
                   )}
                 </SidebarGroupLabel>
                 
-                {(isExpanded || collapsed) && (
+                {(isExpanded || isCollapsed) && (
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {group.items.map((item) => {
@@ -162,16 +164,16 @@ export function EnhancedDashboardSidebar() {
                                   "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200",
                                   "hover:bg-accent/50 hover:text-accent-foreground group",
                                   isActive && "bg-accent text-accent-foreground shadow-sm",
-                                  collapsed && "justify-center"
+                                  isCollapsed && "justify-center"
                                 )}
-                                title={collapsed ? `${item.label} - ${item.description}` : undefined}
+                                title={isCollapsed ? `${item.label} - ${item.description}` : undefined}
                               >
                                 <item.icon className={cn(
                                   "h-5 w-5 flex-shrink-0",
                                   isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                                 )} />
                                 
-                                {!collapsed && (
+                                {!isCollapsed && (
                                   <>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2">
@@ -210,7 +212,7 @@ export function EnhancedDashboardSidebar() {
         </div>
 
         {/* Bottom Actions */}
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="mt-auto space-y-2 pt-4 border-t">
             <Button
               variant="ghost"

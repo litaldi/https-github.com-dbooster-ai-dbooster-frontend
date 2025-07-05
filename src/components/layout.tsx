@@ -19,7 +19,7 @@ export default function Layout() {
     <EnhancedErrorBoundary>
       <NotificationProvider>
         <TourProvider>
-          <SidebarProvider collapsedWidth={64}>
+          <SidebarProvider>
             <div className="min-h-screen flex w-full bg-background">
               <SkipLink href="#main-content">Skip to main content</SkipLink>
               <EnhancedDashboardSidebar />
