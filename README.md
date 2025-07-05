@@ -63,11 +63,12 @@ npm run dev
 
 5. Open your browser to `http://localhost:5173`
 
-### Demo Mode
-Try DBooster without signup using our interactive demo:
-- Click "Try the Demo" on the login page
-- Use demo credentials: `demo@dbooster.ai`
-- Explore all features with sample data
+### Authentication
+DBooster supports secure authentication with the following features:
+- Email and password login
+- Social authentication (Google, GitHub)
+- Password reset functionality
+- Account registration with email verification
 
 ## Project Structure
 
@@ -110,6 +111,23 @@ src/
 - TypeScript for type safety
 - Prettier for code formatting
 - Husky for git hooks
+
+## Login and Authentication Flow
+
+The application provides a streamlined authentication experience:
+
+1. **Login Page** - Clean, professional interface with email and password fields
+2. **Registration** - New users can create accounts with email verification
+3. **Password Recovery** - Forgot password functionality with email reset links
+4. **Social Authentication** - Optional Google and GitHub login integration
+5. **Session Management** - Secure session handling with automatic token refresh
+
+### Authentication Features
+- SOC2 compliant security standards
+- Enterprise-grade encryption
+- Multi-factor authentication support
+- Session timeout protection
+- Audit logging for security events
 
 ## Deployment
 
