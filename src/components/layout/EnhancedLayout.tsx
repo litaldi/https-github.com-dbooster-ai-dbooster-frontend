@@ -10,11 +10,7 @@ import { usePerformanceOptimization } from '@/hooks/usePerformanceOptimization';
 export function EnhancedLayout() {
   // Initialize keyboard shortcuts and performance monitoring
   useKeyboardShortcuts();
-  usePerformanceOptimization({
-    preloadResources: true,
-    measureTimings: true,
-    enableWebVitals: true
-  });
+  usePerformanceOptimization();
 
   return (
     <div className="min-h-screen bg-background">

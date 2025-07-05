@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 /**
  * Utility functions for code cleanup and performance optimization
  */
@@ -9,7 +11,9 @@
 export const cleanupUnusedCode = () => {
   // This would be handled by build tools like Vite's tree shaking
   // and ESLint rules for unused variables
-  console.info('Code cleanup handled by build tools and ESLint');
+  if (process.env.NODE_ENV !== 'production') {
+    console.info('Code cleanup handled by build tools and ESLint');
+  }
 };
 
 /**
@@ -26,7 +30,9 @@ export const measurePerformance = (name: string, fn: () => void) => {
   const start = performance.now();
   fn();
   const end = performance.now();
-  console.info(`${name} took ${end - start} milliseconds`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.info(`${name} took ${end - start} milliseconds`);
+  }
 };
 
 /**
