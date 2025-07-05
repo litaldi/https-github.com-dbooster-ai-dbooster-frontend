@@ -4,12 +4,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
+import { ThemeProvider } from '@/components/theme-provider';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Skeleton } from '@/components/ui/loading-skeleton';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Lazy load components for better performance
-const Home = lazy(() => import('@/pages/Home'));
 const EnhancedHome = lazy(() => import('@/pages/EnhancedHome'));
 const EnhancedDashboard = lazy(() => import('@/pages/EnhancedDashboard'));
 const Features = lazy(() => import('@/pages/Features'));
@@ -35,7 +35,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+      gcTime: 1000 * 60 * 30, // 30 minutes
       retry: (failureCount, error: any) => {
         if (error?.status === 404 || error?.status === 403) return false;
         return failureCount < 3;
@@ -88,171 +88,173 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
 function App() {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-            <div className="min-h-screen bg-background font-sans antialiased">
-              <Routes>
-                <Route path="/" element={<MainLayout />}>
-                  <Route 
-                    index 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <EnhancedHome />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="app" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <EnhancedDashboard />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="features" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Features />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="how-it-works" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <HowItWorks />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="pricing" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Pricing />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="learn" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Learn />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="blog" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Blog />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="about" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <About />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="contact" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Contact />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="support" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Support />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="terms" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Terms />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="privacy" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Privacy />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="accessibility" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Accessibility />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="optimizer" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <QueryOptimizer />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="repositories" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Repositories />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="reports" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Reports />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="ai-studio" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <AIStudio />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="queries" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <Queries />
-                      </Suspense>
-                    } 
-                  />
-                  <Route 
-                    path="*" 
-                    element={
-                      <Suspense fallback={<PageLoadingSkeleton />}>
-                        <NotFound />
-                      </Suspense>
-                    } 
-                  />
-                </Route>
-              </Routes>
-              <Toaster />
-            </div>
-          </Router>
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="light" storageKey="dbooster-ui-theme">
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <Router>
+              <div className="min-h-screen bg-background font-sans antialiased">
+                <Routes>
+                  <Route path="/" element={<MainLayout />}>
+                    <Route 
+                      index 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <EnhancedHome />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="app" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <EnhancedDashboard />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="features" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Features />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="how-it-works" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <HowItWorks />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="pricing" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Pricing />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="learn" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Learn />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="blog" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Blog />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="about" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <About />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="contact" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Contact />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="support" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Support />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="terms" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Terms />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="privacy" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Privacy />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="accessibility" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Accessibility />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="optimizer" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <QueryOptimizer />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="repositories" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Repositories />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="reports" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Reports />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="ai-studio" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <AIStudio />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="queries" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <Queries />
+                        </Suspense>
+                      } 
+                    />
+                    <Route 
+                      path="*" 
+                      element={
+                        <Suspense fallback={<PageLoadingSkeleton />}>
+                          <NotFound />
+                        </Suspense>
+                      } 
+                    />
+                  </Route>
+                </Routes>
+                <Toaster />
+              </div>
+            </Router>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

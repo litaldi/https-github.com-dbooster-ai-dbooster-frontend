@@ -14,12 +14,8 @@ import {
   BarChart3, 
   Rocket,
   Star,
-  Building,
-  Clock,
-  CheckCircle2,
   Users,
-  Play,
-  Eye
+  Clock,
 } from 'lucide-react';
 
 export default function EnhancedHome() {
@@ -53,7 +49,7 @@ export default function EnhancedHome() {
     preheadline: "Enterprise Database Optimization",
     headline: "Reduce Database Costs by 60%",
     subheadline: "with AI-Powered Optimization",
-    description: "Transform your database performance with enterprise-grade AI optimization. Reduce query times by 73%, cut infrastructure costs by 60%, and automate 80% of performance tuning tasks. Join thousands of companies already optimizing with DBooster.",
+    description: "Transform your database performance with enterprise-grade AI optimization. Reduce query times by 73%, cut infrastructure costs by 60%, and automate 80% of performance tuning tasks.",
     primaryCTA: {
       text: user ? 'Access Dashboard' : 'Start Free Enterprise Trial',
       onClick: handleGetStarted,
@@ -124,17 +120,13 @@ export default function EnhancedHome() {
     {
       icon: <Database className="h-8 w-8" />,
       title: "Database Monitoring",
-      description: "Real-time monitoring and alerts for your database performance with comprehensive analytics dashboard and 24/7 vigilance.",
+      description: "Real-time monitoring and alerts for your database performance with comprehensive analytics dashboard.",
       benefits: [
         "24/7 performance monitoring",
         "Custom alerting and notifications",
         "Historical performance trends",
         "Proactive issue detection"
       ],
-      badge: {
-        text: "Enterprise",
-        variant: 'outline' as const
-      },
       cta: {
         text: "View Monitoring",
         onClick: () => navigate('/app')
@@ -144,70 +136,18 @@ export default function EnhancedHome() {
     {
       icon: <Shield className="h-8 w-8" />,
       title: "Security & Compliance",
-      description: "Enterprise-grade security with SOC2 compliance, end-to-end encryption, and comprehensive audit logging for complete peace of mind.",
+      description: "Enterprise-grade security with SOC2 compliance, end-to-end encryption, and comprehensive audit logging.",
       benefits: [
         "SOC2 Type II compliance",
         "End-to-end encryption",
         "Comprehensive audit trails",
         "Role-based access control"
       ],
-      badge: {
-        text: "SOC2 Certified",
-        variant: 'secondary' as const
-      },
       cta: {
         text: "Security Details",
-        onClick: () => navigate('/security')
-      },
-      gradient: "bg-gradient-to-br from-purple-500/10 to-purple-600/5"
-    },
-    {
-      icon: <BarChart3 className="h-8 w-8" />,
-      title: "Performance Analytics",
-      description: "Deep insights into your database performance with predictive analytics, cost optimization insights, and custom reporting dashboards.",
-      benefits: [
-        "Advanced performance metrics",
-        "Predictive analytics",
-        "Cost optimization insights",
-        "Custom reporting dashboards"
-      ],
-      cta: {
-        text: "View Analytics",
-        onClick: () => navigate('/reports')
-      },
-      gradient: "bg-gradient-to-br from-orange-500/10 to-orange-600/5"
-    },
-    {
-      icon: <Rocket className="h-8 w-8" />,
-      title: "Quick Setup",
-      description: "Get started in minutes with our streamlined onboarding process, intelligent database connection wizard, and zero downtime integration.",
-      benefits: [
-        "5-minute setup process",
-        "Automatic configuration detection",
-        "Step-by-step guided wizard",
-        "Zero downtime integration"
-      ],
-      cta: {
-        text: "Start Setup",
-        onClick: handleGetStarted
-      },
-      gradient: "bg-gradient-to-br from-red-500/10 to-red-600/5"
-    },
-    {
-      icon: <Users className="h-8 w-8" />,
-      title: "Team Collaboration",
-      description: "Collaborate with your team on database optimization with shared workspaces, role-based permissions, and collaborative tools.",
-      benefits: [
-        "Shared team workspaces",
-        "Role-based permissions",
-        "Collaboration tools",
-        "Team performance insights"
-      ],
-      cta: {
-        text: "Team Features",
         onClick: () => navigate('/features')
       },
-      gradient: "bg-gradient-to-br from-teal-500/10 to-teal-600/5"
+      gradient: "bg-gradient-to-br from-purple-500/10 to-purple-600/5"
     }
   ];
 
@@ -217,14 +157,14 @@ export default function EnhancedHome() {
       
       <EnhancedFeaturesGrid
         title="Everything You Need for Database Excellence"
-        subtitle="Comprehensive tools and features designed for enterprise database optimization and team collaboration."
+        subtitle="Comprehensive tools and features designed for enterprise database optimization."
         features={features}
         columns={3}
       />
       
       <EnhancedCTASection
         title="Ready to Transform Your Database Performance?"
-        description="Join thousands of developers and enterprises who have improved their database performance by up to 10x with DBooster's AI-powered optimization recommendations."
+        description="Join thousands of developers and enterprises who have improved their database performance by up to 10x with DBooster's AI-powered optimization."
         primaryCTA={{
           text: user ? 'Go to Your Dashboard' : 'Start Free Analysis',
           onClick: handleGetStarted,
@@ -238,8 +178,7 @@ export default function EnhancedHome() {
           'No credit card required',
           '2-minute setup',
           'Cancel anytime',
-          'SOC2 compliant',
-          '24/7 support'
+          'SOC2 compliant'
         ]}
         badge={{
           text: 'Limited Time: Enterprise Trial Free',
