@@ -1,115 +1,110 @@
 
-import { Skeleton } from "./skeleton";
-import { Card, CardContent, CardHeader } from "./card";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { Loader2, Database, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function LoadingCard() {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[200px]" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-4 w-3/4" />
-      </CardContent>
-    </Card>
-  );
+interface LoadingStateProps {
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
+  text?: string;
+  variant?: 'default' | 'minimal' | 'detailed';
 }
 
-export function LoadingDashboard() {
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-[100px]" />
-              <Skeleton className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-7 w-[120px] mb-1" />
-              <Skeleton className="h-3 w-[80px]" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <Skeleton className="h-5 w-[200px]" />
-          </CardHeader>
-          <CardContent className="pl-2">
-            <Skeleton className="h-[300px] w-full" />
-          </CardContent>
-        </Card>
-        
-        <Card className="col-span-3">
-          <CardHeader>
-            <Skeleton className="h-5 w-[150px]" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[160px]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-export function LoadingTable() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
-          <Skeleton className="h-4 w-4" />
-          <Skeleton className="h-4 w-[100px]" />
-          <Skeleton className="h-4 w-[200px]" />
-          <Skeleton className="h-4 w-[80px]" />
-          <div className="ml-auto">
-            <Skeleton className="h-8 w-[80px]" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export function LoadingSpinner({ size = "default" }: { size?: "sm" | "default" | "lg" }) {
+export function PageLoading({ 
+  className, 
+  size = 'md', 
+  text = 'Loading...', 
+  variant = 'default' 
+}: LoadingStateProps) {
   const sizeClasses = {
-    sm: "h-4 w-4",
-    default: "h-6 w-6", 
-    lg: "h-8 w-8"
+    sm: 'h-4 w-4',
+    md: 'h-8 w-8',
+    lg: 'h-12 w-12'
   };
 
+  if (variant === 'minimal') {
+    return (
+      <div className={cn('flex items-center justify-center p-4', className)}>
+        <Loader2 className={cn('animate-spin', sizeClasses[size])} />
+      </div>
+    );
+  }
+
+  if (variant === 'detailed') {
+    return (
+      <div className={cn('flex flex-col items-center justify-center min-h-[400px] space-y-4', className)}>
+        <div className="relative">
+          <Database className="h-12 w-12 text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin absolute -top-1 -right-1 text-primary" />
+        </div>
+        <div className="text-center space-y-2">
+          <h3 className="text-lg font-medium">Loading DBooster</h3>
+          <p className="text-sm text-muted-foreground">Preparing your database optimization experience...</p>
+        </div>
+        <div className="flex items-center space-x-1">
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("animate-spin rounded-full border-2 border-primary border-t-transparent", sizeClasses[size])} />
+    <div className={cn('flex flex-col items-center justify-center space-y-4 p-8', className)}>
+      <div className="relative">
+        <Zap className="h-8 w-8 text-primary" />
+        <Loader2 className={cn('animate-spin absolute -top-1 -right-1', sizeClasses[size])} />
+      </div>
+      <p className="text-sm text-muted-foreground">{text}</p>
+    </div>
   );
 }
 
-export function PageLoading({ message = 'Loading page...', className }: { message?: string; className?: string }) {
+export function ComponentLoading({ className, size = 'sm', text }: LoadingStateProps) {
   return (
-    <div className={cn(
-      'flex items-center justify-center min-h-[400px] w-full',
-      className
-    )}>
-      <div className="flex flex-col items-center space-y-4">
-        <LoadingSpinner size="lg" />
-        <p className="text-sm text-muted-foreground">{message}</p>
+    <div className={cn('flex items-center justify-center space-x-2 p-2', className)}>
+      <Loader2 className={cn('animate-spin', size === 'sm' ? 'h-4 w-4' : 'h-6 w-6')} />
+      {text && <span className="text-sm text-muted-foreground">{text}</span>}
+    </div>
+  );
+}
+
+export function SkeletonCard({ className }: { className?: string }) {
+  return (
+    <div className={cn('animate-pulse', className)}>
+      <div className="bg-muted rounded-lg p-4 space-y-3">
+        <div className="h-4 bg-muted-foreground/20 rounded w-3/4"></div>
+        <div className="space-y-2">
+          <div className="h-3 bg-muted-foreground/20 rounded"></div>
+          <div className="h-3 bg-muted-foreground/20 rounded w-5/6"></div>
+        </div>
       </div>
+    </div>
+  );
+}
+
+export function SkeletonTable({ rows = 5, columns = 4, className }: { 
+  rows?: number; 
+  columns?: number; 
+  className?: string; 
+}) {
+  return (
+    <div className={cn('animate-pulse space-y-3', className)}>
+      {/* Header */}
+      <div className="flex space-x-4">
+        {Array.from({ length: columns }).map((_, i) => (
+          <div key={i} className="h-4 bg-muted-foreground/20 rounded flex-1"></div>
+        ))}
+      </div>
+      {/* Rows */}
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <div key={rowIndex} className="flex space-x-4">
+          {Array.from({ length: columns }).map((_, colIndex) => (
+            <div key={colIndex} className="h-3 bg-muted-foreground/10 rounded flex-1"></div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

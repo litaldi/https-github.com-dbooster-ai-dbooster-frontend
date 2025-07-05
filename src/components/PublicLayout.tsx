@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { EnhancedHeader } from './layout/enhanced-header';
 import { AccessibilityEnhancements } from './ui/accessibility-enhancements';
 import { AccessibilityFloatingButton } from './ui/accessibility-menu';
@@ -8,11 +9,7 @@ import { SkipLink } from './ui/accessibility-helpers';
 import { usePerformanceOptimization } from '@/hooks/usePerformanceOptimization';
 import { Home, Zap, Shield, BarChart3, BookOpen, Users } from 'lucide-react';
 
-interface PublicLayoutProps {
-  children: React.ReactNode;
-}
-
-export function PublicLayout({ children }: PublicLayoutProps) {
+export function PublicLayout() {
   // Initialize performance optimization
   usePerformanceOptimization({
     preloadResources: true,
@@ -51,7 +48,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       
       {/* Main Content */}
       <main id="main-content" className="flex-1">
-        {children}
+        <Outlet />
       </main>
       
       {/* Accessibility Controls */}

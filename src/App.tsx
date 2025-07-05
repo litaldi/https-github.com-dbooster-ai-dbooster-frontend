@@ -71,8 +71,23 @@ function App() {
               
               <Suspense fallback={<PageLoading />}>
                 <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<PublicLayout><Routes><Route index element={<EnhancedHome />} /><Route path="login" element={<Login />} /><Route path="features" element={<Features />} /><Route path="how-it-works" element={<HowItWorks />} /><Route path="pricing" element={<Pricing />} /><Route path="learn" element={<Learn />} /><Route path="blog" element={<Blog />} /><Route path="about" element={<About />} /><Route path="contact" element={<Contact />} /><Route path="support" element={<Support />} /><Route path="privacy" element={<Privacy />} /><Route path="terms" element={<Terms />} /><Route path="accessibility" element={<Accessibility />} /><Route path="ai-studio" element={<AIOptimizationStudio />} /></Routes></PublicLayout>} />
+                  {/* Public routes with PublicLayout */}
+                  <Route path="/" element={<PublicLayout />}>
+                    <Route index element={<EnhancedHome />} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="features" element={<Features />} />
+                    <Route path="how-it-works" element={<HowItWorks />} />
+                    <Route path="pricing" element={<Pricing />} />
+                    <Route path="learn" element={<Learn />} />
+                    <Route path="blog" element={<Blog />} />
+                    <Route path="about" element={<About />} />
+                    <Route path="contact" element={<Contact />} />
+                    <Route path="support" element={<Support />} />
+                    <Route path="privacy" element={<Privacy />} />
+                    <Route path="terms" element={<Terms />} />
+                    <Route path="accessibility" element={<Accessibility />} />
+                    <Route path="ai-studio" element={<AIOptimizationStudio />} />
+                  </Route>
                   
                   {/* Protected authenticated routes */}
                   <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
