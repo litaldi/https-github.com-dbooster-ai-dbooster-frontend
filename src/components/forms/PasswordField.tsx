@@ -2,7 +2,7 @@
 import React from 'react';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { PasswordStrengthIndicator } from '@/components/security/PasswordStrengthIndicator';
-import { authenticationSecurity } from '@/services/security/authenticationSecurity';
+import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
 import { cn } from '@/lib/utils';
 
 interface PasswordFieldProps {
@@ -36,7 +36,7 @@ export function PasswordField({
   showStrength = false,
   showPasswordToggle = true
 }: PasswordFieldProps) {
-  const strengthResult = authenticationSecurity.validatePasswordStrength(value);
+  const strengthResult = consolidatedAuthenticationSecurity.validateStrongPassword(value);
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -59,7 +59,11 @@ export function PasswordField({
       {showStrength && (
         <PasswordStrengthIndicator 
           password={value} 
-          strengthResult={strengthResult}
+          strengthResult={{
+            score: strengthResult.score,
+            feedback: strengthResult.feedback,
+            isValid: strengthResult.isValid
+          }}
         />
       )}
     </div>

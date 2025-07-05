@@ -4,13 +4,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Shield, AlertTriangle, CheckCircle, RefreshCw, Eye, Lock, Activity } from 'lucide-react';
-import { useEnhancedSecurity } from '@/hooks/useEnhancedSecurity';
+import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
 import { useSecurityEvents } from '@/hooks/useSecurityEvents';
 
 export function EnhancedSecurityMonitor() {
-  const { securityStatus, checkEnvironmentSecurity } = useEnhancedSecurity();
+  const { validateSession } = useConsolidatedSecurity();
   const { events, stats, refreshEvents } = useSecurityEvents();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [securityStatus, setSecurityStatus] = useState({
+    level: 'secure',
+    score: 85,
+    issues: [] as string[]
+  });
+
+  const checkEnvironmentSecurity = async () => {
+    // Basic security checks
+    const issues: string[] = [];
+    let score = 100;
+
+    if (window.location.protocol !== 'https:' && !window.location.hostname.includes('localhost')) {
+      issues.push('Not using HTTPS in production');
+      score -= 15;
+    }
+
+    if (typeof Storage === 'undefined') {
+      issues.push('Storage not available');
+      score -= 10;
+    }
+
+    setSecurityStatus({
+      level: score >= 85 ? 'secure' : score >= 70 ? 'warning' : 'danger',
+      score,
+      issues
+    });
+  };
+
+  useEffect(() => {
+    checkEnvironmentSecurity();
+  }, []);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

@@ -1,89 +1,63 @@
 
+import { consolidatedInputValidation } from '@/services/security/consolidatedInputValidation';
 import { rateLimitService } from '@/services/security/rateLimitService';
 import { productionLogger } from '@/utils/productionLogger';
-import { auditLogger } from '@/services/auditLogger';
-import { comprehensiveInputValidation } from '@/services/security/comprehensiveInputValidation';
-
-export interface SecurityMiddlewareOptions {
-  rateLimitAction?: string;
-  validateInput?: boolean;
-  logEvents?: boolean;
-}
 
 export class SecurityMiddleware {
-  static async apply(
-    request: any,
-    options: SecurityMiddlewareOptions = {}
-  ): Promise<{ allowed: boolean; error?: string }> {
-    const {
-      rateLimitAction = 'api_call',
-      validateInput = true,
-      logEvents = true
-    } = options;
-
+  static async validateRequest(request: {
+    body?: any;
+    headers?: Record<string, string>;
+    ip?: string;
+    method?: string;
+    path?: string;
+  }): Promise<{ allowed: boolean; reason?: string }> {
     try {
-      // Rate limiting using consolidated service
-      const rateLimitCheck = await rateLimitService.checkRateLimit('middleware', rateLimitAction);
-      if (!rateLimitCheck.allowed) {
-        if (logEvents) {
-          await auditLogger.logSecurityEvent({
-            event_type: 'middleware_rate_limit_block',
-            event_data: { action: rateLimitAction, retryAfter: rateLimitCheck.retryAfter }
-          });
-        }
-        return { 
-          allowed: false, 
-          error: `Rate limit exceeded. Try again in ${rateLimitCheck.retryAfter} seconds.` 
-        };
+      // Rate limiting check
+      const identifier = request.ip || 'unknown';
+      const rateLimitResult = await rateLimitService.checkRateLimit(identifier, 'api');
+      
+      if (!rateLimitResult.allowed) {
+        productionLogger.warn('Rate limit exceeded', { ip: identifier }, 'SecurityMiddleware');
+        return { allowed: false, reason: 'Rate limit exceeded' };
       }
 
-      // Input validation using consolidated service
-      if (validateInput && request.body) {
-        const validationErrors: string[] = [];
+      // Input validation for POST/PUT requests
+      if (request.body && (request.method === 'POST' || request.method === 'PUT')) {
+        const validationResult = consolidatedInputValidation.validateAndSanitize(
+          JSON.stringify(request.body),
+          'api'
+        );
         
-        for (const [key, value] of Object.entries(request.body)) {
-          if (typeof value === 'string') {
-            const validation = comprehensiveInputValidation.validateInput(value);
-            if (!validation.isValid) {
-              validationErrors.push(`Field '${key}' contains potentially harmful content`);
-            }
-          }
+        if (!validationResult.isValid) {
+          productionLogger.warn('Invalid input detected', { 
+            path: request.path,
+            errors: validationResult.errors
+          }, 'SecurityMiddleware');
+          return { allowed: false, reason: 'Invalid input detected' };
         }
-
-        if (validationErrors.length > 0) {
-          if (logEvents) {
-            await auditLogger.logSecurityEvent({
-              event_type: 'middleware_validation_failure',
-              event_data: { errors: validationErrors, fieldCount: Object.keys(request.body).length }
-            });
-          }
-          return { 
-            allowed: false, 
-            error: 'Input validation failed: ' + validationErrors.join(', ') 
-          };
-        }
-      }
-
-      // Log successful request
-      if (logEvents) {
-        productionLogger.secureDebug('Middleware request allowed', { action: rateLimitAction }, 'SecurityMiddleware');
-        await auditLogger.logSecurityEvent({
-          event_type: 'middleware_request_allowed',
-          event_data: { action: rateLimitAction }
-        });
       }
 
       return { allowed: true };
     } catch (error) {
       productionLogger.error('Security middleware error', error, 'SecurityMiddleware');
-      // In case of middleware error, allow the request but log it
-      if (logEvents) {
-        await auditLogger.logSecurityEvent({
-          event_type: 'middleware_error',
-          event_data: { error: error instanceof Error ? error.message : 'Unknown error' }
-        });
-      }
-      return { allowed: true };
+      return { allowed: false, reason: 'Security check failed' };
     }
+  }
+
+  static sanitizeInput(input: any, context: string = 'general'): any {
+    if (typeof input === 'string') {
+      const result = consolidatedInputValidation.validateAndSanitize(input, context);
+      return result.sanitizedValue || input;
+    }
+    
+    if (typeof input === 'object' && input !== null) {
+      const sanitized: any = {};
+      for (const [key, value] of Object.entries(input)) {
+        sanitized[key] = SecurityMiddleware.sanitizeInput(value, context);
+      }
+      return sanitized;
+    }
+    
+    return input;
   }
 }

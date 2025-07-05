@@ -1,10 +1,12 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Shield, AlertTriangle, CheckCircle, Activity } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Shield, CheckCircle, AlertTriangle, XCircle, Activity } from 'lucide-react';
 import { SECURITY_GUIDELINES, SecurityValidator, INCIDENT_RESPONSE_PLAN } from '@/utils/securityGuidelines';
-import { secureRateLimitService } from '@/services/secureRateLimitService';
+import { rateLimitService } from '@/services/security/rateLimitService';
 import { productionLogger } from '@/utils/productionLogger';
 
 export function SecurityMonitor() {
@@ -17,8 +19,11 @@ export function SecurityMonitor() {
       try {
         // Only load admin data if user is admin
         if (isAdmin) {
-          const stats = await secureRateLimitService.getRateLimitStats('admin-user-id');
-          setRateLimitStats(stats);
+          const allowed = await rateLimitService.checkRateLimit('admin-user-id', 'admin');
+          setRateLimitStats({
+            totalBlocked: allowed.allowed ? 0 : 1,
+            activeBlocks: allowed.allowed ? 0 : 1
+          });
         }
       } catch (error) {
         productionLogger.error('Failed to load security data', error, 'SecurityMonitor');

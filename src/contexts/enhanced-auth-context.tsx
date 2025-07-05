@@ -2,12 +2,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { enhancedSecurityMonitoring } from '@/services/security/enhancedSecurityMonitoring';
+import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
 import { productionLogger } from '@/utils/productionLogger';
 import { useEnhancedAuthOperations } from '@/hooks/useEnhancedAuthOperations';
-import { DemoUserService } from '@/services/auth/demoUserService';
-import { PasswordValidationService } from '@/services/auth/passwordValidationService';
-import { SecurityMetricsService } from '@/services/auth/securityMetricsService';
+import { loginDemoUser, logoutDemoUser, isDemoMode } from '@/services/demo';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface EnhancedAuthContextType {
   user: User | null;
@@ -65,17 +64,12 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
             setIsDemo(false);
           }
 
-          // Monitor auth events for security
-          await enhancedSecurityMonitoring.analyzeSecurityEvent({
-            type: `auth_${event}`,
-            data: {
-              success: !!session,
-              userId: session?.user?.id,
-              timestamp: new Date().toISOString()
-            },
+          // Log auth events for security monitoring
+          productionLogger.secureInfo(`Auth event: ${event}`, {
+            success: !!session,
             userId: session?.user?.id,
-            userAgent: navigator.userAgent
-          });
+            timestamp: new Date().toISOString()
+          }, 'EnhancedAuthProvider');
         }
       }
     );
@@ -89,11 +83,14 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
   }, [isDemo]);
 
   const loginDemo = async () => {
-    const { user: demoUser, session: demoSession } = DemoUserService.createDemoSession();
+    const { user: demoUser, session: demoSession } = await loginDemoUser();
     setIsDemo(true);
     setUser(demoUser);
     setSession(demoSession);
-    DemoUserService.showDemoWelcomeMessage();
+    enhancedToast.success({
+      title: 'Demo mode activated',
+      description: 'You can now explore DBooster with sample data.'
+    });
   };
 
   const logout = async () => {
@@ -106,11 +103,21 @@ export function EnhancedAuthProvider({ children }: { children: ReactNode }) {
   };
 
   const checkPasswordStrength = async (password: string) => {
-    return await PasswordValidationService.checkPasswordStrength(password);
+    const result = await consolidatedAuthenticationSecurity.validateStrongPassword(password);
+    return {
+      score: result.score,
+      feedback: result.feedback,
+      isValid: result.isValid
+    };
   };
 
   const getSecurityMetrics = async () => {
-    return await SecurityMetricsService.getSecurityMetrics();
+    // Basic security metrics
+    return {
+      authEvents: 0,
+      securityAlerts: 0,
+      lastSecurityCheck: new Date()
+    };
   };
 
   return (

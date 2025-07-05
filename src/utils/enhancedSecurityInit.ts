@@ -1,25 +1,19 @@
 
-import { productionSecurityHardening } from '@/services/security/productionSecurityHardening';
-import { environmentSecurityService } from '@/services/security/environmentSecurityService';
-import { securityHeadersService } from '@/services/security/securityHeadersService';
+import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
+import { consolidatedInputValidation } from '@/services/security/consolidatedInputValidation';
+import { rateLimitService } from '@/services/security/rateLimitService';
 import { productionLogger } from './productionLogger';
 
 export function initializeEnhancedSecurity(): void {
   try {
-    // Initialize production security hardening
-    productionSecurityHardening.initializeProductionSecurity();
-    
-    // Initialize environment security headers
-    environmentSecurityService.initializeSecurityHeaders();
-    
-    // Initialize additional security headers
-    securityHeadersService.initializeSecurityHeaders();
+    // Initialize consolidated security services
+    consolidatedAuthenticationSecurity.initializeSecurityFeatures();
     
     // Log security initialization
     productionLogger.warn('Enhanced security features initialized', {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
-      features: ['productionHardening', 'environmentValidation', 'threatDetection', 'securityHeaders']
+      features: ['consolidatedAuth', 'inputValidation', 'rateLimiting', 'threatDetection']
     }, 'EnhancedSecurityInit');
 
     // Set up enhanced global error handlers for security

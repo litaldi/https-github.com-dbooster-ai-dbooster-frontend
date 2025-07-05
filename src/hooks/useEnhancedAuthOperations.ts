@@ -1,21 +1,20 @@
 
 import { useCallback } from 'react';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
-import { authenticationSecurity } from '@/services/security/authenticationSecurity';
-import { comprehensiveInputValidation } from '@/services/security/comprehensiveInputValidation';
-import { enhancedAuthenticationSecurity } from '@/services/security/enhancedAuthenticationSecurity';
+import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
+import { consolidatedInputValidation } from '@/services/security/consolidatedInputValidation';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useEnhancedAuthOperations() {
   const secureLogin = useCallback(async (email: string, password: string, options: { rememberMe?: boolean } = {}) => {
     try {
-      // Use enhanced authentication security
-      const result = await enhancedAuthenticationSecurity.performSecureLogin(
+      // Use consolidated authentication security
+      const result = await consolidatedAuthenticationSecurity.secureLogin(
         email,
         password,
         {
           rememberMe: options.rememberMe,
-          deviceFingerprint: authenticationSecurity.generateDeviceFingerprint()
+          deviceFingerprint: consolidatedAuthenticationSecurity.generateDeviceFingerprint()
         }
       );
 
@@ -52,8 +51,8 @@ export function useEnhancedAuthOperations() {
 
   const secureSignup = useCallback(async (email: string, password: string, name: string, acceptedTerms: boolean = false) => {
     try {
-      // Validate password strength using enhanced security
-      const passwordValidation = await enhancedAuthenticationSecurity.validateStrongPassword(password, email);
+      // Validate password strength using consolidated security
+      const passwordValidation = await consolidatedAuthenticationSecurity.validateStrongPassword(password, email);
       
       if (!passwordValidation.isValid) {
         enhancedToast.error({
@@ -64,8 +63,8 @@ export function useEnhancedAuthOperations() {
       }
 
       // Validate and sanitize inputs
-      const emailValidation = comprehensiveInputValidation.validateInput(email, 'email');
-      const nameValidation = comprehensiveInputValidation.validateInput(name, 'general');
+      const emailValidation = consolidatedInputValidation.validateAndSanitize(email, 'email');
+      const nameValidation = consolidatedInputValidation.validateAndSanitize(name, 'general');
       
       if (!emailValidation.isValid) {
         throw new Error('Invalid email format');
@@ -75,11 +74,11 @@ export function useEnhancedAuthOperations() {
         throw new Error('Invalid name format');
       }
 
-      const result = await authenticationSecurity.secureSignup(
-        emailValidation.sanitized,
+      const result = await consolidatedAuthenticationSecurity.secureSignup(
+        emailValidation.sanitizedValue || email,
         password,
         {
-          fullName: nameValidation.sanitized,
+          fullName: nameValidation.sanitizedValue || name,
           acceptedTerms
         }
       );

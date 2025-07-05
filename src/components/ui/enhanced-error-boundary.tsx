@@ -4,7 +4,7 @@ import { AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { EnhancedButton } from './enhanced-button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
-import { monitoringService } from '@/services/monitoringService';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface Props {
   children: ReactNode;
@@ -39,6 +39,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
     // Send to monitoring service
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    productionLogger.error('Error boundary triggered', error, 'ErrorBoundary');
     
     // Call optional error handler
     this.props.onError?.(error, errorInfo);
