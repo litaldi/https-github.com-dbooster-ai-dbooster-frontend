@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -39,6 +40,18 @@ const Queries = lazy(() => import('@/pages/Queries'));
 const Repositories = lazy(() => import('@/pages/Repositories'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const SecurityDashboardPage = lazy(() => import('@/components/security/SecurityDashboardPage').then(module => ({ default: module.SecurityDashboardPage })));
+
+// New pages
+const Enterprise = lazy(() => import('@/pages/Enterprise'));
+const DatabaseTypes = lazy(() => import('@/pages/DatabaseTypes'));
+const UseCases = lazy(() => import('@/pages/UseCases'));
+const Integrations = lazy(() => import('@/pages/Integrations'));
+const Status = lazy(() => import('@/pages/Status'));
+const Changelog = lazy(() => import('@/pages/Changelog'));
+const Careers = lazy(() => import('@/pages/Careers'));
+const Partners = lazy(() => import('@/pages/Partners'));
+const Press = lazy(() => import('@/pages/Press'));
+const Cookies = lazy(() => import('@/pages/Cookies'));
 const NotFound = lazy(() => import('@/components/error/NotFound').then(module => ({ default: module.NotFound })));
 
 const queryClient = new QueryClient({
@@ -86,6 +99,18 @@ function App() {
                     <Route path="terms" element={<Terms />} />
                     <Route path="accessibility" element={<Accessibility />} />
                     <Route path="ai-studio" element={<AIOptimizationStudio />} />
+                    
+                    {/* New public pages */}
+                    <Route path="enterprise" element={<Enterprise />} />
+                    <Route path="database-types" element={<DatabaseTypes />} />
+                    <Route path="use-cases" element={<UseCases />} />
+                    <Route path="integrations" element={<Integrations />} />
+                    <Route path="status" element={<Status />} />
+                    <Route path="changelog" element={<Changelog />} />
+                    <Route path="careers" element={<Careers />} />
+                    <Route path="partners" element={<Partners />} />
+                    <Route path="press" element={<Press />} />
+                    <Route path="cookies" element={<Cookies />} />
                   </Route>
                   
                   {/* Protected authenticated routes */}
