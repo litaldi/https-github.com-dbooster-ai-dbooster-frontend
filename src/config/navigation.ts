@@ -1,4 +1,3 @@
-
 import { 
   Home, 
   BarChart3, 
@@ -125,12 +124,6 @@ export const megaMenuNavigation: NavigationItem[] = [
         description: 'Industry insights and product updates' 
       },
       { 
-        href: '/learn', 
-        label: 'Learning Hub', 
-        icon: GraduationCap, 
-        description: 'Tutorials, courses, and best practices' 
-      },
-      { 
         href: '/support', 
         label: 'Support', 
         icon: HelpCircle, 
@@ -155,12 +148,6 @@ export const megaMenuNavigation: NavigationItem[] = [
         label: 'Contact', 
         icon: Mail, 
         description: 'Get in touch with our team' 
-      },
-      { 
-        href: '/careers', 
-        label: 'Careers', 
-        icon: UserPlus, 
-        description: 'Join our team and shape the future of databases' 
       },
       { 
         href: '/partners', 
@@ -224,37 +211,6 @@ export const dashboardSidebarNavigation = [
         shortcut: 'P'
       }
     ]
-  },
-  {
-    group: 'Collaboration',
-    items: [
-      { 
-        href: '/approvals', 
-        label: 'Query Approvals', 
-        icon: CheckSquare, 
-        description: 'Review and approve query changes',
-        shortcut: 'V'
-      },
-      { 
-        href: '/teams', 
-        label: 'Team Management', 
-        icon: Users, 
-        description: 'Manage team members and permissions',
-        shortcut: 'T'
-      }
-    ]
-  },
-  {
-    group: 'Tools',
-    items: [
-      { 
-        href: '/sandbox', 
-        label: 'Testing Sandbox', 
-        icon: Settings, 
-        description: 'Safe environment for testing queries',
-        shortcut: 'S'
-      }
-    ]
   }
 ];
 
@@ -277,7 +233,6 @@ export const footerNavigation = {
   company: [
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact' },
-    { href: '/careers', label: 'Careers' },
     { href: '/partners', label: 'Partners' },
     { href: '/press', label: 'Press Kit' }
   ],

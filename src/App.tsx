@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -50,7 +49,6 @@ const UseCases = lazy(() => import('@/pages/UseCases'));
 const Integrations = lazy(() => import('@/pages/Integrations'));
 const Status = lazy(() => import('@/pages/Status'));
 const Changelog = lazy(() => import('@/pages/Changelog'));
-const Careers = lazy(() => import('@/pages/Careers'));
 const Partners = lazy(() => import('@/pages/Partners'));
 const Press = lazy(() => import('@/pages/Press'));
 const Cookies = lazy(() => import('@/pages/Cookies'));
@@ -105,14 +103,13 @@ function App() {
                       <Route path="ai-studio" element={<AIOptimizationStudio />} />
                       <Route path="search" element={<Search />} />
                       
-                      {/* New public pages */}
+                      {/* New public pages (removed careers route) */}
                       <Route path="enterprise" element={<Enterprise />} />
                       <Route path="database-types" element={<DatabaseTypes />} />
                       <Route path="use-cases" element={<UseCases />} />
                       <Route path="integrations" element={<Integrations />} />
                       <Route path="status" element={<Status />} />
                       <Route path="changelog" element={<Changelog />} />
-                      <Route path="careers" element={<Careers />} />
                       <Route path="partners" element={<Partners />} />
                       <Route path="press" element={<Press />} />
                       <Route path="cookies" element={<Cookies />} />
