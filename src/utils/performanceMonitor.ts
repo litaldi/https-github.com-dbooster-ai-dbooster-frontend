@@ -2,14 +2,18 @@
 interface PerformanceMetrics {
   fcp: number;
   lcp: number;
-  fid: number;
   cls: number;
   ttfb: number;
 }
 
-export class PerformanceMonitor {
+class PerformanceMonitor {
   private static instance: PerformanceMonitor;
-  private metrics: Partial<PerformanceMetrics> = {};
+  private metrics: PerformanceMetrics = {
+    fcp: 0,
+    lcp: 0,
+    cls: 0,
+    ttfb: 0
+  };
 
   static getInstance(): PerformanceMonitor {
     if (!PerformanceMonitor.instance) {
@@ -19,119 +23,36 @@ export class PerformanceMonitor {
   }
 
   initialize() {
-    this.measureCoreWebVitals();
-    this.monitorResourceTiming();
-    this.setupPerformanceObserver();
+    if (typeof window === 'undefined') return;
+    
+    // Monitor Core Web Vitals
+    this.observeWebVitals();
   }
 
-  private measureCoreWebVitals() {
+  private observeWebVitals() {
     // First Contentful Paint
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        this.metrics.fcp = entry.startTime;
-        this.reportMetric('FCP', entry.startTime);
-      }
-    }).observe({ entryTypes: ['paint'] });
-
-    // Largest Contentful Paint
-    new PerformanceObserver((list) => {
-      const entries = list.getEntries();
-      const lastEntry = entries[entries.length - 1];
-      this.metrics.lcp = lastEntry.startTime;
-      this.reportMetric('LCP', lastEntry.startTime);
-    }).observe({ entryTypes: ['largest-contentful-paint'] });
-
-    // Cumulative Layout Shift
-    let cumulativeLayoutShift = 0;
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const layoutShift = entry as any;
-        if (!layoutShift.hadRecentInput) {
-          cumulativeLayoutShift += layoutShift.value;
-        }
-      }
-      this.metrics.cls = cumulativeLayoutShift;
-      this.reportMetric('CLS', cumulativeLayoutShift);
-    }).observe({ entryTypes: ['layout-shift'] });
+    if ('PerformanceObserver' in window) {
+      const observer = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        entries.forEach((entry) => {
+          if (entry.name === 'first-contentful-paint') {
+            this.metrics.fcp = entry.startTime;
+          }
+        });
+      });
+      observer.observe({ entryTypes: ['paint'] });
+    }
 
     // Time to First Byte
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const navEntry = entry as PerformanceNavigationTiming;
-        this.metrics.ttfb = navEntry.responseStart - navEntry.requestStart;
-        this.reportMetric('TTFB', this.metrics.ttfb);
-      }
-    }).observe({ entryTypes: ['navigation'] });
-  }
-
-  private monitorResourceTiming() {
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const resource = entry as PerformanceResourceTiming;
-        
-        // Flag slow resources
-        if (resource.duration > 1000) {
-          this.reportSlowResource(resource);
-        }
-      }
-    }).observe({ entryTypes: ['resource'] });
-  }
-
-  private setupPerformanceObserver() {
-    // Monitor long tasks (>50ms)
-    if ('PerformanceObserver' in window) {
-      try {
-        new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            this.reportLongTask(entry);
-          }
-        }).observe({ entryTypes: ['longtask'] });
-      } catch (e) {
-        // Long task API not supported
+    if (performance.getEntriesByType) {
+      const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      if (navEntries.length > 0) {
+        this.metrics.ttfb = navEntries[0].responseStart - navEntries[0].requestStart;
       }
     }
   }
 
-  private reportMetric(name: string, value: number) {
-    if (import.meta.env.PROD) {
-      // Send to analytics service
-      this.sendToAnalytics('performance_metric', {
-        metric_name: name,
-        metric_value: Math.round(value),
-        page: window.location.pathname
-      });
-    } else {
-      console.log(`Performance Metric - ${name}: ${value.toFixed(2)}ms`);
-    }
-  }
-
-  private reportSlowResource(resource: PerformanceResourceTiming) {
-    if (import.meta.env.PROD) {
-      this.sendToAnalytics('slow_resource', {
-        resource_name: resource.name.split('/').pop(),
-        duration: Math.round(resource.duration),
-        size: resource.transferSize
-      });
-    }
-  }
-
-  private reportLongTask(entry: PerformanceEntry) {
-    if (import.meta.env.PROD) {
-      this.sendToAnalytics('long_task', {
-        duration: Math.round(entry.duration),
-        start_time: Math.round(entry.startTime)
-      });
-    }
-  }
-
-  private sendToAnalytics(eventName: string, data: any) {
-    // Send to Google Analytics or other analytics service
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', eventName, data);
-    }
-  }
-
-  getMetrics(): Partial<PerformanceMetrics> {
+  getMetrics(): PerformanceMetrics {
     return { ...this.metrics };
   }
 }

@@ -3,10 +3,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { initializeSecurityHardening } from '@/utils/securityHardening';
+import { productionInitializer } from '@/utils/productionInit';
 
-// Initialize security hardening
-initializeSecurityHardening();
+// Initialize production environment if needed
+if (import.meta.env.PROD) {
+  productionInitializer.initialize();
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

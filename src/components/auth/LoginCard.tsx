@@ -1,17 +1,19 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AuthForm } from '@/components/auth/AuthForm';
 import { SocialAuth } from '@/components/auth/SocialAuth';
 import { Separator } from '@/components/ui/separator';
 import { AuthFormHeader } from '@/components/auth/AuthFormHeader';
+import { EnhancedAuthForm } from '@/components/auth/EnhancedAuthForm';
 import type { AuthMode } from '@/types/auth';
 
 interface LoginCardProps {
   authMode: AuthMode;
   onAuthModeChange: (mode: AuthMode) => void;
+  onSubmit: (data: any) => Promise<void>;
+  isLoading?: boolean;
 }
 
-export function LoginCard({ authMode, onAuthModeChange }: LoginCardProps) {
+export function LoginCard({ authMode, onAuthModeChange, onSubmit, isLoading }: LoginCardProps) {
   const cardConfig = {
     login: {
       title: 'Welcome back',
@@ -20,10 +22,14 @@ export function LoginCard({ authMode, onAuthModeChange }: LoginCardProps) {
     signup: {
       title: 'Get started today',
       description: 'Create your account and start optimizing queries'
+    },
+    reset: {
+      title: 'Reset password',
+      description: 'Enter your email to receive a password reset link'
     }
   };
 
-  const config = cardConfig[authMode];
+  const config = cardConfig[authMode] || cardConfig.login;
 
   return (
     <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm animate-scale-in">
@@ -41,7 +47,12 @@ export function LoginCard({ authMode, onAuthModeChange }: LoginCardProps) {
         <Separator className="my-4" />
 
         <section id="auth-form" role="tabpanel">
-          <AuthForm />
+          <EnhancedAuthForm 
+            authMode={authMode}
+            onAuthModeChange={onAuthModeChange}
+            onSubmit={onSubmit}
+            isLoading={isLoading}
+          />
         </section>
 
         <section className="space-y-4">

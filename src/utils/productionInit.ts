@@ -16,7 +16,7 @@ export class ProductionInitializer {
   }
 
   async initialize() {
-    console.log('🚀 Initializing production environment...');
+    if (!import.meta.env.PROD) return;
 
     try {
       // Phase 1: Security & Cleanup
@@ -31,9 +31,8 @@ export class ProductionInitializer {
       // Phase 4: Error Handling
       await this.initializeErrorHandling();
 
-      console.log('✅ Production environment initialized successfully');
     } catch (error) {
-      console.error('❌ Failed to initialize production environment:', error);
+      // Silent fail in production
     }
   }
 
@@ -43,15 +42,11 @@ export class ProductionInitializer {
     
     // Initialize security measures
     productionSecurity.initializeProductionSecurity();
-    
-    console.log('🔒 Security and cleanup initialized');
   }
 
   private async initializePerformanceMonitoring() {
     // Initialize performance monitoring
     performanceMonitor.initialize();
-    
-    console.log('📊 Performance monitoring initialized');
   }
 
   private async initializeSEO() {
@@ -62,15 +57,11 @@ export class ProductionInitializer {
       keywords: 'database, query, SQL, optimization, analytics, collaboration',
       canonicalUrl: window.location.origin
     });
-    
-    console.log('🔍 SEO optimization initialized');
   }
 
   private async initializeErrorHandling() {
     // Setup enhanced error handling
     setupEnhancedGlobalErrorHandling();
-    
-    console.log('🛡️ Error handling initialized');
   }
 
   // Method to run health checks
@@ -100,7 +91,7 @@ export class ProductionInitializer {
       checks.seo = checks.details.seo.passed;
 
     } catch (error) {
-      console.error('Health check failed:', error);
+      // Silent fail
     }
 
     return checks;

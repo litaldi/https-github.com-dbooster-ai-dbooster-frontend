@@ -13,13 +13,11 @@ interface AuthContextType {
   isLoading: boolean;
   isDemo: boolean;
   githubAccessToken: string | null;
-  // Core methods
+  // Core secure methods
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name?: string) => Promise<void>;
   loginDemo: () => Promise<void>;
-  // Enhanced secure methods
+  // Enhanced secure methods (primary)
   secureLogin: (email: string, password: string, options?: { rememberMe?: boolean }) => Promise<{ error?: any }>;
   secureSignup: (email: string, password: string, name: string, acceptedTerms?: boolean) => Promise<{ error?: any }>;
   // Utility methods
@@ -131,58 +129,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       enhancedToast.error({
         title: 'Sign out failed',
         description: 'We encountered an issue signing you out. Please try again.'
-      });
-      throw error;
-    }
-  };
-
-  const login = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      
-      enhancedToast.success({
-        title: 'Welcome back to DBooster!',
-        description: 'Successfully signed in to your optimization workspace.'
-      });
-    } catch (error) {
-      productionLogger.error('Login failed', error, 'AuthProvider');
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
-      enhancedToast.error({
-        title: 'Sign in failed',
-        description: errorMessage === 'Invalid login credentials' 
-          ? 'Invalid email or password. Please check and try again.' 
-          : errorMessage
-      });
-      throw error;
-    }
-  };
-
-  const signup = async (email: string, password: string, name?: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: name ? { full_name: name } : undefined
-        }
-      });
-      
-      if (error) throw error;
-      
-      enhancedToast.success({
-        title: 'Account created successfully!',
-        description: 'Please check your email to verify your account and complete setup.'
-      });
-    } catch (error) {
-      productionLogger.error('Signup failed', error, 'AuthProvider');
-      const errorMessage = error instanceof Error ? error.message : 'Account creation failed';
-      enhancedToast.error({
-        title: 'Account creation failed',
-        description: errorMessage.includes('already registered') 
-          ? 'An account with this email already exists. Try signing in instead.' 
-          : errorMessage
       });
       throw error;
     }
@@ -329,8 +275,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       githubAccessToken,
       signOut, 
       logout,
-      login,
-      signup,
       loginDemo,
       secureLogin,
       secureSignup,

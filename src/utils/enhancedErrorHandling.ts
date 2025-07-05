@@ -1,57 +1,39 @@
 
-// Enhanced error handling for production environment
+import { productionLogger } from './productionLogger';
+
 export function setupEnhancedGlobalErrorHandling() {
-  // Global error handler for unhandled errors
+  if (typeof window === 'undefined') return;
+
+  // Handle uncaught JavaScript errors
   window.addEventListener('error', (event) => {
-    console.error('Global error:', event.error);
-    
-    // Send to monitoring service in production
-    if (import.meta.env.PROD) {
-      // You can integrate with services like Sentry, LogRocket, etc.
-      // For now, we'll just log it
-      console.error('Production error logged:', {
-        message: event.error?.message,
-        stack: event.error?.stack,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno
-      });
-    }
+    productionLogger.error('Uncaught error', {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+      stack: event.error?.stack
+    }, 'GlobalErrorHandler');
   });
 
-  // Global handler for unhandled promise rejections
+  // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason);
+    productionLogger.error('Unhandled promise rejection', {
+      reason: event.reason,
+      promise: event.promise
+    }, 'GlobalErrorHandler');
     
-    if (import.meta.env.PROD) {
-      console.error('Production promise rejection logged:', {
-        reason: event.reason,
-        type: 'unhandledrejection'
-      });
-    }
+    // Prevent the default browser behavior
+    event.preventDefault();
   });
 
-  // React error boundary fallback
-  window.addEventListener('react-error', (event: any) => {
-    console.error('React error boundary triggered:', event.detail);
-    
-    if (import.meta.env.PROD) {
-      console.error('Production React error logged:', event.detail);
+  // Handle resource loading errors
+  window.addEventListener('error', (event) => {
+    if (event.target !== window) {
+      productionLogger.error('Resource loading error', {
+        element: event.target?.nodeName,
+        source: (event.target as any)?.src || (event.target as any)?.href,
+        message: event.message
+      }, 'GlobalErrorHandler');
     }
-  });
-}
-
-// Function to manually report errors
-export function reportError(error: Error, context?: string) {
-  console.error(`Error in ${context || 'unknown context'}:`, error);
-  
-  if (import.meta.env.PROD) {
-    // Send to monitoring service
-    console.error('Manual error report:', {
-      message: error.message,
-      stack: error.stack,
-      context,
-      timestamp: new Date().toISOString()
-    });
-  }
+  }, true);
 }
