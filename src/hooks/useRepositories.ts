@@ -1,119 +1,85 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { useAuth } from '@/contexts/auth-context';
-import { githubService } from '@/services/github';
-import { repositoryService } from '@/services/repository';
 
 export function useRepositories() {
   const [searchTerm, setSearchTerm] = useState('');
-  const { githubAccessToken, user } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch repositories from database
-  const { data: repositories = [], isLoading, error } = useQuery({
-    queryKey: ['repositories'],
-    queryFn: repositoryService.getRepositories,
-    enabled: !!user
-  });
+  // Mock data for demo purposes
+  const repositories = [
+    {
+      id: '1',
+      name: 'my-awesome-app',
+      full_name: 'user/my-awesome-app',
+      description: 'A sample repository for testing',
+      html_url: 'https://github.com/user/my-awesome-app',
+      clone_url: 'https://github.com/user/my-awesome-app.git',
+      language: 'JavaScript',
+      default_branch: 'main',
+      github_id: 123456,
+      user_id: user?.id || 'demo-user',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      last_scan: new Date().toISOString(),
+      scan_status: 'completed',
+      queries_count: 15,
+      optimizations_count: 3
+    }
+  ];
 
   // Mutation for adding repository
   const addRepositoryMutation = useMutation({
     mutationFn: async (githubRepo: any) => {
       if (!user) throw new Error('User not authenticated');
       
-      return repositoryService.createRepository({
-        user_id: user.id,
-        github_id: githubRepo.id,
-        name: githubRepo.name,
-        full_name: githubRepo.full_name,
-        description: githubRepo.description,
-        html_url: githubRepo.html_url,
-        clone_url: githubRepo.clone_url,
-        language: githubRepo.language,
-        default_branch: githubRepo.default_branch || 'main'
-      });
+      // Mock implementation
+      console.log('Adding repository:', githubRepo);
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repositories'] });
-      enhancedToast.success({
-        title: "Repository Added",
-        description: "Repository has been connected to DBooster.",
-      });
+      console.log('Repository added successfully');
     },
     onError: (error: any) => {
-      enhancedToast.error({
-        title: "Error Adding Repository",
-        description: error.message || "Failed to add repository.",
-      });
+      console.error('Error adding repository:', error);
     }
   });
 
   const scanRepositoryMutation = useMutation({
-    mutationFn: repositoryService.scanRepository,
+    mutationFn: async (repoId: string) => {
+      // Mock implementation
+      console.log('Scanning repository:', repoId);
+      return { success: true };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repositories'] });
-      enhancedToast.success({
-        title: "Scan Started",
-        description: "Repository scan has been initiated.",
-      });
+      console.log('Repository scan started');
     },
     onError: (error: any) => {
-      enhancedToast.error({
-        title: "Scan Failed",
-        description: error.message || "Failed to start repository scan.",
-      });
+      console.error('Scan failed:', error);
     }
   });
 
   const removeRepositoryMutation = useMutation({
-    mutationFn: repositoryService.deleteRepository,
+    mutationFn: async (repoId: string) => {
+      // Mock implementation
+      console.log('Removing repository:', repoId);
+      return { success: true };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repositories'] });
-      enhancedToast.error({
-        title: "Repository Removed",
-        description: "Repository has been disconnected from DBooster.",
-      });
+      console.log('Repository removed');
     },
     onError: (error: any) => {
-      enhancedToast.error({
-        title: "Error Removing Repository",
-        description: error.message || "Failed to remove repository.",
-      });
+      console.error('Error removing repository:', error);
     }
   });
 
   const handleAddRepo = async () => {
-    if (!githubAccessToken) {
-      enhancedToast.error({
-        title: "GitHub Not Connected",
-        description: "Please connect your GitHub account first.",
-      });
-      return;
-    }
-
-    try {
-      const repos = await githubService.getUserRepositories(githubAccessToken);
-      
-      // For demo purposes, let's add the first repository that's not already added
-      const existingGithubIds = repositories.map(repo => repo.github_id);
-      const availableRepo = repos.find(repo => !existingGithubIds.includes(repo.id));
-      
-      if (availableRepo) {
-        addRepositoryMutation.mutate(availableRepo);
-      } else {
-        enhancedToast.info({
-          title: "No New Repositories",
-          description: "All your repositories are already connected.",
-        });
-      }
-    } catch (error: any) {
-      enhancedToast.error({
-        title: "Error Fetching Repositories",
-        description: error.message || "Failed to fetch GitHub repositories.",
-      });
-    }
+    console.log('Add repository functionality coming soon');
   };
 
   const handleRescan = (repoId: string) => {
@@ -132,11 +98,11 @@ export function useRepositories() {
   return {
     repositories,
     filteredRepos,
-    isLoading,
-    error,
+    isLoading: false,
+    error: null,
     searchTerm,
     setSearchTerm,
-    githubAccessToken,
+    githubAccessToken: null,
     addRepositoryMutation,
     scanRepositoryMutation,
     removeRepositoryMutation,

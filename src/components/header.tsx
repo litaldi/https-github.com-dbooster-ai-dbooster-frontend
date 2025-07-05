@@ -5,8 +5,6 @@ import { useAuth } from '@/contexts/auth-context';
 import { LogOut, User, Settings, Search, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { NotificationBell } from '@/components/notifications/SmartNotifications';
-import { AccessibilityMenu } from '@/components/accessibility-menu';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
   DropdownMenu,
@@ -20,13 +18,13 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 export function Header() {
-  const { user, logout, isDemo } = useAuth();
+  const { user, signOut, isDemo } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -83,8 +81,6 @@ export function Header() {
             <Search className="h-4 w-4" />
           </Button>
 
-          <NotificationBell />
-          <AccessibilityMenu />
           <ThemeToggle />
 
           {user ? (

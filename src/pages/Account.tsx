@@ -1,27 +1,19 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CreditCard, Github, LogOut, Crown } from 'lucide-react';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export default function Account() {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await logout();
-      enhancedToast.success({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account.",
-      });
+      await signOut();
     } catch (error: any) {
       console.error('Logout error:', error);
-      enhancedToast.error({
-        title: "Logout failed",
-        description: error.message || "An error occurred while signing out.",
-      });
     }
   };
 

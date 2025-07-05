@@ -1,8 +1,6 @@
 
 import { useAuth } from '@/contexts/auth-context';
 import { Navigate, useLocation } from 'react-router-dom';
-import { PageLoading } from '@/components/ui/loading-states';
-import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
 import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
@@ -10,18 +8,18 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, session, isLoading } = useAuth();
-  const { validateSession } = useConsolidatedSecurity();
+  const { user, session, loading } = useAuth();
   const location = useLocation();
 
-  useEffect(() => {
-    if (user && session) {
-      validateSession();
-    }
-  }, [user, session, validateSession]);
-
-  if (isLoading) {
-    return <PageLoading message="Checking authentication..." />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user || !session) {
