@@ -19,6 +19,21 @@ vi.mock('@/integrations/supabase/client', () => ({
   }
 }));
 
+// Mock other dependencies
+vi.mock('@/services/demo', () => ({
+  isDemoMode: vi.fn(() => false),
+  loginDemoUser: vi.fn(),
+  logoutDemoUser: vi.fn(),
+}));
+
+vi.mock('@/components/ui/enhanced-toast', () => ({
+  enhancedToast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  }
+}));
+
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
@@ -36,22 +51,22 @@ describe('AuthContext', () => {
     expect(result.current.isDemo).toBe(false);
   });
 
-  it('should handle sign in', async () => {
+  it('should handle secure login', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
-      await result.current.signIn('test@example.com', 'password');
+      await result.current.secureLogin('test@example.com', 'password');
     });
 
     // Test passes if no error is thrown
     expect(true).toBe(true);
   });
 
-  it('should handle sign up', async () => {
+  it('should handle secure signup', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
-      await result.current.signUp('test@example.com', 'password', 'Test User', true);
+      await result.current.secureSignup('test@example.com', 'password', 'Test User');
     });
 
     // Test passes if no error is thrown

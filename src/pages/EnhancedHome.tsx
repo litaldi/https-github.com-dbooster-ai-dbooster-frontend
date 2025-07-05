@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
-import { EnhancedHeroSection } from '@/components/ui/enhanced-hero-section';
+import { EnhancedHero } from '@/components/ui/enhanced-hero';
 import { EnhancedFeaturesGrid } from '@/components/ui/enhanced-features-grid';
 import { EnhancedCTASection } from '@/components/ui/enhanced-cta-section';
 import { 
@@ -14,8 +14,10 @@ import {
   BarChart3, 
   Rocket,
   Star,
-  Users,
+  Building,
   Clock,
+  CheckCircle2,
+  Users
 } from 'lucide-react';
 
 export default function EnhancedHome() {
@@ -40,67 +42,53 @@ export default function EnhancedHome() {
     }
   };
 
-  const handleWatchDemo = () => {
-    navigate('/features');
-  };
-
-  // Hero section props
   const heroProps = {
-    preheadline: "Enterprise Database Optimization",
-    headline: "Reduce Database Costs by 60%",
-    subheadline: "with AI-Powered Optimization",
-    description: "Transform your database performance with enterprise-grade AI optimization. Reduce query times by 73%, cut infrastructure costs by 60%, and automate 80% of performance tuning tasks.",
+    subtitle: "Enterprise Database Optimization",
+    title: "Reduce Query Times by 73% with AI-Powered Optimization",
+    description: "Transform your database performance with enterprise-grade AI optimization. Join thousands of companies automating 80% of performance tuning tasks while cutting database costs by 40-60%.",
     primaryCTA: {
       text: user ? 'Access Dashboard' : 'Start Free Enterprise Trial',
       onClick: handleGetStarted,
-      loading: isLoading,
-      variant: 'gradient' as const
+      loading: isLoading
     },
     secondaryCTA: {
-      text: 'Watch 2-Min Demo',
-      onClick: handleWatchDemo,
-      variant: 'outline' as const
+      text: 'Watch Demo',
+      onClick: () => navigate('/features')
     },
     badges: [
       {
-        text: "50,000+ Developers Trust DBooster",
         icon: <Star className="h-3 w-3" />,
-        variant: 'default' as const
-      },
-      {
-        text: "SOC2 Certified",
-        icon: <Shield className="h-3 w-3" />,
-        variant: 'success' as const
+        text: "Enterprise AI-Powered Database Optimization",
+        variant: 'secondary' as const
       }
     ],
     metrics: [
       {
         value: "73%",
         label: "Faster Queries",
-        icon: <Zap className="h-5 w-5 text-blue-600" />,
-        color: "bg-blue-50 border-blue-200"
+        icon: <Zap className="h-5 w-5 text-white" />,
+        color: "bg-blue-500"
       },
       {
         value: "60%",
         label: "Cost Reduction",
-        icon: <TrendingUp className="h-5 w-5 text-green-600" />,
-        color: "bg-green-50 border-green-200"
+        icon: <TrendingUp className="h-5 w-5 text-white" />,
+        color: "bg-green-500"
       },
       {
         value: "5min",
         label: "Setup Time",
-        icon: <Clock className="h-5 w-5 text-purple-600" />,
-        color: "bg-purple-50 border-purple-200"
+        icon: <Clock className="h-5 w-5 text-white" />,
+        color: "bg-purple-500"
       }
     ]
   };
 
-  // Features for the features grid
   const features = [
     {
       icon: <Brain className="h-8 w-8" />,
       title: "AI Query Optimizer",
-      description: "Advanced machine learning algorithms analyze your SQL queries and provide instant optimization recommendations with 73% average improvement.",
+      description: "Advanced machine learning algorithms analyze your SQL queries and provide instant optimization recommendations.",
       benefits: [
         "Automatic query analysis and optimization",
         "Real-time performance suggestions",
@@ -127,6 +115,10 @@ export default function EnhancedHome() {
         "Historical performance trends",
         "Proactive issue detection"
       ],
+      badge: {
+        text: "Enterprise",
+        variant: 'outline' as const
+      },
       cta: {
         text: "View Monitoring",
         onClick: () => navigate('/app')
@@ -143,28 +135,80 @@ export default function EnhancedHome() {
         "Comprehensive audit trails",
         "Role-based access control"
       ],
+      badge: {
+        text: "SOC2 Certified",
+        variant: 'secondary' as const
+      },
       cta: {
         text: "Security Details",
-        onClick: () => navigate('/features')
+        onClick: () => navigate('/security')
       },
       gradient: "bg-gradient-to-br from-purple-500/10 to-purple-600/5"
+    },
+    {
+      icon: <BarChart3 className="h-8 w-8" />,
+      title: "Performance Analytics",
+      description: "Deep insights into your database performance with predictive analytics and optimization recommendations.",
+      benefits: [
+        "Advanced performance metrics",
+        "Predictive analytics",
+        "Cost optimization insights",
+        "Custom reporting dashboards"
+      ],
+      cta: {
+        text: "View Analytics",
+        onClick: () => navigate('/reports')
+      },
+      gradient: "bg-gradient-to-br from-orange-500/10 to-orange-600/5"
+    },
+    {
+      icon: <Rocket className="h-8 w-8" />,
+      title: "Quick Setup",
+      description: "Get started in minutes with our streamlined onboarding process and intelligent database connection wizard.",
+      benefits: [
+        "5-minute setup process",
+        "Automatic configuration detection",
+        "Step-by-step guided wizard",
+        "Zero downtime integration"
+      ],
+      cta: {
+        text: "Start Setup",
+        onClick: handleGetStarted
+      },
+      gradient: "bg-gradient-to-br from-red-500/10 to-red-600/5"
+    },
+    {
+      icon: <Users className="h-8 w-8" />,
+      title: "Team Collaboration",
+      description: "Collaborate with your team on database optimization with shared workspaces and role-based permissions.",
+      benefits: [
+        "Shared team workspaces",
+        "Role-based permissions",
+        "Collaboration tools",
+        "Team performance insights"
+      ],
+      cta: {
+        text: "Team Features",
+        onClick: () => navigate('/features')
+      },
+      gradient: "bg-gradient-to-br from-teal-500/10 to-teal-600/5"
     }
   ];
 
   return (
     <div className="min-h-screen">
-      <EnhancedHeroSection {...heroProps} />
+      <EnhancedHero {...heroProps} />
       
       <EnhancedFeaturesGrid
         title="Everything You Need for Database Excellence"
-        subtitle="Comprehensive tools and features designed for enterprise database optimization."
+        subtitle="Comprehensive tools and features designed for enterprise database optimization and team collaboration."
         features={features}
         columns={3}
       />
       
       <EnhancedCTASection
         title="Ready to Transform Your Database Performance?"
-        description="Join thousands of developers and enterprises who have improved their database performance by up to 10x with DBooster's AI-powered optimization."
+        description="Join thousands of developers and enterprises who have improved their database performance by up to 10x with DBooster's AI-powered optimization recommendations."
         primaryCTA={{
           text: user ? 'Go to Your Dashboard' : 'Start Free Analysis',
           onClick: handleGetStarted,
@@ -178,7 +222,8 @@ export default function EnhancedHome() {
           'No credit card required',
           '2-minute setup',
           'Cancel anytime',
-          'SOC2 compliant'
+          'SOC2 compliant',
+          '24/7 support'
         ]}
         badge={{
           text: 'Limited Time: Enterprise Trial Free',
