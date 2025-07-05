@@ -20,7 +20,7 @@ import { lazy, Suspense } from 'react';
 import { PageLoading } from '@/components/ui/loading-states';
 
 // Critical pages (loaded immediately)
-import EnhancedHome from '@/pages/EnhancedHome';
+import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 
 // Non-critical pages (lazy loaded)
@@ -89,7 +89,7 @@ function App() {
                   <Routes>
                     {/* Public routes */}
                     <Route path="/" element={<PublicLayout />}>
-                      <Route index element={<EnhancedHome />} />
+                      <Route index element={<Home />} />
                       <Route path="login" element={<Login />} />
                       <Route path="features" element={<Features />} />
                       <Route path="how-it-works" element={<HowItWorks />} />
