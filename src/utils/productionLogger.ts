@@ -20,8 +20,8 @@ class ProductionLogger {
   private logs: LogEntry[] = [];
 
   constructor() {
-    // In production, you might want to send logs to a service
-    this.logLevel = process.env.NODE_ENV === 'production' ? 'warn' : 'debug';
+    // In production, only log errors and warnings
+    this.logLevel = import.meta.env.PROD ? 'warn' : 'debug';
   }
 
   private log(level: string, message: string, error?: any, context?: string, metadata?: Record<string, any>) {
@@ -36,14 +36,14 @@ class ProductionLogger {
 
     this.logs.push(entry);
 
-    // Console output for development
-    if (process.env.NODE_ENV === 'development') {
+    // Console output for development only
+    if (import.meta.env.DEV) {
       const consoleMethod = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log';
       console[consoleMethod](`[${level.toUpperCase()}] ${message}`, error || '', metadata || '');
     }
 
-    // In production, send to monitoring service
-    if (process.env.NODE_ENV === 'production' && (level === 'error' || level === 'warn')) {
+    // In production, send critical errors to monitoring service
+    if (import.meta.env.PROD && (level === 'error' || level === 'warn')) {
       this.sendToMonitoringService(entry);
     }
   }
@@ -51,6 +51,16 @@ class ProductionLogger {
   private sendToMonitoringService(entry: LogEntry) {
     // Implement actual monitoring service integration here
     // e.g., Sentry, DataDog, etc.
+    // For now, we'll use a safe fallback that won't break in production
+    try {
+      // This could be replaced with actual monitoring service calls
+      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+        // Only attempt to send in production environments
+        // Implementation would go here
+      }
+    } catch (error) {
+      // Silent fail to prevent production issues
+    }
   }
 
   error(message: string, error?: any, context?: string, metadata?: Record<string, any>) {

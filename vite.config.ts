@@ -26,6 +26,10 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+      },
+      mangle: {
+        safari10: true,
       },
     },
     rollupOptions: {
@@ -34,9 +38,13 @@ export default defineConfig(({ mode }) => ({
           vendor: ['react', 'react-dom'],
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-slot'],
           auth: ['@supabase/supabase-js'],
+          charts: ['recharts'],
+          query: ['@tanstack/react-query'],
         },
       },
     },
+    chunkSizeWarningLimit: 1000,
+    reportCompressedSize: false,
   },
   test: {
     globals: true,

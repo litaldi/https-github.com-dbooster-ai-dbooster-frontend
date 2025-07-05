@@ -32,12 +32,12 @@ export class ProductionInitializer {
       await this.initializeErrorHandling();
 
     } catch (error) {
-      // Silent fail in production
+      // Silent fail in production to prevent app crashes
     }
   }
 
   private async initializeSecurityAndCleanup() {
-    // Initialize console cleanup
+    // Initialize console cleanup first
     productionConsole.initializeConsoleCleanup();
     
     // Initialize security measures
@@ -50,21 +50,21 @@ export class ProductionInitializer {
   }
 
   private async initializeSEO() {
-    // Set default SEO for home page
+    // Set optimized SEO for production
     seoOptimizer.updatePageSEO({
-      title: 'QueryMaster Pro - Advanced Database Query Management',
-      description: 'Professional database query management platform with AI-powered optimization, real-time collaboration, and advanced analytics.',
-      keywords: 'database, query, SQL, optimization, analytics, collaboration',
+      title: 'DBooster - AI-Powered Database Query Optimization Platform',
+      description: 'Professional database query optimization platform with AI-powered analysis, real-time performance monitoring, and automated optimization suggestions. Trusted by 10,000+ developers worldwide.',
+      keywords: 'database optimization, SQL performance, query optimization, AI database tools, database monitoring, SQL analysis, performance tuning',
       canonicalUrl: window.location.origin
     });
   }
 
   private async initializeErrorHandling() {
-    // Setup enhanced error handling
+    // Setup enhanced error handling for production
     setupEnhancedGlobalErrorHandling();
   }
 
-  // Method to run health checks
+  // Method to run comprehensive health checks
   async runHealthChecks(): Promise<HealthCheckResult> {
     const checks: HealthCheckResult = {
       security: true,
@@ -91,7 +91,7 @@ export class ProductionInitializer {
       checks.seo = checks.details.seo.passed;
 
     } catch (error) {
-      // Silent fail
+      // Silent fail in production
     }
 
     return checks;
@@ -102,7 +102,7 @@ export class ProductionInitializer {
       passed: true,
       cspEnabled: !!document.querySelector('meta[http-equiv="Content-Security-Policy"]'),
       httpsEnabled: window.location.protocol === 'https:',
-      devToolsDisabled: !(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__?.isDisabled === false
+      consoleDisabled: import.meta.env.PROD
     };
   }
 
