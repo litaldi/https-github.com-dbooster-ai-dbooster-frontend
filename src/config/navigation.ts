@@ -1,4 +1,3 @@
-
 import { 
   Home, 
   BarChart3, 
@@ -38,7 +37,8 @@ import {
   Play,
   Lightbulb,
   Rocket,
-  Package
+  Package,
+  Plus
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -48,7 +48,47 @@ export interface NavigationItem {
   badge?: string;
   description?: string;
   children?: NavigationItem[];
+  shortcut?: string;
 }
+
+// Dashboard sidebar navigation
+export const dashboardSidebarNavigation = [
+  {
+    group: 'Overview',
+    items: [
+      { href: '/app', label: 'Dashboard', icon: BarChart3, description: 'Performance overview and metrics' },
+      { href: '/app/analytics', label: 'Analytics', icon: TrendingUp, description: 'Detailed performance analytics' },
+    ]
+  },
+  {
+    group: 'Optimization',
+    items: [
+      { href: '/app/queries', label: 'Query Manager', icon: Search, description: 'Optimize and manage SQL queries', shortcut: '⌘K' },
+      { href: '/app/repositories', label: 'Repositories', icon: Database, description: 'Database connections and repos' },
+      { href: '/app/ai-studio', label: 'AI Studio', icon: Brain, badge: 'AI', description: 'AI-powered optimization tools' },
+    ]
+  },
+  {
+    group: 'Reports',
+    items: [
+      { href: '/app/reports', label: 'Performance Reports', icon: FileText, description: 'Detailed analytics and insights' },
+      { href: '/app/monitoring', label: 'Real-time Monitor', icon: Activity, description: 'Live performance monitoring' },
+    ]
+  },
+  {
+    group: 'Settings',
+    items: [
+      { href: '/app/settings', label: 'Settings', icon: Settings, description: 'App configuration and preferences' },
+      { href: '/app/account', label: 'Profile', icon: User, description: 'Account and profile settings' },
+    ]
+  }
+];
+
+// Quick actions for dashboard
+export const quickActions = [
+  { href: '/app/queries/new', label: 'New Query', icon: Plus, shortcut: 'Cmd+N' },
+  { href: '/app/repositories/connect', label: 'Connect DB', icon: Database, shortcut: 'Cmd+D' },
+];
 
 // Main navigation structure with updated mega menu
 export const megaMenuNavigation: NavigationItem[] = [
