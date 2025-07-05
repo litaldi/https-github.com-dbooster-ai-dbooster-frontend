@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => ({
         drop_console: true,
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2,
       },
       mangle: {
         safari10: true,
@@ -35,20 +36,57 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
+          // Core React libraries
           vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-slot'],
+          
+          // UI framework
+          ui: [
+            '@radix-ui/react-dialog', 
+            '@radix-ui/react-slot', 
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-toast'
+          ],
+          
+          // Authentication & Backend
           auth: ['@supabase/supabase-js'],
+          
+          // Charts and visualization
           charts: ['recharts'],
+          
+          // State management
           query: ['@tanstack/react-query'],
+          
+          // Animations
+          animations: ['framer-motion'],
+          
+          // AI/ML (lazy loaded)
+          ai: ['@huggingface/transformers'],
+          
+          // Utilities
+          utils: ['date-fns', 'clsx', 'tailwind-merge']
         },
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500, // Reduced from 1000 for better performance
     reportCompressedSize: false,
+    sourcemap: mode === 'development',
   },
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+  },
+  // Performance optimizations
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-slot',
+      '@tanstack/react-query'
+    ],
+    exclude: [
+      '@huggingface/transformers' // Exclude heavy AI library from eager optimization
+    ]
   },
 }));
