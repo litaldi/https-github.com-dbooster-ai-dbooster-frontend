@@ -7,6 +7,7 @@ import { FeaturesSection } from '@/components/home/FeaturesSection';
 import { EnhancedCTASection } from '@/components/home/EnhancedCTASection';
 import { StandardizedLoading } from '@/components/ui/standardized-loading';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { features } from '@/data/homePageData';
 
 export default function Home() {
   const { user, loginDemo } = useAuth();
@@ -54,6 +55,10 @@ export default function Home() {
     navigate('/features');
   };
 
+  const handleViewAllFeatures = () => {
+    navigate('/features');
+  };
+
   const guidanceSteps = [
     {
       title: "Connect Your Enterprise Database",
@@ -86,7 +91,10 @@ export default function Home() {
         guidanceSteps={guidanceSteps}
       />
       
-      <FeaturesSection />
+      <FeaturesSection 
+        features={features}
+        onViewAllFeatures={handleViewAllFeatures}
+      />
       
       <EnhancedCTASection
         user={user}

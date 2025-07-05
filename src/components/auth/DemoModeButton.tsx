@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,12 +9,14 @@ import { TestTube, Loader2, Sparkles } from 'lucide-react';
 
 export function DemoModeButton() {
   const { loginDemo, isLoading } = useAuth();
+  const navigate = useNavigate();
   const [isDemoLoading, setIsDemoLoading] = useState(false);
 
   const handleDemoLogin = async () => {
     setIsDemoLoading(true);
     try {
       await loginDemo();
+      navigate('/app');
     } catch (error) {
       // Error is handled in auth context
     } finally {

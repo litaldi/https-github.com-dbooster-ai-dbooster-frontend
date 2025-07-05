@@ -98,7 +98,7 @@ export default function Login() {
             <SocialAuth />
             
             <div className="text-center">
-              <DemoModeButton onSuccess={() => navigate('/app')} />
+              <DemoModeButton />
             </div>
           </div>
         </FadeIn>
