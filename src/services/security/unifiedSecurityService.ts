@@ -19,8 +19,8 @@ export class UnifiedSecurityService {
     return consolidatedInputValidation.validateAndSanitize(input, context);
   }
 
-  async checkRateLimit(key: string, limit: number = 10, windowMs: number = 60000) {
-    return rateLimitService.checkRateLimit(key, limit, windowMs);
+  async checkRateLimit(identifier: string, action: string = 'general') {
+    return rateLimitService.checkRateLimit(identifier, action);
   }
 
   async secureLogin(email: string, password: string, options?: { rememberMe?: boolean }) {
