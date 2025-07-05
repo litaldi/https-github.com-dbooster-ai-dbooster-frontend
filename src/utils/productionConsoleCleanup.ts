@@ -1,75 +1,119 @@
+interface ConsoleMethod {
+  log: (...args: any[]) => void;
+  warn: (...args: any[]) => void;
+  error: (...args: any[]) => void;
+  info: (...args: any[]) => void;
+  debug: (...args: any[]) => void;
+  trace: (...args: any[]) => void;
+  table: (...args: any[]) => void;
+  group: (...args: any[]) => void;
+  groupEnd: (...args: any[]) => void;
+  groupCollapsed: (...args: any[]) => void;
+  time: (...args: any[]) => void;
+  timeEnd: (...args: any[]) => void;
+  count: (...args: any[]) => void;
+  countReset: (...args: any[]) => void;
+  clear: () => void;
+}
 
-// Enhanced production console cleanup utility
-export class ProductionConsoleManager {
-  private static instance: ProductionConsoleManager;
-  private originalMethods: Partial<Console> = {};
-  private isProduction = import.meta.env.PROD;
+class ProductionConsoleCleanup {
+  private static instance: ProductionConsoleCleanup;
+  private originalConsole: Partial<ConsoleMethod> = {};
+  private isInitialized = false;
 
-  static getInstance(): ProductionConsoleManager {
-    if (!ProductionConsoleManager.instance) {
-      ProductionConsoleManager.instance = new ProductionConsoleManager();
+  static getInstance(): ProductionConsoleCleanup {
+    if (!ProductionConsoleCleanup.instance) {
+      ProductionConsoleCleanup.instance = new ProductionConsoleCleanup();
     }
-    return ProductionConsoleManager.instance;
+    return ProductionConsoleCleanup.instance;
   }
 
-  initializeConsoleCleanup() {
-    if (!this.isProduction) return;
+  initializeConsoleCleanup(): void {
+    if (this.isInitialized || !import.meta.env.PROD) {
+      return;
+    }
 
-    // Store original console methods
-    this.originalMethods = {
-      log: console.log,
-      debug: console.debug,
-      info: console.info,
-      trace: console.trace,
-      group: console.group,
-      groupEnd: console.groupEnd,
-      groupCollapsed: console.groupCollapsed,
-      time: console.time,
-      timeEnd: console.timeEnd,
-      table: console.table,
-      dir: console.dir,
-      dirxml: console.dirxml,
-      count: console.count,
-      countReset: console.countReset,
-      profile: console.profile,
-      profileEnd: console.profileEnd
-    };
+    if (typeof window === 'undefined' || typeof console === 'undefined') {
+      return;
+    }
 
-    // Replace with no-op functions in production
-    console.log = () => {};
-    console.debug = () => {};
-    console.info = () => {};
-    console.trace = () => {};
-    console.group = () => {};
-    console.groupEnd = () => {};
-    console.groupCollapsed = () => {};
-    console.time = () => {};
-    console.timeEnd = () => {};
-    console.table = () => {};
-    console.dir = () => {};
-    console.dirxml = () => {};
-    console.count = () => {};
-    console.countReset = () => {};
-    console.profile = () => {};
-    console.profileEnd = () => {};
+    try {
+      // Store original console methods
+      this.originalConsole = {
+        log: console.log,
+        warn: console.warn,
+        error: console.error,
+        info: console.info,
+        debug: console.debug,
+        trace: console.trace,
+        table: console.table,
+        group: console.group,
+        groupEnd: console.groupEnd,
+        groupCollapsed: console.groupCollapsed,
+        time: console.time,
+        timeEnd: console.timeEnd,
+        count: console.count,
+        countReset: console.countReset,
+        clear: console.clear
+      };
 
-    // Keep critical methods for error monitoring
-    // console.error and console.warn are preserved for monitoring
-  }
+      // Replace with no-op functions in production
+      const noOp = () => {};
+      
+      console.log = noOp;
+      console.info = noOp;
+      console.debug = noOp;
+      console.trace = noOp;
+      console.table = noOp;
+      console.group = noOp;
+      console.groupEnd = noOp;
+      console.groupCollapsed = noOp;
+      console.time = noOp;
+      console.timeEnd = noOp;
+      console.count = noOp;
+      console.countReset = noOp;
+      console.clear = noOp;
 
-  // Utility for development-only logging
-  devLog(...args: any[]) {
-    if (!this.isProduction && this.originalMethods.log) {
-      this.originalMethods.log(...args);
+      // Keep error and warn for critical issues, but sanitize them
+      console.error = (...args: any[]) => {
+        // Only log critical errors in production
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('critical')) {
+          this.originalConsole.error?.('Critical error detected');
+        }
+      };
+
+      console.warn = (...args: any[]) => {
+        // Only log security warnings in production
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('security')) {
+          this.originalConsole.warn?.('Security warning detected');
+        }
+      };
+
+      this.isInitialized = true;
+    } catch (error) {
+      // Silent fail to prevent production issues
     }
   }
 
-  // Emergency restore function for debugging
-  restoreConsole() {
-    if (this.originalMethods.log) {
-      Object.assign(console, this.originalMethods);
+  restoreConsole(): void {
+    if (!this.isInitialized || typeof console === 'undefined') {
+      return;
+    }
+
+    try {
+      Object.assign(console, this.originalConsole);
+      this.isInitialized = false;
+    } catch (error) {
+      // Silent fail
+    }
+  }
+
+  // Development helper to temporarily restore console
+  enableDevConsole(): void {
+    if (import.meta.env.DEV) {
+      this.restoreConsole();
     }
   }
 }
 
-export const productionConsole = ProductionConsoleManager.getInstance();
+export const productionConsole = ProductionConsoleCleanup.getInstance();

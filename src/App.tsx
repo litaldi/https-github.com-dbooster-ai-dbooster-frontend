@@ -4,10 +4,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
+import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import { PublicLayout } from '@/components/PublicLayout';
 import { GlobalLoadingOverlay } from '@/components/ui/GlobalLoadingOverlay';
 import Layout from '@/components/layout';
 import ProtectedRoute from '@/components/protected-route';
+import { ResourcePreloader, CriticalCSSLoader } from '@/components/ui/critical-css-loader';
 
 // Pages
 import Home from '@/pages/Home';
@@ -42,65 +44,69 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
-        <AuthProvider>
-          <Router>
-            <GlobalLoadingOverlay />
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<PublicLayout />}>
-                <Route index element={<Home />} />
-                <Route path="login" element={<Login />} />
-                <Route path="features" element={<Features />} />
-                <Route path="how-it-works" element={<HowItWorks />} />
-                <Route path="pricing" element={<Pricing />} />
-                <Route path="learn" element={<Learn />} />
-                <Route path="blog" element={<Blog />} />
-                <Route path="about" element={<About />} />
-                <Route path="contact" element={<Contact />} />
-                <Route path="support" element={<Support />} />
-                <Route path="privacy" element={<Privacy />} />
-                <Route path="terms" element={<Terms />} />
-                <Route path="accessibility" element={<Accessibility />} />
-                <Route path="ai-studio" element={<AIOptimizationStudio />} />
-              </Route>
-              
-              {/* Protected authenticated routes */}
-              <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                <Route index element={<EnhancedDashboard />} />
-              </Route>
-              
-              <Route path="/queries" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                <Route index element={<Queries />} />
-              </Route>
-              
-              <Route path="/repositories" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                <Route index element={<Repositories />} />
-              </Route>
-              
-              <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                <Route index element={<Reports />} />
-              </Route>
+    <EnhancedErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
+          <AuthProvider>
+            <Router>
+              <CriticalCSSLoader />
+              <ResourcePreloader />
+              <GlobalLoadingOverlay />
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<PublicLayout />}>
+                  <Route index element={<Home />} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="features" element={<Features />} />
+                  <Route path="how-it-works" element={<HowItWorks />} />
+                  <Route path="pricing" element={<Pricing />} />
+                  <Route path="learn" element={<Learn />} />
+                  <Route path="blog" element={<Blog />} />
+                  <Route path="about" element={<About />} />
+                  <Route path="contact" element={<Contact />} />
+                  <Route path="support" element={<Support />} />
+                  <Route path="privacy" element={<Privacy />} />
+                  <Route path="terms" element={<Terms />} />
+                  <Route path="accessibility" element={<Accessibility />} />
+                  <Route path="ai-studio" element={<AIOptimizationStudio />} />
+                </Route>
+                
+                {/* Protected authenticated routes */}
+                <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                  <Route index element={<EnhancedDashboard />} />
+                </Route>
+                
+                <Route path="/queries" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                  <Route index element={<Queries />} />
+                </Route>
+                
+                <Route path="/repositories" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                  <Route index element={<Repositories />} />
+                </Route>
+                
+                <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                  <Route index element={<Reports />} />
+                </Route>
 
-              <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                <Route index element={<SecurityDashboardPage />} />
-              </Route>
-              
-              {/* 404 fallback */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster 
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                className: 'bg-background border-border text-foreground'
-              }}
-            />
-          </Router>
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+                <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                  <Route index element={<SecurityDashboardPage />} />
+                </Route>
+                
+                {/* 404 fallback */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <Toaster 
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  className: 'bg-background border-border text-foreground'
+                }}
+              />
+            </Router>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </EnhancedErrorBoundary>
   );
 }
 

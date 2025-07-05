@@ -1,43 +1,136 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface AccessibilityPreferences {
   highContrast: boolean;
   reducedMotion: boolean;
   largeText: boolean;
   screenReaderOptimized: boolean;
+  keyboardNavigation: boolean;
 }
 
-const ACCESSIBILITY_STORAGE_KEY = 'accessibility-preferences';
+const DEFAULT_PREFERENCES: AccessibilityPreferences = {
+  highContrast: false,
+  reducedMotion: false,
+  largeText: false,
+  screenReaderOptimized: false,
+  keyboardNavigation: false
+};
+
+const STORAGE_KEY = 'accessibility-preferences';
 
 export function useAccessibility() {
   const [preferences, setPreferences] = useState<AccessibilityPreferences>(() => {
-    if (typeof window === 'undefined') {
-      return {
-        highContrast: false,
-        reducedMotion: false,
-        largeText: false,
-        screenReaderOptimized: false,
-      };
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        return { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) };
+      }
+    } catch (error) {
+      console.warn('Failed to load accessibility preferences:', error);
     }
-
-    const stored = localStorage.getItem(ACCESSIBILITY_STORAGE_KEY);
-    const defaultPrefs = {
-      highContrast: false,
-      reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-      largeText: false,
-      screenReaderOptimized: false,
-    };
-
-    return stored ? { ...defaultPrefs, ...JSON.parse(stored) } : defaultPrefs;
+    return DEFAULT_PREFERENCES;
   });
 
+  // Detect system preferences
+  useEffect(() => {
+    const detectSystemPreferences = () => {
+      const mediaQueries = {
+        reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)'),
+        highContrast: window.matchMedia('(prefers-contrast: high)'),
+        largeText: window.matchMedia('(prefers-reduced-data: reduce)')
+      };
+
+      const updateFromSystem = () => {
+        setPreferences(prev => ({
+          ...prev,
+          reducedMotion: prev.reducedMotion || mediaQueries.reducedMotion.matches,
+          highContrast: prev.highContrast || mediaQueries.highContrast.matches
+        }));
+      };
+
+      // Initial check
+      updateFromSystem();
+
+      // Listen for changes
+      Object.values(mediaQueries).forEach(mq => {
+        mq.addEventListener('change', updateFromSystem);
+      });
+
+      return () => {
+        Object.values(mediaQueries).forEach(mq => {
+          mq.removeEventListener('change', updateFromSystem);
+        });
+      };
+    };
+
+    if (typeof window !== 'undefined') {
+      detectSystemPreferences();
+    }
+  }, []);
+
+  // Apply accessibility preferences to DOM
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    // High contrast
+    if (preferences.highContrast) {
+      root.classList.add('high-contrast');
+      root.style.setProperty('--accessibility-contrast', 'high');
+    } else {
+      root.classList.remove('high-contrast');
+      root.style.removeProperty('--accessibility-contrast');
+    }
+
+    // Reduced motion
+    if (preferences.reducedMotion) {
+      root.classList.add('reduce-motion');
+      root.style.setProperty('--accessibility-motion', 'reduce');
+    } else {
+      root.classList.remove('reduce-motion');
+      root.style.removeProperty('--accessibility-motion');
+    }
+
+    // Large text
+    if (preferences.largeText) {
+      root.classList.add('large-text');
+      root.style.setProperty('--accessibility-font-scale', '1.2');
+    } else {
+      root.classList.remove('large-text');
+      root.style.removeProperty('--accessibility-font-scale');
+    }
+
+    // Screen reader optimized
+    if (preferences.screenReaderOptimized) {
+      root.classList.add('screen-reader-optimized');
+      root.setAttribute('data-screen-reader-optimized', 'true');
+    } else {
+      root.classList.remove('screen-reader-optimized');
+      root.removeAttribute('data-screen-reader-optimized');
+    }
+
+    // Keyboard navigation
+    if (preferences.keyboardNavigation) {
+      root.classList.add('keyboard-navigation');
+    } else {
+      root.classList.remove('keyboard-navigation');
+    }
+  }, [preferences]);
+
+  // Save preferences to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+    } catch (error) {
+      console.warn('Failed to save accessibility preferences:', error);
+    }
+  }, [preferences]);
+
   const updatePreference = useCallback((key: keyof AccessibilityPreferences, value: boolean) => {
-    setPreferences(prev => {
-      const updated = { ...prev, [key]: value };
-      localStorage.setItem(ACCESSIBILITY_STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
+    setPreferences(prev => ({
+      ...prev,
+      [key]: value
+    }));
   }, []);
 
   const toggleHighContrast = useCallback(() => {
@@ -56,64 +149,12 @@ export function useAccessibility() {
     updatePreference('screenReaderOptimized', !preferences.screenReaderOptimized);
   }, [preferences.screenReaderOptimized, updatePreference]);
 
-  // Apply preferences to document
-  useEffect(() => {
-    const html = document.documentElement;
-    
-    if (preferences.highContrast) {
-      html.classList.add('accessibility-high-contrast');
-    } else {
-      html.classList.remove('accessibility-high-contrast');
-    }
+  const toggleKeyboardNavigation = useCallback(() => {
+    updatePreference('keyboardNavigation', !preferences.keyboardNavigation);
+  }, [preferences.keyboardNavigation, updatePreference]);
 
-    if (preferences.largeText) {
-      html.classList.add('accessibility-large-text');
-      html.style.setProperty('--accessibility-font-size', '120%');
-    } else {
-      html.classList.remove('accessibility-large-text');
-      html.style.removeProperty('--accessibility-font-size');
-    }
-
-    if (preferences.reducedMotion) {
-      html.classList.add('accessibility-reduce-motion');
-    } else {
-      html.classList.remove('accessibility-reduce-motion');
-    }
-
-    if (preferences.screenReaderOptimized) {
-      html.classList.add('accessibility-screen-reader');
-    } else {
-      html.classList.remove('accessibility-screen-reader');
-    }
-  }, [preferences]);
-
-  // Keyboard navigation enhancement
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Skip links shortcut
-      if (e.altKey && e.key === 's') {
-        e.preventDefault();
-        const skipLink = document.querySelector('.skip-link') as HTMLElement;
-        skipLink?.focus();
-      }
-
-      // Main navigation shortcut
-      if (e.altKey && e.key === 'n') {
-        e.preventDefault();
-        const nav = document.querySelector('nav') as HTMLElement;
-        nav?.focus();
-      }
-
-      // Main content shortcut
-      if (e.altKey && e.key === 'm') {
-        e.preventDefault();
-        const main = document.querySelector('main') as HTMLElement;
-        main?.focus();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+  const resetToDefaults = useCallback(() => {
+    setPreferences(DEFAULT_PREFERENCES);
   }, []);
 
   return {
@@ -122,6 +163,8 @@ export function useAccessibility() {
     toggleReducedMotion,
     toggleLargeText,
     toggleScreenReaderOptimized,
+    toggleKeyboardNavigation,
     updatePreference,
+    resetToDefaults
   };
 }

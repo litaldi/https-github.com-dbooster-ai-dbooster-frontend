@@ -1,91 +1,160 @@
 
-class ResourcePreloaderService {
-  private preloadedResources = new Set<string>();
+interface PreloadResource {
+  href: string;
+  as: 'script' | 'style' | 'font' | 'image' | 'fetch' | 'document';
+  type?: string;
+  crossorigin?: 'anonymous' | 'use-credentials';
+  media?: string;
+  priority?: 'high' | 'low';
+}
 
-  async preloadCriticalAssets() {
-    const criticalResources = [
-      '/fonts/inter-var.woff2',
-      '/images/hero-bg.webp',
-      '/images/dashboard-preview.webp'
+export class ResourcePreloader {
+  private static preloadedResources: Set<string> = new Set();
+  private static preloadPromises: Map<string, Promise<void>> = new Map();
+
+  static preloadResource(resource: PreloadResource): Promise<void> {
+    const { href, as, type, crossorigin, media, priority } = resource;
+    
+    // Check if already preloaded
+    if (this.preloadedResources.has(href)) {
+      return Promise.resolve();
+    }
+
+    // Check if already in progress
+    if (this.preloadPromises.has(href)) {
+      return this.preloadPromises.get(href)!;
+    }
+
+    const promise = new Promise<void>((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.href = href;
+      link.as = as;
+      
+      if (type) link.type = type;
+      if (crossorigin) link.crossOrigin = crossorigin;
+      if (media) link.media = media;
+      if (priority === 'high') link.setAttribute('fetchpriority', 'high');
+      
+      link.onload = () => {
+        this.preloadedResources.add(href);
+        resolve();
+      };
+      
+      link.onerror = () => {
+        reject(new Error(`Failed to preload resource: ${href}`));
+      };
+      
+      document.head.appendChild(link);
+    });
+
+    this.preloadPromises.set(href, promise);
+    return promise;
+  }
+
+  static async preloadCriticalAssets(): Promise<void> {
+    const criticalResources: PreloadResource[] = [
+      // Critical fonts
+      {
+        href: '/fonts/inter-var.woff2',
+        as: 'font',
+        type: 'font/woff2',
+        crossorigin: 'anonymous',
+        priority: 'high'
+      },
+      
+      // Critical images
+      {
+        href: '/images/logo.svg',
+        as: 'image',
+        priority: 'high'
+      },
+      
+      // Critical API endpoints
+      {
+        href: '/api/auth/session',
+        as: 'fetch',
+        crossorigin: 'anonymous'
+      }
     ];
 
-    const preloadPromises = criticalResources.map(resource => 
-      this.preloadResource(resource)
-    );
-
     try {
-      await Promise.allSettled(preloadPromises);
-      console.log('Critical assets preloaded successfully');
+      await Promise.allSettled(
+        criticalResources.map(resource => this.preloadResource(resource))
+      );
     } catch (error) {
-      console.error('Error preloading critical assets:', error);
+      console.warn('Some critical resources failed to preload:', error);
     }
   }
 
-  private preloadResource(url: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.preloadedResources.has(url)) {
-        resolve();
-        return;
-      }
+  static preloadRouteAssets(route: string): Promise<void[]> {
+    const routeAssets: Record<string, PreloadResource[]> = {
+      '/dashboard': [
+        {
+          href: '/api/dashboard/metrics',
+          as: 'fetch',
+          crossorigin: 'anonymous'
+        }
+      ],
+      '/queries': [
+        {
+          href: '/api/queries/recent',
+          as: 'fetch',
+          crossorigin: 'anonymous'
+        }
+      ],
+      '/repositories': [
+        {
+          href: '/api/repositories/list',
+          as: 'fetch',
+          crossorigin: 'anonymous'
+        }
+      ]
+    };
 
+    const assets = routeAssets[route] || [];
+    return Promise.allSettled(
+      assets.map(asset => this.preloadResource(asset))
+    );
+  }
+
+  static getPreloadedResources(): string[] {
+    return Array.from(this.preloadedResources);
+  }
+
+  static clearPreloadCache(): void {
+    this.preloadedResources.clear();
+    this.preloadPromises.clear();
+  }
+
+  // Prefetch next likely routes
+  static prefetchRoutes(routes: string[]): void {
+    routes.forEach(route => {
       const link = document.createElement('link');
-      link.rel = 'preload';
-      link.href = url;
-      
-      // Determine resource type
-      if (url.includes('.woff2') || url.includes('.woff') || url.includes('.ttf')) {
-        link.as = 'font';
-        link.crossOrigin = 'anonymous';
-      } else if (url.includes('.webp') || url.includes('.jpg') || url.includes('.png')) {
-        link.as = 'image';
-      } else if (url.includes('.css')) {
-        link.as = 'style';
-      } else if (url.includes('.js')) {
-        link.as = 'script';
-      }
-
-      link.onload = () => {
-        this.preloadedResources.add(url);
-        resolve();
-      };
-
-      link.onerror = () => {
-        console.warn(`Failed to preload resource: ${url}`);
-        reject(new Error(`Failed to preload: ${url}`));
-      };
-
+      link.rel = 'prefetch';
+      link.href = route;
       document.head.appendChild(link);
     });
   }
 
-  preloadRouteData(route: string) {
-    // Preload data for upcoming routes
-    const routeDataMap: Record<string, string[]> = {
-      '/dashboard': ['/api/dashboard/stats', '/api/dashboard/recent-queries'],
-      '/queries': ['/api/queries/list', '/api/queries/stats'],
-      '/repositories': ['/api/repositories/list', '/api/repositories/stats']
-    };
-
-    const urls = routeDataMap[route];
-    if (urls) {
-      urls.forEach(url => {
-        fetch(url, { method: 'GET' }).catch(() => {
-          // Silent fail for preloading
-        });
-      });
-    }
-  }
-
-  prefetchNextPage(nextRoute: string) {
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = nextRoute;
-    document.head.appendChild(link);
-  }
-
-  getPreloadedResources(): string[] {
-    return Array.from(this.preloadedResources);
+  // Preconnect to external domains
+  static preconnectToDomains(domains: string[]): void {
+    domains.forEach(domain => {
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = domain;
+      document.head.appendChild(link);
+    });
   }
 }
 
-export const ResourcePreloader = new ResourcePreloaderService();
+// Auto-preload critical assets on module load
+if (typeof window !== 'undefined') {
+  ResourcePreloader.preloadCriticalAssets();
+  
+  // Preconnect to common external domains
+  ResourcePreloader.preconnectToDomains([
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com'
+  ]);
+}
