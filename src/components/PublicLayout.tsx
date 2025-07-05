@@ -22,7 +22,7 @@ export function PublicLayout() {
         </div>
         
         <MainNav />
-        <main id="main-content" className="flex-1" role="main">
+        <main id="main-content" className="flex-1 bg-background" role="main">
           <EnhancedErrorBoundary>
             <Outlet />
           </EnhancedErrorBoundary>

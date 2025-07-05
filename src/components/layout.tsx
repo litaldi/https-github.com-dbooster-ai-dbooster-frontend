@@ -23,9 +23,9 @@ export default function Layout() {
             <div className="min-h-screen flex w-full bg-background">
               <SkipLink href="#main-content">Skip to main content</SkipLink>
               <AppSidebar />
-              <div className="flex-1 flex flex-col min-w-0">
+              <div className="flex-1 flex flex-col min-w-0 bg-background">
                 <Header />
-                <main id="main-content" className="flex-1 p-4 md:p-6 overflow-auto" role="main">
+                <main id="main-content" className="flex-1 p-4 md:p-6 overflow-auto bg-background" role="main">
                   <div className="max-w-7xl mx-auto w-full">
                     <BreadcrumbNav />
                     <EnhancedErrorBoundary>

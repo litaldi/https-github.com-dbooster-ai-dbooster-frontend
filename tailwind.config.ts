@@ -76,6 +76,20 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Blue theme specific colors
+				blue: {
+					50: 'hsl(211 100% 97%)',
+					100: 'hsl(211 100% 95%)',
+					200: 'hsl(211 100% 90%)',
+					300: 'hsl(211 100% 80%)',
+					400: 'hsl(211 100% 65%)',
+					500: 'hsl(211 100% 50%)', // Primary blue
+					600: 'hsl(211 100% 45%)',
+					700: 'hsl(211 100% 40%)',
+					800: 'hsl(211 100% 35%)',
+					900: 'hsl(211 100% 30%)',
+					950: 'hsl(211 100% 15%)',
 				}
 			},
 			spacing: {
@@ -110,6 +124,8 @@ export default {
 				'medium': '0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)',
 				'strong': '0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08)',
 				'glow': '0 0 20px rgba(0, 0, 0, 0.1)',
+				// Blue theme shadows
+				'blue-glow': '0 0 20px rgba(0, 123, 255, 0.2)',
 			},
 			keyframes: {
 				'accordion-down': {
