@@ -1,7 +1,6 @@
 
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FadeIn, ScaleIn } from '@/components/ui/animations';
 import { ImprovedHomepage } from '@/components/home/ImprovedHomepage';
 import { InteractiveDemoSection } from '@/components/home/InteractiveDemoSection';
 import { SocialProofSection } from '@/components/home/SocialProofSection';

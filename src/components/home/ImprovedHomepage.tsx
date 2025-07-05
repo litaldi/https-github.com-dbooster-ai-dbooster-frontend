@@ -39,9 +39,16 @@ export function ImprovedHomepage() {
     }
   };
 
-  const handleWatchDemo = () => {
-    const demoSection = document.getElementById('demo-section');
-    demoSection?.scrollIntoView({ behavior: 'smooth' });
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      await loginDemo();
+      navigate('/app');
+    } catch (error) {
+      console.error('Demo login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const metrics = [
@@ -72,20 +79,6 @@ export function ImprovedHomepage() {
       label: "Developers",
       description: "Trust DBooster for their database optimization needs",
       color: "bg-orange-500"
-    },
-    {
-      icon: <Shield className="h-6 w-6 text-white" />,
-      value: "SOC2",
-      label: "Enterprise Security",
-      description: "Type II compliance with bank-grade encryption",
-      color: "bg-indigo-500"
-    },
-    {
-      icon: <Award className="h-6 w-6 text-white" />,
-      value: "99.9%",
-      label: "Uptime SLA",
-      description: "Enterprise-grade reliability with 24/7 monitoring",
-      color: "bg-red-500"
     }
   ];
 
@@ -232,11 +225,12 @@ export function ImprovedHomepage() {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={handleWatchDemo}
+                onClick={handleDemoLogin}
+                disabled={isLoading}
                 className="min-w-[220px] h-14 text-lg font-semibold border-2 hover:bg-accent/10"
               >
                 <Play className="mr-2 h-5 w-5" />
-                Watch 2-Min Demo
+                Try Demo Mode
               </Button>
             </motion.div>
             
@@ -272,7 +266,7 @@ export function ImprovedHomepage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {metrics.map((metric, index) => (
               <motion.div
                 key={index}
@@ -332,31 +326,6 @@ export function ImprovedHomepage() {
         </div>
       </section>
 
-      {/* Demo Section */}
-      <section id="demo-section" className="py-16 bg-gradient-to-r from-primary/5 to-blue-500/5">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="max-w-3xl mx-auto"
-          >
-            <h2 className="text-3xl font-bold mb-4">See DBooster in Action</h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Watch how DBooster identifies performance bottlenecks and provides actionable optimization recommendations
-            </p>
-            
-            <div className="bg-background p-8 rounded-lg shadow-lg">
-              <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4">
-                <Play className="h-16 w-16 text-muted-foreground" />
-              </div>
-              <p className="text-sm text-muted-foreground">Interactive demo coming soon</p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Testimonials */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
@@ -383,63 +352,6 @@ export function ImprovedHomepage() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-16 bg-gradient-to-r from-primary/5 to-purple-500/5">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="max-w-3xl mx-auto"
-          >
-            <h2 className="text-3xl font-bold mb-4">
-              Ready to Transform Your Database Performance?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Join thousands of developers and enterprises who've improved their database performance 
-              by up to 10x with DBooster's AI-powered optimization recommendations.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-              <Button
-                size="lg"
-                onClick={handleGetStarted}
-                disabled={isLoading}
-                className="min-w-[200px] h-12 text-base font-semibold shadow-lg hover:shadow-xl"
-              >
-                {user ? 'Go to Your Dashboard' : 'Start Free Analysis'}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => navigate('/features')}
-                className="min-w-[200px] h-12 text-base font-semibold border-2"
-              >
-                Explore All Features
-              </Button>
-            </div>
-            
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Shield className="h-4 w-4" />
-                Enterprise Security
-              </span>
-              <span className="flex items-center gap-1">
-                <Zap className="h-4 w-4" />
-                5-Min Setup
-              </span>
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4" />
-                24/7 Support
-              </span>
-            </div>
-          </motion.div>
         </div>
       </section>
     </div>
