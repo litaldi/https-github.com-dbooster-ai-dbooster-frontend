@@ -22,6 +22,10 @@ export class PerformanceMonitor {
     return this.metrics.get(name);
   }
 
+  getMetrics(): Record<string, number> {
+    return Object.fromEntries(this.metrics);
+  }
+
   getAllMetrics(): Record<string, number> {
     return Object.fromEntries(this.metrics);
   }
