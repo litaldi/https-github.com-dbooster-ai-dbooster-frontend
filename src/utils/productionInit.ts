@@ -1,11 +1,11 @@
 
-import { productionConsole } from './productionConsoleCleanup';
-import { productionSecurity } from './productionSecurity';
+import { productionLogger } from './productionLogger';
+import { ProductionSecurityManager } from './productionSecurity';
 import { performanceMonitor } from './performanceMonitor';
-import { seoOptimizer } from './seoOptimizer';
-import { setupEnhancedGlobalErrorHandling } from './enhancedErrorHandling';
+import { securityInitializer } from './securityInitializer';
+import { initializeSecurityHardening } from './securityHardening';
 
-export class ProductionInitializer {
+class ProductionInitializer {
   private static instance: ProductionInitializer;
 
   static getInstance(): ProductionInitializer {
@@ -15,126 +15,106 @@ export class ProductionInitializer {
     return ProductionInitializer.instance;
   }
 
-  async initialize() {
-    if (!import.meta.env.PROD) return;
+  async initialize(): Promise<void> {
+    if (!import.meta.env.PROD) {
+      productionLogger.info('Development mode detected, skipping production initialization', {}, 'ProductionInit');
+      return;
+    }
 
     try {
-      // Phase 1: Security & Cleanup
-      await this.initializeSecurityAndCleanup();
-      
-      // Phase 2: Performance Monitoring
-      await this.initializePerformanceMonitoring();
-      
-      // Phase 3: SEO Optimization
-      await this.initializeSEO();
-      
-      // Phase 4: Error Handling
-      await this.initializeErrorHandling();
+      productionLogger.info('Starting production initialization', {
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      }, 'ProductionInit');
 
+      // Initialize enhanced security system first
+      await securityInitializer.initializeComprehensiveSecurity();
+
+      // Initialize legacy security hardening
+      initializeSecurityHardening();
+
+      // Initialize production security manager
+      const securityManager = ProductionSecurityManager.getInstance();
+      securityManager.initializeProductionSecurity();
+
+      // Initialize performance monitoring
+      performanceMonitor.initialize();
+
+      // Set up global error handlers with security awareness
+      this.setupSecureErrorHandlers();
+
+      // Initialize security monitoring
+      this.initializeSecurityMonitoring();
+
+      productionLogger.info('Production initialization completed successfully', {}, 'ProductionInit');
     } catch (error) {
-      // Silent fail in production to prevent app crashes
+      productionLogger.error('Critical error during production initialization', error, 'ProductionInit');
+      // In production, we continue despite errors to avoid breaking the app completely
+      console.error('Production initialization failed:', error);
     }
   }
 
-  private async initializeSecurityAndCleanup() {
-    // Initialize console cleanup first
-    productionConsole.initializeConsoleCleanup();
-    
-    // Initialize security measures
-    productionSecurity.initializeProductionSecurity();
-  }
+  private setupSecureErrorHandlers(): void {
+    // Global error handler with security filtering
+    window.addEventListener('error', (event) => {
+      // Filter out potentially sensitive information
+      const safeError = {
+        message: event.error?.message?.substring(0, 200) || 'Unknown error',
+        filename: event.filename ? this.sanitizeFilename(event.filename) : 'unknown',
+        lineno: event.lineno,
+        colno: event.colno,
+        timestamp: new Date().toISOString()
+      };
 
-  private async initializePerformanceMonitoring() {
-    // Initialize performance monitoring
-    performanceMonitor.initialize();
-  }
+      // Check if error might be security-related
+      const securityKeywords = ['security', 'auth', 'token', 'credential', 'password', 'csrf', 'xss'];
+      const isSecurityRelated = securityKeywords.some(keyword => 
+        safeError.message.toLowerCase().includes(keyword)
+      );
 
-  private async initializeSEO() {
-    // Set optimized SEO for production
-    seoOptimizer.updatePageSEO({
-      title: 'DBooster - AI-Powered Database Query Optimization Platform',
-      description: 'Professional database query optimization platform with AI-powered analysis, real-time performance monitoring, and automated optimization suggestions. Trusted by 10,000+ developers worldwide.',
-      keywords: 'database optimization, SQL performance, query optimization, AI database tools, database monitoring, SQL analysis, performance tuning',
-      canonicalUrl: window.location.origin
+      if (isSecurityRelated) {
+        productionLogger.error('Security-related error detected', safeError, 'SecurityError');
+      } else {
+        productionLogger.error('Application error', safeError, 'ApplicationError');
+      }
+    });
+
+    // Unhandled promise rejection handler
+    window.addEventListener('unhandledrejection', (event) => {
+      const safeError = {
+        reason: event.reason?.message?.substring(0, 200) || 'Unknown rejection',
+        timestamp: new Date().toISOString()
+      };
+
+      productionLogger.error('Unhandled promise rejection', safeError, 'PromiseRejection');
     });
   }
 
-  private async initializeErrorHandling() {
-    // Setup enhanced error handling for production
-    setupEnhancedGlobalErrorHandling();
+  private sanitizeFilename(filename: string): string {
+    // Remove potentially sensitive path information
+    return filename.replace(/.*\//, '').replace(/\?.*$/, '');
   }
 
-  // Method to run comprehensive health checks
-  async runHealthChecks(): Promise<HealthCheckResult> {
-    const checks: HealthCheckResult = {
-      security: true,
-      performance: true,
-      accessibility: true,
-      seo: true,
-      timestamp: new Date().toISOString(),
-      details: {}
-    };
+  private initializeSecurityMonitoring(): void {
+    // Monitor for page visibility changes (potential security concern)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        productionLogger.info('Page hidden - user may have switched tabs', {}, 'SecurityMonitor');
+      } else {
+        productionLogger.info('Page visible - user returned to tab', {}, 'SecurityMonitor');
+      }
+    });
 
-    try {
-      // Security check
-      checks.details.security = this.checkSecurity();
-      
-      // Performance check
-      checks.details.performance = await this.checkPerformance();
-      
-      // SEO check
-      checks.details.seo = this.checkSEO();
-      
-      // Overall health
-      checks.security = checks.details.security.passed;
-      checks.performance = checks.details.performance.passed;
-      checks.seo = checks.details.seo.passed;
+    // Monitor for focus changes (security-relevant for session management)
+    window.addEventListener('focus', () => {
+      productionLogger.info('Window gained focus', {}, 'SecurityMonitor');
+    });
 
-    } catch (error) {
-      // Silent fail in production
-    }
-
-    return checks;
+    window.addEventListener('blur', () => {
+      productionLogger.info('Window lost focus', {}, 'SecurityMonitor');
+    });
   }
-
-  private checkSecurity() {
-    return {
-      passed: true,
-      cspEnabled: !!document.querySelector('meta[http-equiv="Content-Security-Policy"]'),
-      httpsEnabled: window.location.protocol === 'https:',
-      consoleDisabled: import.meta.env.PROD
-    };
-  }
-
-  private async checkPerformance() {
-    const metrics = performanceMonitor.getMetrics();
-    return {
-      passed: true,
-      fcp: metrics.fcp,
-      lcp: metrics.lcp,
-      cls: metrics.cls,
-      ttfb: metrics.ttfb
-    };
-  }
-
-  private checkSEO() {
-    return {
-      passed: true,
-      hasTitle: !!document.title,
-      hasDescription: !!document.querySelector('meta[name="description"]'),
-      hasCanonical: !!document.querySelector('link[rel="canonical"]'),
-      hasStructuredData: !!document.querySelector('script[type="application/ld+json"]')
-    };
-  }
-}
-
-interface HealthCheckResult {
-  security: boolean;
-  performance: boolean;
-  accessibility: boolean;
-  seo: boolean;
-  timestamp: string;
-  details: Record<string, any>;
 }
 
 export const productionInitializer = ProductionInitializer.getInstance();

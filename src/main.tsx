@@ -7,9 +7,11 @@ import { productionInitializer } from '@/utils/productionInit';
 import { IntelligentPreloader } from '@/utils/lazyLoader';
 import { performanceMonitor } from '@/utils/performanceMonitor';
 
-// Initialize production environment if needed
+// Initialize production environment with enhanced security
 if (import.meta.env.PROD) {
-  productionInitializer.initialize();
+  productionInitializer.initialize().catch(error => {
+    console.error('Failed to initialize production environment:', error);
+  });
 }
 
 // Initialize performance monitoring
