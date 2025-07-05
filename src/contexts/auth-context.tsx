@@ -14,11 +14,6 @@ interface AuthContextType extends AuthState {
   signOut: () => Promise<void>;
   secureLogin: (email: string, password: string, options?: { rememberMe?: boolean }) => Promise<{ error?: string }>;
   secureSignup: (email: string, password: string, name: string, acceptedTerms: boolean) => Promise<{ error?: string }>;
-  // Legacy compatibility properties
-  logout: () => Promise<void>;
-  isDemo: boolean;
-  loginDemo: () => Promise<void>;
-  githubAccessToken: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -213,16 +208,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return {};
   }, []);
 
-  // Legacy compatibility methods
-  const logout = useCallback(async (): Promise<void> => {
-    return signOut();
-  }, [signOut]);
-
-  const loginDemo = useCallback(async (): Promise<void> => {
-    // Demo login is now disabled for security
-    productionLogger.warn('Demo login attempt blocked', {}, 'AuthContext');
-  }, []);
-
   const contextValue: AuthContextType = {
     ...authState,
     signIn,
@@ -230,11 +215,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     secureLogin,
     secureSignup,
-    // Legacy compatibility
-    logout,
-    isDemo: false, // Always false now for security
-    loginDemo,
-    githubAccessToken: null, // Not implemented
   };
 
   return (

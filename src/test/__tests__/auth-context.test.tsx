@@ -20,17 +20,17 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 // Mock other dependencies
-vi.mock('@/services/security/unifiedSecurityService', () => ({
-  unifiedSecurityService: {
-    logSecurityEvent: vi.fn(),
-    secureLogin: vi.fn(() => Promise.resolve({ success: true })),
-    secureSignup: vi.fn(() => Promise.resolve({ success: true })),
-  }
+vi.mock('@/services/demo', () => ({
+  isDemoMode: vi.fn(() => false),
+  loginDemoUser: vi.fn(),
+  logoutDemoUser: vi.fn(),
 }));
 
-vi.mock('@/services/security/consolidatedInputValidation', () => ({
-  consolidatedInputValidation: {
-    validateAndSanitize: vi.fn(() => ({ isValid: true, sanitizedValue: 'test' })),
+vi.mock('@/components/ui/enhanced-toast', () => ({
+  enhancedToast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
   }
 }));
 
@@ -66,7 +66,7 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
-      await result.current.secureSignup('test@example.com', 'password', 'Test User', true);
+      await result.current.secureSignup('test@example.com', 'password', 'Test User');
     });
 
     // Test passes if no error is thrown
