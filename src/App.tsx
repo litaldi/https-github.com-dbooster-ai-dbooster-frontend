@@ -46,7 +46,7 @@ import Search from "./pages/Search";
 import Error500 from "./pages/Error500";
 import { PublicLayout } from "./components/PublicLayout";
 import { EnhancedLayout } from "./components/layout/EnhancedLayout";
-import { ProtectedRoute } from "./components/protected-route";
+import ProtectedRoute from "./components/protected-route";
 import { MaintenanceMode } from "./components/error/MaintenanceMode";
 import { NotFound } from "./components/error/NotFound";
 import { useSystemStatus } from "./hooks/useSystemStatus";
@@ -54,9 +54,10 @@ import { useSystemStatus } from "./hooks/useSystemStatus";
 const queryClient = new QueryClient();
 
 function App() {
-  const { isMaintenanceMode } = useSystemStatus();
+  const { overallStatus } = useSystemStatus();
 
-  if (isMaintenanceMode) {
+  // Check if system is in maintenance mode (offline status indicates maintenance)
+  if (overallStatus === 'offline') {
     return <MaintenanceMode />;
   }
 
