@@ -21,7 +21,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [user, session, validateSession]);
 
   if (isLoading) {
-    return <PageLoading message="Checking authentication..." />;
+    return <PageLoading text="Checking authentication..." />;
   }
 
   if (!user || !session) {
