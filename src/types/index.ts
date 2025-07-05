@@ -21,3 +21,25 @@ export interface Session {
   expires_in: number;
   token_type: string;
 }
+
+export interface AuthState {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  initialized: boolean;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors?: string[];
+  riskLevel?: string;
+  threatTypes?: string[];
+}
+
+export interface SecurityEvent {
+  eventType: string;
+  success: boolean;
+  details?: Record<string, any>;
+  timestamp?: string;
+  userId?: string;
+}
