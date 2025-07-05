@@ -132,7 +132,7 @@ class ProductionInitializer {
         }
       };
     } catch (error) {
-      logger.error('Health check failed', error, 'ProductionInit');
+      productionLogger.error('Health check failed', error, 'ProductionInit');
       return {
         security: false,
         performance: false,
@@ -173,9 +173,9 @@ class ProductionInitializer {
       );
 
       if (isSecurityRelated) {
-        logger.error('Security-related error detected', safeError, 'SecurityError');
+        productionLogger.error('Security-related error detected', safeError, 'SecurityError');
       } else {
-        logger.error('Application error', safeError, 'ApplicationError');
+        productionLogger.error('Application error', safeError, 'ApplicationError');
       }
     });
 
@@ -186,7 +186,7 @@ class ProductionInitializer {
         timestamp: new Date().toISOString()
       };
 
-      logger.error('Unhandled promise rejection', safeError, 'PromiseRejection');
+      productionLogger.error('Unhandled promise rejection', safeError, 'PromiseRejection');
     });
   }
 
@@ -199,19 +199,19 @@ class ProductionInitializer {
     // Monitor for page visibility changes (potential security concern)
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        logger.info('Page hidden - user may have switched tabs', {}, 'SecurityMonitor');
+        productionLogger.secureInfo('Page hidden - user may have switched tabs', {}, 'SecurityMonitor');
       } else {
-        logger.info('Page visible - user returned to tab', {}, 'SecurityMonitor');
+        productionLogger.secureInfo('Page visible - user returned to tab', {}, 'SecurityMonitor');
       }
     });
 
     // Monitor for focus changes (security-relevant for session management)
     window.addEventListener('focus', () => {
-      logger.info('Window gained focus', {}, 'SecurityMonitor');
+      productionLogger.secureInfo('Window gained focus', {}, 'SecurityMonitor');
     });
 
     window.addEventListener('blur', () => {
-      logger.info('Window lost focus', {}, 'SecurityMonitor');
+      productionLogger.secureInfo('Window lost focus', {}, 'SecurityMonitor');
     });
   }
 }
