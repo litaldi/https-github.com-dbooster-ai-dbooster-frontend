@@ -60,8 +60,12 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Export all animation components from the modular system
+// Export all animation components from the modular system without duplicates
 export * from './animations/basic-animations';
 export * from './animations/interactive-animations';
-export * from './animations/stagger-animations';
-export * from './animations/index';
+export { 
+  StaggerContainer, 
+  StaggerItem,
+  FastStaggerContainer,
+  FastStaggerItem
+} from './animations/stagger-animations';
