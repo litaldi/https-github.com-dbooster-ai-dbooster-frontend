@@ -15,9 +15,10 @@ import {
   Shield,
   CheckCircle2,
   ArrowRight,
-  Star
+  Star,
+  ExternalLink
 } from 'lucide-react';
-import { footerNavigation, socialProofIndicators } from '@/config/navigation';
+import { footerNavigation, socialProofIndicators, contactInfo } from '@/config/navigation';
 
 export function EnhancedFooter() {
   const [email, setEmail] = useState('');
@@ -68,7 +69,7 @@ export function EnhancedFooter() {
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-6">
             <div className="space-y-4">
@@ -152,6 +153,26 @@ export function EnhancedFooter() {
 
           <div className="space-y-6">
             <div>
+              <h3 className="font-semibold text-lg mb-4">Solutions</h3>
+              <nav>
+                <ul className="space-y-3">
+                  {footerNavigation.solutions.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        to={link.href}
+                        className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div>
               <h3 className="font-semibold text-lg mb-4">Resources</h3>
               <nav>
                 <ul className="space-y-3">
@@ -189,23 +210,44 @@ export function EnhancedFooter() {
               </nav>
             </div>
 
+            {/* Support Section */}
+            <div>
+              <h3 className="font-semibold text-lg mb-4">Support</h3>
+              <nav>
+                <ul className="space-y-3">
+                  {footerNavigation.support.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        to={link.href}
+                        className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+
             {/* Contact Information */}
             <div className="space-y-4">
-              <h4 className="font-medium">Contact Us</h4>
+              <h4 className="font-medium">Contact Info</h4>
               <address className="space-y-2 text-sm text-muted-foreground not-italic">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  <a href="mailto:support@dbooster.ai" className="hover:text-primary transition-colors">
-                    support@dbooster.ai
+                  <a href={`mailto:${contactInfo.email}`} className="hover:text-primary transition-colors">
+                    {contactInfo.email}
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  <span>+1 (555) 123-4567</span>
+                  <a href={`tel:${contactInfo.phone}`} className="hover:text-primary transition-colors">
+                    {contactInfo.phone}
+                  </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  <span>San Francisco, CA</span>
+                  <span>{contactInfo.address}</span>
                 </div>
               </address>
             </div>
@@ -235,18 +277,36 @@ export function EnhancedFooter() {
             {/* Social Links */}
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">
-                  <Twitter className="h-5 w-5" />
-                </a>
-              </Button>
-              <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="Connect on LinkedIn">
+                <a 
+                  href={contactInfo.social.linkedin}
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  aria-label="Connect on LinkedIn"
+                >
                   <Linkedin className="h-5 w-5" />
+                  <ExternalLink className="sr-only" />
                 </a>
               </Button>
               <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="View our GitHub">
+                <a 
+                  href={contactInfo.social.twitter}
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  aria-label="Follow us on Twitter"
+                >
+                  <Twitter className="h-5 w-5" />
+                  <ExternalLink className="sr-only" />
+                </a>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
+                <a 
+                  href={contactInfo.social.github}
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  aria-label="View our GitHub"
+                >
                   <Github className="h-5 w-5" />
+                  <ExternalLink className="sr-only" />
                 </a>
               </Button>
             </div>
