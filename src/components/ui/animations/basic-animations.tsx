@@ -9,8 +9,8 @@ export interface AnimationProps {
   className?: string;
 }
 
-const easeOutQuart = [0.25, 1, 0.5, 1];
-const easeOutExpo = [0.16, 1, 0.3, 1];
+const easeOutQuart = "easeOut";
+const easeOutExpo = "easeOut";
 
 export function FadeIn({ children, delay = 0, duration = 0.5, className }: AnimationProps) {
   return (
