@@ -56,13 +56,13 @@ export function EnhancedOnboarding() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-    const [showMetrics, setShowMetrics] = useState(false);
+  const [showMetrics, setShowMetrics] = useState(false);
 
-    useEffect(() => {
-        // Show animated metrics after component mounts
-        const timer = setTimeout(() => setShowMetrics(true), 1000);
-        return () => clearTimeout(timer);
-    }, []);
+  useEffect(() => {
+    // Show animated metrics after component mounts
+    const timer = setTimeout(() => setShowMetrics(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleStepAction = (step: OnboardingStep) => {
     if (!completedSteps.includes(step.id)) {
@@ -77,7 +77,7 @@ export function EnhancedOnboarding() {
 
   const handleSkipOnboarding = () => {
     enhancedToast.success({
-      title: 'Welcome to DBQuery Optimizer!',
+      title: 'Ready to Optimize!',
       description: 'Ready to transform your database performance with AI.'
     });
     navigate('/app/dashboard');
@@ -133,28 +133,28 @@ export function EnhancedOnboarding() {
         </div>
       </FadeIn>
 
-        {/* Performance Metrics Preview */}
-        {showMetrics && (
-            <FadeIn delay={0.3}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <Card className="text-center p-4">
-                        <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                        <div className="text-2xl font-bold text-green-600">73%</div>
-                        <div className="text-sm text-muted-foreground">Faster Query Response</div>
-                    </Card>
-                    <Card className="text-center p-4">
-                        <Database className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                        <div className="text-2xl font-bold text-blue-600">60%</div>
-                        <div className="text-sm text-muted-foreground">Database Cost Reduction</div>
-                    </Card>
-                    <Card className="text-center p-4">
-                        <Zap className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                        <div className="text-2xl font-bold text-purple-600">80%</div>
-                        <div className="text-sm text-muted-foreground">Performance Tasks Automated</div>
-                    </Card>
-                </div>
-            </FadeIn>
-        )}
+      {/* Performance Metrics Preview */}
+      {showMetrics && (
+        <FadeIn delay={0.3}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Card className="text-center p-4">
+              <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-green-600">73%</div>
+              <div className="text-sm text-muted-foreground">Faster Query Response</div>
+            </Card>
+            <Card className="text-center p-4">
+              <Database className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-blue-600">60%</div>
+              <div className="text-sm text-muted-foreground">Database Cost Reduction</div>
+            </Card>
+            <Card className="text-center p-4">
+              <Zap className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-purple-600">80%</div>
+              <div className="text-sm text-muted-foreground">Performance Tasks Automated</div>
+            </Card>
+          </div>
+        </FadeIn>
+      )}
 
       <div className="grid gap-6">
         {ONBOARDING_STEPS.map((step, index) => {
