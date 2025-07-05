@@ -1,6 +1,9 @@
 
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth as useAuthContext } from '@/contexts/auth-context';
 
 export function useSimplifiedAuth() {
-  return useAuth();
+  return useAuthContext();
 }
+
+// Export the useAuth function directly for backward compatibility
+export const useAuth = useAuthContext;
