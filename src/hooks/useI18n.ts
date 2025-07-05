@@ -18,7 +18,7 @@ const DEFAULT_CONFIG: I18nConfig = {
 };
 
 export function useI18n() {
-  const [config, setConfig] = useState<I18nConfig>(DEFAULT_CONFIG);
+  const [config] = useState<I18nConfig>(DEFAULT_CONFIG);
 
   useEffect(() => {
     document.documentElement.lang = 'en';
