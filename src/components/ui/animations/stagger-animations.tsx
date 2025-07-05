@@ -33,7 +33,6 @@ const itemVariants = {
     scale: 1,
     transition: {
       duration: 0.4,
-      ease: "easeOut",
     },
   },
 };
@@ -45,7 +44,6 @@ const fastItemVariants = {
     x: 0,
     transition: { 
       duration: 0.2, 
-      ease: "easeOut" 
     },
   },
 };
@@ -85,7 +83,6 @@ export function StaggerItem({ children, className, duration = 0.4 }: StaggerProp
     visible: {
       ...itemVariants.visible,
       transition: {
-        ...itemVariants.visible.transition,
         duration,
       },
     },
