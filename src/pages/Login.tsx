@@ -6,7 +6,7 @@ import { EnhancedAuthForm } from '@/components/auth/EnhancedAuthForm';
 import { SocialAuth } from '@/components/auth/SocialAuth';
 import { DemoModeButton } from '@/components/auth/DemoModeButton';
 import { Separator } from '@/components/ui/separator';
-import { FadeIn } from '@/components/ui/animations';
+import { FadeIn, PageTransition } from '@/components/ui/animations';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import type { AuthMode } from '@/types/auth';
 
@@ -52,7 +52,6 @@ export default function Login() {
         const result = await secureSignup(data.email, data.password, fullName, true);
         
         if (!result.error) {
-          // For signup, we might need email verification
           enhancedToast.info({
             title: 'Check your email',
             description: 'We sent you a verification link to complete your account setup.'
@@ -71,45 +70,47 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
-      <div className="w-full max-w-md space-y-6">
-        <FadeIn>
-          <EnhancedAuthForm
-            authMode={authMode}
-            onAuthModeChange={setAuthMode}
-            onSubmit={handleAuth}
-            isLoading={isLoading}
-          />
-        </FadeIn>
+    <PageTransition>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
+        <div className="w-full max-w-md space-y-6">
+          <FadeIn>
+            <EnhancedAuthForm
+              authMode={authMode}
+              onAuthModeChange={setAuthMode}
+              onSubmit={handleAuth}
+              isLoading={isLoading}
+            />
+          </FadeIn>
 
-        <FadeIn delay={0.2}>
-          <div className="space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
+          <FadeIn delay={0.2}>
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <Separator className="w-full" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
+
+              <SocialAuth />
+              
+              <div className="text-center">
+                <DemoModeButton />
               </div>
             </div>
+          </FadeIn>
 
-            <SocialAuth />
-            
-            <div className="text-center">
-              <DemoModeButton />
+          <FadeIn delay={0.3}>
+            <div className="text-center text-xs text-muted-foreground">
+              <p>Trusted by 10,000+ developers worldwide</p>
+              <p className="mt-1">SOC2 compliant • Enterprise ready • 24/7 support</p>
             </div>
-          </div>
-        </FadeIn>
-
-        <FadeIn delay={0.3}>
-          <div className="text-center text-xs text-muted-foreground">
-            <p>Trusted by 10,000+ developers worldwide</p>
-            <p className="mt-1">SOC2 compliant • Enterprise ready • 24/7 support</p>
-          </div>
-        </FadeIn>
+          </FadeIn>
+        </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

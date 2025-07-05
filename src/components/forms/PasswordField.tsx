@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { PasswordStrengthIndicator } from '@/components/security/PasswordStrengthIndicator';
-import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
+import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
+import { Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PasswordFieldProps {
@@ -18,56 +19,41 @@ interface PasswordFieldProps {
   className?: string;
   variant?: 'default' | 'filled' | 'outline' | 'floating';
   showStrength?: boolean;
-  showPasswordToggle?: boolean;
 }
 
 export function PasswordField({
   id,
   label,
-  placeholder = 'Enter your password',
+  placeholder,
   value,
   onChange,
   onBlur,
   error,
   required = false,
-  autoComplete = 'current-password',
+  autoComplete,
   className,
   variant = 'default',
-  showStrength = false,
-  showPasswordToggle = true
+  showStrength = false
 }: PasswordFieldProps) {
+  const { checkPasswordStrength } = useConsolidatedSecurity();
   const [strengthResult, setStrengthResult] = useState({
     score: 0,
-    feedback: [] as string[],
+    feedback: [],
     isValid: false
   });
 
-  useEffect(() => {
-    if (value && showStrength) {
-      // Validate password strength asynchronously
-      consolidatedAuthenticationSecurity.validateStrongPassword(value)
-        .then(result => {
-          setStrengthResult({
-            score: result.score,
-            feedback: result.feedback,
-            isValid: result.isValid
-          });
-        })
-        .catch(() => {
-          setStrengthResult({
-            score: 0,
-            feedback: ['Unable to validate password strength'],
-            isValid: false
-          });
-        });
-    } else {
-      setStrengthResult({
-        score: 0,
-        feedback: [],
-        isValid: false
-      });
+  const handlePasswordChange = async (newValue: string) => {
+    onChange(newValue);
+    
+    if (showStrength && newValue) {
+      try {
+        const result = await checkPasswordStrength(newValue);
+        setStrengthResult(result);
+      } catch (err) {
+        console.error('Password strength check failed:', err);
+      }
     }
-  }, [value, showStrength]);
+  };
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -77,20 +63,21 @@ export function PasswordField({
         label={label}
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => handlePasswordChange(e.target.value)}
         onBlur={onBlur}
         error={error}
         required={required}
         autoComplete={autoComplete}
         variant={variant}
-        showPasswordToggle={showPasswordToggle}
+        startIcon={<Lock className="h-4 w-4" />}
         isValid={!error && value.length > 0}
         showValidation={true}
       />
-      {showStrength && (
+      
+      {showStrength && value && (
         <PasswordStrengthIndicator 
           password={value} 
-          strengthResult={strengthResult}
+          strengthResult={strengthResult} 
         />
       )}
     </div>

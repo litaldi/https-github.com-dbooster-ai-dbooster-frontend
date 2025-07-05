@@ -7,7 +7,7 @@ export function DemoBadge() {
   if (!isDemoMode()) return null;
 
   return (
-    <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+    <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 animate-pulse">
       <TestTube className="w-3 h-3 mr-1" />
       Demo Mode
     </Badge>

@@ -49,7 +49,6 @@ export function EnhancedAuthForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Enhanced validation with better error messages
     const newErrors: Partial<AuthFormData> = {};
     
     if (!formData.email) {
