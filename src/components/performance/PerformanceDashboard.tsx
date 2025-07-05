@@ -8,10 +8,19 @@ import { Activity, Zap, Clock, AlertCircle, CheckCircle, TrendingUp } from 'luci
 import { performanceTracker } from '@/utils/performanceTracker';
 import { bundleOptimizer } from '@/utils/bundleOptimizer';
 
+interface PerformanceMetrics {
+  fcp?: number;
+  lcp?: number;
+  cls?: number;
+  fid?: number;
+  ttfb?: number;
+  tti?: number;
+}
+
 export function PerformanceDashboard() {
   const [performanceData, setPerformanceData] = useState({
     score: 0,
-    metrics: {},
+    metrics: {} as PerformanceMetrics,
     recommendations: []
   });
   const [bundleData, setBundleData] = useState({
@@ -156,9 +165,9 @@ export function PerformanceDashboard() {
                 <div key={key} className="flex items-center justify-between">
                   <span className="text-sm font-medium uppercase">{key}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm">{Math.round(value as number)}ms</span>
-                    <Badge variant={value < 2000 ? 'default' : 'destructive'}>
-                      {value < 2000 ? 'Good' : 'Needs Work'}
+                    <span className="text-sm">{typeof value === 'number' ? Math.round(value) : '--'}ms</span>
+                    <Badge variant={typeof value === 'number' && value < 2000 ? 'default' : 'destructive'}>
+                      {typeof value === 'number' && value < 2000 ? 'Good' : 'Needs Work'}
                     </Badge>
                   </div>
                 </div>
