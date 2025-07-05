@@ -2,12 +2,13 @@
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/auth-context';
-import { LogOut, User, Settings, Search, Bell } from 'lucide-react';
+import { LogOut, User, Settings, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { NotificationBell } from '@/components/notifications/SmartNotifications';
 import { AccessibilityMenu } from '@/components/accessibility-menu';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { EnhancedSearch } from '@/components/ui/enhanced-search';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,13 +17,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 export function Header() {
   const { user, logout, isDemo } = useAuth();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = async () => {
     try {
@@ -33,10 +32,9 @@ export function Header() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+  const handleGlobalSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };
 
@@ -52,18 +50,14 @@ export function Header() {
           </div>
         </div>
 
-        {/* Search Bar - Desktop */}
-        <div className="hidden md:flex flex-1 max-w-md mx-8">
-          <form onSubmit={handleSearch} className="relative w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search features, docs, help..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-background/50"
-            />
-          </form>
+        {/* Global Search Bar */}
+        <div className="flex-1 max-w-md mx-8">
+          <EnhancedSearch
+            placeholder="Search features, docs, help..."
+            onSearch={handleGlobalSearch}
+            showRecentSearches={true}
+            className="w-full"
+          />
         </div>
 
         <div className="flex items-center gap-2">
@@ -73,16 +67,6 @@ export function Header() {
             </Badge>
           )}
           
-          {/* Search Button - Mobile */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => navigate('/search')}
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-
           <NotificationBell />
           <AccessibilityMenu />
           <ThemeToggle />

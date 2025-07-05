@@ -1,43 +1,57 @@
 
-import { useEffect } from 'react';
-import { PerformanceOptimizer } from '@/utils/performanceOptimizer';
-import { ResourcePreloader } from '@/utils/resourcePreloader';
+import { useEffect, useCallback } from 'react';
 
-interface PerformanceOptimizationOptions {
-  preloadResources?: boolean;
-  measureTimings?: boolean;
-  enableWebVitals?: boolean;
-}
+/**
+ * Custom hook for performance optimization
+ */
+export function usePerformanceOptimization() {
+  const measurePerformance = useCallback((name: string, fn: () => void) => {
+    const start = performance.now();
+    fn();
+    const end = performance.now();
+    
+    if (process.env.NODE_ENV !== 'production') {
+      console.info(`Performance: ${name} took ${(end - start).toFixed(2)}ms`);
+    }
+  }, []);
 
-export function usePerformanceOptimization(options: PerformanceOptimizationOptions = {}) {
-  const {
-    preloadResources = true,
-    measureTimings = true,
-    enableWebVitals = true
-  } = options;
+  const preloadResource = useCallback((href: string, as: string) => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = href;
+    link.as = as;
+    document.head.appendChild(link);
+  }, []);
 
+  const lazyLoadImage = useCallback((src: string, placeholder?: string) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(src);
+      img.onerror = () => resolve(placeholder || src);
+      img.src = src;
+    });
+  }, []);
+
+  // Performance monitoring
   useEffect(() => {
-    if (preloadResources) {
-      ResourcePreloader.preloadCriticalAssets();
+    if ('performance' in window) {
+      const observer = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (process.env.NODE_ENV !== 'production') {
+            console.info(`Performance entry: ${entry.name} - ${entry.duration.toFixed(2)}ms`);
+          }
+        });
+      });
+      
+      observer.observe({ entryTypes: ['navigation', 'resource'] });
+      
+      return () => observer.disconnect();
     }
-
-    if (measureTimings) {
-      PerformanceOptimizer.startPerformanceMonitoring();
-    }
-
-    if (enableWebVitals) {
-      PerformanceOptimizer.runLighthouseAudit();
-    }
-
-    return () => {
-      if (measureTimings) {
-        PerformanceOptimizer.stopPerformanceMonitoring();
-      }
-    };
-  }, [preloadResources, measureTimings, enableWebVitals]);
+  }, []);
 
   return {
-    optimizeImages: PerformanceOptimizer.optimizeImages,
-    measureResourceTiming: PerformanceOptimizer.measureResourceTiming
+    measurePerformance,
+    preloadResource,
+    lazyLoadImage
   };
 }
