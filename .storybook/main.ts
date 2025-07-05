@@ -25,6 +25,16 @@ const config: StorybookConfig = {
   docs: {
     autodocs: 'tag',
   },
+  viteFinal: async (config) => {
+    // Ensure proper TypeScript and path resolution
+    if (config.resolve) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@': '/src',
+      };
+    }
+    return config;
+  },
 };
 
 export default config;

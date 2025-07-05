@@ -107,7 +107,7 @@ export const Password: Story = {
   },
 };
 
-export const Search: Story = {
+export const SearchInput: Story = {
   render: () => (
     <div className="space-y-2">
       <Label htmlFor="search">Search</Label>

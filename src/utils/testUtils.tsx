@@ -68,29 +68,6 @@ const customRender = (
   options?: Omit<RenderOptions, 'wrapper'>
 ) => render(ui, { wrapper: AllTheProviders, ...options });
 
-// Accessibility testing helpers
-export const axeMatchers = {
-  toHaveNoViolations: expect.extend({
-    toHaveNoViolations(received) {
-      if (received.violations.length === 0) {
-        return {
-          pass: true,
-          message: () => 'Expected element to have accessibility violations',
-        };
-      }
-      
-      const violationMessages = received.violations.map((violation: any) => 
-        `${violation.id}: ${violation.description} (${violation.nodes.length} elements)`
-      ).join('\n');
-
-      return {
-        pass: false,
-        message: () => `Expected element to have no accessibility violations, but found:\n${violationMessages}`,
-      };
-    },
-  }).toHaveNoViolations,
-};
-
 // Performance testing helpers
 export const performanceHelpers = {
   measureRenderTime: async (renderFn: () => void) => {
@@ -167,4 +144,3 @@ export const testUtils = {
 // Re-export everything from testing-library
 export * from '@testing-library/react';
 export { customRender as render };
-export { userEvent } from '@testing-library/user-event';
