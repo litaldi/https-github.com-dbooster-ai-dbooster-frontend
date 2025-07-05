@@ -6,9 +6,9 @@ export function AccessibilityEnhancements() {
   const { direction } = useI18n();
 
   useEffect(() => {
-    // Apply RTL/LTR direction
+    // Apply LTR direction
     document.documentElement.dir = direction;
-    document.documentElement.lang = direction === 'rtl' ? 'he' : 'en';
+    document.documentElement.lang = 'en';
 
     // Add accessibility classes for better screen reader support
     document.body.classList.add('accessibility-ready');
