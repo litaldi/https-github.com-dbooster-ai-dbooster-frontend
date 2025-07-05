@@ -9,7 +9,9 @@ import {
   Users,
   Headphones,
   BookOpen,
-  Star
+  Star,
+  Zap,
+  Target
 } from 'lucide-react';
 
 /**
@@ -46,49 +48,55 @@ type Story = StoryObj<typeof meta>;
 
 const sampleMenuItems = [
   {
-    title: 'Products',
-    items: [
-      {
-        title: 'Database Optimizer',
+    href: '/product',
+    label: 'Product',
+    icon: Zap,
+    description: 'AI-powered database optimization solutions',
+    children: [
+      { 
+        href: '/features', 
+        label: 'Database Optimizer', 
+        icon: Database, 
         description: 'AI-powered database performance optimization',
-        href: '/products/optimizer',
-        icon: <Database className="h-5 w-5" />,
         badge: 'Popular'
       },
-      {
-        title: 'Analytics Dashboard',
-        description: 'Real-time performance monitoring and insights',
-        href: '/products/analytics',
-        icon: <BarChart3 className="h-5 w-5" />
+      { 
+        href: '/analytics', 
+        label: 'Analytics Dashboard', 
+        icon: BarChart3, 
+        description: 'Real-time performance monitoring and insights'
       },
-      {
-        title: 'Security Suite',
-        description: 'Enterprise-grade database security',
-        href: '/products/security',
-        icon: <Shield className="h-5 w-5" />
+      { 
+        href: '/security', 
+        label: 'Security Suite', 
+        icon: Shield, 
+        description: 'Enterprise-grade database security'
       }
     ]
   },
   {
-    title: 'Resources',
-    items: [
-      {
-        title: 'Documentation',
-        description: 'Complete guides and API reference',
-        href: '/docs',
-        icon: <FileText className="h-5 w-5" />
+    href: '/resources',
+    label: 'Resources',
+    icon: BookOpen,
+    description: 'Learn, explore, and get support',
+    children: [
+      { 
+        href: '/docs', 
+        label: 'Documentation', 
+        icon: FileText, 
+        description: 'Complete guides and API reference'
       },
-      {
-        title: 'Community',
-        description: 'Connect with other developers',
-        href: '/community',
-        icon: <Users className="h-5 w-5" />
+      { 
+        href: '/community', 
+        label: 'Community', 
+        icon: Users, 
+        description: 'Connect with other developers'
       },
-      {
-        title: 'Support',
-        description: '24/7 expert assistance',
-        href: '/support',
-        icon: <Headphones className="h-5 w-5" />
+      { 
+        href: '/support', 
+        label: 'Support', 
+        icon: Headphones, 
+        description: '24/7 expert assistance'
       }
     ]
   }
@@ -105,19 +113,22 @@ export const WithManyItems: Story = {
     items: [
       ...sampleMenuItems,
       {
-        title: 'Learn',
-        items: [
-          {
-            title: 'Getting Started',
-            description: 'Quick start guide for new users',
-            href: '/learn/getting-started',
-            icon: <BookOpen className="h-5 w-5" />
+        href: '/learn',
+        label: 'Learn',
+        icon: Target,
+        description: 'Educational resources and tutorials',
+        children: [
+          { 
+            href: '/learn/getting-started', 
+            label: 'Getting Started', 
+            icon: BookOpen, 
+            description: 'Quick start guide for new users'
           },
-          {
-            title: 'Best Practices',
-            description: 'Expert tips and recommendations',
-            href: '/learn/best-practices',
-            icon: <Star className="h-5 w-5" />
+          { 
+            href: '/learn/best-practices', 
+            label: 'Best Practices', 
+            icon: Star, 
+            description: 'Expert tips and recommendations'
           }
         ]
       }
