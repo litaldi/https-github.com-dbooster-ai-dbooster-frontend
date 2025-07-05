@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -19,7 +18,7 @@ import { lazy, Suspense } from 'react';
 import { PageLoading } from '@/components/ui/loading-states';
 
 // Critical pages (loaded immediately)
-import Home from '@/pages/Home';
+import EnhancedHome from '@/pages/EnhancedHome';
 import Login from '@/pages/Login';
 
 // Non-critical pages (lazy loaded)
@@ -73,7 +72,7 @@ function App() {
                 <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<PublicLayout />}>
-                    <Route index element={<Home />} />
+                    <Route index element={<EnhancedHome />} />
                     <Route path="login" element={<Login />} />
                     <Route path="features" element={<Features />} />
                     <Route path="how-it-works" element={<HowItWorks />} />
@@ -117,10 +116,9 @@ function App() {
               
               <Toaster 
                 position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  className: 'bg-background border-border text-foreground'
-                }}
+                expand={true}
+                richColors
+                closeButton
               />
             </Router>
           </AuthProvider>
