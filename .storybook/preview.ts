@@ -14,29 +14,51 @@ const preview: Preview = {
     docs: {
       toc: true,
     },
+    backgrounds: {
+      default: 'light',
+      values: [
+        {
+          name: 'light',
+          value: '#ffffff',
+        },
+        {
+          name: 'dark',
+          value: '#1a1a1a',
+        },
+      ],
+    },
     viewport: {
       viewports: {
-        mobile: {
-          name: 'Mobile',
-          styles: {
-            width: '375px',
-            height: '667px',
-          },
+        mobile1: {
+          name: 'Small mobile',
+          styles: { width: '320px', height: '568px' },
+        },
+        mobile2: {
+          name: 'Large mobile',
+          styles: { width: '414px', height: '896px' },
         },
         tablet: {
           name: 'Tablet',
-          styles: {
-            width: '768px',
-            height: '1024px',
-          },
+          styles: { width: '768px', height: '1024px' },
         },
         desktop: {
           name: 'Desktop',
-          styles: {
-            width: '1200px',
-            height: '800px',
-          },
+          styles: { width: '1024px', height: '768px' },
         },
+      },
+    },
+    a11y: {
+      config: {
+        rules: [
+          {
+            id: 'color-contrast',
+            enabled: true,
+          },
+          {
+            id: 'focus-order-semantics',
+            enabled: true,
+          },
+        ],
       },
     },
   },
@@ -46,7 +68,7 @@ const preview: Preview = {
       defaultValue: 'light',
       toolbar: {
         title: 'Theme',
-        icon: 'circlehollow',
+        icon: 'paintbrush',
         items: ['light', 'dark'],
         dynamicTitle: true,
       },
