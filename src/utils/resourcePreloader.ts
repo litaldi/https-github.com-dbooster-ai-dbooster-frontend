@@ -87,7 +87,7 @@ export class ResourcePreloader {
     }
   }
 
-  static preloadRouteAssets(route: string): Promise<void[]> {
+  static preloadRouteAssets(route: string): Promise<PromiseSettledResult<void>[]> {
     const routeAssets: Record<string, PreloadResource[]> = {
       '/dashboard': [
         {
