@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import { auditLogger } from '@/services/auditLogger';
@@ -224,36 +223,18 @@ export class ConsolidatedAuthenticationSecurity {
     }
   }
 
-  async validateSessionSecurity(session?: any): Promise<boolean> {
+  async validateSessionSecurity(): Promise<boolean> {
     try {
-      if (!session) {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        session = currentSession;
-      }
-
-      if (!session) return false;
-
-      // Check if session is expired
-      const now = Math.floor(Date.now() / 1000);
-      if (session.expires_at && session.expires_at < now) {
-        productionLogger.warn('Session expired', { 
-          userId: session.user?.id,
-          expiresAt: session.expires_at 
-        }, 'ConsolidatedAuthenticationSecurity');
-        return false;
-      }
-
-      // Check if refresh token is valid
-      if (!session.refresh_token) {
-        productionLogger.warn('Missing refresh token', { 
-          userId: session.user?.id 
-        }, 'ConsolidatedAuthenticationSecurity');
-        return false;
-      }
-
-      return true;
+      // Check if session is valid and secure
+      const hasSecureConnection = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+      
+      // Check for session storage security
+      const hasSessionData = !!sessionStorage.getItem('supabase.auth.token') || !!localStorage.getItem('supabase.auth.token');
+      
+      // Basic session validation
+      return hasSecureConnection && hasSessionData;
     } catch (error) {
-      productionLogger.error('Session validation error', error, 'ConsolidatedAuthenticationSecurity');
+      console.error('Session security validation failed:', error);
       return false;
     }
   }

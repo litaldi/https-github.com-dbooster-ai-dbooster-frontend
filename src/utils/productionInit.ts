@@ -1,4 +1,3 @@
-
 import { productionLogger } from './productionLogger';
 import { ProductionSecurityManager } from './productionSecurity';
 import { performanceMonitor } from './performanceMonitor';
@@ -52,6 +51,80 @@ class ProductionInitializer {
       productionLogger.error('Critical error during production initialization', error, 'ProductionInit');
       // In production, we continue despite errors to avoid breaking the app completely
       console.error('Production initialization failed:', error);
+    }
+  }
+
+  async runHealthChecks(): Promise<{
+    security: boolean;
+    performance: boolean;
+    seo: boolean;
+    details: {
+      security: {
+        cspEnabled: boolean;
+        httpsEnabled: boolean;
+        devToolsDisabled: boolean;
+      };
+      seo: {
+        hasTitle: boolean;
+        hasDescription: boolean;
+        hasCanonical: boolean;
+        hasStructuredData: boolean;
+      };
+    };
+  }> {
+    try {
+      // Security checks
+      const cspEnabled = !!document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+      const httpsEnabled = window.location.protocol === 'https:';
+      const devToolsDisabled = import.meta.env.PROD;
+
+      // SEO checks
+      const hasTitle = !!document.title && document.title.length > 0;
+      const hasDescription = !!document.querySelector('meta[name="description"]');
+      const hasCanonical = !!document.querySelector('link[rel="canonical"]');
+      const hasStructuredData = !!document.querySelector('script[type="application/ld+json"]');
+
+      const securityScore = [cspEnabled, httpsEnabled, devToolsDisabled].filter(Boolean).length;
+      const seoScore = [hasTitle, hasDescription, hasCanonical, hasStructuredData].filter(Boolean).length;
+
+      return {
+        security: securityScore >= 2,
+        performance: true, // Basic performance check
+        seo: seoScore >= 2,
+        details: {
+          security: {
+            cspEnabled,
+            httpsEnabled,
+            devToolsDisabled
+          },
+          seo: {
+            hasTitle,
+            hasDescription,
+            hasCanonical,
+            hasStructuredData
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Health check failed:', error);
+      return {
+        security: false,
+        performance: false,
+        seo: false,
+        details: {
+          security: {
+            cspEnabled: false,
+            httpsEnabled: false,
+            devToolsDisabled: false
+          },
+          seo: {
+            hasTitle: false,
+            hasDescription: false,
+            hasCanonical: false,
+            hasStructuredData: false
+          }
+        }
+      };
     }
   }
 

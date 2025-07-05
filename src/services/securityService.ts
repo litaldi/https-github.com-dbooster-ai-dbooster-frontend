@@ -87,7 +87,7 @@ export class SecurityService {
     valid: boolean;
     riskAssessment?: any;
   }> {
-    const sessionValid = consolidatedAuthenticationSecurity.validateSessionSecurity();
+    const sessionValid = await consolidatedAuthenticationSecurity.validateSessionSecurity();
     
     let riskAssessment;
     if (userId) {

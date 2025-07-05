@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 
@@ -227,6 +226,38 @@ export class RateLimitService {
       remainingAttempts: config.maxAttempts - newCount,
       resetTime: record.windowStart + config.windowMs
     };
+  }
+
+  async cleanupExpiredEntries(): Promise<void> {
+    try {
+      const now = new Date().toISOString();
+      
+      // Cleanup database entries
+      const { error } = await supabase
+        .from('rate_limit_tracking')
+        .delete()
+        .lt('window_start', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .is('blocked_until', null);
+
+      if (error) {
+        throw error;
+      }
+
+      // Also cleanup blocked entries that have expired
+      const { error: blockedError } = await supabase
+        .from('rate_limit_tracking')
+        .delete()
+        .lt('blocked_until', now);
+
+      if (blockedError) {
+        throw blockedError;
+      }
+
+      productionLogger.info('Rate limit entries cleaned up successfully', {}, 'RateLimitCleanup');
+    } catch (error) {
+      productionLogger.error('Failed to cleanup rate limit entries', error, 'RateLimitCleanup');
+      throw error;
+    }
   }
 
   cleanup(): void {
