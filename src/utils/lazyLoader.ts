@@ -7,11 +7,24 @@ interface LazyLoadOptions {
   preloadRoute?: string;
 }
 
-class LazyLoader {
-  private static imageObserver: IntersectionObserver | null = null;
-  private static componentObserver: IntersectionObserver | null = null;
+class IntelligentPreloader {
+  private static instance: IntelligentPreloader;
+  private imageObserver: IntersectionObserver | null = null;
+  private componentObserver: IntersectionObserver | null = null;
 
-  static initImageLazyLoading(options: LazyLoadOptions = {}) {
+  static getInstance(): IntelligentPreloader {
+    if (!IntelligentPreloader.instance) {
+      IntelligentPreloader.instance = new IntelligentPreloader();
+    }
+    return IntelligentPreloader.instance;
+  }
+
+  initialize() {
+    this.initImageLazyLoading();
+    this.initComponentLazyLoading();
+  }
+
+  initImageLazyLoading(options: LazyLoadOptions = {}) {
     const { threshold = 0.1, rootMargin = '50px', preloadRoute } = options;
 
     if (this.imageObserver) {
@@ -45,7 +58,7 @@ class LazyLoader {
     });
   }
 
-  static initComponentLazyLoading(options: LazyLoadOptions = {}) {
+  initComponentLazyLoading(options: LazyLoadOptions = {}) {
     const { threshold = 0.1, rootMargin = '100px' } = options;
 
     if (this.componentObserver) {
@@ -75,7 +88,7 @@ class LazyLoader {
     });
   }
 
-  private static async loadComponent(componentName: string) {
+  private async loadComponent(componentName: string) {
     try {
       // Dynamic import based on component name
       const componentMap: Record<string, () => Promise<any>> = {
@@ -93,7 +106,7 @@ class LazyLoader {
     }
   }
 
-  static preloadRouteComponents(route: string) {
+  preloadRouteComponents(route: string) {
     const routeComponents: Record<string, string[]> = {
       '/app': ['PerformanceDashboard', 'SecurityDashboard'],
       '/queries': ['AdvancedQueryBuilder'],
@@ -109,7 +122,7 @@ class LazyLoader {
     ResourcePreloader.preloadRouteAssets(route);
   }
 
-  static cleanup() {
+  cleanup() {
     if (this.imageObserver) {
       this.imageObserver.disconnect();
       this.imageObserver = null;
@@ -122,4 +135,6 @@ class LazyLoader {
   }
 }
 
-export { LazyLoader };
+// Export both for compatibility
+export { IntelligentPreloader };
+export const LazyLoader = IntelligentPreloader;
