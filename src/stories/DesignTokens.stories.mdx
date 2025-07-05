@@ -1,0 +1,210 @@
+
+import { Meta, ColorPalette, ColorItem, Typeset } from '@storybook/blocks';
+
+<Meta title="Design System/Design Tokens" />
+
+# Design Tokens
+
+Design tokens are the visual design atoms of the DBooster design system. They include colors, typography, spacing, and other visual properties that ensure consistency across all components.
+
+## Color System
+
+Our color system is built on semantic tokens that automatically adapt between light and dark themes.
+
+### Brand Colors
+<ColorPalette>
+  <ColorItem
+    title="Primary"
+    subtitle="Main brand color - used for CTAs, links, and primary actions"
+    colors={[
+      'hsl(221.2 83.2% 53.3%)', // primary
+      'hsl(221.2 83.2% 48.3%)', // primary hover
+      'hsl(221.2 83.2% 43.3%)', // primary active
+    ]}
+  />
+  <ColorItem
+    title="Secondary"
+    subtitle="Supporting brand color for less prominent elements"
+    colors={[
+      'hsl(210 40% 96%)', // secondary
+      'hsl(210 40% 91%)', // secondary hover
+      'hsl(210 40% 86%)', // secondary active
+    ]}
+  />
+</ColorPalette>
+
+### Status Colors
+<ColorPalette>
+  <ColorItem
+    title="Success"
+    subtitle="Positive actions and successful states"
+    colors={[
+      'hsl(142.1 76.2% 36.3%)', // success
+      'hsl(142.1 76.2% 31.3%)', // success hover
+    ]}
+  />
+  <ColorItem
+    title="Warning"
+    subtitle="Caution and warning states"
+    colors={[
+      'hsl(47.9 95.8% 53.1%)', // warning
+      'hsl(47.9 95.8% 48.1%)', // warning hover
+    ]}
+  />
+  <ColorItem
+    title="Destructive"
+    subtitle="Error states and dangerous actions"
+    colors={[
+      'hsl(0 72.2% 50.6%)', // destructive
+      'hsl(0 72.2% 45.6%)', // destructive hover
+    ]}
+  />
+</ColorPalette>
+
+### Neutral Colors
+<ColorPalette>
+  <ColorItem
+    title="Background & Surfaces"
+    subtitle="Page backgrounds and card surfaces"
+    colors={[
+      'hsl(0 0% 100%)', // background
+      'hsl(210 40% 96%)', // muted
+      'hsl(0 0% 100%)', // card
+    ]}
+  />
+  <ColorItem
+    title="Text Colors"
+    subtitle="Text hierarchy from primary to muted"
+    colors={[
+      'hsl(222.2 84% 4.9%)', // foreground
+      'hsl(215.4 16.3% 46.9%)', // muted-foreground
+    ]}
+  />
+  <ColorItem
+    title="Borders & Dividers"
+    subtitle="Subtle borders and divider lines"
+    colors={[
+      'hsl(214.3 31.8% 91.4%)', // border
+      'hsl(220 13% 91%)', // input border
+    ]}
+  />
+</ColorPalette>
+
+## Typography Scale
+
+Our typography system uses Inter as the primary font with a harmonious scale for all text elements.
+
+<Typeset
+  fontSizes={[12, 14, 16, 18, 20, 24, 32, 40, 48, 60, 72]}
+  fontWeight={400}
+  sampleText="The quick brown fox jumps over the lazy dog"
+  fontFamily="Inter, system-ui, sans-serif"
+/>
+
+### Font Weights & Usage
+
+- **Light (300)**: Large display text, minimal emphasis
+- **Regular (400)**: Body text, descriptions, captions
+- **Medium (500)**: Form labels, card titles, subtle emphasis  
+- **Semibold (600)**: Section headings, navigation items
+- **Bold (700)**: Page titles, hero headlines, strong emphasis
+
+### Typography Classes
+
+```css
+/* Display Text */
+.text-4xl     /* 36px - Hero headlines */
+.text-3xl     /* 30px - Page titles */
+.text-2xl     /* 24px - Section headings */
+.text-xl      /* 20px - Subsection headings */
+
+/* Body Text */
+.text-lg      /* 18px - Large body text */
+.text-base    /* 16px - Default body text */
+.text-sm      /* 14px - Small text, captions */
+.text-xs      /* 12px - Fine print, labels */
+```
+
+## Spacing Scale
+
+Consistent spacing using a 4px base unit ensures visual harmony and predictable layouts.
+
+### Spacing Values
+- **0**: 0px
+- **1**: 4px (0.25rem)
+- **2**: 8px (0.5rem)  
+- **3**: 12px (0.75rem)
+- **4**: 16px (1rem) - *Base unit*
+- **6**: 24px (1.5rem)
+- **8**: 32px (2rem)
+- **12**: 48px (3rem)
+- **16**: 64px (4rem)
+- **20**: 80px (5rem)
+- **24**: 96px (6rem)
+
+### Usage Guidelines
+- Use **4px** (space-1) for tight spacing within components
+- Use **8px** (space-2) for component padding and small gaps
+- Use **16px** (space-4) for section padding and medium gaps
+- Use **24px** (space-6) for large component spacing
+- Use **48px** (space-12) for section separation
+
+## Border Radius
+
+Consistent corner radius creates cohesive visual language.
+
+### Radius Scale
+- **None**: 0px - Sharp corners for data tables
+- **SM**: 2px - Small elements like badges
+- **Default**: 6px - Buttons, inputs, cards
+- **MD**: 8px - Large cards, modals
+- **LG**: 12px - Hero sections, major containers
+- **Full**: 9999px - Pills, circular avatars
+
+## Shadows
+
+Layered shadow system for depth and hierarchy.
+
+### Shadow Levels
+- **SM**: `0 1px 2px 0 rgb(0 0 0 / 0.05)` - Subtle elevation
+- **Default**: `0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)` - Cards
+- **MD**: `0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)` - Dropdowns
+- **LG**: `0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)` - Modals
+- **XL**: `0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)` - Popovers
+
+## Animation Timing
+
+Consistent timing creates smooth, predictable interactions.
+
+### Duration Scale
+- **75ms**: Instant feedback (hover states)
+- **150ms**: Quick transitions (button presses)
+- **300ms**: Standard transitions (page changes)
+- **500ms**: Slow transitions (complex animations)
+- **700ms**: Extra slow (major state changes)
+
+### Easing Functions
+- **Linear**: `linear` - Progress bars, loading states
+- **Ease**: `ease` - Default for most interactions
+- **Ease-in-out**: `ease-in-out` - Modal entrances/exits
+- **Ease-out**: `ease-out` - Page transitions
+
+## Usage Examples
+
+```tsx
+// Using design tokens in components
+const Button = ({ variant = "primary" }) => (
+  <button className={cn(
+    "px-4 py-2",          // space-4 spacing
+    "rounded-md",         // default border radius
+    "text-sm font-medium", // typography scale
+    "transition-colors duration-150", // animation timing
+    variant === "primary" && "bg-primary text-primary-foreground",
+    variant === "secondary" && "bg-secondary text-secondary-foreground"
+  )}>
+    Click me
+  </button>
+)
+```
+
+This token system ensures visual consistency while providing flexibility for customization and theming.

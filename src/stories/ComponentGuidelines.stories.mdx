@@ -1,0 +1,316 @@
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Component Guidelines" />
+
+# Component Guidelines
+
+This guide establishes best practices for creating and maintaining components in the DBooster design system.
+
+## Component Architecture
+
+### Compound Components
+For complex UI patterns, use the compound component pattern to provide flexibility while maintaining cohesion.
+
+```tsx
+// ✅ Good - Compound pattern
+<Card>
+  <CardHeader>
+    <CardTitle>User Profile</CardTitle>
+    <CardDescription>Manage your account settings</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <UserForm />
+  </CardContent>
+  <CardFooter>
+    <Button>Save Changes</Button>
+  </CardFooter>
+</Card>
+
+// ❌ Avoid - Monolithic component
+<UserProfileCard 
+  title="User Profile"
+  description="Manage your account settings"
+  content={<UserForm />}
+  actions={<Button>Save Changes</Button>}
+/>
+```
+
+### Component Sizing
+Follow consistent sizing patterns across all components:
+
+- **Small (sm)**: Compact UI, dense layouts
+- **Default**: Standard size for most use cases  
+- **Large (lg)**: Prominent elements, hero sections
+
+### Variant System
+Use semantic variant names that describe purpose, not appearance:
+
+```tsx
+// ✅ Good - Semantic variants
+<Button variant="primary">Save</Button>
+<Button variant="destructive">Delete</Button>
+<Alert variant="warning">Check your input</Alert>
+
+// ❌ Avoid - Appearance-based variants  
+<Button variant="blue">Save</Button>
+<Button variant="red">Delete</Button>
+<Alert variant="yellow">Check your input</Alert>
+```
+
+## Accessibility Requirements
+
+Every component must meet WCAG 2.1 AA standards:
+
+### Keyboard Navigation
+- All interactive elements must be keyboard accessible
+- Implement proper tab order with `tabIndex`
+- Provide keyboard shortcuts where appropriate
+- Support arrow key navigation for lists and grids
+
+```tsx
+// ✅ Keyboard accessible menu
+<Menu onKeyDown={handleKeyDown}>
+  <MenuItem tabIndex={0}>Option 1</MenuItem>
+  <MenuItem tabIndex={0}>Option 2</MenuItem>
+</Menu>
+```
+
+### Screen Reader Support
+- Use semantic HTML elements (`button`, `nav`, `main`, etc.)
+- Provide descriptive `aria-label` attributes
+- Implement proper heading hierarchy
+- Use `aria-describedby` for help text
+
+```tsx
+// ✅ Screen reader friendly
+<button 
+  aria-label="Delete user account"
+  aria-describedby="delete-help"
+>
+  Delete
+</button>
+<div id="delete-help">This action cannot be undone</div>
+```
+
+### Color and Contrast
+- Ensure 3:1 contrast ratio for large text (18px+)
+- Ensure 4.5:1 contrast ratio for normal text
+- Don't rely solely on color to convey information
+- Support high contrast mode
+
+### Focus Management
+- Provide visible focus indicators
+- Manage focus for modals and overlays
+- Return focus appropriately after interactions
+
+```tsx
+// ✅ Proper focus management
+const Modal = ({ onClose, children }) => {
+  const [lastFocusedElement, setLastFocusedElement] = useState(null);
+  
+  useEffect(() => {
+    setLastFocusedElement(document.activeElement);
+    return () => lastFocusedElement?.focus();
+  }, []);
+  
+  return <div role="dialog" aria-modal="true">{children}</div>;
+};
+```
+
+## Responsive Design
+
+### Mobile-First Approach
+Start with mobile design and enhance for larger screens:
+
+```tsx
+// ✅ Mobile-first responsive classes
+<div className="text-sm md:text-base lg:text-lg">
+  Responsive text
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+  Responsive grid
+</div>
+```
+
+### Breakpoint System
+- **Mobile**: 0px - 767px
+- **Tablet**: 768px - 1023px  
+- **Desktop**: 1024px - 1279px
+- **Large Desktop**: 1280px+
+
+### Touch Targets
+- Minimum 44px × 44px touch targets on mobile
+- Provide adequate spacing between interactive elements
+- Consider thumb-friendly placement for mobile navigation
+
+## Performance Guidelines
+
+### Lazy Loading
+Implement lazy loading for non-critical components:
+
+```tsx
+// ✅ Lazy load heavy components
+const HeavyChart = lazy(() => import('./HeavyChart'));
+
+const Dashboard = () => (
+  <Suspense fallback={<ChartSkeleton />}>
+    <HeavyChart data={chartData} />
+  </Suspense>
+);
+```
+
+### Bundle Optimization
+- Use tree-shaking friendly exports
+- Avoid default exports for libraries
+- Implement code splitting at route level
+
+### Image Optimization
+- Use WebP format with fallbacks
+- Implement responsive images with `srcset`
+- Provide meaningful alt text
+- Use skeleton loaders for image placeholders
+
+## Animation Guidelines
+
+### Motion Principles
+- **Purposeful**: Animations should serve a functional purpose
+- **Performant**: Use GPU-accelerated properties (transform, opacity)
+- **Respectful**: Honor `prefers-reduced-motion` setting
+
+```tsx
+// ✅ Respectful animation
+const AnimatedCard = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ 
+      duration: 0.3,
+      ease: "easeOut"
+    }}
+    className="motion-reduce:transform-none motion-reduce:transition-none"
+  >
+    {children}
+  </motion.div>
+);
+```
+
+### Duration Guidelines
+- **Micro-interactions**: 75-150ms (hover, focus)
+- **Small transitions**: 150-300ms (button press, toggle)
+- **Medium transitions**: 300-500ms (modal open, page change)
+- **Large transitions**: 500-700ms (complex state changes)
+
+## Error Handling
+
+### Error Boundaries
+Wrap components that might fail in error boundaries:
+
+```tsx
+// ✅ Error boundary wrapper
+const SafeComponent = ({ children }) => (
+  <ErrorBoundary
+    fallback={<ErrorMessage />}
+    onError={logError}
+  >
+    {children}
+  </ErrorBoundary>
+);
+```
+
+### Loading States
+Provide appropriate loading states for all async operations:
+
+```tsx
+// ✅ Comprehensive loading states
+const DataTable = () => {
+  const { data, isLoading, error } = useQuery('table-data', fetchData);
+  
+  if (isLoading) return <TableSkeleton />;
+  if (error) return <ErrorState retry={() => refetch()} />;
+  if (!data?.length) return <EmptyState />;
+  
+  return <Table data={data} />;
+};
+```
+
+## Testing Requirements
+
+### Unit Tests
+- Test component rendering with different props
+- Test user interactions (click, keyboard, etc.)
+- Test accessibility features
+- Achieve 85%+ code coverage
+
+```tsx
+// ✅ Comprehensive component test
+describe('Button', () => {
+  it('renders with correct text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByRole('button')).toHaveTextContent('Click me');
+  });
+  
+  it('handles click events', () => {
+    const handleClick = jest.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+    fireEvent.click(screen.getByRole('button'));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+  
+  it('is keyboard accessible', () => {
+    render(<Button>Click me</Button>);
+    const button = screen.getByRole('button');
+    button.focus();
+    fireEvent.keyDown(button, { key: 'Enter' });
+    // Assert expected behavior
+  });
+});
+```
+
+### Visual Regression Tests
+Use Storybook with Chromatic for visual testing:
+
+```tsx
+// ✅ Comprehensive stories for visual testing
+export const AllStates: Story = {
+  render: () => (
+    <div className="space-y-4">
+      <Button>Default</Button>
+      <Button disabled>Disabled</Button>
+      <Button loading>Loading</Button>
+      <Button variant="destructive">Destructive</Button>
+    </div>
+  ),
+};
+```
+
+## Documentation Standards
+
+### Component Props
+Document all props with clear descriptions and examples:
+
+```tsx
+interface ButtonProps {
+  /** The button content */
+  children: React.ReactNode;
+  /** Visual style variant */
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  /** Size variant */
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  /** Whether the button is in a loading state */
+  loading?: boolean;
+  /** Click handler */
+  onClick?: () => void;
+}
+```
+
+### Storybook Stories
+Create comprehensive stories that demonstrate:
+- All component variants and states
+- Real-world usage examples
+- Accessibility features
+- Mobile responsive behavior
+- Error states and edge cases
+
+This systematic approach ensures our components are consistent, accessible, performant, and maintainable across the entire design system.

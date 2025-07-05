@@ -1,0 +1,336 @@
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Responsive Design" />
+
+# Responsive Design Guidelines
+
+Our mobile-first responsive design system ensures optimal user experience across all device sizes and orientations.
+
+## Breakpoint System
+
+We use a mobile-first approach with the following breakpoints:
+
+### Breakpoint Values
+- **Mobile (default)**: 0px - 639px
+- **SM (Small)**: 640px - 767px  
+- **MD (Medium)**: 768px - 1023px
+- **LG (Large)**: 1024px - 1279px
+- **XL (Extra Large)**: 1280px - 1535px
+- **2XL (2X Large)**: 1536px+
+
+### Usage in Code
+
+```tsx
+// Mobile-first responsive classes
+<div className="text-sm sm:text-base md:text-lg lg:text-xl">
+  Responsive text sizing
+</div>
+
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+  Responsive grid layout
+</div>
+
+<div className="p-4 md:p-6 lg:p-8">
+  Responsive padding
+</div>
+```
+
+## Layout Patterns
+
+### Container System
+
+```tsx
+// Responsive container with max-widths
+<div className="container mx-auto px-4 sm:px-6 lg:px-8">
+  {/* Content automatically centers and has responsive padding */}
+</div>
+
+// Custom max-widths for different sections
+<div className="max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+  Narrow content container
+</div>
+```
+
+### Grid Layouts
+
+```tsx
+// Auto-fit grid that adapts to content
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+  {items.map(item => <Card key={item.id} {...item} />)}
+</div>
+
+// Responsive dashboard grid
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div className="md:col-span-2">Main content</div>
+  <div>Sidebar</div>
+</div>
+```
+
+### Flexbox Patterns
+
+```tsx
+// Responsive navigation
+<nav className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+  <Logo />
+  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+    <NavLink>Home</NavLink>
+    <NavLink>About</NavLink>
+  </div>
+</nav>
+
+// Responsive card layout
+<div className="flex flex-col lg:flex-row gap-6">
+  <div className="flex-1">Main content</div>
+  <div className="w-full lg:w-80">Sidebar</div>
+</div>
+```
+
+## Typography Scaling
+
+### Responsive Text Sizes
+
+```tsx
+// Hero headline scaling
+<h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
+  Responsive Hero Title
+</h1>
+
+// Body text scaling
+<p className="text-sm sm:text-base md:text-lg leading-relaxed">
+  Responsive body text that scales appropriately
+</p>
+
+// Supporting text
+<p className="text-xs sm:text-sm text-muted-foreground">
+  Fine print that remains readable
+</p>
+```
+
+### Line Height Adjustments
+
+```tsx
+// Tighter line height on mobile for space efficiency
+<h2 className="text-2xl md:text-3xl leading-tight md:leading-normal">
+  Responsive Line Heights
+</h2>
+
+<p className="leading-relaxed md:leading-loose">
+  Body text with comfortable reading rhythm
+</p>
+```
+
+## Component Adaptations
+
+### Navigation Patterns
+
+```tsx
+// Desktop horizontal, mobile vertical
+<nav className="hidden md:flex md:items-center md:space-x-6">
+  <NavItem>Features</NavItem>
+  <NavItem>Pricing</NavItem>
+  <NavItem>About</NavItem>
+</nav>
+
+// Mobile menu toggle
+<button className="md:hidden" aria-label="Toggle menu">
+  <Menu className="h-6 w-6" />
+</button>
+
+// Mobile slide-out menu
+<div className="fixed inset-0 z-50 md:hidden">
+  <div className="fixed inset-y-0 left-0 w-64 bg-background shadow-lg">
+    {/* Mobile menu content */}
+  </div>
+</div>
+```
+
+### Form Layouts
+
+```tsx
+// Responsive form grid
+<form className="space-y-4 md:space-y-6">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <Label htmlFor="firstName">First Name</Label>
+      <Input id="firstName" />
+    </div>
+    <div>
+      <Label htmlFor="lastName">Last Name</Label>
+      <Input id="lastName" />
+    </div>
+  </div>
+  
+  <div>
+    <Label htmlFor="email">Email</Label>
+    <Input id="email" type="email" />
+  </div>
+  
+  <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+    <Button variant="outline" className="w-full sm:w-auto">
+      Cancel
+    </Button>
+    <Button className="w-full sm:w-auto">
+      Submit
+    </Button>
+  </div>
+</form>
+```
+
+### Card Responsive Behavior
+
+```tsx
+// Card that adapts its orientation
+<Card className="flex flex-col sm:flex-row">
+  <div className="w-full sm:w-48 h-48 sm:h-auto">
+    <img className="w-full h-full object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-t-none" />
+  </div>
+  <div className="p-4 sm:p-6 flex-1">
+    <CardHeader className="p-0 pb-4">
+      <CardTitle>Responsive Card</CardTitle>
+    </CardHeader>
+    <CardContent className="p-0">
+      Content adapts to layout changes
+    </CardContent>
+  </div>
+</Card>
+```
+
+## Mobile-Specific Patterns
+
+### Touch-Friendly Design
+
+```tsx
+// Larger touch targets on mobile
+<Button className="h-12 px-6 text-base sm:h-10 sm:px-4 sm:text-sm">
+  Mobile-Optimized Button
+</Button>
+
+// Increased spacing on mobile
+<div className="space-y-6 sm:space-y-4">
+  <Card />
+  <Card />
+</div>
+```
+
+### Mobile Navigation
+
+```tsx
+// Bottom navigation for mobile
+<nav className="fixed bottom-0 left-0 right-0 bg-background border-t md:hidden">
+  <div className="flex justify-around py-2">
+    <button className="flex flex-col items-center py-2 px-3">
+      <Home className="h-5 w-5" />
+      <span className="text-xs mt-1">Home</span>
+    </button>
+    <button className="flex flex-col items-center py-2 px-3">
+      <Search className="h-5 w-5" />
+      <span className="text-xs mt-1">Search</span>
+    </button>
+  </div>
+</nav>
+```
+
+### Scroll Behavior
+
+```tsx
+// Horizontal scroll on mobile, grid on desktop
+<div className="flex overflow-x-auto pb-4 -mx-4 px-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0 md:mx-0 md:px-0">
+  <div className="flex-shrink-0 w-80 md:w-auto">
+    <Card />
+  </div>
+  <div className="flex-shrink-0 w-80 md:w-auto ml-4 md:ml-0">
+    <Card />
+  </div>
+</div>
+```
+
+## Performance Considerations
+
+### Image Optimization
+
+```tsx
+// Responsive images with multiple sources
+<picture>
+  <source 
+    media="(min-width: 768px)" 
+    srcSet="hero-desktop.webp 1200w, hero-desktop@2x.webp 2400w"
+  />
+  <source 
+    media="(min-width: 640px)" 
+    srcSet="hero-tablet.webp 768w, hero-tablet@2x.webp 1536w"
+  />
+  <img 
+    src="hero-mobile.webp"
+    srcSet="hero-mobile.webp 375w, hero-mobile@2x.webp 750w"
+    alt="Hero image"
+    className="w-full h-auto"
+  />
+</picture>
+```
+
+### Conditional Loading
+
+```tsx
+// Load different components based on screen size
+const DesktopChart = lazy(() => import('./DesktopChart'));
+const MobileChart = lazy(() => import('./MobileChart'));
+
+const ChartComponent = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return (
+    <Suspense fallback={<ChartSkeleton />}>
+      {isMobile ? <MobileChart /> : <DesktopChart />}
+    </Suspense>
+  );
+};
+```
+
+## Testing Responsive Design
+
+### Device Testing Matrix
+
+| Device Category | Screen Size | Test Scenarios |
+|-----------------|-------------|----------------|
+| Mobile Portrait | 375×667 | Navigation, forms, touch targets |
+| Mobile Landscape | 667×375 | Content adaptation, keyboard |
+| Tablet Portrait | 768×1024 | Mixed layouts, touch + mouse |
+| Tablet Landscape | 1024×768 | Desktop-like interactions |
+| Desktop | 1440×900 | Full feature set, hover states |
+| Large Desktop | 1920×1080+ | Maximum layout width |
+
+### Responsive Testing Checklist
+
+1. **Layout Testing**
+   - [ ] Content reflows properly at all breakpoints
+   - [ ] No horizontal scrolling on mobile
+   - [ ] Adequate spacing and padding
+   - [ ] Readable font sizes across devices
+
+2. **Navigation Testing**
+   - [ ] Mobile menu functions correctly  
+   - [ ] Touch targets are adequately sized (44px minimum)
+   - [ ] Navigation remains accessible on all devices
+   - [ ] Keyboard navigation works on all screen sizes
+
+3. **Performance Testing**
+   - [ ] Images load appropriately for screen size
+   - [ ] No unnecessary content loaded on mobile
+   - [ ] Touch interactions feel responsive
+   - [ ] Smooth animations on all devices
+
+4. **Content Testing**
+   - [ ] Text remains readable at all sizes
+   - [ ] Images scale appropriately
+   - [ ] Tables/data displays adapt for mobile
+   - [ ] Forms are usable on touch devices
+
+This responsive design system ensures consistent, accessible experiences across all devices while optimizing for each platform's strengths and constraints.
