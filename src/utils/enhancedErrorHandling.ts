@@ -29,9 +29,10 @@ export function setupEnhancedGlobalErrorHandling() {
   // Handle resource loading errors
   window.addEventListener('error', (event) => {
     if (event.target !== window) {
+      const target = event.target as HTMLElement;
       productionLogger.error('Resource loading error', {
-        element: event.target?.nodeName,
-        source: (event.target as any)?.src || (event.target as any)?.href,
+        element: target?.nodeName,
+        source: (target as any)?.src || (target as any)?.href,
         message: event.message
       }, 'GlobalErrorHandler');
     }
