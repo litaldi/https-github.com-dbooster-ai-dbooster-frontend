@@ -1,10 +1,18 @@
 
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Sun, Moon, LogOut, LogIn } from 'lucide-react';
-import { KeyboardShortcutsHelper } from '@/components/layout/KeyboardShortcutsHelper';
 import { NavigationItem } from '@/config/navigation';
+import { User, LogOut, Sun, Moon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface EnhancedUserMenuProps {
   user: any;
@@ -17,85 +25,126 @@ interface EnhancedUserMenuProps {
   handleLogout: () => void;
 }
 
-export function EnhancedUserMenu({ 
+export function EnhancedUserMenu({
   user,
   userMenuItems,
-  mobile = false, 
-  closeMenu = () => {},
+  mobile = false,
+  closeMenu,
   isCurrentRoute,
   theme,
   toggleTheme,
   handleLogout
 }: EnhancedUserMenuProps) {
-  return (
-    <div className={cn(
-      "flex gap-1",
-      mobile ? "flex-col space-y-1 border-t pt-4" : "items-center"
-    )}>
-      {user && userMenuItems.map((item) => {
-        const isActive = isCurrentRoute(item.href);
+  if (mobile) {
+    return (
+      <div className="space-y-2 pt-4 border-t">
+        <div className="px-3 py-2">
+          <p className="text-sm font-medium">
+            {user ? user.email : 'Guest User'}
+          </p>
+        </div>
         
-        return (
-          <Link
+        {user && userMenuItems.map((item) => (
+          <Button
             key={item.href}
-            to={item.href}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md",
-              "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-              isActive
-                ? "bg-accent text-accent-foreground shadow-sm" 
-                : "text-muted-foreground hover:text-foreground",
-              mobile && "justify-start w-full"
-            )}
-            onClick={closeMenu}
-            aria-current={isActive ? 'page' : undefined}
-            title={item.description}
+            variant={isCurrentRoute(item.href) ? "default" : "ghost"}
+            className="w-full justify-start"
+            asChild
           >
-            {item.label}
-          </Link>
-        );
-      })}
-      
-      {user && !mobile && <KeyboardShortcutsHelper />}
-      
-      <Button
-        variant="ghost"
-        size={mobile ? "default" : "icon"}
-        onClick={toggleTheme}
-        className={cn(
-          "flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]",
-          mobile && "justify-start w-full"
-        )}
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-      >
-        <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        {mobile && <span>Toggle Theme</span>}
-      </Button>
-      
-      {user ? (
+            <Link to={item.href} onClick={closeMenu}>
+              <item.icon className="h-4 w-4 mr-2" />
+              {item.label}
+            </Link>
+          </Button>
+        ))}
+        
         <Button
           variant="ghost"
-          size={mobile ? "default" : "sm"}
-          onClick={handleLogout}
-          className={cn(
-            "flex items-center gap-2 transition-all duration-200 hover:scale-[1.02] hover:bg-destructive/10 hover:text-destructive",
-            mobile && "justify-start w-full"
-          )}
-          aria-label="Sign out of DBooster"
+          className="w-full justify-start"
+          onClick={toggleTheme}
         >
-          <LogOut className="h-4 w-4" />
-          {mobile && <span>Sign Out</span>}
+          {theme === 'light' ? <Moon className="h-4 w-4 mr-2" /> : <Sun className="h-4 w-4 mr-2" />}
+          Toggle Theme
         </Button>
-      ) : (
-        <Button asChild className="transition-all duration-200 hover:scale-[1.02]">
-          <Link to="/login">
-            <LogIn className="h-4 w-4 mr-2" />
-            Get Started
-          </Link>
+        
+        {user ? (
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-600"
+            onClick={() => {
+              handleLogout();
+              if (closeMenu) closeMenu();
+            }}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        ) : (
+          <Button className="w-full" asChild>
+            <Link to="/login" onClick={closeMenu}>
+              Sign In
+            </Link>
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" onClick={toggleTheme} size="icon">
+          {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </Button>
-      )}
+        <Button asChild>
+          <Link to="/login">Sign In</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button variant="ghost" onClick={toggleTheme} size="icon">
+        {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+      </Button>
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-xs font-medium text-white">
+              {user.email?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <span className="hidden md:inline">{user.email}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuLabel>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.email}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.user_metadata?.full_name || 'User'}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          
+          {userMenuItems.map((item) => (
+            <DropdownMenuItem key={item.href} asChild>
+              <Link to={item.href}>
+                <item.icon className="mr-2 h-4 w-4" />
+                <span>{item.label}</span>
+              </Link>
+            </DropdownMenuItem>
+          ))}
+          
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Logout</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
