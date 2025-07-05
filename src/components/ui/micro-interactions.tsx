@@ -199,7 +199,7 @@ export function SwipeableCard({
           onSwipeLeft();
         }
       }}
-      whileDrag={{ scale: 1.02, rotate: info => info.offset.x / 10 }}
+      whileDrag={{ scale: 1.02 }}
       className={className}
     >
       {children}
