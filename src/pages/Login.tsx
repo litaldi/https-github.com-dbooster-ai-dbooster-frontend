@@ -27,7 +27,7 @@ export default function Login() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { secureLogin, secureSignup, user, demoLogin } = useAuth();
+  const { secureLogin, secureSignup, user, loginDemo } = useAuth();
 
   // Redirect if already authenticated
   if (user) {
@@ -75,7 +75,7 @@ export default function Login() {
 
   const handleTryDemo = async () => {
     try {
-      await demoLogin();
+      await loginDemo();
       enhancedToast.success({
         title: 'Demo mode activated',
         description: 'You can now explore all features without any limits!'
