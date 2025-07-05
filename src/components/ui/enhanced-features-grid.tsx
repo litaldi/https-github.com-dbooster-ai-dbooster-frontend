@@ -1,10 +1,9 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 interface Feature {
@@ -14,19 +13,18 @@ interface Feature {
   benefits: string[];
   badge?: {
     text: string;
-    variant?: 'default' | 'secondary' | 'outline' | 'destructive';
+    variant: 'default' | 'secondary' | 'outline';
   };
   cta?: {
     text: string;
-    onClick?: () => void;
-    href?: string;
+    onClick: () => void;
   };
   gradient?: string;
 }
 
 interface EnhancedFeaturesGridProps {
   title: string;
-  subtitle?: string;
+  subtitle: string;
   features: Feature[];
   columns?: 1 | 2 | 3 | 4;
   className?: string;
@@ -39,12 +37,20 @@ export function EnhancedFeaturesGrid({
   columns = 3,
   className
 }: EnhancedFeaturesGridProps) {
+  const gridClasses = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-1 md:grid-cols-2',
+    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.1,
+        delayChildren: 0.3
       }
     }
   };
@@ -55,45 +61,30 @@ export function EnhancedFeaturesGrid({
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1]
       }
     }
   };
 
-  const gridCols = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
-  };
-
   return (
-    <section className={cn("py-20 bg-background", className)} aria-labelledby="features-title">
+    <section className={cn("py-16 md:py-20 lg:py-24", className)}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            id="features-title"
-            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4"
-          >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12 lg:mb-16"
+        >
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 lg:mb-6">
             {title}
-          </motion.h2>
-          {subtitle && (
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
-            >
-              {subtitle}
-            </motion.p>
-          )}
-        </div>
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            {subtitle}
+          </p>
+        </motion.div>
 
         {/* Features Grid */}
         <motion.div
@@ -101,67 +92,62 @@ export function EnhancedFeaturesGrid({
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className={cn("grid gap-8", gridCols[columns])}
+          className={cn(
+            "grid gap-6 lg:gap-8",
+            gridClasses[columns]
+          )}
         >
           {features.map((feature, index) => (
-            <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full group hover:shadow-lg transition-all duration-300 border-0 shadow-md hover:shadow-xl hover:-translate-y-1">
-                <CardHeader className="text-center pb-4">
-                  <div className={cn(
-                    "w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center",
-                    feature.gradient || "bg-gradient-to-br from-primary/10 to-primary/5"
-                  )}>
-                    <div className="text-primary [&_svg]:w-8 [&_svg]:h-8">
+            <motion.div
+              key={index}
+              variants={itemVariants}
+              whileHover={{ 
+                y: -4,
+                transition: { duration: 0.2, ease: "easeOut" }
+              }}
+            >
+              <Card className={cn(
+                "h-full transition-all duration-300 hover:shadow-lg border-0 shadow-sm",
+                feature.gradient
+              )}>
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-3 rounded-lg bg-primary/10 text-primary">
                       {feature.icon}
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
                     {feature.badge && (
-                      <Badge variant={feature.badge.variant || 'secondary'} className="text-xs">
+                      <Badge variant={feature.badge.variant} className="text-xs">
                         {feature.badge.text}
                       </Badge>
                     )}
                   </div>
-                  
-                  <CardDescription className="text-muted-foreground leading-relaxed">
+                  <CardTitle className="text-xl md:text-2xl mb-2">
+                    {feature.title}
+                  </CardTitle>
+                  <CardDescription className="text-base leading-relaxed">
                     {feature.description}
                   </CardDescription>
                 </CardHeader>
-
+                
                 <CardContent className="pt-0">
-                  {feature.benefits.length > 0 && (
-                    <div className="mb-6">
-                      <ul className="space-y-2" role="list">
-                        {feature.benefits.map((benefit, benefitIndex) => (
-                          <li key={benefitIndex} className="flex items-start gap-2 text-sm">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                            <span className="text-muted-foreground">{benefit}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {/* Benefits List */}
+                  <ul className="space-y-2 mb-6">
+                    {feature.benefits.map((benefit, benefitIndex) => (
+                      <li key={benefitIndex} className="flex items-start gap-2 text-sm">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
+                        <span className="text-muted-foreground">{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
 
+                  {/* CTA Button */}
                   {feature.cta && (
                     <Button
-                      variant="ghost"
-                      className="w-full group-hover:bg-accent/50 transition-colors"
+                      variant="outline"
                       onClick={feature.cta.onClick}
-                      asChild={!!feature.cta.href}
+                      className="w-full sm:w-auto hover:bg-primary hover:text-primary-foreground transition-colors"
                     >
-                      {feature.cta.href ? (
-                        <a href={feature.cta.href} className="flex items-center justify-center gap-2">
-                          {feature.cta.text}
-                          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                        </a>
-                      ) : (
-                        <>
-                          {feature.cta.text}
-                          <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-                        </>
-                      )}
+                      {feature.cta.text}
                     </Button>
                   )}
                 </CardContent>

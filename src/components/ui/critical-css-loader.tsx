@@ -1,61 +1,60 @@
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-// Critical CSS loader for above-the-fold content
 export function CriticalCSSLoader() {
   useEffect(() => {
-    // Load non-critical CSS after page load
-    const loadNonCriticalCSS = () => {
-      const nonCriticalCSS = [
-        // Add paths to non-critical CSS files
-        '/css/animations.css',
-        '/css/components.css'
-      ];
-
-      nonCriticalCSS.forEach(href => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        link.media = 'print';
-        link.onload = () => {
-          link.media = 'all';
-        };
-        document.head.appendChild(link);
-      });
+    // Load non-critical CSS asynchronously
+    const loadCSS = (href: string) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.media = 'print';
+      link.onload = () => {
+        link.media = 'all';
+      };
+      document.head.appendChild(link);
     };
 
-    // Load after initial render
-    if (document.readyState === 'complete') {
-      loadNonCriticalCSS();
-    } else {
-      window.addEventListener('load', loadNonCriticalCSS);
-    }
+    // Load font stylesheets asynchronously
+    const fontStylesheets = [
+      'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+    ];
 
-    return () => {
-      window.removeEventListener('load', loadNonCriticalCSS);
-    };
+    fontStylesheets.forEach(loadCSS);
   }, []);
 
   return null;
 }
 
-// Preload important resources
 export function ResourcePreloader() {
   useEffect(() => {
-    const preloadResources = [
-      { href: '/fonts/inter-var.woff2', as: 'font', type: 'font/woff2' },
-      { href: '/api/auth/session', as: 'fetch' },
-    ];
-
-    preloadResources.forEach(({ href, as, type }) => {
+    // Preload critical resources
+    const preloadResource = (href: string, as: string, type?: string) => {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.href = href;
       link.as = as;
       if (type) link.type = type;
-      if (as === 'font') link.crossOrigin = 'anonymous';
       document.head.appendChild(link);
-    });
+    };
+
+    // Preload critical fonts
+    preloadResource('/fonts/inter-var.woff2', 'font', 'font/woff2');
+    
+    // Preload hero images
+    preloadResource('/hero-bg.webp', 'image');
+    preloadResource('/logo.svg', 'image');
+
+    // DNS prefetch for external resources
+    const dnsPrefetch = (href: string) => {
+      const link = document.createElement('link');
+      link.rel = 'dns-prefetch';
+      link.href = href;
+      document.head.appendChild(link);
+    };
+
+    dnsPrefetch('https://fonts.googleapis.com');
+    dnsPrefetch('https://fonts.gstatic.com');
   }, []);
 
   return null;

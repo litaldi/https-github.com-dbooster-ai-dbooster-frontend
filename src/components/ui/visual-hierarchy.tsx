@@ -1,172 +1,114 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { cva, type VariantProps } from 'class-variance-authority';
 
-// Section component for consistent spacing
-const sectionVariants = cva('w-full', {
-  variants: {
-    spacing: {
-      none: 'py-0',
-      sm: 'py-8',
-      md: 'py-12',
-      lg: 'py-16',
-      xl: 'py-20',
-      '2xl': 'py-24',
-    },
-  },
-  defaultVariants: {
-    spacing: 'md',
-  },
-});
-
-interface SectionProps
-  extends React.HTMLAttributes<HTMLElement>,
-    VariantProps<typeof sectionVariants> {
-  as?: 'section' | 'div' | 'main' | 'article';
+interface SectionProps {
+  children: React.ReactNode;
+  className?: string;
+  spacing?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export function Section({ 
-  className, 
-  spacing, 
-  as: Component = 'section',
-  ...props 
-}: SectionProps) {
+export function Section({ children, className, spacing = 'md' }: SectionProps) {
+  const spacingClasses = {
+    sm: 'py-8 md:py-12',
+    md: 'py-12 md:py-16 lg:py-20',
+    lg: 'py-16 md:py-20 lg:py-24',
+    xl: 'py-20 md:py-24 lg:py-32'
+  };
+
   return (
-    <Component
-      className={cn(sectionVariants({ spacing }), className)}
-      {...props}
-    />
+    <section className={cn(spacingClasses[spacing], className)}>
+      {children}
+    </section>
   );
 }
 
-// Container component for consistent max-width and centering
-const containerVariants = cva('mx-auto px-4 sm:px-6 lg:px-8', {
-  variants: {
-    size: {
-      sm: 'max-w-3xl',
-      md: 'max-w-5xl',
-      lg: 'max-w-7xl',
-      xl: 'max-w-screen-xl',
-      full: 'max-w-none',
-    },
-  },
-  defaultVariants: {
-    size: 'lg',
-  },
-});
+interface ContainerProps {
+  children: React.ReactNode;
+  className?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+}
 
-interface ContainerProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof containerVariants> {}
+export function Container({ children, className, size = 'lg' }: ContainerProps) {
+  const sizeClasses = {
+    sm: 'max-w-2xl',
+    md: 'max-w-4xl',
+    lg: 'max-w-6xl',
+    xl: 'max-w-7xl',
+    full: 'max-w-full'
+  };
 
-export function Container({ className, size, ...props }: ContainerProps) {
   return (
-    <div
-      className={cn(containerVariants({ size }), className)}
-      {...props}
-    />
+    <div className={cn(
+      'container mx-auto px-4 sm:px-6 lg:px-8',
+      sizeClasses[size],
+      className
+    )}>
+      {children}
+    </div>
   );
 }
 
-// Heading component with consistent typography
-const headingVariants = cva('font-bold tracking-tight', {
-  variants: {
-    level: {
-      1: 'scroll-m-20',
-      2: 'scroll-m-20',
-      3: 'scroll-m-20',
-      4: 'scroll-m-20',
-      5: 'scroll-m-20',
-      6: 'scroll-m-20',
-    },
-    size: {
-      '4xl': 'text-4xl sm:text-5xl lg:text-6xl',
-      '3xl': 'text-3xl sm:text-4xl lg:text-5xl',
-      '2xl': 'text-2xl sm:text-3xl lg:text-4xl',
-      xl: 'text-xl sm:text-2xl lg:text-3xl',
-      lg: 'text-lg sm:text-xl lg:text-2xl',
-      base: 'text-base sm:text-lg',
-    },
-  },
-  defaultVariants: {
-    level: 1,
-    size: '2xl',
-  },
-});
-
-interface HeadingProps
-  extends React.HTMLAttributes<HTMLHeadingElement>,
-    VariantProps<typeof headingVariants> {
-  level?: 1 | 2 | 3 | 4 | 5 | 6;
+interface HeadingProps {
+  children: React.ReactNode;
+  level: 1 | 2 | 3 | 4 | 5 | 6;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  className?: string;
 }
 
-export function Heading({ 
-  className, 
-  level = 1, 
-  size, 
-  children,
-  ...props 
-}: HeadingProps) {
-  const Component = `h${level}` as const;
-  
+export function Heading({ children, level, size = 'lg', className }: HeadingProps) {
+  const sizeClasses = {
+    xs: 'text-lg md:text-xl',
+    sm: 'text-xl md:text-2xl',
+    md: 'text-2xl md:text-3xl',
+    lg: 'text-3xl md:text-4xl',
+    xl: 'text-4xl md:text-5xl',
+    '2xl': 'text-4xl md:text-5xl lg:text-6xl',
+    '3xl': 'text-5xl md:text-6xl lg:text-7xl'
+  };
+
+  const Component = `h${level}` as keyof JSX.IntrinsicElements;
+
   return (
-    <Component
-      className={cn(headingVariants({ level, size }), className)}
-      {...props}
-    >
+    <Component className={cn(
+      'font-bold tracking-tight',
+      sizeClasses[size],
+      className
+    )}>
       {children}
     </Component>
   );
 }
 
-// Text component for consistent body text
-const textVariants = cva('', {
-  variants: {
-    size: {
-      xs: 'text-xs',
-      sm: 'text-sm',
-      base: 'text-base',
-      lg: 'text-lg',
-      xl: 'text-xl',
-    },
-    variant: {
-      default: 'text-foreground',
-      muted: 'text-muted-foreground',
-      subtle: 'text-muted-foreground/80',
-    },
-    weight: {
-      normal: 'font-normal',
-      medium: 'font-medium',
-      semibold: 'font-semibold',
-      bold: 'font-bold',
-    },
-  },
-  defaultVariants: {
-    size: 'base',
-    variant: 'default',
-    weight: 'normal',
-  },
-});
-
-interface TextProps
-  extends React.HTMLAttributes<HTMLParagraphElement>,
-    VariantProps<typeof textVariants> {
-  as?: 'p' | 'span' | 'div';
+interface TextProps {
+  children: React.ReactNode;
+  size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
+  variant?: 'default' | 'muted' | 'accent';
+  className?: string;
 }
 
-export function Text({ 
-  className, 
-  size, 
-  variant, 
-  weight,
-  as: Component = 'p',
-  ...props 
-}: TextProps) {
+export function Text({ children, size = 'base', variant = 'default', className }: TextProps) {
+  const sizeClasses = {
+    xs: 'text-xs md:text-sm',
+    sm: 'text-sm md:text-base',
+    base: 'text-base md:text-lg',
+    lg: 'text-lg md:text-xl',
+    xl: 'text-xl md:text-2xl'
+  };
+
+  const variantClasses = {
+    default: 'text-foreground',
+    muted: 'text-muted-foreground',
+    accent: 'text-primary'
+  };
+
   return (
-    <Component
-      className={cn(textVariants({ size, variant, weight }), className)}
-      {...props}
-    />
+    <p className={cn(
+      sizeClasses[size],
+      variantClasses[variant],
+      className
+    )}>
+      {children}
+    </p>
   );
 }

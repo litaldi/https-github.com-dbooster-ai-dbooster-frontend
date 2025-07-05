@@ -1,131 +1,142 @@
 
-interface PerformanceMetrics {
-  fcp: number;
-  lcp: number;
-  cls: number;
-  ttfb: number;
-  tti: number;
-}
-
 class PerformanceOptimizer {
-  private static instance: PerformanceOptimizer;
-  private metrics: Partial<PerformanceMetrics> = {};
-  private observers: PerformanceObserver[] = [];
-
-  static getInstance(): PerformanceOptimizer {
-    if (!PerformanceOptimizer.instance) {
-      PerformanceOptimizer.instance = new PerformanceOptimizer();
-    }
-    return PerformanceOptimizer.instance;
-  }
+  private static metrics: Map<string, number> = new Map();
+  private static observers: PerformanceObserver[] = [];
 
   static startPerformanceMonitoring() {
-    const instance = this.getInstance();
-    instance.observeWebVitals();
-    instance.measureNavigationTiming();
-  }
-
-  static stopPerformanceMonitoring() {
-    const instance = this.getInstance();
-    instance.observers.forEach(observer => observer.disconnect());
-    instance.observers = [];
-  }
-
-  static runLighthouseAudit() {
-    const instance = this.getInstance();
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 Performance Metrics:', instance.getMetrics());
-      console.log('📊 Resource Timing:', instance.measureResourceTiming());
-    }
-  }
-
-  static optimizeImages() {
-    const instance = this.getInstance();
-    return instance.optimizeImages();
-  }
-
-  static measureResourceTiming() {
-    const instance = this.getInstance();
-    return instance.measureResourceTiming();
-  }
-
-  private observeWebVitals() {
     if (typeof window === 'undefined') return;
 
+    // Monitor Core Web Vitals
+    this.monitorCoreWebVitals();
+    
+    // Monitor resource loading
+    this.monitorResources();
+    
+    // Monitor user interactions
+    this.monitorInteractions();
+  }
+
+  private static monitorCoreWebVitals() {
     // First Contentful Paint
-    const paintObserver = new PerformanceObserver((list) => {
-      const entries = list.getEntries();
-      entries.forEach((entry) => {
-        if (entry.name === 'first-contentful-paint') {
-          this.metrics.fcp = entry.startTime;
+    const fcpObserver = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.entryType === 'paint' && entry.name === 'first-contentful-paint') {
+          this.metrics.set('fcp', entry.startTime);
+          console.log('🎨 FCP:', Math.round(entry.startTime), 'ms');
         }
-      });
+      }
     });
-    paintObserver.observe({ entryTypes: ['paint'] });
-    this.observers.push(paintObserver);
+
+    try {
+      fcpObserver.observe({ entryTypes: ['paint'] });
+      this.observers.push(fcpObserver);
+    } catch (error) {
+      console.warn('FCP observer not supported');
+    }
 
     // Largest Contentful Paint
     const lcpObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1];
-      this.metrics.lcp = lastEntry.startTime;
+      this.metrics.set('lcp', lastEntry.startTime);
+      console.log('🖼️ LCP:', Math.round(lastEntry.startTime), 'ms');
     });
-    lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
-    this.observers.push(lcpObserver);
+
+    try {
+      lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+      this.observers.push(lcpObserver);
+    } catch (error) {
+      console.warn('LCP observer not supported');
+    }
 
     // Cumulative Layout Shift
+    let clsValue = 0;
     const clsObserver = new PerformanceObserver((list) => {
-      let clsValue = 0;
-      const entries = list.getEntries() as any[];
-      entries.forEach((entry) => {
-        if (!entry.hadRecentInput) {
-          clsValue += entry.value;
+      for (const entry of list.getEntries()) {
+        if (!(entry as any).hadRecentInput) {
+          clsValue += (entry as any).value;
+          this.metrics.set('cls', clsValue);
         }
-      });
-      this.metrics.cls = clsValue;
-    });
-    clsObserver.observe({ entryTypes: ['layout-shift'] });
-    this.observers.push(clsObserver);
-  }
-
-  private measureNavigationTiming() {
-    if (performance.getEntriesByType) {
-      const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
-      if (navEntries.length > 0) {
-        const nav = navEntries[0];
-        this.metrics.ttfb = nav.responseStart - nav.requestStart;
-        this.metrics.tti = nav.domInteractive - nav.fetchStart;
       }
+    });
+
+    try {
+      clsObserver.observe({ entryTypes: ['layout-shift'] });
+      this.observers.push(clsObserver);
+    } catch (error) {
+      console.warn('CLS observer not supported');
     }
   }
 
-  getMetrics(): Partial<PerformanceMetrics> {
-    return { ...this.metrics };
-  }
-
-  optimizeImages() {
-    const images = document.querySelectorAll('img[data-src]');
-    const imageObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target as HTMLImageElement;
-          img.src = img.dataset.src || '';
-          img.removeAttribute('data-src');
-          imageObserver.unobserve(img);
+  private static monitorResources() {
+    const resourceObserver = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const resource = entry as PerformanceResourceTiming;
+        if (resource.duration > 1000) {
+          console.warn('⚠️ Slow resource:', resource.name, Math.round(resource.duration), 'ms');
         }
-      });
+      }
     });
 
-    images.forEach(img => imageObserver.observe(img));
+    try {
+      resourceObserver.observe({ entryTypes: ['resource'] });
+      this.observers.push(resourceObserver);
+    } catch (error) {
+      console.warn('Resource observer not supported');
+    }
   }
 
-  measureResourceTiming() {
-    const resources = performance.getEntriesByType('resource');
-    return resources.map(resource => ({
-      name: resource.name,
-      duration: resource.duration,
-      size: (resource as any).transferSize || 0
-    }));
+  private static monitorInteractions() {
+    // Track long tasks
+    const longTaskObserver = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        console.warn('🐌 Long task detected:', Math.round(entry.duration), 'ms');
+      }
+    });
+
+    try {
+      longTaskObserver.observe({ entryTypes: ['longtask'] });
+      this.observers.push(longTaskObserver);
+    } catch (error) {
+      console.warn('Long task observer not supported');
+    }
+  }
+
+  static getMetrics() {
+    return Object.fromEntries(this.metrics);
+  }
+
+  static cleanup() {
+    this.observers.forEach(observer => observer.disconnect());
+    this.observers = [];
+    this.metrics.clear();
+  }
+
+  static generateReport() {
+    const metrics = this.getMetrics();
+    
+    // Calculate performance score
+    let score = 100;
+    
+    if (metrics.fcp > 1800) score -= 20;
+    else if (metrics.fcp > 1000) score -= 10;
+    
+    if (metrics.lcp > 2500) score -= 30;
+    else if (metrics.lcp > 1200) score -= 15;
+    
+    if (metrics.cls > 0.25) score -= 25;
+    else if (metrics.cls > 0.1) score -= 10;
+
+    const recommendations = [];
+    if (metrics.fcp > 1800) recommendations.push('Optimize critical rendering path');
+    if (metrics.lcp > 2500) recommendations.push('Optimize largest contentful paint element');
+    if (metrics.cls > 0.25) recommendations.push('Fix layout shift issues');
+
+    return {
+      metrics,
+      score: Math.max(0, score),
+      recommendations
+    };
   }
 }
 
