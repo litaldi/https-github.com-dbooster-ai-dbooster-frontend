@@ -1,7 +1,6 @@
 
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
-import { DemoBadge } from '@/components/demo-badge';
 import { useNavigation } from '@/hooks/useNavigation';
 import { EnhancedNavigationItems } from './EnhancedNavigationItems';
 import { EnhancedUserMenu } from './EnhancedUserMenu';
@@ -39,10 +38,6 @@ export function MainNav() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <NavigationLogo user={user} />
-
-          <div className="flex-1 flex justify-center">
-            <DemoBadge />
-          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">

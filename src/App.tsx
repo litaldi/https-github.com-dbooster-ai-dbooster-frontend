@@ -1,176 +1,74 @@
 
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from 'sonner';
-import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
-import { PublicLayout } from '@/components/PublicLayout';
-import { GlobalLoadingOverlay } from '@/components/ui/GlobalLoadingOverlay';
-import { UpdateBanner } from '@/components/ui/update-banner';
-import { SkipToMainContent } from '@/components/ui/accessibility-enhanced';
-import { AIFloatingChatbot } from '@/components/support/AIFloatingChatbot';
-import { LTRSupport, useLTR } from '@/components/ui/rtl-support';
-import Layout from '@/components/layout';
-import ProtectedRoute from '@/components/protected-route';
-import { ResourcePreloader, CriticalCSSLoader } from '@/components/ui/critical-css-loader';
-import { appInitializer } from '@/utils/appInitializer';
-import { useEffect } from 'react';
+import { Toaster } from '@/components/ui/toaster';
+import { productionConsole } from '@/utils/productionConsoleCleanup';
+import { productionInitializer } from '@/utils/productionInit';
+import { productionLogger } from '@/utils/productionLogger';
 
-// Lazy load pages for better performance
-import { lazy, Suspense } from 'react';
-import { PageLoading } from '@/components/ui/loading-states';
-
-// Critical pages (loaded immediately)
-import Home from '@/pages/Home';
+// Page imports
+import HomePage from '@/pages/Home';
 import Login from '@/pages/Login';
+import Dashboard from '@/pages/Dashboard';
+import About from '@/pages/About';
+import Contact from '@/pages/Contact';
+import Features from '@/pages/Features';
+import Pricing from '@/pages/Pricing';
+import Learn from '@/pages/Learn';
+import { NotFound } from '@/components/error/NotFound';
 
-// Non-critical pages (lazy loaded)
-const Features = lazy(() => import('@/pages/Features'));
-const HowItWorks = lazy(() => import('@/pages/HowItWorks'));
-const Pricing = lazy(() => import('@/pages/Pricing'));
-const Learn = lazy(() => import('@/pages/Learn'));
-const Blog = lazy(() => import('@/pages/Blog'));
-const About = lazy(() => import('@/pages/About'));
-const Contact = lazy(() => import('@/pages/Contact'));
-const Support = lazy(() => import('@/pages/Support'));
-const Privacy = lazy(() => import('@/pages/Privacy'));
-const Terms = lazy(() => import('@/pages/Terms'));
-const Accessibility = lazy(() => import('@/pages/Accessibility'));
-const AIOptimizationStudio = lazy(() => import('@/pages/AIOptimizationStudio'));
-const EnhancedDashboard = lazy(() => import('@/pages/EnhancedDashboard'));
-const Queries = lazy(() => import('@/pages/Queries'));
-const Repositories = lazy(() => import('@/pages/Repositories'));
-const Reports = lazy(() => import('@/pages/Reports'));
-const SecurityDashboardPage = lazy(() => import('@/components/security/SecurityDashboardPage').then(module => ({ default: module.SecurityDashboardPage })));
-const Search = lazy(() => import('@/pages/Search'));
-const FAQ = lazy(() => import('@/pages/FAQ'));
+// Layout components
+import { MainNav } from '@/components/navigation/MainNav';
 
-// New pages
-const Enterprise = lazy(() => import('@/pages/Enterprise'));
-const DatabaseTypes = lazy(() => import('@/pages/DatabaseTypes'));
-const UseCases = lazy(() => import('@/pages/UseCases'));
-const Integrations = lazy(() => import('@/pages/Integrations'));
-const Status = lazy(() => import('@/pages/Status'));
-const Changelog = lazy(() => import('@/pages/Changelog'));
-const Partners = lazy(() => import('@/pages/Partners'));
-const Press = lazy(() => import('@/pages/Press'));
-const Cookies = lazy(() => import('@/pages/Cookies'));
-const NotFound = lazy(() => import('@/components/error/NotFound').then(module => ({ default: module.NotFound })));
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-      refetchOnWindowFocus: false, // Reduce unnecessary requests
-    },
-  },
-});
-
-function AppContent() {
-  useLTR(); // Ensure LTR direction for the entire app
-
+function App() {
   useEffect(() => {
-    // Initialize app with performance optimizations
-    appInitializer.initialize();
+    const initializeSecureApp = async () => {
+      try {
+        // Initialize production console cleanup
+        productionConsole.initializeConsoleCleanup();
+        
+        // Initialize production settings
+        await productionInitializer.initialize();
+        
+        // Log successful initialization
+        productionLogger.info('Application initialized successfully', {
+          environment: import.meta.env.MODE,
+          timestamp: new Date().toISOString()
+        }, 'App');
+      } catch (error) {
+        productionLogger.error('Application initialization failed', error, 'App');
+      }
+    };
+
+    initializeSecureApp();
   }, []);
 
   return (
-    <LTRSupport>
-      <SkipToMainContent />
-      <CriticalCSSLoader />
-      <ResourcePreloader />
-      <GlobalLoadingOverlay />
-      <UpdateBanner />
-      
-      <div id="main-content">
-        <Suspense fallback={<PageLoading />}>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<PublicLayout />}>
-              <Route index element={<Home />} />
-              <Route path="login" element={<Login />} />
-              <Route path="features" element={<Features />} />
-              <Route path="how-it-works" element={<HowItWorks />} />
-              <Route path="pricing" element={<Pricing />} />
-              <Route path="learn" element={<Learn />} />
-              <Route path="blog" element={<Blog />} />
-              <Route path="about" element={<About />} />
-              <Route path="contact" element={<Contact />} />
-              <Route path="support" element={<Support />} />
-              <Route path="faq" element={<FAQ />} />
-              <Route path="privacy" element={<Privacy />} />
-              <Route path="terms" element={<Terms />} />
-              <Route path="accessibility" element={<Accessibility />} />
-              <Route path="ai-studio" element={<AIOptimizationStudio />} />
-              <Route path="search" element={<Search />} />
-              
-              {/* New public pages */}
-              <Route path="enterprise" element={<Enterprise />} />
-              <Route path="database-types" element={<DatabaseTypes />} />
-              <Route path="use-cases" element={<UseCases />} />
-              <Route path="integrations" element={<Integrations />} />
-              <Route path="status" element={<Status />} />
-              <Route path="changelog" element={<Changelog />} />
-              <Route path="partners" element={<Partners />} />
-              <Route path="press" element={<Press />} />
-              <Route path="cookies" element={<Cookies />} />
-            </Route>
-            
-            {/* Protected authenticated routes */}
-            <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route index element={<EnhancedDashboard />} />
-            </Route>
-            
-            <Route path="/queries" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route index element={<Queries />} />
-            </Route>
-            
-            <Route path="/repositories" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route index element={<Repositories />} />
-            </Route>
-            
-            <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route index element={<Reports />} />
-            </Route>
-
-            <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route index element={<SecurityDashboardPage />} />
-            </Route>
-            
-            {/* 404 fallback */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </div>
-      
-      {/* AI Floating Chatbot - Available on all pages */}
-      <AIFloatingChatbot />
-      
-      <Toaster 
-        position="top-right"
-        expand={true}
-        richColors
-        closeButton
-      />
-    </LTRSupport>
-  );
-}
-
-function App() {
-  return (
-    <EnhancedErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
-          <AuthProvider>
-            <Router>
-              <AppContent />
-            </Router>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </EnhancedErrorBoundary>
+    <ThemeProvider defaultTheme="system" storageKey="dbooster-theme">
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-background font-sans antialiased">
+            <MainNav />
+            <main className="flex-1">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/app" element={<Dashboard />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/learn" element={<Learn />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Toaster />
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
