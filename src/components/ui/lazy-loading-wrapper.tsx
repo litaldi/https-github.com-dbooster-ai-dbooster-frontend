@@ -15,7 +15,7 @@ export function LazyLoadingWrapper({
   errorFallback = <div className="p-4 text-center text-muted-foreground">Failed to load component</div>
 }: LazyLoadingWrapperProps) {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary fallback={errorFallback}>
       <Suspense fallback={fallback}>
         {children}
       </Suspense>
