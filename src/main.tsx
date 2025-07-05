@@ -3,23 +3,13 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { productionInitializer } from '@/utils/productionInit';
-import { IntelligentPreloader } from '@/utils/lazyLoader';
-import { performanceMonitor } from '@/utils/performanceMonitor';
+import { comprehensiveSecurityInit } from './utils/comprehensiveSecurityInit';
+import { enhancedProductionLogger } from './utils/enhancedProductionLogger';
 
-// Initialize production environment with enhanced security
-if (import.meta.env.PROD) {
-  productionInitializer.initialize().catch(error => {
-    console.error('Failed to initialize production environment:', error);
-  });
-}
-
-// Initialize performance monitoring
-performanceMonitor.initialize();
-
-// Initialize intelligent preloading
-const preloader = IntelligentPreloader.getInstance();
-preloader.initialize();
+// Initialize comprehensive security system
+comprehensiveSecurityInit.initialize().catch(error => {
+  enhancedProductionLogger.error('Failed to initialize security system', error, 'MainInit');
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

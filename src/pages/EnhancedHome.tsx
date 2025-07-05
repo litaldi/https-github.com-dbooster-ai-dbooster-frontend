@@ -7,6 +7,7 @@ import { InteractiveDemoSection } from '@/components/home/InteractiveDemoSection
 import { SocialProofSection } from '@/components/home/SocialProofSection';
 import { EnhancedCTASection } from '@/components/home/EnhancedCTASection';
 import { useAuth } from '@/contexts/auth-context';
+import { enhancedProductionLogger } from '@/utils/enhancedProductionLogger';
 
 export default function EnhancedHome() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function EnhancedHome() {
         navigate('/app');
       }
     } catch (error) {
-      console.error('Navigation error:', error);
+      enhancedProductionLogger.error('Navigation error during get started flow', error, 'EnhancedHome');
     }
   };
 
