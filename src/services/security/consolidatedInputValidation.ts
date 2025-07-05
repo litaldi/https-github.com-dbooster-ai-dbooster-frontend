@@ -46,7 +46,7 @@ export class ConsolidatedInputValidation {
     }
 
     // Detect potential SQL injection
-    if /(union|select|insert|update|delete|drop)\s+/i.test(input)) {
+    if (/(union|select|insert|update|delete|drop)\s+/i.test(input)) {
       errors.push('Potential SQL injection detected');
       riskLevel = 'critical';
     }
