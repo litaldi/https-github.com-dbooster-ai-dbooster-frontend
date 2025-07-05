@@ -40,3 +40,30 @@ export const memoize = <T extends (...args: any[]) => any>(func: T): T => {
     return result;
   }) as T;
 };
+
+export const optimizeImage = (
+  src: string,
+  width?: number,
+  height?: number,
+  format: 'webp' | 'avif' | 'jpeg' = 'webp'
+): string => {
+  // For now, return the original src since we don't have an image optimization service
+  // This could be extended to use services like Cloudinary, ImageKit, or custom optimization
+  return src;
+};
+
+export const createIntersectionObserver = (
+  callback: IntersectionObserverCallback,
+  options?: IntersectionObserverInit
+): IntersectionObserver | null => {
+  if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+    return null;
+  }
+
+  return new IntersectionObserver(callback, {
+    root: null,
+    rootMargin: '50px',
+    threshold: 0.1,
+    ...options,
+  });
+};
