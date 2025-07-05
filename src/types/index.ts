@@ -37,7 +37,7 @@ export interface ValidationResult {
 }
 
 export interface SecurityEvent {
-  eventType: string;
+  event_type: string;
   success: boolean;
   details?: Record<string, any>;
   timestamp?: string;

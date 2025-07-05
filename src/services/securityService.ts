@@ -9,7 +9,7 @@ import { rbac } from './security/roleBasedAccessControl';
 import { apiSecurity } from './security/apiSecurityEnhancement';
 import { securityDashboard } from './security/securityDashboardService';
 import { logger } from '@/utils/logger';
-import type { ValidationResult, SecurityEvent } from '@/types';
+import type { ValidationResult } from '@/types';
 
 // Re-export essential security services
 export { auditLogger } from './auditLogger';
@@ -29,6 +29,14 @@ interface RateLimitResult {
   resetTime: number;
   retryAfter?: number;
   remainingAttempts: number;
+}
+
+// Define SecurityEvent interface that matches auditLogger expectations
+interface AuditSecurityEvent {
+  event_type: string;
+  event_data?: Record<string, any>;
+  ip_address?: string;
+  user_agent?: string;
 }
 
 export class SecurityService {
@@ -143,7 +151,7 @@ export class SecurityService {
   }
 
   // Legacy compatibility methods - enhanced versions
-  async logSecurityEvent(event: SecurityEvent): Promise<void> {
+  async logSecurityEvent(event: AuditSecurityEvent): Promise<void> {
     return auditLogger.logSecurityEvent(event);
   }
 
