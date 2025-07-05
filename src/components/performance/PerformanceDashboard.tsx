@@ -17,13 +17,25 @@ interface PerformanceMetrics {
   tti?: number;
 }
 
+interface PerformanceData {
+  score: number;
+  metrics: PerformanceMetrics;
+  recommendations: string[];
+}
+
+interface BundleData {
+  totalSize: number;
+  recommendations: string[];
+  potentialSavings: number;
+}
+
 export function PerformanceDashboard() {
-  const [performanceData, setPerformanceData] = useState({
+  const [performanceData, setPerformanceData] = useState<PerformanceData>({
     score: 0,
-    metrics: {} as PerformanceMetrics,
+    metrics: {},
     recommendations: []
   });
-  const [bundleData, setBundleData] = useState({
+  const [bundleData, setBundleData] = useState<BundleData>({
     totalSize: 0,
     recommendations: [],
     potentialSavings: 0
@@ -161,7 +173,7 @@ export function PerformanceDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {Object.entries(performanceData.metrics).map(([key, value]) => (
+              {(Object.entries(performanceData.metrics) as Array<[keyof PerformanceMetrics, number | undefined]>).map(([key, value]) => (
                 <div key={key} className="flex items-center justify-between">
                   <span className="text-sm font-medium uppercase">{key}</span>
                   <div className="flex items-center gap-2">
