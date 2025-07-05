@@ -1,12 +1,19 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { productionLogger } from '@/utils/productionLogger';
+import { logger } from '@/utils/logger';
 import { auditLogger } from '@/services/auditLogger';
 import { rateLimitService } from './rateLimitService';
+import type { User } from '@/types';
 
 interface ConsolidatedAuthResult {
   success: boolean;
-  user?: any;
-  session?: any;
+  user?: User;
+  session?: {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+    user: User;
+  };
   error?: string;
   requiresVerification?: boolean;
 }
@@ -140,12 +147,12 @@ export class ConsolidatedAuthenticationSecurity {
 
       return {
         success: true,
-        user: data.user,
-        session: data.session,
+        user: data.user as User,
+        session: data.session as ConsolidatedAuthResult['session'],
         requiresVerification: !data.user?.email_confirmed_at
       };
     } catch (error) {
-      productionLogger.error('Login error', error, 'ConsolidatedAuthenticationSecurity');
+      logger.error('Login error', error, 'ConsolidatedAuthenticationSecurity');
       return {
         success: false,
         error: 'An unexpected error occurred during login'
@@ -210,12 +217,12 @@ export class ConsolidatedAuthenticationSecurity {
 
       return {
         success: true,
-        user: data.user,
-        session: data.session,
+        user: data.user as User,
+        session: data.session as ConsolidatedAuthResult['session'],
         requiresVerification: !data.session
       };
     } catch (error) {
-      productionLogger.error('Signup error', error, 'ConsolidatedAuthenticationSecurity');
+      logger.error('Signup error', error, 'ConsolidatedAuthenticationSecurity');
       return {
         success: false,
         error: 'An unexpected error occurred during signup'
@@ -234,7 +241,7 @@ export class ConsolidatedAuthenticationSecurity {
       // Basic session validation
       return hasSecureConnection && hasSessionData;
     } catch (error) {
-      console.error('Session security validation failed:', error);
+      logger.error('Session security validation failed', error, 'ConsolidatedAuthenticationSecurity');
       return false;
     }
   }

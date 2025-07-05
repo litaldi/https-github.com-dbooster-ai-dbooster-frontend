@@ -1,65 +1,79 @@
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogEntry {
   level: LogLevel;
   message: string;
-  data?: any;
+  data?: unknown;
   timestamp: string;
-  component?: string;
+  context?: string;
 }
 
 class Logger {
   private isDevelopment = import.meta.env.DEV;
+  private logs: LogEntry[] = [];
+  private maxLogs = 1000;
 
-  private formatMessage(level: LogLevel, message: string, data?: any, component?: string): LogEntry {
+  private createLogEntry(level: LogLevel, message: string, data?: unknown, context?: string): LogEntry {
     return {
       level,
       message,
       data,
+      context,
       timestamp: new Date().toISOString(),
-      component
     };
   }
 
-  error(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('error', message, data, component);
-    
-    // Always log errors, even in production
-    console.error(`[${entry.timestamp}] ERROR${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
-    
-    // In production, send to monitoring service
-    if (!this.isDevelopment) {
-      // Here you could send to external logging service
-      // this.sendToMonitoringService(entry);
+  private addLog(entry: LogEntry): void {
+    this.logs.push(entry);
+    if (this.logs.length > this.maxLogs) {
+      this.logs.shift();
     }
   }
 
-  warn(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('warn', message, data, component);
+  debug(message: string, data?: unknown, context?: string): void {
+    const entry = this.createLogEntry('debug', message, data, context);
+    this.addLog(entry);
     
-    // Only log warnings in development
     if (this.isDevelopment) {
-      console.warn(`[${entry.timestamp}] WARN${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
+      console.debug(`[DEBUG]${context ? ` [${context}]` : ''} ${message}`, data || '');
     }
   }
 
-  info(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('info', message, data, component);
+  info(message: string, data?: unknown, context?: string): void {
+    const entry = this.createLogEntry('info', message, data, context);
+    this.addLog(entry);
     
-    // Only log info in development
     if (this.isDevelopment) {
-      console.info(`[${entry.timestamp}] INFO${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
+      console.info(`[INFO]${context ? ` [${context}]` : ''} ${message}`, data || '');
     }
   }
 
-  debug(message: string, data?: any, component?: string) {
-    const entry = this.formatMessage('debug', message, data, component);
+  warn(message: string, data?: unknown, context?: string): void {
+    const entry = this.createLogEntry('warn', message, data, context);
+    this.addLog(entry);
     
-    // Only log debug in development
-    if (this.isDevelopment) {
-      console.debug(`[${entry.timestamp}] DEBUG${entry.component ? ` [${entry.component}]` : ''}: ${entry.message}`, entry.data);
-    }
+    console.warn(`[WARN]${context ? ` [${context}]` : ''} ${message}`, data || '');
+  }
+
+  error(message: string, error?: unknown, context?: string): void {
+    const entry = this.createLogEntry('error', message, error, context);
+    this.addLog(entry);
+    
+    console.error(`[ERROR]${context ? ` [${context}]` : ''} ${message}`, error || '');
+  }
+
+  getLogs(level?: LogLevel): LogEntry[] {
+    if (!level) return [...this.logs];
+    return this.logs.filter(log => log.level === level);
+  }
+
+  clearLogs(): void {
+    this.logs = [];
+  }
+
+  exportLogs(): string {
+    return JSON.stringify(this.logs, null, 2);
   }
 }
 

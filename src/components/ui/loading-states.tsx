@@ -1,112 +1,100 @@
 
-import { cn } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
+import { Skeleton } from "./skeleton";
+import { Card, CardContent, CardHeader } from "./card";
 
-interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
-export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
-  const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8'
-  };
-
+export function LoadingCard() {
   return (
-    <Loader2 className={cn('animate-spin', sizeClasses[size], className)} />
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-4 w-[200px]" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-3/4" />
+      </CardContent>
+    </Card>
   );
 }
 
-interface SkeletonProps {
-  className?: string;
-  children?: React.ReactNode;
-}
-
-export function Skeleton({ className, children }: SkeletonProps) {
+export function LoadingDashboard() {
   return (
-    <div className={cn('animate-pulse rounded-md bg-muted', className)}>
-      {children}
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Skeleton className="h-4 w-[100px]" />
+              <Skeleton className="h-4 w-4" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-7 w-[120px] mb-1" />
+              <Skeleton className="h-3 w-[80px]" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <Skeleton className="h-5 w-[200px]" />
+          </CardHeader>
+          <CardContent className="pl-2">
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+        
+        <Card className="col-span-3">
+          <CardHeader>
+            <Skeleton className="h-5 w-[150px]" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[160px]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
 
-interface SkeletonTextProps {
-  lines?: number;
-  className?: string;
-}
-
-export function SkeletonText({ lines = 3, className }: SkeletonTextProps) {
+export function LoadingTable() {
   return (
-    <div className={cn('space-y-2', className)}>
-      {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton 
-          key={i} 
-          className={cn(
-            'h-4',
-            i === lines - 1 ? 'w-3/4' : 'w-full'
-          )} 
-        />
+    <div className="space-y-3">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-[100px]" />
+          <Skeleton className="h-4 w-[200px]" />
+          <Skeleton className="h-4 w-[80px]" />
+          <div className="ml-auto">
+            <Skeleton className="h-8 w-[80px]" />
+          </div>
+        </div>
       ))}
     </div>
   );
 }
 
-interface PageLoadingProps {
-  message?: string;
-  submessage?: string;
-}
+export function LoadingSpinner({ size = "default" }: { size?: "sm" | "default" | "lg" }) {
+  const sizeClasses = {
+    sm: "h-4 w-4",
+    default: "h-6 w-6", 
+    lg: "h-8 w-8"
+  };
 
-export function PageLoading({ message = 'Loading your workspace...', submessage }: PageLoadingProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center space-y-4 max-w-md text-center">
-        <LoadingSpinner size="lg" />
-        <div className="space-y-2">
-          <p className="text-lg font-medium">{message}</p>
-          {submessage && (
-            <p className="text-sm text-muted-foreground">{submessage}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface ButtonLoadingProps {
-  isLoading: boolean;
-  children: React.ReactNode;
-  loadingText?: string;
-}
-
-export function ButtonLoading({ isLoading, children, loadingText }: ButtonLoadingProps) {
-  if (isLoading) {
-    return (
-      <>
-        <LoadingSpinner size="sm" className="mr-2" />
-        {loadingText || children}
-      </>
-    );
-  }
-  return <>{children}</>;
-}
-
-interface CardSkeletonProps {
-  showImage?: boolean;
-  className?: string;
-}
-
-export function CardSkeleton({ showImage = false, className }: CardSkeletonProps) {
-  return (
-    <div className={cn('p-6 space-y-4', className)}>
-      {showImage && <Skeleton className="h-48 w-full" />}
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-      </div>
-      <SkeletonText lines={2} />
-      <Skeleton className="h-10 w-24" />
-    </div>
+    <div className={cn("animate-spin rounded-full border-2 border-primary border-t-transparent", sizeClasses[size])} />
   );
 }

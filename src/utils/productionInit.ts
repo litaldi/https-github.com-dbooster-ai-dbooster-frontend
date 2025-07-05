@@ -1,4 +1,5 @@
-import { productionLogger } from './productionLogger';
+
+import { logger } from './logger';
 import { ProductionSecurityManager } from './productionSecurity';
 import { performanceMonitor } from './performanceMonitor';
 import { securityInitializer } from './securityInitializer';
@@ -16,12 +17,12 @@ class ProductionInitializer {
 
   async initialize(): Promise<void> {
     if (!import.meta.env.PROD) {
-      productionLogger.info('Development mode detected, skipping production initialization', {}, 'ProductionInit');
+      logger.info('Development mode detected, skipping production initialization', {}, 'ProductionInit');
       return;
     }
 
     try {
-      productionLogger.info('Starting production initialization', {
+      logger.info('Starting production initialization', {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
         url: window.location.href
@@ -46,11 +47,10 @@ class ProductionInitializer {
       // Initialize security monitoring
       this.initializeSecurityMonitoring();
 
-      productionLogger.info('Production initialization completed successfully', {}, 'ProductionInit');
+      logger.info('Production initialization completed successfully', {}, 'ProductionInit');
     } catch (error) {
-      productionLogger.error('Critical error during production initialization', error, 'ProductionInit');
+      logger.error('Critical error during production initialization', error, 'ProductionInit');
       // In production, we continue despite errors to avoid breaking the app completely
-      console.error('Production initialization failed:', error);
     }
   }
 
@@ -106,7 +106,7 @@ class ProductionInitializer {
         }
       };
     } catch (error) {
-      console.error('Health check failed:', error);
+      logger.error('Health check failed', error, 'ProductionInit');
       return {
         security: false,
         performance: false,
@@ -147,9 +147,9 @@ class ProductionInitializer {
       );
 
       if (isSecurityRelated) {
-        productionLogger.error('Security-related error detected', safeError, 'SecurityError');
+        logger.error('Security-related error detected', safeError, 'SecurityError');
       } else {
-        productionLogger.error('Application error', safeError, 'ApplicationError');
+        logger.error('Application error', safeError, 'ApplicationError');
       }
     });
 
@@ -160,7 +160,7 @@ class ProductionInitializer {
         timestamp: new Date().toISOString()
       };
 
-      productionLogger.error('Unhandled promise rejection', safeError, 'PromiseRejection');
+      logger.error('Unhandled promise rejection', safeError, 'PromiseRejection');
     });
   }
 
@@ -173,19 +173,19 @@ class ProductionInitializer {
     // Monitor for page visibility changes (potential security concern)
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        productionLogger.info('Page hidden - user may have switched tabs', {}, 'SecurityMonitor');
+        logger.info('Page hidden - user may have switched tabs', {}, 'SecurityMonitor');
       } else {
-        productionLogger.info('Page visible - user returned to tab', {}, 'SecurityMonitor');
+        logger.info('Page visible - user returned to tab', {}, 'SecurityMonitor');
       }
     });
 
     // Monitor for focus changes (security-relevant for session management)
     window.addEventListener('focus', () => {
-      productionLogger.info('Window gained focus', {}, 'SecurityMonitor');
+      logger.info('Window gained focus', {}, 'SecurityMonitor');
     });
 
     window.addEventListener('blur', () => {
-      productionLogger.info('Window lost focus', {}, 'SecurityMonitor');
+      logger.info('Window lost focus', {}, 'SecurityMonitor');
     });
   }
 }

@@ -8,6 +8,8 @@ import { enhancedThreatDetection } from './security/threatDetectionEnhanced';
 import { rbac } from './security/roleBasedAccessControl';
 import { apiSecurity } from './security/apiSecurityEnhancement';
 import { securityDashboard } from './security/securityDashboardService';
+import { logger } from '@/utils/logger';
+import type { ValidationResult, RateLimitResult } from '@/types';
 
 // Re-export essential security services
 export { auditLogger } from './auditLogger';
@@ -20,7 +22,6 @@ export { rbac } from './security/roleBasedAccessControl';
 export { apiSecurity } from './security/apiSecurityEnhancement';
 export { securityDashboard } from './security/securityDashboardService';
 
-// Enhanced SecurityService with all new features
 export class SecurityService {
   private static instance: SecurityService;
 
@@ -32,33 +33,25 @@ export class SecurityService {
   }
 
   // Enhanced input validation with threat detection
-  async validateUserInput(input: any, context: string): Promise<{ 
+  async validateUserInput(input: string, context: string): Promise<{ 
     valid: boolean; 
     errors?: string[]; 
     riskLevel?: string;
-    threats?: any[];
+    threats?: unknown[];
   }> {
     const validationResult = consolidatedInputValidation.validateAndSanitize(input, context);
     
     // Enhanced threat detection for string inputs
-    if (typeof input === 'string') {
-      const threatResult = await enhancedThreatDetection.detectThreats(input, {
-        inputType: context,
-        userAgent: navigator.userAgent
-      });
-      
-      return {
-        valid: validationResult.isValid && !threatResult.shouldBlock,
-        errors: validationResult.errors,
-        riskLevel: validationResult.riskLevel,
-        threats: threatResult.threats
-      };
-    }
-
+    const threatResult = await enhancedThreatDetection.detectThreats(input, {
+      inputType: context,
+      userAgent: navigator.userAgent
+    });
+    
     return {
-      valid: validationResult.isValid,
+      valid: validationResult.isValid && !threatResult.shouldBlock,
       errors: validationResult.errors,
-      riskLevel: validationResult.riskLevel
+      riskLevel: validationResult.riskLevel,
+      threats: threatResult.threats
     };
   }
 
@@ -85,7 +78,7 @@ export class SecurityService {
   // Enhanced session security validation
   async validateSessionSecurity(userId?: string): Promise<{
     valid: boolean;
-    riskAssessment?: any;
+    riskAssessment?: unknown;
   }> {
     const sessionValid = await consolidatedAuthenticationSecurity.validateSessionSecurity();
     
@@ -128,21 +121,21 @@ export class SecurityService {
   }
 
   // Get security dashboard data
-  async getSecurityDashboard(userId: string) {
+  async getSecurityDashboard(userId: string): Promise<unknown> {
     return securityDashboard.getSecuritySummary(userId);
   }
 
   // Get user security status
-  async getUserSecurityStatus(currentUserId: string, targetUserId: string) {
+  async getUserSecurityStatus(currentUserId: string, targetUserId: string): Promise<unknown> {
     return securityDashboard.getUserSecurityStatus(currentUserId, targetUserId);
   }
 
   // Legacy compatibility methods - enhanced versions
-  async logSecurityEvent(event: any): Promise<void> {
+  async logSecurityEvent(event: unknown): Promise<void> {
     return auditLogger.logSecurityEvent(event);
   }
 
-  async checkRateLimit(identifier: string, actionType: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+  async checkRateLimit(identifier: string, actionType: string): Promise<RateLimitResult> {
     return rateLimitService.checkRateLimit(identifier, actionType);
   }
 
@@ -151,7 +144,7 @@ export class SecurityService {
     return result.sanitizedValue || input;
   }
 
-  async logAuthEvent(eventType: string, success: boolean, details?: Record<string, any>): Promise<void> {
+  async logAuthEvent(eventType: string, success: boolean, details?: Record<string, unknown>): Promise<void> {
     return auditLogger.logAuthEvent(eventType, success, details);
   }
 
@@ -170,12 +163,12 @@ export class SecurityService {
 
   // Check user permissions
   async checkPermission(userId: string, permission: string): Promise<boolean> {
-    return rbac.hasPermission(userId, permission as any);
+    return rbac.hasPermission(userId, permission as keyof import('./security/roleBasedAccessControl').RolePermissions);
   }
 
   // Require specific permission (throws if not allowed)
   async requirePermission(userId: string, permission: string): Promise<void> {
-    return rbac.requirePermission(userId, permission as any);
+    return rbac.requirePermission(userId, permission as keyof import('./security/roleBasedAccessControl').RolePermissions);
   }
 }
 

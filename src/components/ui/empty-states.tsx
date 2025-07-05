@@ -1,139 +1,105 @@
-import { Card, CardContent } from './card';
-import { EnhancedButton } from './enhanced-button';
-import { Database, Zap, BarChart, Users, Plus, Search, FileText } from 'lucide-react';
-import { FadeIn } from './animations';
+
+import { Button } from "./button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./card";
+import { Database, FileText, Search, Users, AlertCircle } from "lucide-react";
 
 interface EmptyStateProps {
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: React.ReactNode;
   title: string;
   description: string;
   action?: {
     label: string;
     onClick: () => void;
   };
-  secondaryAction?: {
-    label: string;
-    onClick: () => void;
-  };
-  className?: string;
 }
 
-export function EmptyState({ 
-  icon: Icon = Database, 
-  title, 
-  description, 
-  action, 
-  secondaryAction,
-  className 
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <FadeIn>
-      <Card className={`border-dashed border-2 ${className}`}>
-        <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-            <Icon className="h-8 w-8 text-muted-foreground" />
-          </div>
-          
-          <h3 className="text-xl font-semibold mb-2">{title}</h3>
-          <p className="text-muted-foreground mb-6 max-w-md leading-relaxed">{description}</p>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            {action && (
-              <EnhancedButton onClick={action.onClick} size="lg">
-                {action.label}
-              </EnhancedButton>
-            )}
-            {secondaryAction && (
-              <EnhancedButton 
-                variant="outline" 
-                onClick={secondaryAction.onClick}
-                size="lg"
-              >
-                {secondaryAction.label}
-              </EnhancedButton>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </FadeIn>
+    <Card className="flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
+      <CardContent className="space-y-4">
+        <div className="mx-auto w-12 h-12 text-muted-foreground">
+          {icon}
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold">{title}</h3>
+          <p className="text-muted-foreground text-sm max-w-[400px]">{description}</p>
+        </div>
+        {action && (
+          <Button onClick={action.onClick} className="mt-4">
+            {action.label}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-// Predefined empty states for common scenarios
-export function DatabaseEmptyState({ onConnect }: { onConnect: () => void }) {
+export function NoQueriesFound({ onCreateQuery }: { onCreateQuery: () => void }) {
   return (
     <EmptyState
-      icon={Database}
-      title="No Databases Connected"
-      description="Connect your first database to start optimizing query performance and monitoring database health."
+      icon={<Search className="w-full h-full" />}
+      title="No queries found"
+      description="You haven't created any database queries yet. Create your first query to get started with optimization."
       action={{
-        label: "Connect Database",
-        onClick: onConnect
-      }}
-      secondaryAction={{
-        label: "View Documentation",
-        onClick: () => window.open('/docs/database-connection', '_blank')
+        label: "Create Query",
+        onClick: onCreateQuery
       }}
     />
   );
 }
 
-export function QueriesEmptyState({ onAnalyze }: { onAnalyze: () => void }) {
+export function NoRepositoriesFound({ onConnectRepo }: { onConnectRepo: () => void }) {
   return (
     <EmptyState
-      icon={Zap}
-      title="No Queries Analyzed Yet"
-      description="Upload your SQL queries or connect a database to get AI-powered optimization recommendations."
+      icon={<Database className="w-full h-full" />}
+      title="No repositories connected"
+      description="Connect your first repository to start analyzing and optimizing your database queries."
       action={{
-        label: "Analyze Queries",
-        onClick: onAnalyze
-      }}
-      secondaryAction={{
-        label: "Upload SQL File",
-        onClick: () => document.getElementById('sql-upload')?.click()
+        label: "Connect Repository",
+        onClick: onConnectRepo
       }}
     />
   );
 }
 
-export function ReportsEmptyState({ onGenerate }: { onGenerate: () => void }) {
+export function NoReportsFound() {
   return (
     <EmptyState
-      icon={BarChart}
-      title="No Performance Reports"
-      description="Generate your first performance report to track query optimization progress and database health metrics."
-      action={{
-        label: "Generate Report",
-        onClick: onGenerate
-      }}
+      icon={<FileText className="w-full h-full" />}
+      title="No reports available"
+      description="Reports will appear here once you start running query optimizations and performance analyses."
     />
   );
 }
 
-export function TeamsEmptyState({ onInvite }: { onInvite: () => void }) {
+export function NoUsersFound() {
   return (
     <EmptyState
-      icon={Users}
-      title="Build Your Team"
-      description="Invite team members to collaborate on database optimization and share performance insights."
-      action={{
-        label: "Invite Team Members",
-        onClick: onInvite
-      }}
+      icon={<Users className="w-full h-full" />}
+      title="No users found"
+      description="No users match your current search criteria. Try adjusting your filters."
     />
   );
 }
 
-export function SearchEmptyState({ searchTerm }: { searchTerm: string }) {
+export function ErrorState({ 
+  title = "Something went wrong",
+  description = "We encountered an error while loading this content. Please try again.",
+  onRetry
+}: {
+  title?: string;
+  description?: string;
+  onRetry?: () => void;
+}) {
   return (
     <EmptyState
-      icon={Search}
-      title="No Results Found"
-      description={`We couldn't find anything matching "${searchTerm}". Try adjusting your search terms or filters.`}
-      action={{
-        label: "Clear Search",
-        onClick: () => window.location.reload()
-      }}
+      icon={<AlertCircle className="w-full h-full text-destructive" />}
+      title={title}
+      description={description}
+      action={onRetry ? {
+        label: "Try Again",
+        onClick: onRetry
+      } : undefined}
     />
   );
 }
