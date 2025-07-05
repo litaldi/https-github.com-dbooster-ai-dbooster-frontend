@@ -56,18 +56,26 @@ export const authenticatedNavItems: NavigationItem[] = [
 ];
 
 export const userMenuItems: NavigationItem[] = [
-  { href: '/app/account', label: 'Profile Settings', icon: User, description: 'Manage your account preferences' },
-  { href: '/app/settings', label: 'App Settings', icon: Settings, description: 'Configure DBooster settings' },
+  { href: '/account', label: 'Profile Settings', icon: User, description: 'Manage your account preferences' },
+  { href: '/settings', label: 'App Settings', icon: Settings, description: 'Configure DBooster settings' },
 ];
 
 export const companyMenuItems: NavigationItem[] = [
   { href: '/about', label: 'About DBooster', icon: Briefcase, description: 'Learn about our mission and team' },
   { href: '/contact', label: 'Contact Support', icon: Mail, description: 'Get help from our support team' },
   { href: '/support', label: 'Help Center', icon: HelpCircle, description: 'Documentation and support resources' },
+  { href: '/status', label: 'System Status', icon: Activity, description: 'Real-time service status and uptime' },
 ];
 
 export const legalMenuItems: NavigationItem[] = [
   { href: '/privacy', label: 'Privacy Policy', icon: Shield, description: 'How we protect your data' },
   { href: '/terms', label: 'Terms of Service', icon: FileCheck, description: 'Legal terms and conditions' },
   { href: '/accessibility', label: 'Accessibility', icon: Globe, description: 'Our commitment to accessibility' },
+];
+
+export const resourceMenuItems: NavigationItem[] = [
+  { href: '/docs', label: 'Documentation', icon: BookOpen, description: 'Complete guides and API reference' },
+  { href: '/components', label: 'Component Library', icon: Briefcase, description: 'UI component showcase' },
+  { href: '/faq', label: 'FAQ', icon: HelpCircle, description: 'Frequently asked questions' },
+  { href: '/releases', label: 'Release Notes', icon: FileText, description: 'Latest updates and changelog' },
 ];
