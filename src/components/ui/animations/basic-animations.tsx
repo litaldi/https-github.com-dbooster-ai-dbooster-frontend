@@ -9,12 +9,36 @@ export interface AnimationProps {
   className?: string;
 }
 
+const easeOutQuart = [0.25, 1, 0.5, 1];
+const easeOutExpo = [0.16, 1, 0.3, 1];
+
 export function FadeIn({ children, delay = 0, duration = 0.5, className }: AnimationProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration, delay }}
+      transition={{ 
+        duration, 
+        delay, 
+        ease: easeOutQuart
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function FadeInUp({ children, delay = 0, duration = 0.6, className }: AnimationProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        duration, 
+        delay, 
+        ease: easeOutExpo
+      }}
       className={className}
     >
       {children}
@@ -25,9 +49,13 @@ export function FadeIn({ children, delay = 0, duration = 0.5, className }: Anima
 export function ScaleIn({ children, delay = 0, duration = 0.3, className }: AnimationProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration, delay }}
+      transition={{ 
+        duration, 
+        delay, 
+        ease: easeOutQuart
+      }}
       className={className}
     >
       {children}
@@ -35,13 +63,19 @@ export function ScaleIn({ children, delay = 0, duration = 0.3, className }: Anim
   );
 }
 
-export function SlideIn({ children, delay = 0, duration = 0.4, className, direction = 'left' }: AnimationProps & { direction?: 'left' | 'right' | 'up' | 'down' }) {
+export function SlideIn({ 
+  children, 
+  delay = 0, 
+  duration = 0.4, 
+  className, 
+  direction = 'left' 
+}: AnimationProps & { direction?: 'left' | 'right' | 'up' | 'down' }) {
   const getInitialPosition = () => {
     switch (direction) {
-      case 'right': return { x: 100 };
-      case 'up': return { y: -100 };
-      case 'down': return { y: 100 };
-      default: return { x: -100 };
+      case 'right': return { x: 30 };
+      case 'up': return { y: -30 };
+      case 'down': return { y: 30 };
+      default: return { x: -30 };
     }
   };
 
@@ -49,7 +83,45 @@ export function SlideIn({ children, delay = 0, duration = 0.4, className, direct
     <motion.div
       initial={{ opacity: 0, ...getInitialPosition() }}
       animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ duration, delay }}
+      transition={{ 
+        duration, 
+        delay, 
+        ease: easeOutQuart
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function RotateIn({ children, delay = 0, duration = 0.5, className }: AnimationProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, rotate: -10, scale: 0.95 }}
+      animate={{ opacity: 1, rotate: 0, scale: 1 }}
+      transition={{ 
+        duration, 
+        delay, 
+        ease: easeOutExpo
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function BlurIn({ children, delay = 0, duration = 0.6, className }: AnimationProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, filter: 'blur(0px)' }}
+      transition={{ 
+        duration, 
+        delay, 
+        ease: easeOutQuart
+      }}
       className={className}
     >
       {children}

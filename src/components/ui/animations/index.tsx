@@ -1,16 +1,31 @@
 
 // Basic animations
-export { FadeIn, ScaleIn, SlideIn } from './basic-animations';
+export { 
+  FadeIn, 
+  FadeInUp, 
+  ScaleIn, 
+  SlideIn, 
+  RotateIn, 
+  BlurIn 
+} from './basic-animations';
 
 // Interactive animations  
-export { HoverScale, FloatingElement, Pulse } from './interactive-animations';
+export { 
+  HoverScale, 
+  FloatingElement, 
+  Pulse, 
+  SlideInOut,
+  GestureInteractive 
+} from './interactive-animations';
 
 // Stagger animations
 export { 
-  StaggerChildren, 
-  StaggerChild, 
+  StaggerContainer as StaggerChildren, 
+  StaggerItem as StaggerChild, 
   StaggerContainer, 
-  StaggerItem 
+  StaggerItem,
+  FastStaggerContainer,
+  FastStaggerItem
 } from './stagger-animations';
 
 // Re-export from micro-interactions for convenience
