@@ -37,7 +37,7 @@ export function Section({
   const animationProps = animated ? {
     initial: { opacity: 0, y: 20 },
     whileInView: { opacity: 1, y: 0 },
-    transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.6, ease: "easeOut" },
     viewport: { once: true, margin: "-50px" }
   } : {};
 
@@ -153,7 +153,7 @@ export function Heading({
   const animationProps = animated ? {
     initial: { opacity: 0, y: 20 },
     whileInView: { opacity: 1, y: 0 },
-    transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.6, ease: "easeOut" },
     viewport: { once: true }
   } : {};
 
@@ -228,7 +228,7 @@ export function Text({
   const animationProps = animated ? {
     initial: { opacity: 0, y: 10 },
     whileInView: { opacity: 1, y: 0 },
-    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.5, ease: "easeOut" },
     viewport: { once: true }
   } : {};
 
