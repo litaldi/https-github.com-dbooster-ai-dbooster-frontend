@@ -28,7 +28,10 @@ export class UnifiedSecurityService {
   }
 
   async secureSignup(email: string, password: string, userData: { fullName: string; acceptedTerms: boolean }) {
-    return consolidatedAuthenticationSecurity.secureSignup(email, password, userData.fullName);
+    return consolidatedAuthenticationSecurity.secureSignup(email, password, { 
+      fullName: userData.fullName, 
+      acceptedTerms: userData.acceptedTerms 
+    });
   }
 
   initializeSecurityHeaders() {
