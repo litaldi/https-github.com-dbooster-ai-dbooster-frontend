@@ -1,11 +1,11 @@
 
 import { Outlet } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/app-sidebar';
+import { EnhancedDashboardSidebar } from '@/components/navigation/EnhancedDashboardSidebar';
 import { Header } from '@/components/header';
 import { DemoWalkthrough } from '@/components/demo-walkthrough';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
-import { Footer } from '@/components/navigation/Footer';
+import { EnhancedFooter } from '@/components/navigation/EnhancedFooter';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import { SkipLink } from '@/components/ui/accessibility-helpers';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
@@ -19,10 +19,10 @@ export default function Layout() {
     <EnhancedErrorBoundary>
       <NotificationProvider>
         <TourProvider>
-          <SidebarProvider>
+          <SidebarProvider collapsedWidth={64}>
             <div className="min-h-screen flex w-full bg-background">
               <SkipLink href="#main-content">Skip to main content</SkipLink>
-              <AppSidebar />
+              <EnhancedDashboardSidebar />
               <div className="flex-1 flex flex-col min-w-0 bg-background">
                 <Header />
                 <main id="main-content" className="flex-1 p-4 md:p-6 overflow-auto bg-background" role="main">
@@ -33,7 +33,7 @@ export default function Layout() {
                     </EnhancedErrorBoundary>
                   </div>
                 </main>
-                <Footer />
+                <EnhancedFooter />
               </div>
               <ScrollToTop />
             </div>
