@@ -37,9 +37,9 @@ export class UnifiedSecurityService {
 
   logSecurityEvent(event: string, success: boolean, metadata?: Record<string, any>) {
     if (success) {
-      productionLogger.secureInfo(`Security event: ${event}`, metadata, 'UnifiedSecurity');
+      productionLogger.secureInfo(`Security event: ${event}`, metadata);
     } else {
-      productionLogger.warn(`Security event failed: ${event}`, metadata, 'UnifiedSecurity');
+      productionLogger.warn(`Security event failed: ${event}`, metadata);
     }
   }
 }

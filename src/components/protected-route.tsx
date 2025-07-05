@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, session, isLoading } = useAuth();
+  const { user, session, loading } = useAuth();
   const { validateSession } = useConsolidatedSecurity();
   const location = useLocation();
 
@@ -20,7 +20,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [user, session, validateSession]);
 
-  if (isLoading) {
+  if (loading) {
     return <PageLoading message="Checking authentication..." />;
   }
 

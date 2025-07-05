@@ -9,7 +9,7 @@ import { TestTube, Loader2, Sparkles, ArrowRight, Database, Zap } from 'lucide-r
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export function DemoModeButton() {
-  const { loginDemo, isLoading } = useAuth();
+  const { loginDemo, loading } = useAuth();
   const navigate = useNavigate();
   const [isDemoLoading, setIsDemoLoading] = useState(false);
 
@@ -67,7 +67,7 @@ export function DemoModeButton() {
         
         <Button
           onClick={handleDemoLogin}
-          disabled={isLoading || isDemoLoading}
+          disabled={loading || isDemoLoading}
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 h-auto"
           aria-label="Start demo experience with sample data and full features"
         >
