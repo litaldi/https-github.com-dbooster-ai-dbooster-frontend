@@ -9,7 +9,7 @@ import { rbac } from './security/roleBasedAccessControl';
 import { apiSecurity } from './security/apiSecurityEnhancement';
 import { securityDashboard } from './security/securityDashboardService';
 import { logger } from '@/utils/logger';
-import type { ValidationResult, RateLimitResult, SecurityEvent } from '@/types';
+import type { ValidationResult, SecurityEvent } from '@/types';
 
 // Re-export essential security services
 export { auditLogger } from './auditLogger';
@@ -21,6 +21,15 @@ export { enhancedThreatDetection } from './security/threatDetectionEnhanced';
 export { rbac } from './security/roleBasedAccessControl';
 export { apiSecurity } from './security/apiSecurityEnhancement';
 export { securityDashboard } from './security/securityDashboardService';
+
+// Define RateLimitResult interface
+interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  resetTime: number;
+  retryAfter?: number;
+  remainingAttempts: number;
+}
 
 export class SecurityService {
   private static instance: SecurityService;
@@ -40,7 +49,7 @@ export class SecurityService {
     valid: boolean; 
     errors?: string[]; 
     riskLevel?: string;
-    threats?: unknown[];
+    threatTypes?: string[];
   }> {
     const validationResult = consolidatedInputValidation.validateAndSanitize(input, context);
     
@@ -54,7 +63,7 @@ export class SecurityService {
       valid: validationResult.isValid && !threatResult.shouldBlock,
       errors: validationResult.errors,
       riskLevel: validationResult.riskLevel,
-      threats: threatResult.threats
+      threatTypes: threatResult.threatTypes
     };
   }
 
@@ -81,7 +90,7 @@ export class SecurityService {
   // Enhanced session security validation
   async validateSessionSecurity(userId?: string): Promise<{
     valid: boolean;
-    riskAssessment?: unknown;
+    riskAssessment?: any;
   }> {
     const sessionValid = await consolidatedAuthenticationSecurity.validateSessionSecurity();
     
@@ -124,12 +133,12 @@ export class SecurityService {
   }
 
   // Get security dashboard data
-  async getSecurityDashboard(userId: string): Promise<unknown> {
+  async getSecurityDashboard(userId: string): Promise<any> {
     return securityDashboard.getSecuritySummary(userId);
   }
 
   // Get user security status
-  async getUserSecurityStatus(currentUserId: string, targetUserId: string): Promise<unknown> {
+  async getUserSecurityStatus(currentUserId: string, targetUserId: string): Promise<any> {
     return securityDashboard.getUserSecurityStatus(currentUserId, targetUserId);
   }
 
@@ -139,7 +148,14 @@ export class SecurityService {
   }
 
   async checkRateLimit(identifier: string, actionType: string): Promise<RateLimitResult> {
-    return rateLimitService.checkRateLimit(identifier, actionType);
+    const result = await rateLimitService.checkRateLimit(identifier, actionType);
+    return {
+      allowed: result.allowed,
+      remaining: result.remaining,
+      resetTime: result.resetTime,
+      retryAfter: result.retryAfter,
+      remainingAttempts: result.remaining // Map remaining to remainingAttempts
+    };
   }
 
   sanitizeInput(input: string, context: string = 'general'): string {
@@ -147,7 +163,7 @@ export class SecurityService {
     return result.sanitizedValue || input;
   }
 
-  async logAuthEvent(eventType: string, success: boolean, details?: Record<string, unknown>): Promise<void> {
+  async logAuthEvent(eventType: string, success: boolean, details?: Record<string, any>): Promise<void> {
     return auditLogger.logAuthEvent(eventType, success, details);
   }
 

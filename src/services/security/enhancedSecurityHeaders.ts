@@ -98,7 +98,7 @@ export class EnhancedSecurityHeaders {
     });
   }
 
-  validateSecureUrl(url: string): { isValid: boolean; reason?: string } {
+  validateSecureUrl(url: string): { isValid: boolean; reason?: string; sanitizedUrl?: string } {
     try {
       const urlObj = new URL(url);
       
@@ -113,7 +113,7 @@ export class EnhancedSecurityHeaders {
         return { isValid: false, reason: 'Potentially unsafe shortened URL' };
       }
 
-      return { isValid: true };
+      return { isValid: true, sanitizedUrl: url };
     } catch {
       return { isValid: false, reason: 'Invalid URL format' };
     }

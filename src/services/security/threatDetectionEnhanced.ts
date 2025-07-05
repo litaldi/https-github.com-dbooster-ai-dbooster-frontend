@@ -1,13 +1,16 @@
+
 import { productionLogger } from '@/utils/productionLogger';
 
 interface ThreatEvent {
   id: string;
-  timestamp: number;
-  threatType: string;
+  timestamp: Date;
+  eventType: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   input: string;
   context: Record<string, any>;
   blocked: boolean;
+  userId?: string;
+  details: Record<string, any>;
 }
 
 export class EnhancedThreatDetection {
@@ -91,12 +94,14 @@ export class EnhancedThreatDetection {
     if (threatDetected) {
       this.logThreatEvent({
         id: this.generateThreatId(),
-        timestamp: Date.now(),
-        threatType: threatTypes.join(', '),
+        timestamp: new Date(),
+        eventType: 'threat_detected',
         severity: maxSeverity,
         input: input.substring(0, 200), // Limit logged input length
         context,
-        blocked: shouldBlock
+        blocked: shouldBlock,
+        userId: context.userId,
+        details: { pattern: threatTypes.join(', ') }
       });
     }
 
@@ -105,6 +110,64 @@ export class EnhancedThreatDetection {
       severity: maxSeverity,
       threatTypes,
       shouldBlock
+    };
+  }
+
+  getRecentEvents(limit: number = 100): ThreatEvent[] {
+    return this.threatEvents
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+  }
+
+  async analyzeBehaviorPatterns(userId: string): Promise<{
+    riskScore: number;
+    recommendation: string;
+    patterns: string[];
+  }> {
+    const userEvents = this.threatEvents.filter(event => event.userId === userId);
+    const recentEvents = userEvents.filter(event => 
+      Date.now() - event.timestamp.getTime() < 24 * 60 * 60 * 1000 // Last 24 hours
+    );
+
+    let riskScore = 0;
+    const patterns: string[] = [];
+
+    // Calculate risk based on recent threat events
+    const criticalThreats = recentEvents.filter(e => e.severity === 'critical').length;
+    const highThreats = recentEvents.filter(e => e.severity === 'high').length;
+    const totalThreats = recentEvents.length;
+
+    riskScore += criticalThreats * 40;
+    riskScore += highThreats * 20;
+    riskScore += totalThreats * 5;
+
+    // Pattern analysis
+    if (criticalThreats > 0) {
+      patterns.push('Critical security threats detected');
+    }
+    if (totalThreats > 10) {
+      patterns.push('High frequency of security events');
+    }
+    if (recentEvents.some(e => e.eventType === 'suspicious_activity')) {
+      patterns.push('Suspicious activity patterns');
+    }
+
+    // Cap risk score at 100
+    riskScore = Math.min(100, riskScore);
+
+    let recommendation = 'Normal user activity';
+    if (riskScore >= 80) {
+      recommendation = 'Immediate attention required - consider blocking user';
+    } else if (riskScore >= 60) {
+      recommendation = 'High risk - implement additional monitoring';
+    } else if (riskScore >= 30) {
+      recommendation = 'Moderate risk - monitor user activity';
+    }
+
+    return {
+      riskScore,
+      recommendation,
+      patterns
     };
   }
 
@@ -175,7 +238,7 @@ export class EnhancedThreatDetection {
 
     productionLogger.warn('Threat detected', {
       threatId: event.id,
-      threatType: event.threatType,
+      threatType: event.eventType,
       severity: event.severity,
       blocked: event.blocked
     }, 'ThreatDetection');
@@ -187,7 +250,7 @@ export class EnhancedThreatDetection {
 
   cleanupOldEvents(maxAgeHours: number = 24): void {
     const cutoff = Date.now() - (maxAgeHours * 60 * 60 * 1000);
-    this.threatEvents = this.threatEvents.filter(event => event.timestamp > cutoff);
+    this.threatEvents = this.threatEvents.filter(event => event.timestamp.getTime() > cutoff);
   }
 
   getThreatStatistics(): {
@@ -201,7 +264,7 @@ export class EnhancedThreatDetection {
 
     this.threatEvents.forEach(event => {
       severityBreakdown[event.severity] = (severityBreakdown[event.severity] || 0) + 1;
-      threatTypeCounts[event.threatType] = (threatTypeCounts[event.threatType] || 0) + 1;
+      threatTypeCounts[event.eventType] = (threatTypeCounts[event.eventType] || 0) + 1;
     });
 
     const topThreatTypes = Object.entries(threatTypeCounts)
