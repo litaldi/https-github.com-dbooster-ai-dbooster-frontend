@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useAccessibility } from '@/hooks/useAccessibility';
 import { useFocusManagement } from '@/hooks/useFocusManagement';
-import { accessibility } from 'lucide-react';
+import { Accessibility } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function AccessibilityFloatingButton() {
@@ -34,7 +33,7 @@ export function AccessibilityFloatingButton() {
         aria-label="Open accessibility settings"
         size="sm"
       >
-        <accessibility className="h-5 w-5" />
+        <Accessibility className="h-5 w-5" />
       </Button>
 
       <AnimatePresence>
@@ -47,7 +46,7 @@ export function AccessibilityFloatingButton() {
             onClick={() => setIsOpen(false)}
           >
             <motion.div
-              ref={containerRef}
+              ref={containerRef as React.RefObject<HTMLDivElement>}
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -57,7 +56,7 @@ export function AccessibilityFloatingButton() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <accessibility className="h-5 w-5" />
+                    <Accessibility className="h-5 w-5" />
                     Accessibility Settings
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">

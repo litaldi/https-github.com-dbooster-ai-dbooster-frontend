@@ -63,8 +63,8 @@ export function UpdateBanner() {
             onClick={handleUpdate}
             size="sm"
             className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-            leftIcon={<Download className="h-4 w-4" />}
           >
+            <Download className="mr-2 h-4 w-4" />
             Update Now
           </EnhancedButton>
           
