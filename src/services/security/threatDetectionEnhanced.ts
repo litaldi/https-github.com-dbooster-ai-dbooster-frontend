@@ -1,26 +1,23 @@
-
 import { productionLogger } from '@/utils/productionLogger';
-import { auditLogger } from '@/services/auditLogger';
 
-export interface ThreatPattern {
-  pattern: RegExp;
+interface ThreatEvent {
+  id: string;
+  timestamp: number;
+  threatType: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  action: 'log' | 'block' | 'alert';
-}
-
-export interface SecurityEvent {
-  userId?: string;
-  ipAddress?: string;
-  userAgent?: string;
-  eventType: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  details: Record<string, any>;
-  timestamp: Date;
+  input: string;
+  context: Record<string, any>;
+  blocked: boolean;
 }
 
 export class EnhancedThreatDetection {
   private static instance: EnhancedThreatDetection;
+  private threatEvents: ThreatEvent[] = [];
+  private suspiciousPatterns: RegExp[] = [];
+
+  constructor() {
+    this.initializeThreatPatterns();
+  }
 
   static getInstance(): EnhancedThreatDetection {
     if (!EnhancedThreatDetection.instance) {
@@ -29,185 +26,195 @@ export class EnhancedThreatDetection {
     return EnhancedThreatDetection.instance;
   }
 
-  private readonly threatPatterns: ThreatPattern[] = [
-    // SQL Injection patterns
-    {
-      pattern: /(\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b|\bDROP\b).*(\bFROM\b|\bWHERE\b|\bINTO\b)/i,
-      severity: 'critical',
-      description: 'SQL injection attempt detected',
-      action: 'block'
-    },
-    
-    // XSS patterns
-    {
-      pattern: /<script[^>]*>.*?<\/script>/i,
-      severity: 'high',
-      description: 'XSS script injection attempt',
-      action: 'block'
-    },
-    
-    // Command injection
-    {
-      pattern: /(\b(rm|cat|ls|pwd|whoami|nc|netcat|curl|wget|python|perl|php|sh|bash)\b)|(\||;|`|\$\()/i,
-      severity: 'high',
-      description: 'Command injection attempt detected',
-      action: 'block'
-    },
-    
-    // Path traversal
-    {
-      pattern: /\.\.\/|\.\.\\|%2e%2e%2f|%2e%2e\\|\.\.%2f|\.\.%5c/i,
-      severity: 'medium',
-      description: 'Path traversal attempt detected',
-      action: 'block'
-    },
-    
-    // Suspicious user agents
-    {
-      pattern: /(sqlmap|nmap|nikto|burp|w3af|owasp|zap)/i,
-      severity: 'medium',
-      description: 'Suspicious security scanner detected',
-      action: 'alert'
-    }
-  ];
-
-  private securityEvents: SecurityEvent[] = [];
-  private readonly maxEvents = 1000;
-
-  async detectThreats(input: string, context: {
-    userId?: string;
-    ipAddress?: string;
-    userAgent?: string;
-    inputType: string;
-  }): Promise<{ threats: ThreatPattern[]; shouldBlock: boolean }> {
-    const detectedThreats: ThreatPattern[] = [];
-
-    for (const threat of this.threatPatterns) {
-      if (threat.pattern.test(input)) {
-        detectedThreats.push(threat);
-        
-        // Log security event
-        await this.logSecurityEvent({
-          userId: context.userId,
-          ipAddress: context.ipAddress,
-          userAgent: context.userAgent,
-          eventType: 'threat_detected',
-          severity: threat.severity,
-          details: {
-            pattern: threat.description,
-            input: input.substring(0, 200), // Limit input logging
-            inputType: context.inputType,
-            threatLevel: threat.severity
-          },
-          timestamp: new Date()
-        });
-      }
-    }
-
-    const shouldBlock = detectedThreats.some(threat => 
-      threat.action === 'block' && (threat.severity === 'high' || threat.severity === 'critical')
-    );
-
-    return { threats: detectedThreats, shouldBlock };
+  private initializeThreatPatterns(): void {
+    this.suspiciousPatterns = [
+      // XSS patterns
+      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      /javascript:/gi,
+      /on\w+\s*=/gi,
+      /<iframe\b[^>]*>/gi,
+      
+      // SQL Injection patterns
+      /(union|select|insert|update|delete|drop|create|alter)\s+/gi,
+      /(\bor\b|\band\b)\s+\d+\s*=\s*\d+/gi,
+      /'\s*(or|and)\s*'.*?'/gi,
+      
+      // Command injection
+      /[;&|`$(){}[\]]/g,
+      /(wget|curl|nc|netcat|bash|sh|cmd|powershell)/gi,
+      
+      // Path traversal
+      /\.\.[\/\\]/g,
+      /(\/etc\/passwd|\/proc\/self\/environ)/gi,
+      
+      // Template injection
+      /\$\{.*\}/g,
+      /\{\{.*\}\}/g,
+      
+      // LDAP injection
+      /[()=*!&|]/g
+    ];
   }
 
-  async analyzeBehaviorPatterns(userId: string): Promise<{
-    riskScore: number;
-    anomalies: string[];
-    recommendation: 'allow' | 'monitor' | 'restrict' | 'block';
+  async detectThreats(input: string, context: Record<string, any> = {}): Promise<{
+    threatDetected: boolean;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    threatTypes: string[];
+    shouldBlock: boolean;
   }> {
-    const userEvents = this.securityEvents.filter(event => event.userId === userId);
-    const recentEvents = userEvents.filter(event => 
-      Date.now() - event.timestamp.getTime() < 24 * 60 * 60 * 1000 // Last 24 hours
-    );
+    const threatTypes: string[] = [];
+    let maxSeverity: 'low' | 'medium' | 'high' | 'critical' = 'low';
 
-    let riskScore = 0;
-    const anomalies: string[] = [];
-
-    // Check for rapid-fire requests
-    const requestsLastHour = recentEvents.filter(event => 
-      Date.now() - event.timestamp.getTime() < 60 * 60 * 1000
-    ).length;
-
-    if (requestsLastHour > 100) {
-      riskScore += 30;
-      anomalies.push('Unusually high request frequency');
+    // Check against known threat patterns
+    for (const pattern of this.suspiciousPatterns) {
+      if (pattern.test(input)) {
+        const threatType = this.identifyThreatType(pattern);
+        threatTypes.push(threatType);
+        
+        const severity = this.getSeverityForThreat(threatType);
+        if (this.compareSeverity(severity, maxSeverity) > 0) {
+          maxSeverity = severity;
+        }
+      }
     }
 
-    // Check for multiple threat detections
-    const threatEvents = recentEvents.filter(event => event.eventType === 'threat_detected');
-    if (threatEvents.length > 5) {
-      riskScore += 50;
-      anomalies.push('Multiple security threats detected');
+    // Additional context-based analysis
+    const contextThreats = this.analyzeContext(input, context);
+    threatTypes.push(...contextThreats.types);
+    if (this.compareSeverity(contextThreats.severity, maxSeverity) > 0) {
+      maxSeverity = contextThreats.severity;
     }
 
-    // Check for login failures
-    const loginFailures = recentEvents.filter(event => 
-      event.eventType === 'auth_login' && event.details.success === false
-    ).length;
+    const threatDetected = threatTypes.length > 0;
+    const shouldBlock = maxSeverity === 'critical' || maxSeverity === 'high';
 
-    if (loginFailures > 10) {
-      riskScore += 40;
-      anomalies.push('Multiple failed login attempts');
+    if (threatDetected) {
+      this.logThreatEvent({
+        id: this.generateThreatId(),
+        timestamp: Date.now(),
+        threatType: threatTypes.join(', '),
+        severity: maxSeverity,
+        input: input.substring(0, 200), // Limit logged input length
+        context,
+        blocked: shouldBlock
+      });
     }
 
-    // Determine recommendation based on risk score
-    let recommendation: 'allow' | 'monitor' | 'restrict' | 'block';
-    if (riskScore >= 80) {
-      recommendation = 'block';
-    } else if (riskScore >= 60) {
-      recommendation = 'restrict';
-    } else if (riskScore >= 30) {
-      recommendation = 'monitor';
-    } else {
-      recommendation = 'allow';
-    }
-
-    return { riskScore, anomalies, recommendation };
+    return {
+      threatDetected,
+      severity: maxSeverity,
+      threatTypes,
+      shouldBlock
+    };
   }
 
-  private async logSecurityEvent(event: SecurityEvent): Promise<void> {
-    // Add to in-memory store
-    this.securityEvents.push(event);
-    
-    // Maintain size limit
-    if (this.securityEvents.length > this.maxEvents) {
-      this.securityEvents.shift();
+  private identifyThreatType(pattern: RegExp): string {
+    const patternString = pattern.toString();
+    if (patternString.includes('script') || patternString.includes('javascript')) return 'XSS';
+    if (patternString.includes('union') || patternString.includes('select')) return 'SQL_INJECTION';
+    if (patternString.includes('bash') || patternString.includes('cmd')) return 'COMMAND_INJECTION';
+    if (patternString.includes('..')) return 'PATH_TRAVERSAL';
+    if (patternString.includes('${') || patternString.includes('{{')) return 'TEMPLATE_INJECTION';
+    return 'SUSPICIOUS_PATTERN';
+  }
+
+  private getSeverityForThreat(threatType: string): 'low' | 'medium' | 'high' | 'critical' {
+    switch (threatType) {
+      case 'XSS':
+      case 'SQL_INJECTION':
+      case 'COMMAND_INJECTION':
+        return 'critical';
+      case 'PATH_TRAVERSAL':
+      case 'TEMPLATE_INJECTION':
+        return 'high';
+      default:
+        return 'medium';
+    }
+  }
+
+  private compareSeverity(a: string, b: string): number {
+    const levels = { low: 1, medium: 2, high: 3, critical: 4 };
+    return (levels[a as keyof typeof levels] || 0) - (levels[b as keyof typeof levels] || 0);
+  }
+
+  private analyzeContext(input: string, context: Record<string, any>): {
+    types: string[];
+    severity: 'low' | 'medium' | 'high' | 'critical';
+  } {
+    const types: string[] = [];
+    let severity: 'low' | 'medium' | 'high' | 'critical' = 'low';
+
+    // Check for suspicious user agents
+    if (context.userAgent && /bot|crawler|spider/i.test(context.userAgent)) {
+      types.push('SUSPICIOUS_BOT');
+      severity = 'medium';
     }
 
-    // Log to audit system
-    await auditLogger.logSecurityEvent({
-      event_type: event.eventType,
-      event_data: {
-        severity: event.severity,
-        ...event.details
-      }
+    // Check for rapid successive requests (potential automation)
+    if (context.requestCount && context.requestCount > 10) {
+      types.push('RATE_LIMIT_VIOLATION');
+      severity = 'high';
+    }
+
+    // Check for unusual input length
+    if (input.length > 10000) {
+      types.push('OVERSIZED_INPUT');
+      severity = 'medium';
+    }
+
+    return { types, severity };
+  }
+
+  private logThreatEvent(event: ThreatEvent): void {
+    this.threatEvents.push(event);
+    
+    // Keep only last 1000 events to prevent memory issues
+    if (this.threatEvents.length > 1000) {
+      this.threatEvents = this.threatEvents.slice(-1000);
+    }
+
+    productionLogger.warn('Threat detected', {
+      threatId: event.id,
+      threatType: event.threatType,
+      severity: event.severity,
+      blocked: event.blocked
+    }, 'ThreatDetection');
+  }
+
+  private generateThreatId(): string {
+    return 'threat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  cleanupOldEvents(maxAgeHours: number = 24): void {
+    const cutoff = Date.now() - (maxAgeHours * 60 * 60 * 1000);
+    this.threatEvents = this.threatEvents.filter(event => event.timestamp > cutoff);
+  }
+
+  getThreatStatistics(): {
+    totalThreats: number;
+    threatsBlocked: number;
+    severityBreakdown: Record<string, number>;
+    topThreatTypes: Array<{ type: string; count: number }>;
+  } {
+    const severityBreakdown: Record<string, number> = {};
+    const threatTypeCounts: Record<string, number> = {};
+
+    this.threatEvents.forEach(event => {
+      severityBreakdown[event.severity] = (severityBreakdown[event.severity] || 0) + 1;
+      threatTypeCounts[event.threatType] = (threatTypeCounts[event.threatType] || 0) + 1;
     });
 
-    // Log critical events immediately
-    if (event.severity === 'critical' || event.severity === 'high') {
-      productionLogger.error('Critical security threat detected', {
-        eventType: event.eventType,
-        severity: event.severity,
-        userId: event.userId,
-        timestamp: event.timestamp.toISOString()
-      }, 'ThreatDetection');
-    }
-  }
+    const topThreatTypes = Object.entries(threatTypeCounts)
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
 
-  // Get recent security events for monitoring
-  getRecentEvents(limit: number = 50): SecurityEvent[] {
-    return this.securityEvents
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, limit);
-  }
-
-  // Clear old events (cleanup function)
-  cleanupOldEvents(maxAgeHours: number = 168): void { // Default 7 days
-    const cutoffTime = Date.now() - (maxAgeHours * 60 * 60 * 1000);
-    this.securityEvents = this.securityEvents.filter(
-      event => event.timestamp.getTime() > cutoffTime
-    );
+    return {
+      totalThreats: this.threatEvents.length,
+      threatsBlocked: this.threatEvents.filter(e => e.blocked).length,
+      severityBreakdown,
+      topThreatTypes
+    };
   }
 }
 
