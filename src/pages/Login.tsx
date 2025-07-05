@@ -194,7 +194,7 @@ export default function Login() {
                     <div className="text-center space-y-3">
                       <DemoModeButton />
                       
-                      {/* Try Demo Button (same style as homepage) */}
+                      {/* Try Demo Button */}
                       <Button
                         onClick={handleTryDemo}
                         variant="outline"
@@ -213,6 +213,14 @@ export default function Login() {
               <div className="text-center text-xs text-muted-foreground space-y-2">
                 <p>Trusted by 50,000+ developers worldwide</p>
                 <p>SOC2 compliant • Enterprise ready • 24/7 support</p>
+                
+                {/* Demo Access Details */}
+                <div className="bg-muted/30 p-3 rounded-lg mt-4 space-y-1">
+                  <p className="font-medium text-sm">New to DBooster?</p>
+                  <p className="text-xs">Start your free trial or try our interactive demo with sample data</p>
+                  <p className="text-xs text-primary">Demo Login: demo@dbooster.ai</p>
+                </div>
+                
                 <div className="flex items-center justify-center gap-4 text-xs pt-2">
                   <a href="/terms" className="hover:text-foreground transition-colors hover:underline">
                     Terms of Service

@@ -56,7 +56,7 @@ export default function About() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto py-12 px-6 space-y-16">
+    <div className="max-w-6xl mx-auto py-12 px-6 space-y-16" dir="ltr">
       {/* Hero Section */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -90,37 +90,32 @@ export default function About() {
         ))}
       </motion.div>
 
-      {/* Story Section */}
+      {/* Story Section - Fixed Layout */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="prose prose-gray dark:prose-invert max-w-none"
       >
         <div className="bg-muted/30 p-8 rounded-lg space-y-6">
           <h2 className="text-3xl font-bold text-center mb-8">Our Story</h2>
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-4">
-              <p className="text-lg leading-relaxed">
-                After years of working with complex database systems at scale, our founders witnessed countless teams 
-                struggling with performance issues that could cripple applications and frustrate users.
-              </p>
-              <p className="text-lg leading-relaxed">
-                Traditional database optimization required deep expertise, expensive consultants, and countless hours 
-                of manual analysis. We realized there had to be a better way.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <p className="text-lg leading-relaxed">
-                That's when we decided to harness the power of artificial intelligence to democratize database optimization. 
-                DBooster was born from the idea that every developer should have access to enterprise-level database 
-                optimization tools.
-              </p>
-              <p className="text-lg leading-relaxed">
-                Today, we're proud to help thousands of developers and teams optimize their database performance, 
-                reduce costs, and ship faster applications.
-              </p>
-            </div>
+          <div className="space-y-6 max-w-4xl mx-auto">
+            <p className="text-lg leading-relaxed">
+              After years of working with complex database systems at scale, our founders witnessed countless teams 
+              struggling with performance issues that could cripple applications and frustrate users.
+            </p>
+            <p className="text-lg leading-relaxed">
+              Traditional database optimization required deep expertise, expensive consultants, and countless hours 
+              of manual analysis. We realized there had to be a better way.
+            </p>
+            <p className="text-lg leading-relaxed">
+              That's when we decided to harness the power of artificial intelligence to democratize database optimization. 
+              DBooster was born from the idea that every developer should have access to enterprise-level database 
+              optimization tools.
+            </p>
+            <p className="text-lg leading-relaxed">
+              Today, we're proud to help thousands of developers and teams optimize their database performance, 
+              reduce costs, and ship faster applications.
+            </p>
           </div>
           
           <div className="text-center pt-6">

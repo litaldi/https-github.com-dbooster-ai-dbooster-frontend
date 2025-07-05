@@ -34,6 +34,7 @@ export function MainNav() {
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       role="navigation"
       aria-label="Main navigation"
+      dir="ltr"
     >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
@@ -73,7 +74,7 @@ export function MainNav() {
                   <Menu className="h-5 w-5" />
                 </StandardizedButton>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 p-6">
+              <SheetContent side="right" className="w-80 p-6" dir="ltr">
                 <div className="flex flex-col space-y-6">
                   <NavigationLogo user={user} />
                   
@@ -85,7 +86,7 @@ export function MainNav() {
                       isCurrentRoute={isCurrentRoute}
                     />
                     
-                    {/* Company section with improved labels */}
+                    {/* Company section */}
                     <div className="border-t pt-4 space-y-1">
                       <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Learn More</h4>
                       <EnhancedNavigationItems 
@@ -96,7 +97,7 @@ export function MainNav() {
                       />
                     </div>
                     
-                    {/* Legal section with improved labels */}
+                    {/* Legal section */}
                     <div className="border-t pt-4 space-y-1">
                       <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Legal & Support</h4>
                       <EnhancedNavigationItems 
