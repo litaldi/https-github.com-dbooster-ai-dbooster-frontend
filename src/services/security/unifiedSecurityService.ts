@@ -24,11 +24,11 @@ export class UnifiedSecurityService {
   }
 
   async secureLogin(email: string, password: string, options?: { rememberMe?: boolean }) {
-    return consolidatedAuthenticationSecurity.secureLogin(email, password, options);
+    return consolidatedAuthenticationSecurity.secureLogin(email, password);
   }
 
   async secureSignup(email: string, password: string, userData: { fullName: string; acceptedTerms: boolean }) {
-    return consolidatedAuthenticationSecurity.secureSignup(email, password, userData.fullName, userData.acceptedTerms);
+    return consolidatedAuthenticationSecurity.secureSignup(email, password, userData.fullName);
   }
 
   initializeSecurityHeaders() {
