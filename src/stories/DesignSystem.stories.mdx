@@ -1,0 +1,123 @@
+
+import { Meta, ColorPalette, ColorItem, Typeset } from '@storybook/blocks';
+
+<Meta title="Design System/Overview" />
+
+# Design System
+
+DBooster's design system provides a comprehensive set of components, patterns, and guidelines for building consistent and accessible user interfaces.
+
+## Color Palette
+
+Our color system is built on semantic color tokens that adapt to light and dark themes automatically.
+
+### Primary Colors
+<ColorPalette>
+  <ColorItem
+    title="Primary"
+    subtitle="Main brand color for buttons, links, and key elements"
+    colors={['hsl(221.2 83.2% 53.3%)']}
+  />
+  <ColorItem
+    title="Secondary"
+    subtitle="Supporting color for less prominent elements"
+    colors={['hsl(210 40% 96%)']}
+  />
+  <ColorItem
+    title="Destructive"
+    subtitle="Error states and dangerous actions"
+    colors={['hsl(0 72.2% 50.6%)']}
+  />
+</ColorPalette>
+
+### Neutral Colors
+<ColorPalette>
+  <ColorItem
+    title="Background"
+    subtitle="Page background"
+    colors={['hsl(0 0% 100%)']}
+  />
+  <ColorItem
+    title="Foreground"
+    subtitle="Primary text color"
+    colors={['hsl(222.2 84% 4.9%)']}
+  />
+  <ColorItem
+    title="Muted"
+    subtitle="Subtle background for cards and sections"
+    colors={['hsl(210 40% 96%)']}
+  />
+  <ColorItem
+    title="Border"
+    subtitle="Default border color"
+    colors={['hsl(214.3 31.8% 91.4%)']}
+  />
+</ColorPalette>
+
+## Typography
+
+Our typography scale provides consistent text sizing and hierarchy across the application.
+
+<Typeset
+  fontSizes={[12, 14, 16, 18, 20, 24, 32, 40, 48]}
+  fontWeight={400}
+  sampleText="The quick brown fox jumps over the lazy dog"
+  fontFamily="Inter, system-ui, sans-serif"
+/>
+
+### Font Weights
+- **Regular (400)**: Body text and descriptions
+- **Medium (500)**: Form labels and card titles  
+- **Semibold (600)**: Section headings
+- **Bold (700)**: Page titles and emphasis
+
+## Spacing Scale
+
+Consistent spacing using a 4px base unit:
+
+- **xs**: 4px (0.25rem)
+- **sm**: 8px (0.5rem)  
+- **md**: 16px (1rem)
+- **lg**: 24px (1.5rem)
+- **xl**: 32px (2rem)
+- **2xl**: 48px (3rem)
+
+## Component Guidelines
+
+### Buttons
+- Use `primary` for main actions
+- Use `secondary` for supporting actions
+- Use `destructive` for dangerous actions
+- Always provide adequate touch targets (minimum 44px)
+
+### Forms
+- Always pair inputs with labels
+- Use placeholder text sparingly
+- Provide clear error messages
+- Group related fields logically
+
+### Cards
+- Use for grouping related content
+- Maintain consistent padding
+- Use CardHeader for titles and descriptions
+- Place actions in CardFooter
+
+## Accessibility
+
+All components follow WCAG 2.1 AA guidelines:
+
+- **Color Contrast**: Minimum 4.5:1 for normal text, 3:1 for large text
+- **Keyboard Navigation**: All interactive elements are keyboard accessible
+- **Screen Reader Support**: Proper ARIA labels and semantic HTML
+- **Focus Management**: Clear focus indicators and logical tab order
+
+## Responsive Design
+
+Our components are mobile-first and responsive by default:
+
+- **Mobile**: 375px and up
+- **Tablet**: 768px and up  
+- **Desktop**: 1024px and up
+- **Large Desktop**: 1280px and up
+
+Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`) for responsive behavior.
