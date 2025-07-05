@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
-import { EnhancedHero } from '@/components/ui/enhanced-hero';
+import { EnhancedHeroSection } from '@/components/ui/enhanced-hero-section';
 import { EnhancedFeaturesGrid } from '@/components/ui/enhanced-features-grid';
 import { EnhancedCTASection } from '@/components/ui/enhanced-cta-section';
 import { 
@@ -17,7 +17,9 @@ import {
   Building,
   Clock,
   CheckCircle2,
-  Users
+  Users,
+  Play,
+  Eye
 } from 'lucide-react';
 
 export default function EnhancedHome() {
@@ -42,53 +44,67 @@ export default function EnhancedHome() {
     }
   };
 
+  const handleWatchDemo = () => {
+    navigate('/features');
+  };
+
+  // Hero section props
   const heroProps = {
-    subtitle: "Enterprise Database Optimization",
-    title: "Reduce Query Times by 73% with AI-Powered Optimization",
-    description: "Transform your database performance with enterprise-grade AI optimization. Join thousands of companies automating 80% of performance tuning tasks while cutting database costs by 40-60%.",
+    preheadline: "Enterprise Database Optimization",
+    headline: "Reduce Database Costs by 60%",
+    subheadline: "with AI-Powered Optimization",
+    description: "Transform your database performance with enterprise-grade AI optimization. Reduce query times by 73%, cut infrastructure costs by 60%, and automate 80% of performance tuning tasks. Join thousands of companies already optimizing with DBooster.",
     primaryCTA: {
       text: user ? 'Access Dashboard' : 'Start Free Enterprise Trial',
       onClick: handleGetStarted,
-      loading: isLoading
+      loading: isLoading,
+      variant: 'gradient' as const
     },
     secondaryCTA: {
-      text: 'Watch Demo',
-      onClick: () => navigate('/features')
+      text: 'Watch 2-Min Demo',
+      onClick: handleWatchDemo,
+      variant: 'outline' as const
     },
     badges: [
       {
+        text: "50,000+ Developers Trust DBooster",
         icon: <Star className="h-3 w-3" />,
-        text: "Enterprise AI-Powered Database Optimization",
-        variant: 'secondary' as const
+        variant: 'default' as const
+      },
+      {
+        text: "SOC2 Certified",
+        icon: <Shield className="h-3 w-3" />,
+        variant: 'success' as const
       }
     ],
     metrics: [
       {
         value: "73%",
         label: "Faster Queries",
-        icon: <Zap className="h-5 w-5 text-white" />,
-        color: "bg-blue-500"
+        icon: <Zap className="h-5 w-5 text-blue-600" />,
+        color: "bg-blue-50 border-blue-200"
       },
       {
         value: "60%",
         label: "Cost Reduction",
-        icon: <TrendingUp className="h-5 w-5 text-white" />,
-        color: "bg-green-500"
+        icon: <TrendingUp className="h-5 w-5 text-green-600" />,
+        color: "bg-green-50 border-green-200"
       },
       {
         value: "5min",
         label: "Setup Time",
-        icon: <Clock className="h-5 w-5 text-white" />,
-        color: "bg-purple-500"
+        icon: <Clock className="h-5 w-5 text-purple-600" />,
+        color: "bg-purple-50 border-purple-200"
       }
     ]
   };
 
+  // Features for the features grid
   const features = [
     {
       icon: <Brain className="h-8 w-8" />,
       title: "AI Query Optimizer",
-      description: "Advanced machine learning algorithms analyze your SQL queries and provide instant optimization recommendations.",
+      description: "Advanced machine learning algorithms analyze your SQL queries and provide instant optimization recommendations with 73% average improvement.",
       benefits: [
         "Automatic query analysis and optimization",
         "Real-time performance suggestions",
@@ -108,7 +124,7 @@ export default function EnhancedHome() {
     {
       icon: <Database className="h-8 w-8" />,
       title: "Database Monitoring",
-      description: "Real-time monitoring and alerts for your database performance with comprehensive analytics dashboard.",
+      description: "Real-time monitoring and alerts for your database performance with comprehensive analytics dashboard and 24/7 vigilance.",
       benefits: [
         "24/7 performance monitoring",
         "Custom alerting and notifications",
@@ -128,7 +144,7 @@ export default function EnhancedHome() {
     {
       icon: <Shield className="h-8 w-8" />,
       title: "Security & Compliance",
-      description: "Enterprise-grade security with SOC2 compliance, end-to-end encryption, and comprehensive audit logging.",
+      description: "Enterprise-grade security with SOC2 compliance, end-to-end encryption, and comprehensive audit logging for complete peace of mind.",
       benefits: [
         "SOC2 Type II compliance",
         "End-to-end encryption",
@@ -148,7 +164,7 @@ export default function EnhancedHome() {
     {
       icon: <BarChart3 className="h-8 w-8" />,
       title: "Performance Analytics",
-      description: "Deep insights into your database performance with predictive analytics and optimization recommendations.",
+      description: "Deep insights into your database performance with predictive analytics, cost optimization insights, and custom reporting dashboards.",
       benefits: [
         "Advanced performance metrics",
         "Predictive analytics",
@@ -164,7 +180,7 @@ export default function EnhancedHome() {
     {
       icon: <Rocket className="h-8 w-8" />,
       title: "Quick Setup",
-      description: "Get started in minutes with our streamlined onboarding process and intelligent database connection wizard.",
+      description: "Get started in minutes with our streamlined onboarding process, intelligent database connection wizard, and zero downtime integration.",
       benefits: [
         "5-minute setup process",
         "Automatic configuration detection",
@@ -180,7 +196,7 @@ export default function EnhancedHome() {
     {
       icon: <Users className="h-8 w-8" />,
       title: "Team Collaboration",
-      description: "Collaborate with your team on database optimization with shared workspaces and role-based permissions.",
+      description: "Collaborate with your team on database optimization with shared workspaces, role-based permissions, and collaborative tools.",
       benefits: [
         "Shared team workspaces",
         "Role-based permissions",
@@ -197,7 +213,7 @@ export default function EnhancedHome() {
 
   return (
     <div className="min-h-screen">
-      <EnhancedHero {...heroProps} />
+      <EnhancedHeroSection {...heroProps} />
       
       <EnhancedFeaturesGrid
         title="Everything You Need for Database Excellence"
