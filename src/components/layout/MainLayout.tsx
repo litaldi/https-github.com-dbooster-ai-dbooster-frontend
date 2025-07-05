@@ -5,15 +5,8 @@ import { MainNav } from '@/components/navigation/MainNav';
 import { Footer } from '@/components/navigation/Footer';
 import { AccessibilitySkipLinks } from '@/components/ui/accessibility-skip-links';
 import { AccessibilityEnhancements } from '@/components/ui/accessibility-enhancements';
-import { performanceMonitor } from '@/utils/performanceMonitor';
-import '@/utils/console-cleanup'; // Import console cleanup
 
 export function MainLayout() {
-  React.useEffect(() => {
-    // Initialize performance monitoring
-    performanceMonitor.initialize();
-  }, []);
-
   return (
     <>
       <AccessibilitySkipLinks />

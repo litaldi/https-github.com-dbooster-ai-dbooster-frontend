@@ -1,75 +1,57 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Zap, Brain, Database, TrendingUp } from 'lucide-react';
-
 export default function AIStudio() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">AI Studio</h1>
-          <p className="text-muted-foreground">
-            Advanced AI-powered database optimization tools
-          </p>
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold tracking-tight mb-8">AI Studio</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <div className="border rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Query Analysis</h2>
+              <p className="text-muted-foreground mb-4">
+                Upload your database schema or paste SQL queries for AI-powered analysis and optimization.
+              </p>
+              <button className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90">
+                Start Analysis
+              </button>
+            </div>
+            
+            <div className="border rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Performance Insights</h2>
+              <p className="text-muted-foreground mb-4">
+                Get detailed insights about your database performance and optimization opportunities.
+              </p>
+              <button className="border border-primary text-primary px-4 py-2 rounded-md hover:bg-primary/10">
+                View Insights
+              </button>
+            </div>
+          </div>
+          
+          <div className="border rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">AI Recommendations</h2>
+            <div className="space-y-4">
+              <div className="border-l-4 border-blue-500 pl-4">
+                <h3 className="font-medium">Index Optimization</h3>
+                <p className="text-sm text-muted-foreground">
+                  Consider adding an index on user_id column for better performance
+                </p>
+              </div>
+              <div className="border-l-4 border-green-500 pl-4">
+                <h3 className="font-medium">Query Rewrite</h3>
+                <p className="text-sm text-muted-foreground">
+                  Your SELECT query can be optimized to reduce execution time by 45%
+                </p>
+              </div>
+              <div className="border-l-4 border-yellow-500 pl-4">
+                <h3 className="font-medium">Schema Design</h3>
+                <p className="text-sm text-muted-foreground">
+                  Consider normalizing the orders table to improve data integrity
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-          <Brain className="h-3 w-3 mr-1" />
-          AI Powered
-        </Badge>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-blue-600" />
-              Query Optimizer
-            </CardTitle>
-            <CardDescription>
-              Intelligent SQL query optimization with AI recommendations
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Analyze and optimize your database queries using advanced AI algorithms.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-green-600" />
-              Schema Analyzer
-            </CardTitle>
-            <CardDescription>
-              AI-driven database schema optimization suggestions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Get intelligent recommendations for improving your database structure.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-purple-600" />
-              Performance Predictor
-            </CardTitle>
-            <CardDescription>
-              Predict query performance before execution
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Use AI to predict and optimize query performance metrics.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

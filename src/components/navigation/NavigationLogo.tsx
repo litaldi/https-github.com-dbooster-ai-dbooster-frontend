@@ -1,26 +1,25 @@
 
 import { Link } from 'react-router-dom';
 import { Database } from 'lucide-react';
+import type { User } from '@/types';
 
 interface NavigationLogoProps {
-  user: any;
+  user: User | null;
 }
 
 export function NavigationLogo({ user }: NavigationLogoProps) {
+  const linkTo = user ? '/app' : '/';
+  
   return (
     <Link 
-      to={user ? "/app" : "/"} 
-      className="flex items-center space-x-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+      to={linkTo} 
+      className="flex items-center space-x-2 text-xl font-bold text-primary hover:text-primary/80 transition-colors"
+      aria-label="DBooster - Database Optimization Platform"
     >
-      <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-        <Database className="h-5 w-5 text-white" />
-      </div>
-      <div>
-        <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          DBooster
-        </span>
-        <p className="text-xs text-muted-foreground hidden sm:block">AI Database Optimizer</p>
-      </div>
+      <Database className="h-8 w-8" />
+      <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+        DBooster
+      </span>
     </Link>
   );
 }

@@ -1,72 +1,27 @@
 
-// Shared type definitions for the application
-
 export interface User {
   id: string;
-  email: string;
-  name?: string;
-  avatar?: string;
-  role?: UserRole;
-  created_at: string;
-  updated_at: string;
+  email?: string;
+  created_at?: string;
+  updated_at?: string;
+  aud?: string;
+  role?: string;
+  app_metadata?: Record<string, any>;
+  user_metadata?: Record<string, any>;
 }
 
 export interface Session {
-  user: User;
   access_token: string;
   refresh_token: string;
-  expires_at: number;
+  expires_at?: number;
+  expires_in?: number;
+  token_type?: string;
+  user: User;
 }
-
-export type UserRole = 'admin' | 'moderator' | 'user';
 
 export interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
   initialized: boolean;
-}
-
-export interface ApiResponse<T = unknown> {
-  data?: T;
-  error?: string;
-  success: boolean;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  sanitizedValue?: string;
-  riskLevel?: string;
-}
-
-export interface SecurityEvent {
-  event_type: string;
-  event_data?: Record<string, unknown>;
-  ip_address?: string;
-  user_agent?: string;
-}
-
-export interface RateLimitResult {
-  allowed: boolean;
-  remainingAttempts: number;
-  resetTime: number;
-  retryAfter?: number;
-}
-
-export interface FormField {
-  name: string;
-  label: string;
-  type: 'text' | 'email' | 'password' | 'tel' | 'textarea';
-  required?: boolean;
-  placeholder?: string;
-  validation?: (value: string) => string | null;
-}
-
-export interface NavigationItem {
-  id: string;
-  label: string;
-  path: string;
-  icon?: string;
-  children?: NavigationItem[];
 }

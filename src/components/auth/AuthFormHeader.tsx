@@ -1,4 +1,5 @@
 
+import { Button } from '@/components/ui/button';
 import type { AuthMode } from '@/types/auth';
 
 interface AuthFormHeaderProps {
@@ -8,41 +9,25 @@ interface AuthFormHeaderProps {
 
 export function AuthFormHeader({ mode, onModeChange }: AuthFormHeaderProps) {
   return (
-    <div className="flex justify-center space-x-1 text-sm">
-      {mode === 'login' ? (
-        <p className="text-muted-foreground">
-          Don't have an account?{' '}
-          <button
-            type="button"
-            onClick={() => onModeChange('signup')}
-            className="text-primary hover:underline font-medium"
-          >
-            Sign up
-          </button>
-        </p>
-      ) : mode === 'signup' ? (
-        <p className="text-muted-foreground">
-          Already have an account?{' '}
-          <button
-            type="button"
-            onClick={() => onModeChange('login')}
-            className="text-primary hover:underline font-medium"
-          >
-            Sign in
-          </button>
-        </p>
-      ) : (
-        <p className="text-muted-foreground">
-          Remember your password?{' '}
-          <button
-            type="button"
-            onClick={() => onModeChange('login')}
-            className="text-primary hover:underline font-medium"
-          >
-            Sign in
-          </button>
-        </p>
-      )}
+    <div className="flex justify-center space-x-1 mb-6">
+      <Button
+        type="button"
+        variant={mode === 'login' ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => onModeChange('login')}
+        className="px-6"
+      >
+        Sign In
+      </Button>
+      <Button
+        type="button"
+        variant={mode === 'signup' ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => onModeChange('signup')}
+        className="px-6"
+      >
+        Sign Up
+      </Button>
     </div>
   );
 }

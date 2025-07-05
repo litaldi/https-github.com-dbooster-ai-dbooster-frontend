@@ -1,57 +1,42 @@
 
-import { toast } from "sonner";
+import { toast } from '@/hooks/use-toast';
 
 interface ToastOptions {
   title: string;
   description?: string;
-  duration?: number;
+  variant?: 'default' | 'destructive';
 }
 
 export const enhancedToast = {
-  success: ({ title, description, duration = 4000 }: ToastOptions) => {
-    toast.success(title, {
+  success: ({ title, description }: ToastOptions) => {
+    toast({
+      title,
       description,
-      duration,
+      variant: 'default',
     });
   },
-
-  error: ({ title, description, duration = 6000 }: ToastOptions) => {
-    toast.error(title, {
+  
+  error: ({ title, description }: ToastOptions) => {
+    toast({
+      title,
       description,
-      duration,
+      variant: 'destructive',
     });
   },
-
-  warning: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast.warning(title, {
+  
+  info: ({ title, description }: ToastOptions) => {
+    toast({
+      title,
       description,
-      duration,
+      variant: 'default',
     });
   },
-
-  info: ({ title, description, duration = 4000 }: ToastOptions) => {
-    toast.info(title, {
+  
+  warning: ({ title, description }: ToastOptions) => {
+    toast({
+      title,
       description,
-      duration,
-    });
-  },
-
-  promise: async <T,>(
-    promise: Promise<T>,
-    {
-      loading,
-      success,
-      error,
-    }: {
-      loading: string;
-      success: string | ((data: T) => string);
-      error: string | ((error: any) => string);
-    }
-  ) => {
-    return toast.promise(promise, {
-      loading,
-      success,
-      error,
+      variant: 'destructive',
     });
   },
 };
