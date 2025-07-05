@@ -40,6 +40,8 @@ export function SmartHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isActiveRoute = (href: string) => location.pathname === href;
+
   return (
     <motion.header
       initial={{ y: -100 }}

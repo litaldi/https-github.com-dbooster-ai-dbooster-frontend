@@ -36,21 +36,21 @@ export function PublicLayout() {
               </div>
             </div>
 
-            {/* Global Search Bar */}
-            <div className="flex-1 max-w-md mx-8">
-              <EnhancedSearch
-                placeholder="Search everything..."
-                onSearch={handleGlobalSearch}
-                showRecentSearches={true}
-                className="w-full"
-              />
-            </div>
-
-            {/* Mega Menu Navigation */}
+            {/* Mega Menu Navigation - Categories on the left */}
             <EnhancedMegaMenu items={megaMenuNavigation} />
 
-            {/* CTA Button */}
+            {/* Global Search Bar - Moved to the right */}
             <div className="flex items-center gap-3">
+              <div className="max-w-md">
+                <EnhancedSearch
+                  placeholder="Search everything..."
+                  onSearch={handleGlobalSearch}
+                  showRecentSearches={true}
+                  className="w-full"
+                />
+              </div>
+
+              {/* CTA Button */}
               <button 
                 onClick={() => navigate('/login')}
                 className="px-6 py-2 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
