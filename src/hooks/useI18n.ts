@@ -1,64 +1,91 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+export type Language = 'en' | 'he' | 'es' | 'fr' | 'de';
 
 interface I18nConfig {
-  locale: string;
+  language: Language;
   direction: 'ltr' | 'rtl';
-  dateFormat: string;
-  currency: string;
+  locale: string;
 }
 
-const defaultConfig: I18nConfig = {
-  locale: 'en-US',
+const DEFAULT_CONFIG: I18nConfig = {
+  language: 'en',
   direction: 'ltr',
-  dateFormat: 'MM/dd/yyyy',
-  currency: 'USD'
+  locale: 'en-US'
 };
 
-const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
+const RTL_LANGUAGES: Language[] = ['he'];
+
+// Simple translation dictionary
+const translations: Record<Language, Record<string, string>> = {
+  en: {
+    toggle_language: 'Toggle language',
+    welcome: 'Welcome',
+    settings: 'Settings'
+  },
+  he: {
+    toggle_language: 'החלף שפה',
+    welcome: 'ברוכים הבאים',
+    settings: 'הגדרות'
+  },
+  es: {
+    toggle_language: 'Cambiar idioma',
+    welcome: 'Bienvenido',
+    settings: 'Configuración'
+  },
+  fr: {
+    toggle_language: 'Changer de langue',
+    welcome: 'Bienvenue',
+    settings: 'Paramètres'
+  },
+  de: {
+    toggle_language: 'Sprache wechseln',
+    welcome: 'Willkommen',
+    settings: 'Einstellungen'
+  }
+};
 
 export function useI18n() {
   const [config, setConfig] = useState<I18nConfig>(() => {
-    const savedLocale = localStorage.getItem('dbooster-locale');
-    const browserLocale = navigator.language || 'en-US';
-    const locale = savedLocale || browserLocale;
-    
-    return {
-      ...defaultConfig,
-      locale,
-      direction: rtlLanguages.some(lang => locale.startsWith(lang)) ? 'rtl' : 'ltr'
-    };
+    try {
+      const stored = localStorage.getItem('i18n-config');
+      if (stored) {
+        return { ...DEFAULT_CONFIG, ...JSON.parse(stored) };
+      }
+    } catch (error) {
+      console.warn('Failed to load i18n config:', error);
+    }
+    return DEFAULT_CONFIG;
   });
 
+  const updateLanguage = useCallback((language: Language) => {
+    const direction: 'ltr' | 'rtl' = RTL_LANGUAGES.includes(language) ? 'rtl' : 'ltr';
+    const locale = `${language}-${language === 'en' ? 'US' : language.toUpperCase()}`;
+    
+    const newConfig: I18nConfig = { language, direction, locale };
+    setConfig(newConfig);
+    
+    try {
+      localStorage.setItem('i18n-config', JSON.stringify(newConfig));
+    } catch (error) {
+      console.warn('Failed to save i18n config:', error);
+    }
+  }, []);
+
+  const t = useCallback((key: string): string => {
+    return translations[config.language]?.[key] || key;
+  }, [config.language]);
+
   useEffect(() => {
-    localStorage.setItem('dbooster-locale', config.locale);
-    document.documentElement.lang = config.locale;
+    document.documentElement.lang = config.language;
     document.documentElement.dir = config.direction;
   }, [config]);
 
-  const setLocale = (locale: string) => {
-    setConfig(prev => ({
-      ...prev,
-      locale,
-      direction: rtlLanguages.some(lang => locale.startsWith(lang)) ? 'rtl' : 'ltr'
-    }));
-  };
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat(config.locale).format(date);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(config.locale, {
-      style: 'currency',
-      currency: config.currency
-    }).format(amount);
-  };
-
   return {
     ...config,
-    setLocale,
-    formatDate,
-    formatCurrency
+    updateLanguage,
+    isRTL: config.direction === 'rtl',
+    t
   };
 }

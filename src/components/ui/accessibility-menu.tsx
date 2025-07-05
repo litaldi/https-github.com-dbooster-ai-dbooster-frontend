@@ -1,160 +1,159 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { useAccessibility } from '@/hooks/useAccessibility';
 import { useFocusManagement } from '@/hooks/useFocusManagement';
-import { accessibility } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from './card';
+import { EnhancedButton } from './enhanced-button';
+import { Badge } from './badge';
+import { Switch } from './switch';
+import { Settings, Contrast, Type, Zap, Volume2, Eye } from 'lucide-react';
 
-export function AccessibilityFloatingButton() {
-  const [isOpen, setIsOpen] = useState(false);
-  const {
-    preferences,
-    toggleHighContrast,
-    toggleReducedMotion,
-    toggleLargeText,
-    toggleScreenReaderOptimized,
-    resetToDefaults
+interface AccessibilityMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function AccessibilityMenu({ isOpen, onClose }: AccessibilityMenuProps) {
+  const { 
+    preferences, 
+    toggleHighContrast, 
+    toggleReducedMotion, 
+    toggleLargeText, 
+    toggleScreenReaderOptimized 
   } = useAccessibility();
 
   const { containerRef } = useFocusManagement(isOpen, {
     trapFocus: true,
-    restoreFocus: true,
-    initialFocus: 'first'
+    restoreFocus: true
   });
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <Card 
+        ref={containerRef as React.RefObject<HTMLDivElement>}
+        className="w-full max-w-md"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accessibility-title"
+      >
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle id="accessibility-title" className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Accessibility Settings
+            </CardTitle>
+            <EnhancedButton
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              aria-label="Close accessibility menu"
+              className="h-8 w-8 p-0"
+            >
+              ✕
+            </EnhancedButton>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <AccessibilityToggle
+              icon={Contrast}
+              label="High Contrast"
+              description="Increase color contrast for better visibility"
+              checked={preferences.highContrast}
+              onChange={toggleHighContrast}
+            />
+            
+            <AccessibilityToggle
+              icon={Type}
+              label="Large Text"
+              description="Increase font size throughout the app"
+              checked={preferences.largeText}
+              onChange={toggleLargeText}
+            />
+            
+            <AccessibilityToggle
+              icon={Zap}
+              label="Reduced Motion"
+              description="Minimize animations and transitions"
+              checked={preferences.reducedMotion}
+              onChange={toggleReducedMotion}
+            />
+            
+            <AccessibilityToggle
+              icon={Volume2}
+              label="Screen Reader Mode"
+              description="Optimize for screen reader users"
+              checked={preferences.screenReaderOptimized}
+              onChange={toggleScreenReaderOptimized}
+            />
+          </div>
+          
+          <div className="border-t pt-4">
+            <p className="text-xs text-muted-foreground">
+              These settings are saved locally and will persist across sessions.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+interface AccessibilityToggleProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: () => void;
+}
+
+function AccessibilityToggle({ icon: Icon, label, description, checked, onChange }: AccessibilityToggleProps) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-3 flex-1">
+        <div className="p-2 bg-muted rounded-lg">
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-sm">{label}</span>
+            {checked && <Badge variant="secondary" className="text-xs">Active</Badge>}
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+        </div>
+      </div>
+      
+      <Switch
+        checked={checked}
+        onCheckedChange={onChange}
+        aria-label={`Toggle ${label}`}
+      />
+    </div>
+  );
+}
+
+export function AccessibilityFloatingButton() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <>
-      <Button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-50 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300"
-        aria-label="Open accessibility settings"
-        size="sm"
+      <EnhancedButton
+        onClick={() => setIsMenuOpen(true)}
+        className="fixed bottom-4 right-4 z-40 h-12 w-12 rounded-full shadow-lg"
+        aria-label="Open accessibility menu"
+        variant="default"
+        size="icon"
       >
-        <accessibility className="h-5 w-5" />
-      </Button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setIsOpen(false)}
-          >
-            <motion.div
-              ref={containerRef}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <accessibility className="h-5 w-5" />
-                    Accessibility Settings
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Customize your experience for better accessibility
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="high-contrast" className="text-sm font-medium">
-                        High Contrast Mode
-                      </Label>
-                      <Switch
-                        id="high-contrast"
-                        checked={preferences.highContrast}
-                        onCheckedChange={toggleHighContrast}
-                        aria-describedby="high-contrast-desc"
-                      />
-                    </div>
-                    <p id="high-contrast-desc" className="text-xs text-muted-foreground">
-                      Increases color contrast for better visibility
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="reduced-motion" className="text-sm font-medium">
-                        Reduce Motion
-                      </Label>
-                      <Switch
-                        id="reduced-motion"
-                        checked={preferences.reducedMotion}
-                        onCheckedChange={toggleReducedMotion}
-                        aria-describedby="reduced-motion-desc"
-                      />
-                    </div>
-                    <p id="reduced-motion-desc" className="text-xs text-muted-foreground">
-                      Minimizes animations and transitions
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="large-text" className="text-sm font-medium">
-                        Large Text
-                      </Label>
-                      <Switch
-                        id="large-text"
-                        checked={preferences.largeText}
-                        onCheckedChange={toggleLargeText}
-                        aria-describedby="large-text-desc"
-                      />
-                    </div>
-                    <p id="large-text-desc" className="text-xs text-muted-foreground">
-                      Increases text size for better readability
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="screen-reader" className="text-sm font-medium">
-                        Screen Reader Optimized
-                      </Label>
-                      <Switch
-                        id="screen-reader"
-                        checked={preferences.screenReaderOptimized}
-                        onCheckedChange={toggleScreenReaderOptimized}
-                        aria-describedby="screen-reader-desc"
-                      />
-                    </div>
-                    <p id="screen-reader-desc" className="text-xs text-muted-foreground">
-                      Enhanced experience for screen readers
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2 pt-4">
-                    <Button
-                      onClick={() => setIsOpen(false)}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Close
-                    </Button>
-                    <Button
-                      onClick={resetToDefaults}
-                      variant="ghost"
-                      className="flex-1"
-                    >
-                      Reset to Defaults
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <Settings className="h-5 w-5" />
+      </EnhancedButton>
+      
+      <AccessibilityMenu 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)} 
+      />
     </>
   );
 }

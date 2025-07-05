@@ -1,11 +1,12 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Props {
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
 interface State {
@@ -15,74 +16,78 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
-  }
+  public state: State = {
+    hasError: false
+  };
 
-  static getDerivedStateFromError(error: Error): State {
+  public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
-    
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({
       error,
       errorInfo
     });
-
-    // Log to error reporting service in production
-    if (process.env.NODE_ENV === 'production') {
-      // Example: Sentry.captureException(error, { extra: errorInfo });
-    }
   }
 
-  handleReload = () => {
-    window.location.reload();
-  };
-
-  handleReset = () => {
+  private handleReset = () => {
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
-  render() {
+  private handleGoHome = () => {
+    window.location.href = '/';
+  };
+
+  public render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 p-3 rounded-full bg-destructive/10">
-                <AlertTriangle className="h-8 w-8 text-destructive" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
-              <CardTitle className="text-xl">
-                Oops! Something went wrong
+              <CardTitle className="text-xl font-semibold">
+                Something went wrong
               </CardTitle>
+              <CardDescription>
+                We encountered an unexpected error. This has been logged and we'll look into it.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-center text-muted-foreground">
-                We're sorry, but something unexpected happened. Please try reloading the page.
-              </p>
-              
               {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="mt-4 p-3 bg-muted rounded-md text-sm">
-                  <summary className="cursor-pointer font-medium mb-2">
-                    Error Details (Development)
+                <details className="text-sm text-muted-foreground">
+                  <summary className="cursor-pointer font-medium">
+                    Error Details
                   </summary>
-                  <pre className="whitespace-pre-wrap text-xs overflow-auto">
+                  <pre className="mt-2 whitespace-pre-wrap text-xs">
                     {this.state.error.toString()}
                     {this.state.errorInfo?.componentStack}
                   </pre>
                 </details>
               )}
               
-              <div className="flex gap-2 pt-4">
-                <Button onClick={this.handleReload} className="flex-1">
+              <div className="flex gap-2">
+                <Button
+                  onClick={this.handleReset}
+                  variant="outline"
+                  className="flex-1"
+                >
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  Reload Page
-                </Button>
-                <Button onClick={this.handleReset} variant="outline" className="flex-1">
                   Try Again
+                </Button>
+                <Button
+                  onClick={this.handleGoHome}
+                  className="flex-1"
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  Go Home
                 </Button>
               </div>
             </CardContent>

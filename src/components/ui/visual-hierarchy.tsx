@@ -6,19 +6,9 @@ interface SectionProps {
   children: React.ReactNode;
   className?: string;
   spacing?: 'sm' | 'md' | 'lg' | 'xl';
-  as?: 'section' | 'article' | 'aside' | 'div';
-  ariaLabel?: string;
-  ariaLabelledBy?: string;
 }
 
-export function Section({ 
-  children, 
-  className, 
-  spacing = 'md', 
-  as: Component = 'section',
-  ariaLabel,
-  ariaLabelledBy
-}: SectionProps) {
+export function Section({ children, className, spacing = 'md' }: SectionProps) {
   const spacingClasses = {
     sm: 'py-8 md:py-12',
     md: 'py-12 md:py-16 lg:py-20',
@@ -27,13 +17,9 @@ export function Section({
   };
 
   return (
-    <Component 
-      className={cn(spacingClasses[spacing], className)}
-      aria-label={ariaLabel}
-      aria-labelledby={ariaLabelledBy}
-    >
+    <section className={cn(spacingClasses[spacing], className)}>
       {children}
-    </Component>
+    </section>
   );
 }
 
@@ -41,15 +27,9 @@ interface ContainerProps {
   children: React.ReactNode;
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
-  as?: 'div' | 'main' | 'article' | 'section';
 }
 
-export function Container({ 
-  children, 
-  className, 
-  size = 'lg',
-  as: Component = 'div'
-}: ContainerProps) {
+export function Container({ children, className, size = 'lg' }: ContainerProps) {
   const sizeClasses = {
     sm: 'max-w-2xl',
     md: 'max-w-4xl',
@@ -59,13 +39,13 @@ export function Container({
   };
 
   return (
-    <Component className={cn(
+    <div className={cn(
       'container mx-auto px-4 sm:px-6 lg:px-8',
       sizeClasses[size],
       className
     )}>
       {children}
-    </Component>
+    </div>
   );
 }
 
@@ -74,16 +54,9 @@ interface HeadingProps {
   level: 1 | 2 | 3 | 4 | 5 | 6;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
   className?: string;
-  id?: string;
 }
 
-export function Heading({ 
-  children, 
-  level, 
-  size = 'lg', 
-  className,
-  id
-}: HeadingProps) {
+export function Heading({ children, level, size = 'lg', className }: HeadingProps) {
   const sizeClasses = {
     xs: 'text-lg md:text-xl',
     sm: 'text-xl md:text-2xl',
@@ -97,14 +70,11 @@ export function Heading({
   const Component = `h${level}` as keyof JSX.IntrinsicElements;
 
   return (
-    <Component 
-      id={id}
-      className={cn(
-        'font-bold tracking-tight scroll-mt-20',
-        sizeClasses[size],
-        className
-      )}
-    >
+    <Component className={cn(
+      'font-bold tracking-tight',
+      sizeClasses[size],
+      className
+    )}>
       {children}
     </Component>
   );
@@ -115,16 +85,9 @@ interface TextProps {
   size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
   variant?: 'default' | 'muted' | 'accent';
   className?: string;
-  as?: 'p' | 'span' | 'div';
 }
 
-export function Text({ 
-  children, 
-  size = 'base', 
-  variant = 'default', 
-  className,
-  as: Component = 'p'
-}: TextProps) {
+export function Text({ children, size = 'base', variant = 'default', className }: TextProps) {
   const sizeClasses = {
     xs: 'text-xs md:text-sm',
     sm: 'text-sm md:text-base',
@@ -140,47 +103,12 @@ export function Text({
   };
 
   return (
-    <Component className={cn(
+    <p className={cn(
       sizeClasses[size],
       variantClasses[variant],
-      'leading-relaxed',
       className
     )}>
       {children}
-    </Component>
-  );
-}
-
-// Enhanced list component with proper accessibility
-interface ListProps {
-  children: React.ReactNode;
-  ordered?: boolean;
-  className?: string;
-  ariaLabel?: string;
-}
-
-export function List({ children, ordered = false, className, ariaLabel }: ListProps) {
-  const Component = ordered ? 'ol' : 'ul';
-  
-  return (
-    <Component 
-      className={cn('space-y-2', className)}
-      aria-label={ariaLabel}
-    >
-      {children}
-    </Component>
-  );
-}
-
-interface ListItemProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-export function ListItem({ children, className }: ListItemProps) {
-  return (
-    <li className={cn('flex items-start gap-2', className)}>
-      {children}
-    </li>
+    </p>
   );
 }
