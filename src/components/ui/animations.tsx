@@ -59,3 +59,6 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+// Export all animation components from the modular system
+export * from './animations';

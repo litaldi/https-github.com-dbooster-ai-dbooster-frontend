@@ -5,9 +5,10 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 
-interface EnhancedInputProps extends React.ComponentProps<typeof Input> {
+interface EnhancedInputProps extends Omit<React.ComponentProps<typeof Input>, 'error'> {
   label?: string;
   error?: string;
+  helperText?: string;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   variant?: 'default' | 'filled' | 'outline' | 'floating';
@@ -20,6 +21,7 @@ interface EnhancedInputProps extends React.ComponentProps<typeof Input> {
 export function EnhancedInput({
   label,
   error,
+  helperText,
   startIcon,
   endIcon,
   variant = 'default',
@@ -113,6 +115,9 @@ export function EnhancedInput({
       <div className="flex justify-between">
         {error && (
           <p className="text-sm text-destructive">{error}</p>
+        )}
+        {helperText && !error && (
+          <p className="text-sm text-muted-foreground">{helperText}</p>
         )}
         {showCharCount && maxLength && (
           <p className="text-sm text-muted-foreground ml-auto">
