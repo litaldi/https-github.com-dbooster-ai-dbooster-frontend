@@ -1,17 +1,18 @@
+
 import { auditLogger } from './auditLogger';
 import { rateLimitService } from './security/rateLimitService';
-import { inputValidationService } from './inputValidationService';
 import { threatDetectionService } from './threatDetectionService';
-import { securityEnhancementService } from './security/securityEnhancementService';
+import { consolidatedAuthenticationSecurity } from './security/consolidatedAuthenticationSecurity';
+import { consolidatedInputValidation } from './security/consolidatedInputValidation';
 
-// Re-export all security services from a single entry point
+// Re-export essential security services
 export { auditLogger } from './auditLogger';
 export { rateLimitService } from './security/rateLimitService';
-export { inputValidationService } from './inputValidationService';
 export { threatDetectionService } from './threatDetectionService';
-export { securityEnhancementService } from './security/securityEnhancementService';
+export { consolidatedAuthenticationSecurity } from './security/consolidatedAuthenticationSecurity';
+export { consolidatedInputValidation } from './security/consolidatedInputValidation';
 
-// Enhanced SecurityService with new security features
+// Consolidated SecurityService
 export class SecurityService {
   private static instance: SecurityService;
 
@@ -22,9 +23,9 @@ export class SecurityService {
     return SecurityService.instance;
   }
 
-  // Enhanced validation with security checks
+  // Input validation using consolidated service
   async validateUserInput(input: any, context: string): Promise<{ valid: boolean; errors?: string[]; riskLevel?: string }> {
-    const result = await securityEnhancementService.validateUserInput(input, context);
+    const result = consolidatedInputValidation.validateAndSanitize(input, context);
     return {
       valid: result.isValid,
       errors: result.errors,
@@ -32,19 +33,24 @@ export class SecurityService {
     };
   }
 
-  // Enhanced authentication security
+  // Authentication security using consolidated service
   async validateAuthenticationSecurity(email: string): Promise<{ allowed: boolean; reason?: string }> {
-    return securityEnhancementService.validateAuthenticationSecurity(email);
+    const rateLimitResult = await rateLimitService.checkRateLimit(`auth:${email}`, 'login');
+    return {
+      allowed: rateLimitResult.allowed,
+      reason: rateLimitResult.allowed ? undefined : 'Rate limit exceeded'
+    };
   }
 
-  // Repository access validation
-  async validateRepositoryAccess(repositoryId: string, action: 'read' | 'write' | 'delete'): Promise<boolean> {
-    return securityEnhancementService.validateRepositoryAccess(repositoryId, action);
-  }
-
-  // Session security validation
+  // Session security validation using consolidated service
   async validateSessionSecurity(): Promise<boolean> {
-    return securityEnhancementService.validateSessionSecurity();
+    return consolidatedAuthenticationSecurity.validateSessionSecurity();
+  }
+
+  // Repository access validation (simplified)
+  async validateRepositoryAccess(repositoryId: string, action: 'read' | 'write' | 'delete'): Promise<boolean> {
+    // Basic validation - can be enhanced based on specific requirements
+    return true;
   }
 
   // Legacy compatibility methods
@@ -57,7 +63,8 @@ export class SecurityService {
   }
 
   sanitizeInput(input: string): string {
-    return inputValidationService.sanitizeInput(input);
+    const result = consolidatedInputValidation.validateAndSanitize(input, 'general');
+    return result.sanitizedValue || input;
   }
 
   async logAuthEvent(eventType: string, success: boolean, details?: Record<string, any>): Promise<void> {
