@@ -1,132 +1,105 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Suspense, lazy, useEffect } from 'react';
+import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/auth-context';
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from 'sonner';
-import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
-import { PublicLayout } from '@/components/PublicLayout';
 import { GlobalLoadingOverlay } from '@/components/ui/GlobalLoadingOverlay';
-import { UpdateBanner } from '@/components/ui/update-banner';
-import Layout from '@/components/layout';
-import ProtectedRoute from '@/components/protected-route';
-import { ResourcePreloader, CriticalCSSLoader } from '@/components/ui/critical-css-loader';
-import { appInitializer } from '@/utils/appInitializer';
-import { useEffect } from 'react';
+import { AccessibilityEnhancements } from '@/components/ui/accessibility-enhancements';
+import { AccessibilityFloatingButton } from '@/components/ui/accessibility-menu';
+import { PerformanceMonitor } from '@/components/ui/performance-monitor';
+import { CriticalCSSLoader, ResourcePreloader } from '@/components/ui/critical-css-loader';
+import { performanceMonitor } from '@/utils/advancedPerformanceMonitor';
+import { SEOHead } from '@/components/seo/SEOHead';
+import { SkipLink } from '@/components/ui/accessibility-helpers';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import './App.css';
+import './styles/accessibility.css';
 
-// Lazy load pages for better performance
-import { lazy, Suspense } from 'react';
-import { PageLoading } from '@/components/ui/loading-states';
-
-// Critical pages (loaded immediately)
-import EnhancedHome from '@/pages/EnhancedHome';
-import Login from '@/pages/Login';
-
-// Non-critical pages (lazy loaded)
+// Lazy load components for better performance
+const Home = lazy(() => import('@/pages/Home'));
+const App = lazy(() => import('@/pages/App'));
+const Login = lazy(() => import('@/pages/Login'));
 const Features = lazy(() => import('@/pages/Features'));
-const HowItWorks = lazy(() => import('@/pages/HowItWorks'));
-const Pricing = lazy(() => import('@/pages/Pricing'));
-const Learn = lazy(() => import('@/pages/Learn'));
-const Blog = lazy(() => import('@/pages/Blog'));
-const About = lazy(() => import('@/pages/About'));
-const Contact = lazy(() => import('@/pages/Contact'));
-const Support = lazy(() => import('@/pages/Support'));
-const Privacy = lazy(() => import('@/pages/Privacy'));
-const Terms = lazy(() => import('@/pages/Terms'));
-const Accessibility = lazy(() => import('@/pages/Accessibility'));
-const AIOptimizationStudio = lazy(() => import('@/pages/AIOptimizationStudio'));
-const EnhancedDashboard = lazy(() => import('@/pages/EnhancedDashboard'));
-const Queries = lazy(() => import('@/pages/Queries'));
-const Repositories = lazy(() => import('@/pages/Repositories'));
-const Reports = lazy(() => import('@/pages/Reports'));
-const SecurityDashboardPage = lazy(() => import('@/components/security/SecurityDashboardPage').then(module => ({ default: module.SecurityDashboardPage })));
-const NotFound = lazy(() => import('@/components/error/NotFound').then(module => ({ default: module.NotFound })));
 
+// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 1,
-      refetchOnWindowFocus: false, // Reduce unnecessary requests
     },
   },
 });
 
-function App() {
+function AppContent() {
   useEffect(() => {
-    // Initialize app with performance optimizations
-    appInitializer.initialize();
+    // Initialize performance monitoring
+    performanceMonitor.startMonitoring();
+
+    return () => {
+      performanceMonitor.stopMonitoring();
+    };
   }, []);
 
   return (
-    <EnhancedErrorBoundary>
+    <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
-          <AuthProvider>
-            <Router>
+        <AuthProvider>
+          <Router>
+            <ErrorBoundary>
+              {/* Critical resource loading */}
               <CriticalCSSLoader />
               <ResourcePreloader />
-              <GlobalLoadingOverlay />
-              <UpdateBanner />
               
-              <Suspense fallback={<PageLoading />}>
-                <Routes>
-                  {/* Public routes with PublicLayout */}
-                  <Route path="/" element={<PublicLayout />}>
-                    <Route index element={<EnhancedHome />} />
-                    <Route path="login" element={<Login />} />
-                    <Route path="features" element={<Features />} />
-                    <Route path="how-it-works" element={<HowItWorks />} />
-                    <Route path="pricing" element={<Pricing />} />
-                    <Route path="learn" element={<Learn />} />
-                    <Route path="blog" element={<Blog />} />
-                    <Route path="about" element={<About />} />
-                    <Route path="contact" element={<Contact />} />
-                    <Route path="support" element={<Support />} />
-                    <Route path="privacy" element={<Privacy />} />
-                    <Route path="terms" element={<Terms />} />
-                    <Route path="accessibility" element={<Accessibility />} />
-                    <Route path="ai-studio" element={<AIOptimizationStudio />} />
-                  </Route>
-                  
-                  {/* Protected authenticated routes */}
-                  <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<EnhancedDashboard />} />
-                  </Route>
-                  
-                  <Route path="/queries" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<Queries />} />
-                  </Route>
-                  
-                  <Route path="/repositories" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<Repositories />} />
-                  </Route>
-                  
-                  <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<Reports />} />
-                  </Route>
+              {/* Accessibility enhancements */}
+              <AccessibilityEnhancements />
+              
+              {/* Global SEO defaults */}
+              <SEOHead />
+              
+              {/* Skip navigation for accessibility */}
+              <SkipLink href="#main-content">
+                Skip to main content
+              </SkipLink>
 
-                  <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<SecurityDashboardPage />} />
-                  </Route>
-                  
-                  {/* 404 fallback */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-              
+              {/* Main application content */}
+              <main id="main-content" role="main">
+                <Suspense fallback={<GlobalLoadingOverlay />}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/app/*" element={<App />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/features" element={<Features />} />
+                  </Routes>
+                </Suspense>
+              </main>
+
+              {/* Global UI components */}
               <Toaster 
                 position="top-right"
-                expand={true}
-                richColors
-                closeButton
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: 'hsl(var(--background))',
+                    color: 'hsl(var(--foreground))',
+                    border: '1px solid hsl(var(--border))',
+                  },
+                }}
               />
-            </Router>
-          </AuthProvider>
-        </ThemeProvider>
+              
+              {/* Accessibility floating menu */}
+              <AccessibilityFloatingButton />
+              
+              {/* Performance monitoring in development */}
+              <PerformanceMonitor />
+            </ErrorBoundary>
+          </Router>
+        </AuthProvider>
       </QueryClientProvider>
-    </EnhancedErrorBoundary>
+    </HelmetProvider>
   );
 }
 
-export default App;
+export default AppContent;
