@@ -85,9 +85,9 @@ export function MainNav() {
                       isCurrentRoute={isCurrentRoute}
                     />
                     
-                    {/* Additional menu sections for mobile */}
+                    {/* Company section with improved labels */}
                     <div className="border-t pt-4 space-y-1">
-                      <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Company</h4>
+                      <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Learn More</h4>
                       <EnhancedNavigationItems 
                         items={companyMenuItems}
                         mobile
@@ -96,8 +96,9 @@ export function MainNav() {
                       />
                     </div>
                     
+                    {/* Legal section with improved labels */}
                     <div className="border-t pt-4 space-y-1">
-                      <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Legal</h4>
+                      <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Legal & Support</h4>
                       <EnhancedNavigationItems 
                         items={legalMenuItems}
                         mobile
