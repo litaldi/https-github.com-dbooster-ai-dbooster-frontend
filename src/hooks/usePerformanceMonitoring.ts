@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { performanceTracker } from '@/utils/performanceTracker';
 
 interface PerformanceMetrics {
@@ -11,40 +11,35 @@ interface PerformanceMetrics {
   tti?: number;
 }
 
-interface PerformanceState {
+interface UsePerformanceMonitoringReturn {
   metrics: PerformanceMetrics;
   score: number;
   isLoading: boolean;
   recommendations: string[];
 }
 
-export function usePerformanceMonitoring() {
-  const [state, setState] = useState<PerformanceState>({
-    metrics: {},
-    score: 0,
-    isLoading: true,
-    recommendations: []
-  });
+export function usePerformanceMonitoring(): UsePerformanceMonitoringReturn {
+  const [metrics, setMetrics] = useState<PerformanceMetrics>({});
+  const [score, setScore] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [recommendations, setRecommendations] = useState<string[]>([]);
 
   useEffect(() => {
-    // Initialize performance tracking
     performanceTracker.initialize();
 
     const updateMetrics = () => {
       const report = performanceTracker.generateReport();
-      setState({
-        metrics: report.metrics,
-        score: report.score,
-        isLoading: false,
-        recommendations: report.recommendations
-      });
+      setMetrics(report.metrics);
+      setScore(report.score);
+      setRecommendations(report.recommendations);
+      setIsLoading(false);
     };
 
     // Initial update
-    updateMetrics();
+    setTimeout(updateMetrics, 1000);
 
-    // Update every 2 seconds
-    const interval = setInterval(updateMetrics, 2000);
+    // Periodic updates
+    const interval = setInterval(updateMetrics, 5000);
 
     return () => {
       clearInterval(interval);
@@ -52,23 +47,10 @@ export function usePerformanceMonitoring() {
     };
   }, []);
 
-  const trackCustomMetric = (name: string, value: number) => {
-    if (import.meta.env.DEV) {
-      console.log(`📈 Custom metric - ${name}: ${value}`);
-    }
-    
-    // Send to analytics if available
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'custom_metric', {
-        event_category: 'Performance',
-        event_label: name,
-        value: Math.round(value)
-      });
-    }
-  };
-
   return {
-    ...state,
-    trackCustomMetric
+    metrics,
+    score,
+    isLoading,
+    recommendations
   };
 }

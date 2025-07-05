@@ -17,6 +17,20 @@ class ResourcePreloader {
     });
   }
 
+  static preloadRouteAssets(route: string) {
+    const routeAssets: Record<string, string[]> = {
+      '/': ['/hero-bg.webp', '/features-hero.webp'],
+      '/features': ['/features-demo.webp', '/ai-optimization.webp'],
+      '/pricing': ['/pricing-hero.webp'],
+      '/about': ['/team-photo.webp']
+    };
+
+    const assets = routeAssets[route] || [];
+    assets.forEach(asset => {
+      this.preloadResource(asset, 'image');
+    });
+  }
+
   static preloadResource(href: string, as: string, type?: string) {
     if (this.preloadedResources.has(href)) return;
 

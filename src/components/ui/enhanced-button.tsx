@@ -21,6 +21,7 @@ const buttonVariants = cva(
         default: 'h-9 px-4 py-2',
         sm: 'h-8 rounded-md px-3 text-xs',
         lg: 'h-10 rounded-md px-8',
+        xl: 'h-12 rounded-md px-10 text-lg',
         icon: 'h-9 w-9',
       },
     },
@@ -36,12 +37,13 @@ export interface EnhancedButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   loading?: boolean;
+  loadingText?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
 
 const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>(
-  ({ className, variant, size, asChild = false, loading = false, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, loading = false, loadingText, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
     
     return (
@@ -55,7 +57,7 @@ const EnhancedButton = forwardRef<HTMLButtonElement, EnhancedButtonProps>(
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Loading...
+            {loadingText || 'Loading...'}
           </>
         ) : (
           <>

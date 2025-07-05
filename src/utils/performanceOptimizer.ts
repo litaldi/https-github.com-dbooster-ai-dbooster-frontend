@@ -19,19 +19,39 @@ class PerformanceOptimizer {
     return PerformanceOptimizer.instance;
   }
 
-  startPerformanceMonitoring() {
-    if (typeof window === 'undefined') return;
-
-    this.observeWebVitals();
-    this.measureNavigationTiming();
+  static startPerformanceMonitoring() {
+    const instance = this.getInstance();
+    instance.observeWebVitals();
+    instance.measureNavigationTiming();
   }
 
-  stopPerformanceMonitoring() {
-    this.observers.forEach(observer => observer.disconnect());
-    this.observers = [];
+  static stopPerformanceMonitoring() {
+    const instance = this.getInstance();
+    instance.observers.forEach(observer => observer.disconnect());
+    instance.observers = [];
+  }
+
+  static runLighthouseAudit() {
+    const instance = this.getInstance();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Performance Metrics:', instance.getMetrics());
+      console.log('📊 Resource Timing:', instance.measureResourceTiming());
+    }
+  }
+
+  static optimizeImages() {
+    const instance = this.getInstance();
+    return instance.optimizeImages();
+  }
+
+  static measureResourceTiming() {
+    const instance = this.getInstance();
+    return instance.measureResourceTiming();
   }
 
   private observeWebVitals() {
+    if (typeof window === 'undefined') return;
+
     // First Contentful Paint
     const paintObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
@@ -106,13 +126,6 @@ class PerformanceOptimizer {
       duration: resource.duration,
       size: (resource as any).transferSize || 0
     }));
-  }
-
-  runLighthouseAudit() {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 Performance Metrics:', this.getMetrics());
-      console.log('📊 Resource Timing:', this.measureResourceTiming());
-    }
   }
 }
 
