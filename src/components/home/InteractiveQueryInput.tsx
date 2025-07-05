@@ -1,172 +1,240 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Zap, CheckCircle, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, Play, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
-const sampleQueries = [
+interface Suggestion {
+  id: string;
+  text: string;
+  confidence: number;
+  type: 'optimization' | 'indexing' | 'syntax';
+  improvement: string;
+}
+
+const sampleSuggestions: Suggestion[] = [
   {
-    query: "SELECT * FROM users WHERE created_at > '2024-01-01'",
-    optimization: "Add index on created_at column",
-    improvement: "87% faster"
+    id: '1',
+    text: 'Add ORDER BY with LIMIT for better performance',
+    confidence: 95,
+    type: 'optimization',
+    improvement: '60% faster'
   },
   {
-    query: "SELECT COUNT(*) FROM orders GROUP BY user_id",
-    optimization: "Use covering index for user_id",
-    improvement: "65% faster"
+    id: '2',
+    text: 'Consider adding an index on date column',
+    confidence: 88,
+    type: 'indexing',
+    improvement: '3x faster'
   },
   {
-    query: "SELECT u.name, o.total FROM users u JOIN orders o",
-    optimization: "Optimize join with proper indexing",
-    improvement: "92% faster"
+    id: '3',
+    text: 'Replace SELECT * with specific columns',
+    confidence: 92,
+    type: 'optimization',
+    improvement: '40% faster'
   }
 ];
 
+const sampleQueries = [
+  'SELECT * FROM users WHERE created_at > "2024-01-01"',
+  'SELECT users.name, COUNT(orders.id) FROM users LEFT JOIN orders ON users.id = orders.user_id GROUP BY users.id',
+  'UPDATE products SET stock = stock - 1 WHERE id = 123 AND stock > 0',
+  'SELECT SUM(amount) FROM transactions WHERE status = "completed" AND date BETWEEN "2024-01-01" AND "2024-12-31"'
+];
+
 export function InteractiveQueryInput() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isOptimizing, setIsOptimizing] = useState(false);
-  const [showResult, setShowResult] = useState(false);
+  const [query, setQuery] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [analysisComplete, setAnalysisComplete] = useState(false);
 
-  const currentQuery = sampleQueries[currentIndex];
+  const handleAnalyze = async () => {
+    if (!query.trim()) return;
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isOptimizing && !showResult) {
-        setCurrentIndex(prev => (prev + 1) % sampleQueries.length);
-      }
-    }, 4000);
+    setIsAnalyzing(true);
+    setShowSuggestions(false);
+    setAnalysisComplete(false);
 
-    return () => clearInterval(interval);
-  }, [isOptimizing, showResult]);
-
-  const handleOptimize = () => {
-    setIsOptimizing(true);
-    setShowResult(false);
-
+    // Simulate AI analysis delay
     setTimeout(() => {
-      setIsOptimizing(false);
-      setShowResult(true);
+      setSuggestions(sampleSuggestions);
+      setShowSuggestions(true);
+      setIsAnalyzing(false);
+      setAnalysisComplete(true);
     }, 2000);
+  };
 
-    setTimeout(() => {
-      setShowResult(false);
-    }, 4000);
+  const handleTrySample = (sampleQuery: string) => {
+    setQuery(sampleQuery);
+    setShowSuggestions(false);
+    setAnalysisComplete(false);
+  };
+
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 90) return 'text-green-600 bg-green-100 dark:bg-green-900/30';
+    if (confidence >= 80) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30';
+    return 'text-red-600 bg-red-100 dark:bg-red-900/30';
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'optimization': return CheckCircle;
+      case 'indexing': return Clock;
+      case 'syntax': return AlertCircle;
+      default: return Sparkles;
+    }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className="max-w-4xl mx-auto"
-    >
-      <div className="text-center mb-6">
-        <h3 className="text-xl sm:text-2xl font-bold mb-2">
-          See AI Optimization in Action
-        </h3>
-        <p className="text-muted-foreground">
-          Watch how our AI instantly optimizes your SQL queries
-        </p>
-      </div>
+    <div className="w-full max-w-4xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="bg-card/90 backdrop-blur-sm border border-border/50 rounded-xl p-6 shadow-xl"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold">Try Our AI Query Optimizer</h3>
+        </div>
 
-      <Card className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-2">
-        <CardContent className="p-4 sm:p-6">
-          {/* Query Input */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                SQL Query
-              </span>
-              <div className="flex gap-1">
-                {sampleQueries.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentIndex ? 'bg-primary' : 'bg-muted'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentIndex}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="bg-background rounded-lg p-3 font-mono text-sm border"
-              >
-                {currentQuery.query}
-              </motion.div>
+        {/* Query Input */}
+        <div className="space-y-4">
+          <div className="relative">
+            <Textarea
+              placeholder="Paste your SQL query here and let our AI optimize it..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="min-h-32 font-mono text-sm resize-none focus:ring-2 focus:ring-primary/20"
+              disabled={isAnalyzing}
+            />
+            
+            {/* Analysis overlay */}
+            <AnimatePresence>
+              {isAnalyzing && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center"
+                >
+                  <div className="flex items-center gap-3 text-primary">
+                    <motion.div
+                      className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                    <span className="font-medium">AI analyzing your query...</span>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
 
-          {/* Optimize Button */}
-          <div className="flex justify-center mb-4">
-            <Button
-              onClick={handleOptimize}
-              disabled={isOptimizing}
-              className="min-w-[140px] transition-all duration-300"
-              size="lg"
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <EnhancedButton
+              onClick={handleAnalyze}
+              disabled={!query.trim() || isAnalyzing}
+              loading={isAnalyzing}
+              loadingText="Analyzing..."
+              className="flex-1 sm:flex-none"
             >
-              {isOptimizing ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Optimizing...
-                </>
-              ) : (
-                <>
-                  <Zap className="mr-2 h-4 w-4" />
-                  Optimize Query
-                </>
-              )}
-            </Button>
+              <Play className="h-4 w-4 mr-2" />
+              Optimize Query
+            </EnhancedButton>
+
+            <div className="flex flex-wrap gap-2">
+              {sampleQueries.slice(0, 2).map((sample, index) => (
+                <EnhancedButton
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTrySample(sample)}
+                  disabled={isAnalyzing}
+                  className="text-xs"
+                >
+                  Try Sample {index + 1}
+                </EnhancedButton>
+              ))}
+            </div>
           </div>
+        </div>
 
-          {/* Results */}
-          <AnimatePresence>
-            {showResult && (
+        {/* AI Suggestions */}
+        <AnimatePresence>
+          {showSuggestions && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mt-6 space-y-4"
+            >
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <h4 className="font-semibold text-green-600">Analysis Complete</h4>
+                <Badge variant="secondary" className="ml-auto">
+                  {suggestions.length} suggestions
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                {suggestions.map((suggestion, index) => {
+                  const TypeIcon = getTypeIcon(suggestion.type);
+                  return (
+                    <motion.div
+                      key={suggestion.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg border border-border/30 hover:bg-muted/70 transition-colors duration-200"
+                    >
+                      <TypeIcon className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <p className="text-sm font-medium">{suggestion.text}</p>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Badge className="text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30">
+                              {suggestion.improvement}
+                            </Badge>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${getConfidenceColor(suggestion.confidence)}`}
+                            >
+                              {suggestion.confidence}% confidence
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs capitalize">
+                            {suggestion.type}
+                          </Badge>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                transition={{ duration: 0.4 }}
-                className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="flex justify-center"
               >
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-green-800 dark:text-green-200 mb-1">
-                      Optimization Complete!
-                    </h4>
-                    <p className="text-green-700 dark:text-green-300 text-sm mb-2">
-                      {currentQuery.optimization}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-green-600">
-                        {currentQuery.improvement}
-                      </span>
-                      <ArrowRight className="h-4 w-4 text-green-600" />
-                      <span className="text-sm text-green-600">
-                        Query performance improved
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <EnhancedButton variant="outline" className="text-sm">
+                  View Detailed Analysis
+                </EnhancedButton>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </CardContent>
-      </Card>
-
-      <div className="text-center mt-4">
-        <p className="text-xs text-muted-foreground">
-          Real optimization results from our AI engine
-        </p>
-      </div>
-    </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
   );
 }

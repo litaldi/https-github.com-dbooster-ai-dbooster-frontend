@@ -1,11 +1,11 @@
 
-import { PerformanceOptimizer } from './performanceOptimizer';
-import { ResourcePreloader } from './resourcePreloader';
-import { IntelligentPreloader } from './lazyLoader';
+import { performanceTracker } from './performanceTracker';
+import { serviceWorkerManager } from './serviceWorker';
+import { bundleOptimizer } from './bundleOptimizer';
+import { logger } from './logger';
 
-class AppInitializer {
+export class AppInitializer {
   private static instance: AppInitializer;
-  private initialized = false;
 
   static getInstance(): AppInitializer {
     if (!AppInitializer.instance) {
@@ -14,59 +14,55 @@ class AppInitializer {
     return AppInitializer.instance;
   }
 
-  async initialize() {
-    if (this.initialized) return;
-
+  async initialize(): Promise<void> {
     try {
-      // Initialize performance monitoring
-      PerformanceOptimizer.startPerformanceMonitoring();
+      logger.info('Initializing DBooster application', {}, 'AppInit');
+
+      // Start performance monitoring immediately
+      performanceTracker.initialize();
+      
+      // Register service worker for caching
+      await serviceWorkerManager.register();
+      
+      // Analyze bundle size in development
+      if (import.meta.env.DEV) {
+        const analysis = await bundleOptimizer.analyzeBundleSize();
+        const optimization = bundleOptimizer.generateOptimizationReport();
+        
+        logger.info('Bundle Analysis Complete', {
+          totalSize: `${Math.round(analysis.totalSize / 1024)}KB`,
+          potentialSavings: `${Math.round(optimization.potentialSavings / 1024)}KB`,
+          recommendations: optimization.recommendations.length
+        }, 'BundleAnalyzer');
+      }
 
       // Preload critical resources
-      ResourcePreloader.preloadCriticalAssets();
+      this.preloadCriticalResources();
 
-      // Initialize intelligent preloading
-      const preloader = IntelligentPreloader.getInstance();
-      preloader.initialize();
-
-      // Initialize accessibility features
-      this.initializeAccessibility();
-
-      // Initialize service worker (if available)
-      this.initializeServiceWorker();
-
-      this.initialized = true;
-      console.log('✅ App initialization complete');
+      logger.info('Application initialization completed', {}, 'AppInit');
     } catch (error) {
-      console.error('❌ App initialization failed:', error);
+      logger.error('Application initialization failed', error, 'AppInit');
     }
   }
 
-  private initializeAccessibility() {
-    // Ensure focus management
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Tab') {
-        document.body.classList.add('keyboard-nav');
-      }
+  private preloadCriticalResources(): void {
+    // Preload critical fonts
+    const fontLink = document.createElement('link');
+    fontLink.rel = 'preload';
+    fontLink.href = '/fonts/inter-var.woff2';
+    fontLink.as = 'font';
+    fontLink.type = 'font/woff2';
+    fontLink.crossOrigin = 'anonymous';
+    document.head.appendChild(fontLink);
+
+    // Prefetch likely next routes
+    const routesToPrefetch = ['/app', '/queries', '/repositories'];
+    routesToPrefetch.forEach(route => {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = route;
+      document.head.appendChild(link);
     });
-
-    document.addEventListener('mousedown', () => {
-      document.body.classList.remove('keyboard-nav');
-    });
-  }
-
-  private async initializeServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js');
-        console.log('SW registered: ', registration);
-      } catch (error) {
-        console.log('SW registration failed: ', error);
-      }
-    }
-  }
-
-  getInitializationStatus() {
-    return this.initialized;
   }
 }
 

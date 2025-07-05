@@ -1,84 +1,37 @@
 
-import React, { useState, useEffect } from 'react';
-import { X, Download, Sparkles } from 'lucide-react';
-import { EnhancedButton } from './enhanced-button';
-import { Badge } from './badge';
-import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { Card } from './card';
+import { Button } from './button';
+import { Download, X } from 'lucide-react';
+import { useServiceWorker } from '@/hooks/useServiceWorker';
 
 export function UpdateBanner() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const { updateAvailable, updateApp } = useServiceWorker();
+  const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    // Check for app updates (in a real app, this would check for service worker updates)
-    const checkForUpdates = () => {
-      // Simulate update check - in production this would be real update detection
-      if (Math.random() > 0.9 && process.env.NODE_ENV === 'development') {
-        setUpdateAvailable(true);
-        setIsVisible(true);
-      }
-    };
-
-    // Check for updates on mount and periodically
-    checkForUpdates();
-    const interval = setInterval(checkForUpdates, 30000); // Check every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleUpdate = () => {
-    // In a real app, this would trigger the update process
-    window.location.reload();
-  };
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    setUpdateAvailable(false);
-  };
-
-  if (!isVisible || !updateAvailable) return null;
+  if (!updateAvailable || dismissed) {
+    return null;
+  }
 
   return (
-    <div className={cn(
-      'fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 shadow-lg',
-      'transform transition-transform duration-300 ease-in-out',
-      isVisible ? 'translate-y-0' : '-translate-y-full'
-    )}>
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="h-5 w-5" />
-            <span className="font-medium">App Update Available!</span>
-            <Badge variant="secondary" className="bg-white/20 text-white">
-              New
-            </Badge>
-          </div>
-          <span className="text-sm opacity-90 hidden sm:inline">
-            Get the latest features and improvements
-          </span>
+    <Card className="fixed top-4 right-4 z-50 p-4 shadow-lg border-primary bg-background/95 backdrop-blur">
+      <div className="flex items-center gap-3">
+        <Download className="h-5 w-5 text-primary" />
+        <div className="flex-1">
+          <p className="text-sm font-medium">Update Available</p>
+          <p className="text-xs text-muted-foreground">
+            A new version of DBooster is ready to install
+          </p>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <EnhancedButton
-            onClick={handleUpdate}
-            size="sm"
-            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-            leftIcon={<Download className="h-4 w-4" />}
-          >
-            Update Now
-          </EnhancedButton>
-          
-          <EnhancedButton
-            onClick={handleDismiss}
-            variant="ghost"
-            size="sm"
-            className="text-white hover:bg-white/20 h-8 w-8 p-0"
-            aria-label="Dismiss update notification"
-          >
+        <div className="flex gap-1">
+          <Button size="sm" onClick={updateApp}>
+            Update
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setDismissed(true)}>
             <X className="h-4 w-4" />
-          </EnhancedButton>
+          </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

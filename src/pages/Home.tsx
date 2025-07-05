@@ -7,7 +7,7 @@ import { FeaturesSection } from '@/components/home/FeaturesSection';
 import { EnhancedCTASection } from '@/components/home/EnhancedCTASection';
 import { StandardizedLoading } from '@/components/ui/standardized-loading';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
-import { Database, Zap, Shield, TrendingUp, Users, Code } from 'lucide-react';
+import { features } from '@/data/homePageData';
 
 export default function Home() {
   const { user, loginDemo } = useAuth();
@@ -74,52 +74,6 @@ export default function Home() {
       title: "Deploy & Monitor Results",
       description: "Apply optimizations with confidence using our rollback-safe deployment and monitor performance improvements in real-time",
       action: "Deploy optimizations"
-    }
-  ];
-
-  // Fixed: Convert Lucide components to JSX elements
-  const features = [
-    {
-      icon: <Database className="h-6 w-6" />,
-      title: "Smart Query Analysis",
-      description: "AI-powered analysis of your SQL queries to identify performance bottlenecks and optimization opportunities.",
-      highlight: false,
-      details: "Our advanced AI engine analyzes query execution plans, identifies missing indexes, and suggests optimizations that can improve performance by up to 10x."
-    },
-    {
-      icon: <Zap className="h-6 w-6" />,
-      title: "Real-time Optimization",
-      description: "Get instant suggestions to improve query performance with detailed execution plans and recommendations.",
-      highlight: true,
-      details: "Real-time monitoring and analysis provides immediate feedback on query performance, helping you optimize as you develop."
-    },
-    {
-      icon: <Shield className="h-6 w-6" />,
-      title: "Enterprise Security",
-      description: "SOC2 compliant with enterprise-grade security features and team collaboration tools.",
-      highlight: false,
-      details: "Bank-level security with encryption at rest and in transit, role-based access control, and comprehensive audit logging."
-    },
-    {
-      icon: <TrendingUp className="h-6 w-6" />,
-      title: "Performance Insights",
-      description: "Track query performance trends and database health metrics with comprehensive analytics.",
-      highlight: true,
-      details: "Detailed dashboards and reports help you understand performance trends and make data-driven optimization decisions."
-    },
-    {
-      icon: <Users className="h-6 w-6" />,
-      title: "Team Collaboration",
-      description: "Share optimizations, review queries, and collaborate with your team on database improvements.",
-      highlight: false,
-      details: "Built-in collaboration tools including code reviews, shared workspaces, and team performance analytics."
-    },
-    {
-      icon: <Code className="h-6 w-6" />,
-      title: "GitHub Integration",
-      description: "Seamlessly connect your repositories and automatically scan for SQL queries that need optimization.",
-      highlight: false,
-      details: "Automatic repository scanning, pull request integration, and CI/CD pipeline compatibility for seamless workflow integration."
     }
   ];
 

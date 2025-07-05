@@ -1,16 +1,46 @@
-
+import { lazy, ComponentType } from 'react';
 import { ResourcePreloader } from './resourcePreloader';
 
 interface LazyLoadOptions {
-  threshold?: number;
-  rootMargin?: string;
   preloadRoute?: string;
+  preloadDelay?: number;
+  fallbackTimeout?: number;
 }
 
-class IntelligentPreloader {
+export function createLazyRoute<T extends ComponentType<any>>(
+  importFn: () => Promise<{ default: T }>,
+  options: LazyLoadOptions = {}
+): ComponentType<T> {
+  const { preloadRoute, preloadDelay = 2000, fallbackTimeout = 10000 } = options;
+  
+  // Create the lazy component
+  const LazyComponent = lazy(importFn);
+  
+  // Preload related resources when this route might be accessed
+  if (preloadRoute) {
+    setTimeout(() => {
+      ResourcePreloader.preloadRouteAssets(preloadRoute);
+    }, preloadDelay);
+  }
+  
+  return LazyComponent;
+}
+
+export function preloadComponent(importFn: () => Promise<any>): void {
+  const componentImport = importFn();
+  
+  // Store the promise to avoid duplicate imports
+  if (typeof window !== 'undefined') {
+    (window as any).__preloadedComponents = (window as any).__preloadedComponents || new Map();
+    (window as any).__preloadedComponents.set(importFn.toString(), componentImport);
+  }
+}
+
+// Intelligent preloading based on user behavior
+export class IntelligentPreloader {
   private static instance: IntelligentPreloader;
-  private imageObserver: IntersectionObserver | null = null;
-  private componentObserver: IntersectionObserver | null = null;
+  private mousePositions: Array<{ x: number; y: number; timestamp: number }> = [];
+  private preloadedRoutes = new Set<string>();
 
   static getInstance(): IntelligentPreloader {
     if (!IntelligentPreloader.instance) {
@@ -20,121 +50,39 @@ class IntelligentPreloader {
   }
 
   initialize() {
-    this.initImageLazyLoading();
-    this.initComponentLazyLoading();
-  }
+    if (typeof window === 'undefined') return;
 
-  initImageLazyLoading(options: LazyLoadOptions = {}) {
-    const { threshold = 0.1, rootMargin = '50px', preloadRoute } = options;
-
-    if (this.imageObserver) {
-      this.imageObserver.disconnect();
-    }
-
-    this.imageObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target as HTMLImageElement;
-          const src = img.dataset.src;
-          
-          if (src) {
-            img.src = src;
-            img.removeAttribute('data-src');
-            img.classList.add('loaded');
-          }
-          
-          if (preloadRoute) {
-            ResourcePreloader.preloadRouteAssets(preloadRoute);
-          }
-          
-          this.imageObserver?.unobserve(img);
-        }
-      });
-    }, { threshold, rootMargin });
-
-    // Observe all images with data-src
-    document.querySelectorAll('img[data-src]').forEach(img => {
-      this.imageObserver?.observe(img);
-    });
-  }
-
-  initComponentLazyLoading(options: LazyLoadOptions = {}) {
-    const { threshold = 0.1, rootMargin = '100px' } = options;
-
-    if (this.componentObserver) {
-      this.componentObserver.disconnect();
-    }
-
-    this.componentObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const element = entry.target as HTMLElement;
-          const componentName = element.dataset.component;
-          
-          if (componentName) {
-            // Trigger component loading
-            this.loadComponent(componentName);
-            element.removeAttribute('data-component');
-          }
-          
-          this.componentObserver?.unobserve(element);
-        }
-      });
-    }, { threshold, rootMargin });
-
-    // Observe all elements with data-component
-    document.querySelectorAll('[data-component]').forEach(element => {
-      this.componentObserver?.observe(element);
-    });
-  }
-
-  private async loadComponent(componentName: string) {
-    try {
-      // Dynamic import based on component name
-      const componentMap: Record<string, () => Promise<any>> = {
-        'PerformanceDashboard': () => import('@/components/performance/PerformanceDashboard'),
-        'SecurityDashboard': () => import('@/components/security/SecurityDashboard'),
-        'AdvancedQueryBuilder': () => import('@/components/queries/AdvancedQueryBuilder')
-      };
-
-      const loader = componentMap[componentName];
-      if (loader) {
-        await loader();
-      }
-    } catch (error) {
-      console.warn(`Failed to lazy load component: ${componentName}`, error);
-    }
-  }
-
-  preloadRouteComponents(route: string) {
-    const routeComponents: Record<string, string[]> = {
-      '/app': ['PerformanceDashboard', 'SecurityDashboard'],
-      '/queries': ['AdvancedQueryBuilder'],
-      '/reports': ['PerformanceDashboard']
-    };
-
-    const components = routeComponents[route] || [];
-    components.forEach(component => {
-      this.loadComponent(component);
-    });
-
-    // Also preload route assets
-    ResourcePreloader.preloadRouteAssets(route);
-  }
-
-  cleanup() {
-    if (this.imageObserver) {
-      this.imageObserver.disconnect();
-      this.imageObserver = null;
-    }
+    // Track mouse movements to predict user intent
+    document.addEventListener('mousemove', this.trackMouseMovement.bind(this));
     
-    if (this.componentObserver) {
-      this.componentObserver.disconnect();
-      this.componentObserver = null;
+    // Preload on hover with debouncing
+    document.addEventListener('mouseenter', this.handleLinkHover.bind(this), true);
+  }
+
+  private trackMouseMovement(event: MouseEvent) {
+    this.mousePositions.push({
+      x: event.clientX,
+      y: event.clientY,
+      timestamp: Date.now()
+    });
+
+    // Keep only recent positions (last 2 seconds)
+    this.mousePositions = this.mousePositions.filter(
+      pos => Date.now() - pos.timestamp < 2000
+    );
+  }
+
+  private handleLinkHover(event: Event) {
+    const target = event.target as HTMLElement;
+    const link = target.closest('a[href]') as HTMLAnchorElement;
+    
+    if (link && link.href && link.origin === window.location.origin) {
+      const path = new URL(link.href).pathname;
+      
+      if (!this.preloadedRoutes.has(path)) {
+        this.preloadedRoutes.add(path);
+        ResourcePreloader.preloadRouteAssets(path);
+      }
     }
   }
 }
-
-// Export both for compatibility
-export { IntelligentPreloader };
-export const LazyLoader = IntelligentPreloader;

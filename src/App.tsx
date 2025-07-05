@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -40,15 +39,6 @@ const Queries = lazy(() => import('@/pages/Queries'));
 const Repositories = lazy(() => import('@/pages/Repositories'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const SecurityDashboardPage = lazy(() => import('@/components/security/SecurityDashboardPage').then(module => ({ default: module.SecurityDashboardPage })));
-
-// New pages
-const Documentation = lazy(() => import('@/pages/Documentation'));
-const Status = lazy(() => import('@/pages/Status'));
-const ReleaseNotes = lazy(() => import('@/pages/ReleaseNotes'));
-const Components = lazy(() => import('@/pages/Components'));
-const FAQ = lazy(() => import('@/pages/FAQ'));
-const Account = lazy(() => import('@/pages/Account'));
-const Settings = lazy(() => import('@/pages/Settings'));
 const NotFound = lazy(() => import('@/components/error/NotFound').then(module => ({ default: module.NotFound })));
 
 const queryClient = new QueryClient({
@@ -80,7 +70,7 @@ function App() {
               
               <Suspense fallback={<PageLoading />}>
                 <Routes>
-                  {/* Public routes with PublicLayout */}
+                  {/* Public routes */}
                   <Route path="/" element={<PublicLayout />}>
                     <Route index element={<EnhancedHome />} />
                     <Route path="login" element={<Login />} />
@@ -96,13 +86,6 @@ function App() {
                     <Route path="terms" element={<Terms />} />
                     <Route path="accessibility" element={<Accessibility />} />
                     <Route path="ai-studio" element={<AIOptimizationStudio />} />
-                    
-                    {/* New documentation and utility pages */}
-                    <Route path="docs" element={<Documentation />} />
-                    <Route path="status" element={<Status />} />
-                    <Route path="releases" element={<ReleaseNotes />} />
-                    <Route path="components" element={<Components />} />
-                    <Route path="faq" element={<FAQ />} />
                   </Route>
                   
                   {/* Protected authenticated routes */}
@@ -124,15 +107,6 @@ function App() {
 
                   <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                     <Route index element={<SecurityDashboardPage />} />
-                  </Route>
-
-                  {/* User settings routes */}
-                  <Route path="/account" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<Account />} />
-                  </Route>
-                  
-                  <Route path="/settings" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<Settings />} />
                   </Route>
                   
                   {/* 404 fallback */}

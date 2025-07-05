@@ -1,334 +1,163 @@
-
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  User, 
-  Mail, 
-  Shield, 
-  Bell, 
-  CreditCard, 
-  Key, 
-  Download,
-  Upload,
-  Settings,
-  Eye,
-  EyeOff
-} from 'lucide-react';
-import { FadeIn } from '@/components/ui/animations';
-import { useToast } from '@/hooks/use-toast';
+import { CreditCard, Github, LogOut, Crown } from 'lucide-react';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 export default function Account() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [showApiKey, setShowApiKey] = useState(false);
-  
-  const [profile, setProfile] = useState({
-    fullName: user?.user_metadata?.full_name || '',
-    email: user?.email || '',
-    company: '',
-    role: '',
-    bio: ''
-  });
+  const { user, logout } = useAuth();
 
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    performanceAlerts: true,
-    securityAlerts: true,
-    weeklyReports: false,
-    productUpdates: true
-  });
-
-  const handleProfileUpdate = async () => {
-    setIsLoading(true);
+  const handleLogout = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
+      await logout();
+      enhancedToast.success({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account.",
       });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      enhancedToast.error({
+        title: "Logout failed",
+        description: error.message || "An error occurred while signing out.",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const handleNotificationUpdate = async () => {
-    setIsLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast({
-        title: "Preferences Updated",
-        description: "Your notification preferences have been saved.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update preferences. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const generateApiKey = () => {
-    toast({
-      title: "API Key Generated",
-      description: "New API key has been generated successfully.",
-    });
-  };
+  // Extract user information from Supabase user object
+  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'User';
+  const userEmail = user?.email || '';
+  const userAvatar = user?.user_metadata?.avatar_url;
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <FadeIn>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Account Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your profile, preferences, and account security.
-          </p>
-        </div>
-      </FadeIn>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your account information and subscription.
+        </p>
+      </div>
 
-      <FadeIn delay={0.2}>
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
-              <Bell className="w-4 h-4" />
-              Notifications
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              Security
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4" />
-              Billing
-            </TabsTrigger>
-          </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile Info */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Profile Information</CardTitle>
+            <CardDescription>Your account details and authentication status</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={userAvatar} alt={userName} />
+                <AvatarFallback className="text-lg">{userName.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="text-lg font-medium">{userName}</h3>
+                <p className="text-muted-foreground">{userEmail}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  User ID: {user?.id}
+                </p>
+              </div>
+            </div>
 
-          <TabsContent value="profile" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>
-                  Update your personal information and profile details.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center gap-6">
-                  <Avatar className="w-20 h-20">
-                    <AvatarImage src="/placeholder-avatar.jpg" />
-                    <AvatarFallback className="text-lg">
-                      {profile.fullName?.charAt(0) || user?.email?.charAt(0)?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-2">
-                    <Button variant="outline" size="sm">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Photo
-                    </Button>
-                    <p className="text-sm text-muted-foreground">
-                      JPG, PNG or GIF. Max size 2MB.
-                    </p>
-                  </div>
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <Github className="w-5 h-5" />
+                <div>
+                  <p className="font-medium">GitHub</p>
+                  <p className="text-sm text-muted-foreground">
+                    {user?.app_metadata?.provider === 'github' ? 'Connected' : 'Not Connected'}
+                  </p>
                 </div>
+              </div>
+              <Badge className={user?.app_metadata?.provider === 'github' ? 
+                "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : 
+                "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"}>
+                {user?.app_metadata?.provider === 'github' ? 'Active' : 'Inactive'}
+              </Badge>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      value={profile.fullName}
-                      onChange={(e) => setProfile(prev => ({ ...prev, fullName: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profile.email}
-                      onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company</Label>
-                    <Input
-                      id="company"
-                      value={profile.company}
-                      onChange={(e) => setProfile(prev => ({ ...prev, company: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Input
-                      id="role"
-                      value={profile.role}
-                      onChange={(e) => setProfile(prev => ({ ...prev, role: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Input
-                      id="bio"
-                      value={profile.bio}
-                      onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
-                      placeholder="Tell us about yourself..."
-                    />
-                  </div>
+            <Button variant="destructive" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Subscription */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-yellow-600" />
+              Subscription
+            </CardTitle>
+            <CardDescription>Your current plan and billing</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-medium">Pro Plan</span>
+                <Badge>Active</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                $29/month • Renews on Jan 15, 2024
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Repositories</span>
+                <span>5 / 10</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Monthly queries</span>
+                <span>2,847 / 50,000</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Team members</span>
+                <span>3 / 10</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Button className="w-full" variant="outline">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Manage Billing
+              </Button>
+              <Button className="w-full">
+                Upgrade Plan
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+          <CardDescription>Your recent actions and optimizations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[
+              { action: 'Approved optimization', target: 'user-service.ts:45', time: '2 hours ago' },
+              { action: 'Connected repository', target: 'my-awesome-app', time: '1 day ago' },
+              { action: 'Created team', target: 'Frontend Team', time: '3 days ago' },
+              { action: 'Upgraded plan', target: 'Pro Plan', time: '1 week ago' },
+            ].map((activity, index) => (
+              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">{activity.action}</p>
+                  <p className="text-sm text-muted-foreground">{activity.target}</p>
                 </div>
-
-                <Button onClick={handleProfileUpdate} disabled={isLoading}>
-                  {isLoading ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="notifications" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-                <CardDescription>
-                  Choose how you'd like to be notified about account activity.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {Object.entries(notifications).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <div>
-                      <Label className="font-medium">
-                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                      </Label>
-                    </div>
-                    <Button
-                      variant={value ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setNotifications(prev => ({ ...prev, [key]: !value }))}
-                    >
-                      {value ? 'Enabled' : 'Disabled'}
-                    </Button>
-                  </div>
-                ))}
-                <Button onClick={handleNotificationUpdate} disabled={isLoading}>
-                  {isLoading ? 'Saving...' : 'Save Preferences'}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="security" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
-                <CardDescription>
-                  Manage your account security and API access.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-base font-medium">Password</Label>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Last changed 30 days ago
-                    </p>
-                    <Button variant="outline">Change Password</Button>
-                  </div>
-
-                  <div>
-                    <Label className="text-base font-medium">Two-Factor Authentication</Label>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Add an extra layer of security to your account
-                    </p>
-                    <Badge variant="outline">Not Enabled</Badge>
-                    <Button variant="outline" className="ml-2">Enable 2FA</Button>
-                  </div>
-
-                  <div>
-                    <Label className="text-base font-medium">API Key</Label>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Use this key to access the DBooster API
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type={showApiKey ? "text" : "password"}
-                        value="dk_test_1234567890abcdef"
-                        readOnly
-                        className="font-mono text-sm"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setShowApiKey(!showApiKey)}
-                      >
-                        {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </Button>
-                      <Button variant="outline" onClick={generateApiKey}>
-                        <Key className="w-4 h-4 mr-2" />
-                        Regenerate
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="billing" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Billing Information</CardTitle>
-                <CardDescription>
-                  Manage your subscription and billing details.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-semibold">Enterprise Plan</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Next billing date: January 15, 2024
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold">$99/month</p>
-                    <Badge>Active</Badge>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <Button variant="outline">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Update Payment Method
-                  </Button>
-                  <Button variant="outline">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Invoices
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </FadeIn>
+                <span className="text-sm text-muted-foreground">{activity.time}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
