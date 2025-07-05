@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Search, ExternalLink, Brain } from 'lucide-react';
+import { ChevronDown, Search, ExternalLink } from 'lucide-react';
 import { NavigationItem } from '@/config/navigation';
 
 interface MegaMenuProps {
@@ -67,7 +67,7 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
               <Button
                 variant="ghost"
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all duration-300",
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-300",
                   "hover:bg-accent/50 hover:text-accent-foreground",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive && "bg-accent/30 text-accent-foreground"
@@ -77,7 +77,6 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                 aria-expanded={isActive}
                 aria-haspopup="true"
               >
-                <item.icon className="h-4 w-4" />
                 <span>{item.label}</span>
                 <ChevronDown className={cn(
                   "h-3 w-3 transition-transform duration-200",
@@ -89,14 +88,13 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                 variant="ghost"
                 asChild
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all duration-300",
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-300",
                   "hover:bg-accent/50 hover:text-accent-foreground",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActiveRoute(item.href) && "bg-accent text-accent-foreground"
                 )}
               >
                 <Link to={item.href}>
-                  <item.icon className="h-4 w-4" />
                   <span>{item.label}</span>
                   {item.badge && (
                     <Badge variant="secondary" className="text-xs">
@@ -107,7 +105,6 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
               </Button>
             )}
 
-            {/* Mega Menu Dropdown */}
             {hasChildren && isActive && (
               <div 
                 className={cn(
@@ -117,18 +114,13 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                 )}
                 onMouseLeave={() => setActiveMenu(null)}
               >
-                {/* Header */}
                 <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <item.icon className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold text-lg">{item.label}</h3>
-                  </div>
+                  <h3 className="font-semibold text-lg mb-2">{item.label}</h3>
                   {item.description && (
                     <p className="text-sm text-muted-foreground">{item.description}</p>
                   )}
                 </div>
 
-                {/* Search */}
                 <div className="relative mb-4">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <input
@@ -140,7 +132,6 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                   />
                 </div>
 
-                {/* Menu Items */}
                 <div className="space-y-1">
                   {filteredItems(item.children!).map((child) => (
                     <Link
@@ -153,7 +144,6 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                       )}
                       onClick={() => setActiveMenu(null)}
                     >
-                      <child.icon className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium text-sm">{child.label}</span>
@@ -174,14 +164,12 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                   ))}
                 </div>
 
-                {/* Footer CTA */}
                 <div className="mt-6 pt-4 border-t">
                   <Button 
                     asChild 
                     className="w-full bg-gradient-to-r from-primary to-blue-600"
                   >
                     <Link to="/ai-studio">
-                      <Brain className="h-4 w-4 mr-2" />
                       Try AI Studio Free
                     </Link>
                   </Button>

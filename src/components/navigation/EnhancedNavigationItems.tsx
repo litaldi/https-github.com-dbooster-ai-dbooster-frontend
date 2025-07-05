@@ -31,14 +31,13 @@ export function EnhancedNavigationItems({
     >
       {items.map((item) => {
         const isActive = isCurrentRoute(item.href);
-        const Icon = item.icon;
         
         return (
           <Link
             key={item.href}
             to={item.href}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all duration-200 rounded-md",
+              "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md",
               "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isActive
@@ -50,7 +49,6 @@ export function EnhancedNavigationItems({
             aria-current={isActive ? 'page' : undefined}
             title={item.description}
           >
-            <Icon className="h-4 w-4" aria-hidden="true" />
             <span>{item.label}</span>
             {item.badge && (
               <Badge variant="secondary" className="text-xs ml-auto bg-primary/10 text-primary border-primary/20">
@@ -58,7 +56,7 @@ export function EnhancedNavigationItems({
               </Badge>
             )}
             {mobile && item.description && (
-              <span className="text-xs text-muted-foreground block mt-1 ml-6">
+              <span className="text-xs text-muted-foreground block mt-1">
                 {item.description}
               </span>
             )}

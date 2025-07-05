@@ -12,28 +12,19 @@ import {
   Twitter, 
   Linkedin, 
   Github,
-  Globe,
   Shield,
-  Award,
-  Clock,
-  Users,
-  TrendingUp,
   CheckCircle2,
   ArrowRight
 } from 'lucide-react';
 import { footerNavigation, socialProofIndicators } from '@/config/navigation';
-import { useI18n } from '@/hooks/useI18n';
-import { Switch } from '@/components/ui/switch';
 
 export function EnhancedFooter() {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const { language, updateLanguage, t } = useI18n();
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email.trim()) {
-      // Newsletter signup logic here
       setIsSubscribed(true);
       setEmail('');
       setTimeout(() => setIsSubscribed(false), 3000);
@@ -119,23 +110,6 @@ export function EnhancedFooter() {
                   Successfully subscribed!
                 </p>
               )}
-            </div>
-
-            {/* Language Selector */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Language</h4>
-              <div className="flex items-center gap-3">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                <div className="flex items-center gap-2">
-                  <span className={language === 'en' ? 'font-medium' : 'text-muted-foreground'}>English</span>
-                  <Switch
-                    checked={language === 'he'}
-                    onCheckedChange={() => updateLanguage(language === 'en' ? 'he' : 'en')}
-                    aria-label={t('toggle_language')}
-                  />
-                  <span className={language === 'he' ? 'font-medium' : 'text-muted-foreground'}>עברית</span>
-                </div>
-              </div>
             </div>
           </div>
 

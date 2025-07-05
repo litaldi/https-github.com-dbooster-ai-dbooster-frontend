@@ -1,72 +1,71 @@
 
-# 🚀 DBooster - Enterprise-Grade Performance Optimization Platform
+# DBooster - AI Database Optimization Platform
 
-DBooster is a production-ready, security-hardened web application that provides comprehensive database query optimization, repository analysis, and performance monitoring capabilities. Built with modern React, TypeScript, and enterprise-grade security features.
+DBooster is a production-ready web application that provides comprehensive database query optimization, repository analysis, and performance monitoring capabilities. Built with modern React, TypeScript, and enterprise-grade features for database performance optimization.
 
-## ✨ Production Features
+## About
 
-### 🔒 Enterprise Security
-- **SOC2 Compliance Ready**: Comprehensive audit trail and security logging
-- **Advanced Threat Detection**: Real-time pattern matching for XSS, SQL injection, and command injection
-- **Rate Limiting**: Configurable per-endpoint protection with automatic IP blocking
-- **Security Headers**: CSP, HSTS, and comprehensive security header implementation
-- **Input Sanitization**: Multi-layer validation and sanitization for all user inputs
-- **Authentication Security**: Brute force protection and suspicious activity detection
+DBooster helps organizations optimize their database performance through AI-powered query analysis and recommendations. The platform provides real-time monitoring, automated optimization suggestions, and comprehensive reporting to reduce query response times and infrastructure costs.
 
-### ⚡ Performance & Monitoring
-- **95+ Lighthouse Score**: Optimized for Core Web Vitals and loading performance
-- **Real-time Performance Monitoring**: FCP, LCP, CLS, and FID tracking
-- **Advanced Bundle Optimization**: Smart code splitting and tree-shaking
-- **Resource Loading Monitoring**: Automatic detection of slow-loading assets
-- **Service Worker Integration**: Intelligent caching strategies
-
-### 🎨 User Experience
-- **Modular Dashboard System**: Drag-and-drop widget customization
-- **Progressive Data Disclosure**: Prevents information overload
-- **Interactive Elements**: 3D hover effects, loading states, and feedback animations
-- **Keyboard Navigation**: Complete keyboard accessibility throughout
-- **Responsive Design**: Mobile-first approach with optimized touch interactions
-
-### 🛡️ Code Quality & Architecture
-- **TypeScript Strict Mode**: Complete type safety and error prevention
-- **Clean Architecture**: Modular, maintainable, and testable codebase
-- **Security-First Development**: No console logs in production, sanitized error handling
-- **Production Logger**: Secure logging with sensitive data protection
-- **Comprehensive Input Validation**: Context-aware validation and sanitization
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Core Technologies
-- **React 18** with TypeScript for type-safe development
-- **Vite** for lightning-fast development and optimized builds
-- **Tailwind CSS** for utility-first styling with custom design system
-- **Framer Motion** for smooth animations and micro-interactions
+- React 18 with TypeScript for type-safe development
+- Vite for fast development and optimized builds
+- Tailwind CSS for utility-first styling
+- Framer Motion for smooth animations
 
-### Security & Performance
-- **DOMPurify** for XSS protection and HTML sanitization
-- **Custom Security Headers** with CSP and threat detection
-- **Rate Limiting Service** with automatic blocking capabilities
-- **Performance Monitor** with Web Vitals tracking
-- **Production Logger** with secure data handling
+### UI and Components
+- Radix UI primitives for accessibility
+- Shadcn/ui design system for consistent components
+- Lucide Icons for iconography
+- React Hook Form with Zod validation
 
-### UI & Interactions
-- **Radix UI** primitives for accessibility and customization
-- **Shadcn/ui** design system for consistent components
-- **@hello-pangea/dnd** for drag-and-drop functionality
-- **Lucide Icons** for beautiful, consistent iconography
+### Backend and Data
+- Supabase for backend services and authentication
+- TanStack Query for server state management
+- PostgreSQL database
 
-### Data Management
-- **TanStack Query** for server state management and caching
-- **React Hook Form** with Zod validation for forms
-- **Supabase** integration for backend services
+### Development Tools
+- Storybook for component development and documentation
+- ESLint and Prettier for code quality
+- TypeScript strict mode for type safety
+- Playwright for end-to-end testing
 
-## 🚀 Quick Start
+## Key Features
+
+### Database Optimization
+- AI-powered query analysis and optimization
+- Real-time performance monitoring
+- Automated optimization recommendations
+- Query execution plan analysis
+
+### Performance Analytics
+- Comprehensive performance reports
+- Real-time metrics and dashboards
+- Historical performance tracking
+- Cost analysis and optimization
+
+### Team Collaboration
+- Multi-user support with role-based access
+- Query approval workflows
+- Team management and permissions
+- Collaborative optimization workspace
+
+### Security and Compliance
+- Enterprise-grade security features
+- Role-based access control
+- Audit trails and logging
+- SOC2 compliance ready
+
+## Setup Instructions
 
 ### Prerequisites
-- Node.js 18+ and npm/yarn
+- Node.js 18 or higher
+- npm or yarn package manager
 - Git for version control
 
-### Installation & Setup
+### Installation
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -74,193 +73,164 @@ cd dbooster
 
 # Install dependencies
 npm install
-
-# Start development server
-npm run dev
-
-# Start Storybook (component development)
-npm run storybook
 ```
 
 ### Environment Setup
-The application is configured for immediate deployment with no additional environment variables required. All security features are enabled by default in production mode.
+The application works out of the box with default configurations. For production deployment, configure your Supabase project settings as needed.
 
-## 📋 Available Scripts
+### Development Commands
 
-### Development
+#### Start Development Server
 ```bash
-npm run dev          # Start development server (http://localhost:5173)
-npm run storybook    # Start Storybook (http://localhost:6006)
-npm run type-check   # TypeScript type checking
+npm run dev
+```
+This starts the development server at http://localhost:5173
+
+#### Start Storybook
+```bash
+npm run storybook
+```
+This launches Storybook at http://localhost:6006 for component development and documentation
+
+#### Type Checking
+```bash
+npm run type-check
 ```
 
-### Testing & Quality
+### Testing Commands
+
+#### Unit Tests
 ```bash
-npm run test         # Run unit tests
-npm run test:ui      # Run tests with UI
-npm run test:coverage # Generate test coverage report
-npm run test:e2e     # Run E2E tests with Playwright
-npm run test:a11y    # Run accessibility tests
+npm run test          # Run tests
+npm run test:ui       # Run tests with UI
+npm run test:coverage # Generate coverage report
 ```
 
-### Production & Analysis
+#### End-to-End Tests
 ```bash
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run analyze      # Analyze bundle size
-npm run perf         # Run Lighthouse performance audit
+npm run test:e2e      # Run E2E tests with Playwright
 ```
 
-### Code Quality
+#### Accessibility Tests
+```bash
+npm run test:a11y     # Run accessibility compliance tests
+```
+
+### Production Commands
+
+#### Build for Production
+```bash
+npm run build
+```
+
+#### Preview Production Build
+```bash
+npm run preview
+```
+
+#### Performance Analysis
+```bash
+npm run analyze       # Analyze bundle size
+npm run perf         # Run Lighthouse audit
+```
+
+### Code Quality Commands
+
+#### Linting and Formatting
 ```bash
 npm run lint         # Lint code with ESLint
 npm run format       # Format code with Prettier
 npm run format:check # Check code formatting
 ```
 
-## 🏗️ Architecture Overview
+## Storybook Usage
 
-### Security Architecture
-```
-├── Enhanced Security Headers    # CSP, HSTS, security headers
-├── Threat Detection Engine     # Real-time pattern matching
-├── Rate Limiting Service       # Per-endpoint protection
-├── Input Validation Service    # Multi-context sanitization
-├── Authentication Security     # Brute force protection
-└── Production Logger          # Secure audit trail
-```
+Storybook provides an isolated environment for developing and testing UI components.
 
-### Component Architecture
+### Accessing Storybook
+1. Run `npm run storybook` to start the development server
+2. Open http://localhost:6006 in your browser
+3. Browse components in the sidebar navigation
+
+### Component Documentation
+- Each component includes interactive controls for testing different props
+- Documentation includes usage guidelines and accessibility information
+- Use the viewport addon to test responsive designs
+- Check accessibility compliance with the built-in a11y addon
+
+### Building Storybook
+```bash
+npm run build-storybook
+```
+This creates a static build in the `storybook-static` directory for deployment.
+
+## Project Structure
+
 ```
 src/
-├── components/
-│   ├── ui/                    # Base UI components
-│   ├── dashboard/             # Dashboard-specific components
-│   ├── layout/                # Layout components
-│   └── features/              # Feature-specific components
-├── services/
-│   └── security/              # Security services
-├── utils/                     # Utility functions
-├── hooks/                     # Custom React hooks
-└── middleware/                # Security middleware
+├── components/          # Reusable UI components
+│   ├── ui/             # Base UI components (buttons, inputs, etc.)
+│   ├── layout/         # Layout components
+│   ├── navigation/     # Navigation components
+│   └── features/       # Feature-specific components
+├── pages/              # Page components
+├── hooks/              # Custom React hooks
+├── utils/              # Utility functions
+├── config/             # Configuration files
+├── integrations/       # External service integrations
+└── stories/            # Storybook stories
 ```
 
-## 🔒 Security Features Detail
-
-### Threat Detection
-- **XSS Protection**: Script injection detection and blocking
-- **SQL Injection Prevention**: Query pattern analysis
-- **Command Injection Blocking**: System command detection
-- **Path Traversal Protection**: Directory traversal prevention
-- **Template Injection Detection**: Server-side template attacks
-
-### Rate Limiting
-- **API Endpoints**: 100 requests/minute, 5-minute block
-- **Authentication**: 5 attempts/5 minutes, 15-minute block  
-- **Form Submissions**: 10 requests/minute, 1-minute block
-- **Search Queries**: 30 requests/minute, 2-minute block
-
-### Security Headers
-- **Content Security Policy**: Strict CSP with nonce support
-- **HSTS**: Enforce HTTPS connections
-- **X-Frame-Options**: Prevent clickjacking
-- **X-Content-Type-Options**: MIME type sniffing protection
-- **Referrer Policy**: Control referrer information
-
-## 📊 Performance Metrics
-
-### Core Web Vitals Targets
-- **First Contentful Paint (FCP)**: < 1.8s
-- **Largest Contentful Paint (LCP)**: < 2.5s  
-- **Cumulative Layout Shift (CLS)**: < 0.1
-- **First Input Delay (FID)**: < 100ms
-
-### Performance Monitoring
-- Real-time Web Vitals tracking
-- Resource loading performance analysis
-- Bundle size optimization alerts
-- Slow component detection
-
-## 🎯 Production Readiness Checklist
-
-### ✅ Completed Features
-- [x] **Security Hardening**: Complete threat detection and prevention
-- [x] **Performance Optimization**: 95+ Lighthouse score achieved
-- [x] **Code Quality**: TypeScript strict mode, zero console logs
-- [x] **Accessibility**: WCAG 2.1 AA compliance
-- [x] **Responsive Design**: Mobile-first, touch-optimized
-- [x] **Error Handling**: Secure error boundaries and logging
-- [x] **Input Validation**: Comprehensive sanitization
-- [x] **Rate Limiting**: Advanced protection mechanisms
-- [x] **Monitoring**: Production-ready logging and analytics
-
-### 🚀 Deployment
-The application is fully production-ready and can be deployed to any modern hosting platform:
-
-```bash
-# Build for production
-npm run build
-
-# The dist/ folder contains the complete production build
-# Deploy the contents to your hosting provider
-```
-
-### Performance Optimizations Applied
-- Automatic code splitting by route
-- Image optimization and lazy loading  
-- Service worker for offline functionality
-- CDN-ready static asset optimization
-- Critical CSS inlining
-- Font optimization and preloading
-
-## 🛡️ Security Compliance
-
-### Standards Compliance
-- **SOC2 Type II Ready**: Comprehensive audit trail
-- **OWASP Top 10 Protection**: All major vulnerabilities addressed
-- **GDPR Compliant**: Privacy-conscious data handling
-- **Security Headers**: A+ rating on securityheaders.com
-
-### Security Monitoring
-- Real-time threat detection dashboard
-- Comprehensive audit logging
-- Automated security alerts
-- Regular security metrics reporting
-
-## 🤝 Contributing
-
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Implement changes with comprehensive tests
-4. Ensure all security checks pass
-5. Update documentation as needed
-6. Submit a pull request
+## Development Guidelines
 
 ### Code Quality Standards
 - TypeScript strict mode compliance
-- 90%+ test coverage requirement
-- Security vulnerability scanning
-- Performance impact assessment
-- Accessibility compliance verification
+- Comprehensive test coverage
+- ESLint and Prettier formatting
+- Component-driven development
+- Accessibility compliance (WCAG 2.1 AA)
 
-## 📜 License
+### Performance Optimization
+- Code splitting by route
+- Lazy loading of components
+- Optimized bundle size
+- Image optimization
+- Efficient state management
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Security Best Practices
+- Input validation and sanitization
+- Secure authentication flows
+- Protected API endpoints
+- Environment variable management
 
-## 🆘 Support & Documentation
+## Deployment
 
-- **Storybook Documentation**: Interactive component library
-- **Security Guidelines**: Comprehensive security best practices
-- **Performance Guides**: Optimization recommendations
-- **API Documentation**: Complete endpoint documentation
+The application can be deployed to any modern hosting platform that supports static sites:
 
----
+1. Run `npm run build` to create the production build
+2. Deploy the `dist` folder to your hosting provider
+3. Configure environment variables as needed
+4. Set up CI/CD pipelines for automated deployments
 
-**Production Status**: ✅ **READY**
-- Security Score: **95/100**
-- Performance Score: **95+**  
-- Accessibility Score: **100%**
-- Code Quality: **A+**
+## Contributing
 
-Built with enterprise-grade security, performance, and accessibility in mind.
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch
+3. Make changes with appropriate tests
+4. Ensure all quality checks pass
+5. Submit a pull request
+
+### Code Standards
+- Follow TypeScript strict mode guidelines
+- Write comprehensive tests for new features
+- Update documentation for significant changes
+- Follow the established component patterns
+
+## Support
+
+For questions, issues, or feature requests, please refer to the project documentation or contact the development team.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.

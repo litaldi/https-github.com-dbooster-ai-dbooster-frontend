@@ -34,14 +34,13 @@ export function EnhancedUserMenu({
     )}>
       {user && userMenuItems.map((item) => {
         const isActive = isCurrentRoute(item.href);
-        const Icon = item.icon;
         
         return (
           <Link
             key={item.href}
             to={item.href}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all duration-200 rounded-md",
+              "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md",
               "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isActive
@@ -53,7 +52,6 @@ export function EnhancedUserMenu({
             aria-current={isActive ? 'page' : undefined}
             title={item.description}
           >
-            <Icon className="h-4 w-4" aria-hidden="true" />
             {item.label}
           </Link>
         );
