@@ -5,312 +5,357 @@ import { Meta } from '@storybook/blocks';
 
 # Component Guidelines
 
-This guide establishes best practices for creating and maintaining components in the DBooster design system.
+Best practices and patterns for building consistent, accessible, and maintainable components in the DBooster design system.
 
-## Component Architecture
+## 🎯 Design Principles
 
-### Compound Components
-For complex UI patterns, use the compound component pattern to provide flexibility while maintaining cohesion.
+### 1. Accessibility First
+- **WCAG 2.1 AAA Compliance**: All components meet the highest accessibility standards
+- **Keyboard Navigation**: Full keyboard support with logical tab order
+- **Screen Reader Support**: Proper ARIA labels and semantic HTML
+- **Focus Management**: Visible focus indicators and focus trapping where appropriate
+
+### 2. Mobile-First Design
+- **Responsive by Default**: Components work seamlessly across all screen sizes
+- **Touch-Friendly**: Minimum 44px touch targets for interactive elements
+- **Progressive Enhancement**: Enhanced experiences on larger screens
+
+### 3. Performance Optimized
+- **Lazy Loading**: Components load only when needed
+- **Tree-Shakeable**: Import only what you use
+- **Minimal Bundle Impact**: Optimized for production builds
+
+## 🧩 Component Architecture
+
+### Component Types
+
+#### 1. Primitive Components
+Basic building blocks with minimal styling and maximum flexibility.
 
 ```tsx
-// ✅ Good - Compound pattern
-<Card>
-  <CardHeader>
-    <CardTitle>User Profile</CardTitle>
-    <CardDescription>Manage your account settings</CardDescription>
-  </CardHeader>
-  <CardContent>
-    <UserForm />
-  </CardContent>
-  <CardFooter>
-    <Button>Save Changes</Button>
-  </CardFooter>
-</Card>
+// Example: Enhanced Button
+<EnhancedButton variant="primary" size="lg">
+  Click me
+</EnhancedButton>
+```
 
-// ❌ Avoid - Monolithic component
-<UserProfileCard 
-  title="User Profile"
-  description="Manage your account settings"
-  content={<UserForm />}
-  actions={<Button>Save Changes</Button>}
+#### 2. Composite Components
+Complex components built from primitives with specific use cases.
+
+```tsx
+// Example: Enhanced Hero Section
+<EnhancedHero
+  title="Transform Your Database"
+  description="AI-powered optimization for enterprise databases"
+  primaryCTA={{ text: "Get Started", onClick: handleClick }}
 />
 ```
 
-### Component Sizing
-Follow consistent sizing patterns across all components:
-
-- **Small (sm)**: Compact UI, dense layouts
-- **Default**: Standard size for most use cases  
-- **Large (lg)**: Prominent elements, hero sections
-
-### Variant System
-Use semantic variant names that describe purpose, not appearance:
+#### 3. Layout Components
+Structural components for consistent spacing and organization.
 
 ```tsx
-// ✅ Good - Semantic variants
-<Button variant="primary">Save</Button>
-<Button variant="destructive">Delete</Button>
-<Alert variant="warning">Check your input</Alert>
-
-// ❌ Avoid - Appearance-based variants  
-<Button variant="blue">Save</Button>
-<Button variant="red">Delete</Button>
-<Alert variant="yellow">Check your input</Alert>
+// Example: Visual Hierarchy
+<Section spacing="xl">
+  <Container size="lg">
+    <Heading level={1} size="3xl">Page Title</Heading>
+    <Text size="lg" variant="muted">Description</Text>
+  </Container>
+</Section>
 ```
 
-## Accessibility Requirements
+### Component API Design
 
-Every component must meet WCAG 2.1 AA standards:
-
-### Keyboard Navigation
-- All interactive elements must be keyboard accessible
-- Implement proper tab order with `tabIndex`
-- Provide keyboard shortcuts where appropriate
-- Support arrow key navigation for lists and grids
-
+#### Consistent Props Pattern
 ```tsx
-// ✅ Keyboard accessible menu
-<Menu onKeyDown={handleKeyDown}>
-  <MenuItem tabIndex={0}>Option 1</MenuItem>
-  <MenuItem tabIndex={0}>Option 2</MenuItem>
-</Menu>
+interface ComponentProps {
+  // Visual variants
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  
+  // Behavior
+  disabled?: boolean;
+  loading?: boolean;
+  
+  // Content
+  children?: React.ReactNode;
+  
+  // Accessibility
+  'aria-label'?: string;
+  
+  // Standard HTML props
+  className?: string;
+}
 ```
 
-### Screen Reader Support
-- Use semantic HTML elements (`button`, `nav`, `main`, etc.)
-- Provide descriptive `aria-label` attributes
-- Implement proper heading hierarchy
-- Use `aria-describedby` for help text
+#### Compound Components
+For complex UI patterns, use compound component patterns:
 
 ```tsx
-// ✅ Screen reader friendly
-<button 
-  aria-label="Delete user account"
-  aria-describedby="delete-help"
->
-  Delete
+<AccessibilityMenu>
+  <AccessibilityMenu.Header>
+    <AccessibilityMenu.Title>Settings</AccessibilityMenu.Title>
+    <AccessibilityMenu.CloseButton />
+  </AccessibilityMenu.Header>
+  <AccessibilityMenu.Content>
+    <AccessibilityMenu.Toggle>High Contrast</AccessibilityMenu.Toggle>
+  </AccessibilityMenu.Content>
+</AccessibilityMenu>
+```
+
+## 🎨 Styling Guidelines
+
+### 1. Tailwind CSS Classes
+Use utility-first approach with consistent patterns:
+
+```tsx
+// Good: Consistent spacing and responsive design
+className="px-4 py-2 sm:px-6 sm:py-3 lg:px-8 lg:py-4"
+
+// Avoid: Magic numbers or inconsistent spacing
+className="px-5 py-3 sm:px-7 sm:py-4"
+```
+
+### 2. CSS Custom Properties
+Use design tokens for consistent theming:
+
+```css
+.component {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: var(--radius);
+}
+```
+
+### 3. Responsive Design
+Mobile-first breakpoints:
+
+```tsx
+// Mobile: base styles
+// Tablet: sm: prefix (640px+)
+// Desktop: lg: prefix (1024px+)
+// Large: xl: prefix (1280px+)
+
+className="text-sm sm:text-base lg:text-lg xl:text-xl"
+```
+
+## ♿ Accessibility Patterns
+
+### 1. Semantic HTML
+Always use appropriate HTML elements:
+
+```tsx
+// Good: Semantic button
+<button type="button" onClick={handleClick}>
+  Submit
 </button>
-<div id="delete-help">This action cannot be undone</div>
-```
 
-### Color and Contrast
-- Ensure 3:1 contrast ratio for large text (18px+)
-- Ensure 4.5:1 contrast ratio for normal text
-- Don't rely solely on color to convey information
-- Support high contrast mode
-
-### Focus Management
-- Provide visible focus indicators
-- Manage focus for modals and overlays
-- Return focus appropriately after interactions
-
-```tsx
-// ✅ Proper focus management
-const Modal = ({ onClose, children }) => {
-  const [lastFocusedElement, setLastFocusedElement] = useState(null);
-  
-  useEffect(() => {
-    setLastFocusedElement(document.activeElement);
-    return () => lastFocusedElement?.focus();
-  }, []);
-  
-  return <div role="dialog" aria-modal="true">{children}</div>;
-};
-```
-
-## Responsive Design
-
-### Mobile-First Approach
-Start with mobile design and enhance for larger screens:
-
-```tsx
-// ✅ Mobile-first responsive classes
-<div className="text-sm md:text-base lg:text-lg">
-  Responsive text
-</div>
-
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-  Responsive grid
+// Avoid: Div as button
+<div onClick={handleClick} className="button-styles">
+  Submit
 </div>
 ```
 
-### Breakpoint System
-- **Mobile**: 0px - 767px
-- **Tablet**: 768px - 1023px  
-- **Desktop**: 1024px - 1279px
-- **Large Desktop**: 1280px+
-
-### Touch Targets
-- Minimum 44px × 44px touch targets on mobile
-- Provide adequate spacing between interactive elements
-- Consider thumb-friendly placement for mobile navigation
-
-## Performance Guidelines
-
-### Lazy Loading
-Implement lazy loading for non-critical components:
+### 2. ARIA Labels
+Provide context for screen readers:
 
 ```tsx
-// ✅ Lazy load heavy components
-const HeavyChart = lazy(() => import('./HeavyChart'));
-
-const Dashboard = () => (
-  <Suspense fallback={<ChartSkeleton />}>
-    <HeavyChart data={chartData} />
-  </Suspense>
-);
+<button
+  aria-label="Close dialog"
+  aria-expanded="false"
+  aria-controls="dialog-content"
+>
+  <X className="h-4 w-4" />
+</button>
 ```
 
-### Bundle Optimization
-- Use tree-shaking friendly exports
-- Avoid default exports for libraries
-- Implement code splitting at route level
-
-### Image Optimization
-- Use WebP format with fallbacks
-- Implement responsive images with `srcset`
-- Provide meaningful alt text
-- Use skeleton loaders for image placeholders
-
-## Animation Guidelines
-
-### Motion Principles
-- **Purposeful**: Animations should serve a functional purpose
-- **Performant**: Use GPU-accelerated properties (transform, opacity)
-- **Respectful**: Honor `prefers-reduced-motion` setting
+### 3. Focus Management
+Implement proper focus handling:
 
 ```tsx
-// ✅ Respectful animation
-const AnimatedCard = ({ children }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ 
-      duration: 0.3,
-      ease: "easeOut"
-    }}
-    className="motion-reduce:transform-none motion-reduce:transition-none"
-  >
-    {children}
-  </motion.div>
-);
+// Focus trapping in modals
+const { containerRef } = useFocusManagement(isOpen, {
+  trapFocus: true,
+  restoreFocus: true
+});
 ```
 
-### Duration Guidelines
-- **Micro-interactions**: 75-150ms (hover, focus)
-- **Small transitions**: 150-300ms (button press, toggle)
-- **Medium transitions**: 300-500ms (modal open, page change)
-- **Large transitions**: 500-700ms (complex state changes)
-
-## Error Handling
-
-### Error Boundaries
-Wrap components that might fail in error boundaries:
+### 4. Keyboard Navigation
+Support all keyboard interactions:
 
 ```tsx
-// ✅ Error boundary wrapper
-const SafeComponent = ({ children }) => (
-  <ErrorBoundary
-    fallback={<ErrorMessage />}
-    onError={logError}
-  >
-    {children}
-  </ErrorBoundary>
-);
-```
-
-### Loading States
-Provide appropriate loading states for all async operations:
-
-```tsx
-// ✅ Comprehensive loading states
-const DataTable = () => {
-  const { data, isLoading, error } = useQuery('table-data', fetchData);
-  
-  if (isLoading) return <TableSkeleton />;
-  if (error) return <ErrorState retry={() => refetch()} />;
-  if (!data?.length) return <EmptyState />;
-  
-  return <Table data={data} />;
+const handleKeyDown = (e: KeyboardEvent) => {
+  switch (e.key) {
+    case 'Escape':
+      onClose();
+      break;
+    case 'Tab':
+      handleTabNavigation(e);
+      break;
+  }
 };
 ```
 
-## Testing Requirements
+## 🧪 Testing Guidelines
 
-### Unit Tests
-- Test component rendering with different props
-- Test user interactions (click, keyboard, etc.)
-- Test accessibility features
-- Achieve 85%+ code coverage
+### 1. Unit Tests
+Test component logic and rendering:
 
 ```tsx
-// ✅ Comprehensive component test
-describe('Button', () => {
-  it('renders with correct text', () => {
-    render(<Button>Click me</Button>);
-    expect(screen.getByRole('button')).toHaveTextContent('Click me');
+describe('EnhancedButton', () => {
+  it('renders with correct variant styles', () => {
+    render(<EnhancedButton variant="primary">Click me</EnhancedButton>);
+    expect(screen.getByRole('button')).toHaveClass('bg-primary');
   });
-  
-  it('handles click events', () => {
-    const handleClick = jest.fn();
-    render(<Button onClick={handleClick}>Click me</Button>);
-    fireEvent.click(screen.getByRole('button'));
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-  
-  it('is keyboard accessible', () => {
-    render(<Button>Click me</Button>);
-    const button = screen.getByRole('button');
-    button.focus();
-    fireEvent.keyDown(button, { key: 'Enter' });
-    // Assert expected behavior
+
+  it('handles loading state correctly', () => {
+    render(<EnhancedButton loading>Submit</EnhancedButton>);
+    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 });
 ```
 
-### Visual Regression Tests
-Use Storybook with Chromatic for visual testing:
+### 2. Accessibility Tests
+Automated accessibility testing:
 
 ```tsx
-// ✅ Comprehensive stories for visual testing
-export const AllStates: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <Button>Default</Button>
-      <Button disabled>Disabled</Button>
-      <Button loading>Loading</Button>
-      <Button variant="destructive">Destructive</Button>
-    </div>
-  ),
-};
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
+
+test('component is accessible', async () => {
+  const { container } = render(<Component />);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
 ```
 
-## Documentation Standards
+### 3. Visual Regression Tests
+Storybook + Chromatic integration for UI consistency.
 
-### Component Props
-Document all props with clear descriptions and examples:
+## 📱 Responsive Design Patterns
 
-```tsx
-interface ButtonProps {
-  /** The button content */
-  children: React.ReactNode;
-  /** Visual style variant */
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  /** Size variant */
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  /** Whether the button is in a loading state */
-  loading?: boolean;
-  /** Click handler */
-  onClick?: () => void;
+### 1. Breakpoint Strategy
+```scss
+// Mobile First Approach
+.component {
+  // Mobile styles (default)
+  padding: 1rem;
+  
+  // Tablet (640px+)
+  @media (min-width: 640px) {
+    padding: 1.5rem;
+  }
+  
+  // Desktop (1024px+)
+  @media (min-width: 1024px) {
+    padding: 2rem;
+  }
 }
 ```
 
-### Storybook Stories
-Create comprehensive stories that demonstrate:
-- All component variants and states
-- Real-world usage examples
-- Accessibility features
-- Mobile responsive behavior
-- Error states and edge cases
+### 2. Container Queries
+For component-based responsive design:
 
-This systematic approach ensures our components are consistent, accessible, performant, and maintainable across the entire design system.
+```tsx
+<div className="container-lg">
+  <div className="@lg:grid-cols-2 @xl:grid-cols-3">
+    {/* Content adapts to container size */}
+  </div>
+</div>
+```
+
+## 🚀 Performance Best Practices
+
+### 1. Lazy Loading
+```tsx
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <HeavyComponent />
+    </Suspense>
+  );
+}
+```
+
+### 2. Memoization
+```tsx
+const ExpensiveComponent = memo(({ data }) => {
+  const processedData = useMemo(() => 
+    processData(data), [data]
+  );
+  
+  return <div>{processedData}</div>;
+});
+```
+
+### 3. Bundle Optimization
+- Tree-shake unused code
+- Use dynamic imports for large dependencies
+- Optimize images with proper formats (WebP, AVIF)
+
+## 📖 Documentation Standards
+
+### 1. Component Stories
+Every component should have comprehensive Storybook stories:
+
+```tsx
+export default {
+  title: 'Components/Button',
+  component: Button,
+  parameters: {
+    docs: {
+      description: {
+        component: 'A flexible button component with multiple variants.'
+      }
+    }
+  }
+};
+
+export const Primary = {
+  args: {
+    variant: 'primary',
+    children: 'Primary Button'
+  }
+};
+```
+
+### 2. TypeScript Documentation
+```tsx
+/**
+ * Enhanced button component with loading states and accessibility features
+ * 
+ * @example
+ * <EnhancedButton variant="primary" loading>
+ *   Submit Form
+ * </EnhancedButton>
+ */
+interface EnhancedButtonProps {
+  /** Button visual variant */
+  variant?: 'primary' | 'secondary' | 'outline';
+  /** Show loading spinner and disable button */
+  loading?: boolean;
+  /** Button content */
+  children: React.ReactNode;
+}
+```
+
+## 🔧 Development Workflow
+
+### 1. Component Development Process
+1. **Design Review**: Ensure component meets design requirements
+2. **Accessibility Audit**: Verify WCAG compliance
+3. **Implementation**: Build with TypeScript and Tailwind
+4. **Testing**: Unit tests, accessibility tests, visual tests
+5. **Documentation**: Storybook stories and TypeScript docs
+6. **Review**: Code review focusing on API design and accessibility
+
+### 2. Version Control
+- Use semantic commits
+- Include accessibility impact in commit messages
+- Test accessibility before every commit
+
+By following these guidelines, we ensure that every component in the DBooster design system is consistent, accessible, performant, and maintainable.

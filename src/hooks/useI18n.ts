@@ -1,66 +1,55 @@
 
-import React, { useState, useEffect } from 'react';
-
-export type Language = 'en' | 'he';
+import { useState, useEffect, useCallback } from 'react';
 
 interface I18nConfig {
-  language: Language;
+  language: string;
   direction: 'ltr' | 'rtl';
-  dateFormat: string;
-  numberFormat: string;
+  locale: string;
 }
 
 const DEFAULT_CONFIG: I18nConfig = {
   language: 'en',
   direction: 'ltr',
-  dateFormat: 'MM/dd/yyyy',
-  numberFormat: 'en-US'
+  locale: 'en-US'
 };
 
-// Simple translation dictionary
-const translations: Record<Language, Record<string, string>> = {
-  en: {
-    'toggle_language': 'Toggle language',
-  },
-  he: {
-    'toggle_language': 'החלף שפה',
-  }
-};
+const RTL_LANGUAGES = ['ar', 'he', 'fa', 'ur'];
 
 export function useI18n() {
   const [config, setConfig] = useState<I18nConfig>(() => {
-    const saved = localStorage.getItem('i18n-config');
-    return saved ? { ...DEFAULT_CONFIG, ...JSON.parse(saved) } : DEFAULT_CONFIG;
+    try {
+      const stored = localStorage.getItem('i18n-config');
+      if (stored) {
+        return { ...DEFAULT_CONFIG, ...JSON.parse(stored) };
+      }
+    } catch (error) {
+      console.warn('Failed to load i18n config:', error);
+    }
+    return DEFAULT_CONFIG;
   });
 
+  const updateLanguage = useCallback((language: string) => {
+    const direction = RTL_LANGUAGES.includes(language) ? 'rtl' : 'ltr';
+    const locale = `${language}-${language === 'en' ? 'US' : language.toUpperCase()}`;
+    
+    const newConfig = { language, direction, locale };
+    setConfig(newConfig);
+    
+    try {
+      localStorage.setItem('i18n-config', JSON.stringify(newConfig));
+    } catch (error) {
+      console.warn('Failed to save i18n config:', error);
+    }
+  }, []);
+
   useEffect(() => {
-    localStorage.setItem('i18n-config', JSON.stringify(config));
     document.documentElement.lang = config.language;
     document.documentElement.dir = config.direction;
   }, [config]);
 
-  const updateLanguage = (language: Language) => {
-    const direction = language === 'he' ? 'rtl' : 'ltr';
-    setConfig(prev => ({ ...prev, language, direction }));
-  };
-
-  const updateDirection = (direction: 'ltr' | 'rtl') => {
-    setConfig(prev => ({ ...prev, direction }));
-  };
-
-  const t = (key: string): string => {
-    return translations[config.language]?.[key] || key;
-  };
-
-  // Alias for backwards compatibility
-  const changeLanguage = updateLanguage;
-
   return {
     ...config,
     updateLanguage,
-    changeLanguage,
-    updateDirection,
-    setConfig,
-    t
+    isRTL: config.direction === 'rtl'
   };
 }

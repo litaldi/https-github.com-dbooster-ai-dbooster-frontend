@@ -1,91 +1,95 @@
-interface PerformanceMetric {
-  name: string;
-  value: number;
-  timestamp: number;
+
+interface PerformanceMetrics {
+  fcp: number;
+  lcp: number;
+  cls: number;
+  ttfb: number;
+  tti: number;
 }
 
-class PerformanceOptimizerService {
-  private metrics: PerformanceMetric[] = [];
-  private isMonitoring = false;
+class PerformanceOptimizer {
+  private static instance: PerformanceOptimizer;
+  private metrics: Partial<PerformanceMetrics> = {};
+  private observers: PerformanceObserver[] = [];
+
+  static getInstance(): PerformanceOptimizer {
+    if (!PerformanceOptimizer.instance) {
+      PerformanceOptimizer.instance = new PerformanceOptimizer();
+    }
+    return PerformanceOptimizer.instance;
+  }
 
   startPerformanceMonitoring() {
-    if (this.isMonitoring) return;
-    this.isMonitoring = true;
+    if (typeof window === 'undefined') return;
 
-    // Monitor Core Web Vitals
-    this.measureCoreWebVitals();
-    
-    // Monitor resource loading
-    this.monitorResourceTiming();
+    this.observeWebVitals();
+    this.measureNavigationTiming();
   }
 
   stopPerformanceMonitoring() {
-    this.isMonitoring = false;
+    this.observers.forEach(observer => observer.disconnect());
+    this.observers = [];
   }
 
-  private measureCoreWebVitals() {
-    // Largest Contentful Paint
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        this.addMetric('LCP', entry.startTime);
-      }
-    }).observe({ entryTypes: ['largest-contentful-paint'] });
-
-    // First Input Delay
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const firstInputEntry = entry as any; // Cast to access First Input Delay specific properties
-        if (firstInputEntry.processingStart) {
-          this.addMetric('FID', firstInputEntry.processingStart - firstInputEntry.startTime);
+  private observeWebVitals() {
+    // First Contentful Paint
+    const paintObserver = new PerformanceObserver((list) => {
+      const entries = list.getEntries();
+      entries.forEach((entry) => {
+        if (entry.name === 'first-contentful-paint') {
+          this.metrics.fcp = entry.startTime;
         }
-      }
-    }).observe({ entryTypes: ['first-input'] });
+      });
+    });
+    paintObserver.observe({ entryTypes: ['paint'] });
+    this.observers.push(paintObserver);
+
+    // Largest Contentful Paint
+    const lcpObserver = new PerformanceObserver((list) => {
+      const entries = list.getEntries();
+      const lastEntry = entries[entries.length - 1];
+      this.metrics.lcp = lastEntry.startTime;
+    });
+    lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+    this.observers.push(lcpObserver);
 
     // Cumulative Layout Shift
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const layoutShiftEntry = entry as any; // Cast to access Layout Shift specific properties
-        if (!layoutShiftEntry.hadRecentInput && layoutShiftEntry.value !== undefined) {
-          this.addMetric('CLS', layoutShiftEntry.value);
+    const clsObserver = new PerformanceObserver((list) => {
+      let clsValue = 0;
+      const entries = list.getEntries() as any[];
+      entries.forEach((entry) => {
+        if (!entry.hadRecentInput) {
+          clsValue += entry.value;
         }
-      }
-    }).observe({ entryTypes: ['layout-shift'] });
-  }
-
-  private monitorResourceTiming() {
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const resource = entry as PerformanceResourceTiming;
-        this.addMetric(`Resource: ${resource.name}`, resource.duration);
-      }
-    }).observe({ entryTypes: ['resource'] });
-  }
-
-  private addMetric(name: string, value: number) {
-    this.metrics.push({
-      name,
-      value,
-      timestamp: Date.now()
+      });
+      this.metrics.cls = clsValue;
     });
+    clsObserver.observe({ entryTypes: ['layout-shift'] });
+    this.observers.push(clsObserver);
+  }
 
-    // Keep only last 100 metrics
-    if (this.metrics.length > 100) {
-      this.metrics = this.metrics.slice(-100);
+  private measureNavigationTiming() {
+    if (performance.getEntriesByType) {
+      const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      if (navEntries.length > 0) {
+        const nav = navEntries[0];
+        this.metrics.ttfb = nav.responseStart - nav.requestStart;
+        this.metrics.tti = nav.domInteractive - nav.fetchStart;
+      }
     }
   }
 
-  getMetrics() {
-    return [...this.metrics];
+  getMetrics(): Partial<PerformanceMetrics> {
+    return { ...this.metrics };
   }
 
   optimizeImages() {
-    // Lazy load images that are not in viewport
     const images = document.querySelectorAll('img[data-src]');
     const imageObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const img = entry.target as HTMLImageElement;
-          img.src = img.dataset.src!;
+          img.src = img.dataset.src || '';
           img.removeAttribute('data-src');
           imageObserver.unobserve(img);
         }
@@ -93,56 +97,23 @@ class PerformanceOptimizerService {
     });
 
     images.forEach(img => imageObserver.observe(img));
-    return images.length;
   }
 
-  measureResourceTiming(resourceName: string) {
-    const entries = performance.getEntriesByName(resourceName);
-    return entries.map(entry => ({
-      name: entry.name,
-      duration: entry.duration,
-      size: (entry as PerformanceResourceTiming).transferSize
+  measureResourceTiming() {
+    const resources = performance.getEntriesByType('resource');
+    return resources.map(resource => ({
+      name: resource.name,
+      duration: resource.duration,
+      size: (resource as any).transferSize || 0
     }));
   }
 
   runLighthouseAudit() {
-    // Simulate Lighthouse audit checks
-    const checks = {
-      accessibility: this.checkAccessibility(),
-      performance: this.checkPerformance(),
-      seo: this.checkSEO(),
-      bestPractices: this.checkBestPractices()
-    };
-
-    console.log('Lighthouse Audit Results:', checks);
-    return checks;
-  }
-
-  private checkAccessibility() {
-    const score = document.querySelectorAll('[alt]').length > 0 ? 95 : 70;
-    return { score, recommendations: ['Add alt text to images', 'Improve color contrast'] };
-  }
-
-  private checkPerformance() {
-    const score = this.metrics.length > 0 ? 90 : 85;
-    return { 
-      score, 
-      recommendations: ['Optimize images', 'Minify JavaScript'],
-      firstContentfulPaint: 1200 // Add the missing property
-    };
-  }
-
-  private checkSEO() {
-    const hasTitle = document.title.length > 0;
-    const hasMetaDescription = document.querySelector('meta[name="description"]') !== null;
-    const score = hasTitle && hasMetaDescription ? 95 : 80;
-    return { score, recommendations: ['Add meta description', 'Improve heading structure'] };
-  }
-
-  private checkBestPractices() {
-    const score = 92;
-    return { score, recommendations: ['Use HTTPS', 'Avoid deprecated APIs'] };
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Performance Metrics:', this.getMetrics());
+      console.log('📊 Resource Timing:', this.measureResourceTiming());
+    }
   }
 }
 
-export const PerformanceOptimizer = new PerformanceOptimizerService();
+export { PerformanceOptimizer };
