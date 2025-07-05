@@ -37,15 +37,14 @@ export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   sanitizedValue?: string;
+  riskLevel?: string;
 }
 
 export interface SecurityEvent {
-  id: string;
-  type: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  timestamp: Date;
-  userId?: string;
-  details: Record<string, unknown>;
+  event_type: string;
+  event_data?: Record<string, unknown>;
+  ip_address?: string;
+  user_agent?: string;
 }
 
 export interface RateLimitResult {

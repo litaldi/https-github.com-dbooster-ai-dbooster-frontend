@@ -1,6 +1,7 @@
 
 import { Skeleton } from "./skeleton";
 import { Card, CardContent, CardHeader } from "./card";
+import { cn } from "@/lib/utils";
 
 export function LoadingCard() {
   return (
@@ -96,5 +97,19 @@ export function LoadingSpinner({ size = "default" }: { size?: "sm" | "default" |
 
   return (
     <div className={cn("animate-spin rounded-full border-2 border-primary border-t-transparent", sizeClasses[size])} />
+  );
+}
+
+export function PageLoading({ message = 'Loading page...', className }: { message?: string; className?: string }) {
+  return (
+    <div className={cn(
+      'flex items-center justify-center min-h-[400px] w-full',
+      className
+    )}>
+      <div className="flex flex-col items-center space-y-4">
+        <LoadingSpinner size="lg" />
+        <p className="text-sm text-muted-foreground">{message}</p>
+      </div>
+    </div>
   );
 }

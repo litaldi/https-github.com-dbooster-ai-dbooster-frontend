@@ -9,7 +9,7 @@ import { rbac } from './security/roleBasedAccessControl';
 import { apiSecurity } from './security/apiSecurityEnhancement';
 import { securityDashboard } from './security/securityDashboardService';
 import { logger } from '@/utils/logger';
-import type { ValidationResult, RateLimitResult } from '@/types';
+import type { ValidationResult, RateLimitResult, SecurityEvent } from '@/types';
 
 // Re-export essential security services
 export { auditLogger } from './auditLogger';
@@ -24,6 +24,9 @@ export { securityDashboard } from './security/securityDashboardService';
 
 export class SecurityService {
   private static instance: SecurityService;
+
+  // Add the missing property
+  public consolidatedAuthenticationSecurity = consolidatedAuthenticationSecurity;
 
   static getInstance(): SecurityService {
     if (!SecurityService.instance) {
@@ -131,7 +134,7 @@ export class SecurityService {
   }
 
   // Legacy compatibility methods - enhanced versions
-  async logSecurityEvent(event: unknown): Promise<void> {
+  async logSecurityEvent(event: SecurityEvent): Promise<void> {
     return auditLogger.logSecurityEvent(event);
   }
 
