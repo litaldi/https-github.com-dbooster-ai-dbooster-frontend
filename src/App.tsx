@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -8,6 +9,8 @@ import { PublicLayout } from '@/components/PublicLayout';
 import { GlobalLoadingOverlay } from '@/components/ui/GlobalLoadingOverlay';
 import { UpdateBanner } from '@/components/ui/update-banner';
 import { SkipToMainContent } from '@/components/ui/accessibility-enhanced';
+import { AIFloatingChatbot } from '@/components/support/AIFloatingChatbot';
+import { LTRSupport, useLTR } from '@/components/ui/rtl-support';
 import Layout from '@/components/layout';
 import ProtectedRoute from '@/components/protected-route';
 import { ResourcePreloader, CriticalCSSLoader } from '@/components/ui/critical-css-loader';
@@ -41,6 +44,7 @@ const Repositories = lazy(() => import('@/pages/Repositories'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const SecurityDashboardPage = lazy(() => import('@/components/security/SecurityDashboardPage').then(module => ({ default: module.SecurityDashboardPage })));
 const Search = lazy(() => import('@/pages/Search'));
+const FAQ = lazy(() => import('@/pages/FAQ'));
 
 // New pages
 const Enterprise = lazy(() => import('@/pages/Enterprise'));
@@ -64,90 +68,104 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+function AppContent() {
+  useLTR(); // Ensure LTR direction for the entire app
+
   useEffect(() => {
     // Initialize app with performance optimizations
     appInitializer.initialize();
   }, []);
 
   return (
+    <LTRSupport>
+      <SkipToMainContent />
+      <CriticalCSSLoader />
+      <ResourcePreloader />
+      <GlobalLoadingOverlay />
+      <UpdateBanner />
+      
+      <div id="main-content">
+        <Suspense fallback={<PageLoading />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<PublicLayout />}>
+              <Route index element={<Home />} />
+              <Route path="login" element={<Login />} />
+              <Route path="features" element={<Features />} />
+              <Route path="how-it-works" element={<HowItWorks />} />
+              <Route path="pricing" element={<Pricing />} />
+              <Route path="learn" element={<Learn />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="about" element={<About />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="support" element={<Support />} />
+              <Route path="faq" element={<FAQ />} />
+              <Route path="privacy" element={<Privacy />} />
+              <Route path="terms" element={<Terms />} />
+              <Route path="accessibility" element={<Accessibility />} />
+              <Route path="ai-studio" element={<AIOptimizationStudio />} />
+              <Route path="search" element={<Search />} />
+              
+              {/* New public pages */}
+              <Route path="enterprise" element={<Enterprise />} />
+              <Route path="database-types" element={<DatabaseTypes />} />
+              <Route path="use-cases" element={<UseCases />} />
+              <Route path="integrations" element={<Integrations />} />
+              <Route path="status" element={<Status />} />
+              <Route path="changelog" element={<Changelog />} />
+              <Route path="partners" element={<Partners />} />
+              <Route path="press" element={<Press />} />
+              <Route path="cookies" element={<Cookies />} />
+            </Route>
+            
+            {/* Protected authenticated routes */}
+            <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<EnhancedDashboard />} />
+            </Route>
+            
+            <Route path="/queries" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<Queries />} />
+            </Route>
+            
+            <Route path="/repositories" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<Repositories />} />
+            </Route>
+            
+            <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<Reports />} />
+            </Route>
+
+            <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<SecurityDashboardPage />} />
+            </Route>
+            
+            {/* 404 fallback */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </div>
+      
+      {/* AI Floating Chatbot - Available on all pages */}
+      <AIFloatingChatbot />
+      
+      <Toaster 
+        position="top-right"
+        expand={true}
+        richColors
+        closeButton
+      />
+    </LTRSupport>
+  );
+}
+
+function App() {
+  return (
     <EnhancedErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
           <AuthProvider>
             <Router>
-              <SkipToMainContent />
-              <CriticalCSSLoader />
-              <ResourcePreloader />
-              <GlobalLoadingOverlay />
-              <UpdateBanner />
-              
-              <div id="main-content">
-                <Suspense fallback={<PageLoading />}>
-                  <Routes>
-                    {/* Public routes */}
-                    <Route path="/" element={<PublicLayout />}>
-                      <Route index element={<Home />} />
-                      <Route path="login" element={<Login />} />
-                      <Route path="features" element={<Features />} />
-                      <Route path="how-it-works" element={<HowItWorks />} />
-                      <Route path="pricing" element={<Pricing />} />
-                      <Route path="learn" element={<Learn />} />
-                      <Route path="blog" element={<Blog />} />
-                      <Route path="about" element={<About />} />
-                      <Route path="contact" element={<Contact />} />
-                      <Route path="support" element={<Support />} />
-                      <Route path="privacy" element={<Privacy />} />
-                      <Route path="terms" element={<Terms />} />
-                      <Route path="accessibility" element={<Accessibility />} />
-                      <Route path="ai-studio" element={<AIOptimizationStudio />} />
-                      <Route path="search" element={<Search />} />
-                      
-                      {/* New public pages (removed careers route) */}
-                      <Route path="enterprise" element={<Enterprise />} />
-                      <Route path="database-types" element={<DatabaseTypes />} />
-                      <Route path="use-cases" element={<UseCases />} />
-                      <Route path="integrations" element={<Integrations />} />
-                      <Route path="status" element={<Status />} />
-                      <Route path="changelog" element={<Changelog />} />
-                      <Route path="partners" element={<Partners />} />
-                      <Route path="press" element={<Press />} />
-                      <Route path="cookies" element={<Cookies />} />
-                    </Route>
-                    
-                    {/* Protected authenticated routes */}
-                    <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                      <Route index element={<EnhancedDashboard />} />
-                    </Route>
-                    
-                    <Route path="/queries" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                      <Route index element={<Queries />} />
-                    </Route>
-                    
-                    <Route path="/repositories" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                      <Route index element={<Repositories />} />
-                    </Route>
-                    
-                    <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                      <Route index element={<Reports />} />
-                    </Route>
-
-                    <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                      <Route index element={<SecurityDashboardPage />} />
-                    </Route>
-                    
-                    {/* 404 fallback */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </div>
-              
-              <Toaster 
-                position="top-right"
-                expand={true}
-                richColors
-                closeButton
-              />
+              <AppContent />
             </Router>
           </AuthProvider>
         </ThemeProvider>

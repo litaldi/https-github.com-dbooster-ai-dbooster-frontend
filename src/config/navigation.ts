@@ -1,3 +1,4 @@
+
 import { 
   Home, 
   BarChart3, 
@@ -44,7 +45,7 @@ export interface NavigationItem {
   children?: NavigationItem[];
 }
 
-// Enhanced navigation structure with mega menu support
+// Enhanced navigation structure with mega menu support (removed search functionality)
 export const megaMenuNavigation: NavigationItem[] = [
   {
     href: '/product',
@@ -122,6 +123,12 @@ export const megaMenuNavigation: NavigationItem[] = [
         label: 'Blog', 
         icon: Newspaper, 
         description: 'Industry insights and product updates' 
+      },
+      { 
+        href: '/faq', 
+        label: 'FAQ', 
+        icon: HelpCircle, 
+        description: 'Frequently asked questions and answers' 
       },
       { 
         href: '/support', 
@@ -214,7 +221,7 @@ export const dashboardSidebarNavigation = [
   }
 ];
 
-// Footer navigation structure
+// Footer navigation structure (updated to include FAQ)
 export const footerNavigation = {
   product: [
     { href: '/features', label: 'Features' },
@@ -226,6 +233,7 @@ export const footerNavigation = {
   resources: [
     { href: '/learn', label: 'Documentation' },
     { href: '/blog', label: 'Blog' },
+    { href: '/faq', label: 'FAQ' },
     { href: '/support', label: 'Support Center' },
     { href: '/status', label: 'System Status' },
     { href: '/changelog', label: 'Changelog' }
@@ -245,15 +253,8 @@ export const footerNavigation = {
   ]
 };
 
-// Quick actions for dashboard
+// Quick actions for dashboard (removed AI Studio CTA)
 export const quickActions = [
-  {
-    href: '/ai-studio',
-    label: 'Optimize Query',
-    icon: Brain,
-    description: 'Get AI recommendations for your SQL queries',
-    shortcut: 'Cmd+O'
-  },
   {
     href: '/repositories/new',
     label: 'Add Database',

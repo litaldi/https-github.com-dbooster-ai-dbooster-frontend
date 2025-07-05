@@ -10,7 +10,8 @@ import { FadeIn, PageTransition } from '@/components/ui/animations';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Shield, Users, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Zap, Shield, Users, CheckCircle2, Play } from 'lucide-react';
 import type { AuthMode } from '@/types/auth';
 
 interface AuthFormData {
@@ -26,7 +27,7 @@ export default function Login() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { secureLogin, secureSignup, user } = useAuth();
+  const { secureLogin, secureSignup, user, demoLogin } = useAuth();
 
   // Redirect if already authenticated
   if (user) {
@@ -72,6 +73,22 @@ export default function Login() {
     }
   };
 
+  const handleTryDemo = async () => {
+    try {
+      await demoLogin();
+      enhancedToast.success({
+        title: 'Demo mode activated',
+        description: 'You can now explore all features without any limits!'
+      });
+      navigate('/app', { replace: true });
+    } catch (error) {
+      enhancedToast.error({
+        title: 'Demo activation failed',
+        description: 'Please try again or contact support if the issue persists.'
+      });
+    }
+  };
+
   const trustIndicators = [
     { icon: Users, text: '50,000+ developers trust DBooster' },
     { icon: Shield, text: 'SOC2 certified & enterprise ready' },
@@ -80,7 +97,7 @@ export default function Login() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex bg-gradient-to-br from-background via-background to-muted/30">
+      <div className="min-h-screen flex bg-gradient-to-br from-background via-background to-muted/30" dir="ltr">
         {/* Left side - Branding & Features */}
         <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-center bg-gradient-to-br from-primary/5 to-blue-500/10">
           <div className="max-w-md mx-auto space-y-8">
@@ -174,8 +191,18 @@ export default function Login() {
 
                     <SocialAuth />
                     
-                    <div className="text-center">
+                    <div className="text-center space-y-3">
                       <DemoModeButton />
+                      
+                      {/* Try Demo Button (same style as homepage) */}
+                      <Button
+                        onClick={handleTryDemo}
+                        variant="outline"
+                        className="w-full flex items-center gap-2 bg-gradient-to-r from-green-50 to-blue-50 hover:from-green-100 hover:to-blue-100 border-green-200 text-green-700 hover:text-green-800 transition-all duration-300"
+                      >
+                        <Play className="h-4 w-4" />
+                        Try the Demo
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

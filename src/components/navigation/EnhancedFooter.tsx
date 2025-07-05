@@ -33,7 +33,7 @@ export function EnhancedFooter() {
   };
 
   return (
-    <footer className="bg-background border-t">
+    <footer className="bg-background border-t" dir="ltr">
       {/* Social Proof Banner */}
       <div className="bg-gradient-to-r from-primary/5 via-blue-500/5 to-purple-500/5 border-b">
         <div className="container mx-auto px-4 py-8">
