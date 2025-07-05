@@ -3,15 +3,22 @@ import { Outlet } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { EnhancedMegaMenu } from '@/components/navigation/EnhancedMegaMenu';
 import { EnhancedFooter } from '@/components/navigation/EnhancedFooter';
+import { EnhancedSearch } from '@/components/ui/enhanced-search';
 import { megaMenuNavigation } from '@/config/navigation';
 import { useNavigate } from 'react-router-dom';
 
 export function PublicLayout() {
   const navigate = useNavigate();
 
+  const handleGlobalSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Enhanced Header */}
+      {/* Enhanced Header with Global Search */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
@@ -29,16 +36,28 @@ export function PublicLayout() {
               </div>
             </div>
 
-            {/* Mega Menu Navigation */}
+            {/* Mega Menu Navigation - Categories on the left */}
             <EnhancedMegaMenu items={megaMenuNavigation} />
 
-            {/* CTA Button */}
-            <button 
-              onClick={() => navigate('/login')}
-              className="px-6 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
-            >
-              Get Started Free
-            </button>
+            {/* Global Search Bar - Moved to the right */}
+            <div className="flex items-center gap-3">
+              <div className="max-w-md">
+                <EnhancedSearch
+                  placeholder="Search everything..."
+                  onSearch={handleGlobalSearch}
+                  showRecentSearches={true}
+                  className="w-full"
+                />
+              </div>
+
+              {/* CTA Button */}
+              <button 
+                onClick={() => navigate('/login')}
+                className="px-6 py-2 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                Get Started Free
+              </button>
+            </div>
           </div>
         </div>
       </header>
