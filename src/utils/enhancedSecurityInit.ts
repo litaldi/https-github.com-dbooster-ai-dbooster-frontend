@@ -6,10 +6,10 @@ import { productionLogger } from './productionLogger';
 
 export function initializeEnhancedSecurity(): void {
   try {
-    // Log security initialization - the consolidated services are already initialized
-    productionLogger.warn('Enhanced security features initialized', {
+    // Log security initialization
+    productionLogger.secureInfo('Enhanced security features initialized', {
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
+      environment: import.meta.env.MODE || 'development',
       features: ['consolidatedAuth', 'inputValidation', 'rateLimiting', 'threatDetection']
     }, 'EnhancedSecurityInit');
 
@@ -47,11 +47,11 @@ export function initializeEnhancedSecurity(): void {
     // Monitor for suspicious JavaScript execution
     const originalEval = window.eval;
     window.eval = function(code: string) {
-      productionLogger.warn('Eval execution detected', {
+      productionLogger.error('Eval execution blocked for security', {
         codeLength: code?.length || 0,
         codePreview: code?.substring(0, 100) || ''
       }, 'SecurityMonitor');
-      return originalEval.call(window, code);
+      throw new Error('eval() is disabled for security reasons');
     };
 
     // Monitor for dynamic script creation
@@ -64,6 +64,23 @@ export function initializeEnhancedSecurity(): void {
         }, 'SecurityMonitor');
       }
       return element;
+    };
+
+    // Monitor localStorage access for sensitive data
+    const originalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(key: string, value: string) {
+      // Check for sensitive data being stored
+      const sensitiveKeys = ['password', 'token', 'secret', 'key', 'credential'];
+      const isSensitive = sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive));
+      
+      if (isSensitive && key !== 'dbooster_remember_me' && !key.startsWith('supabase.auth.')) {
+        productionLogger.warn('Sensitive data storage detected', {
+          key: key.substring(0, 20),
+          timestamp: Date.now()
+        }, 'SecurityMonitor');
+      }
+      
+      return originalSetItem.call(this, key, value);
     };
 
   } catch (error) {

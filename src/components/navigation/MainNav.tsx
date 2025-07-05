@@ -6,6 +6,7 @@ import { EnhancedNavigationItems } from './EnhancedNavigationItems';
 import { EnhancedUserMenu } from './EnhancedUserMenu';
 import { NavigationLogo } from './NavigationLogo';
 import { StandardizedButton } from '@/components/ui/standardized-button';
+import { productionLogger } from '@/utils/productionLogger';
 import { 
   publicNavItems, 
   authenticatedNavItems, 
@@ -27,6 +28,25 @@ export function MainNav() {
   } = useNavigation();
 
   const navItems = user ? authenticatedNavItems : publicNavItems;
+
+  const handleSecureToggle = () => {
+    try {
+      toggleMenu();
+      if (user) {
+        productionLogger.secureInfo('Navigation menu toggled', { userId: user.id }, 'MainNav');
+      }
+    } catch (error) {
+      productionLogger.error('Navigation toggle error', error, 'MainNav');
+    }
+  };
+
+  const handleSecureClose = () => {
+    try {
+      closeMenu();
+    } catch (error) {
+      productionLogger.error('Navigation close error', error, 'MainNav');
+    }
+  };
 
   return (
     <nav 
@@ -58,7 +78,7 @@ export function MainNav() {
 
           {/* Mobile Navigation */}
           <div className="lg:hidden">
-            <Sheet open={isOpen} onOpenChange={toggleMenu}>
+            <Sheet open={isOpen} onOpenChange={handleSecureToggle}>
               <SheetTrigger asChild>
                 <StandardizedButton 
                   variant="ghost" 
@@ -77,7 +97,7 @@ export function MainNav() {
                     <EnhancedNavigationItems 
                       items={navItems} 
                       mobile 
-                      closeMenu={closeMenu}
+                      closeMenu={handleSecureClose}
                       isCurrentRoute={isCurrentRoute}
                     />
                     
@@ -87,7 +107,7 @@ export function MainNav() {
                       <EnhancedNavigationItems 
                         items={companyMenuItems}
                         mobile
-                        closeMenu={closeMenu}
+                        closeMenu={handleSecureClose}
                         isCurrentRoute={isCurrentRoute}
                       />
                     </div>
@@ -98,7 +118,7 @@ export function MainNav() {
                       <EnhancedNavigationItems 
                         items={legalMenuItems}
                         mobile
-                        closeMenu={closeMenu}
+                        closeMenu={handleSecureClose}
                         isCurrentRoute={isCurrentRoute}
                       />
                     </div>
@@ -107,7 +127,7 @@ export function MainNav() {
                       user={user}
                       userMenuItems={userMenuItems}
                       mobile
-                      closeMenu={closeMenu}
+                      closeMenu={handleSecureClose}
                       isCurrentRoute={isCurrentRoute}
                       theme={theme}
                       toggleTheme={toggleTheme}

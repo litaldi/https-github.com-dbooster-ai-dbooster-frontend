@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 import { supabase } from '@/integrations/supabase/client';
 import { unifiedSecurityService } from '@/services/security/unifiedSecurityService';
 import { cleanupAuthState } from '@/utils/authUtils';
+import { productionLogger } from '@/utils/productionLogger';
 import type { User, Session } from '@/types';
 
 interface AuthContextType {
@@ -85,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return {};
     } catch (err: any) {
+      productionLogger.error('Authentication error', err, 'useSimplifiedAuth');
       return { error: err.message || 'An error occurred during sign in' };
     }
   }, []);
@@ -129,6 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return {};
     } catch (err: any) {
+      productionLogger.error('Registration error', err, 'useSimplifiedAuth');
       return { error: err.message || 'An error occurred during sign up' };
     }
   }, []);
@@ -139,22 +142,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await supabase.auth.signOut({ scope: 'global' });
       window.location.href = '/';
     } catch (error) {
+      productionLogger.error('Sign out error', error, 'useSimplifiedAuth');
       window.location.href = '/';
     }
   }, []);
 
   const loginDemo = useCallback(async (): Promise<void> => {
-    // Demo login logic - simplified
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: 'demo@dbooster.com',
-        password: 'demo123456'
-      });
-      
-      if (error) throw error;
-    } catch (error) {
-      console.error('Demo login failed:', error);
-    }
+    // Demo login is now disabled for security
+    productionLogger.warn('Demo login attempt blocked', {}, 'useSimplifiedAuth');
+    throw new Error('Demo login is disabled for security reasons');
   }, []);
 
   const contextValue: AuthContextType = {
