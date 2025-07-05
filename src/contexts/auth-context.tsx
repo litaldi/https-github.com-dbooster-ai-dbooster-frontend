@@ -13,14 +13,16 @@ interface AuthContextType {
   isLoading: boolean;
   isDemo: boolean;
   githubAccessToken: string | null;
-  // Enhanced methods
+  // Core methods
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name?: string) => Promise<void>;
   loginDemo: () => Promise<void>;
+  // Enhanced secure methods
   secureLogin: (email: string, password: string, options?: { rememberMe?: boolean }) => Promise<{ error?: any }>;
   secureSignup: (email: string, password: string, name: string, acceptedTerms?: boolean) => Promise<{ error?: any }>;
+  // Utility methods
   checkPasswordStrength: (password: string) => Promise<{ score: number; feedback: string[]; isValid: boolean }>;
   getSecurityMetrics: () => Promise<any>;
 }
@@ -33,7 +35,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [githubAccessToken, setGithubAccessToken] = useState<string | null>(null);
 
-  // Check if we're in demo mode
   const isDemo = isDemoMode();
 
   useEffect(() => {
@@ -76,9 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setGithubAccessToken(session.provider_token);
           }
 
-          // Handle demo mode transitions
           if (session?.user && isDemo) {
-            // User authenticated while in demo - this shouldn't happen normally
             productionLogger.warn('User authenticated while in demo mode', {}, 'AuthProvider');
           }
         }
@@ -98,7 +97,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear local state
       setUser(null);
       setSession(null);
       setGithubAccessToken(null);
