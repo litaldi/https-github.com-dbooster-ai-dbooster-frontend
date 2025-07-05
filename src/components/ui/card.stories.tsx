@@ -3,23 +3,24 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 import { Button } from './button';
 import { Badge } from './badge';
-import { Bell, Settings } from 'lucide-react';
+import { Heart, MessageCircle, Share } from 'lucide-react';
 
 /**
- * The Card component provides a flexible container for grouping related content.
- * It follows the compound component pattern with Header, Content, and Footer sections.
+ * Card Component
  * 
- * ## Features:
- * - Compound component structure (Card, CardHeader, CardContent, CardFooter)
- * - Consistent spacing and styling
- * - Responsive design
- * - Accessible structure with proper semantic HTML
+ * A flexible container component for grouping related content and actions.
+ * Perfect for product cards, profile cards, content previews, and more.
+ * 
+ * ## Accessibility Features:
+ * - Semantic HTML structure with proper landmarks
+ * - Keyboard navigation support
+ * - Screen reader friendly content structure
  * 
  * ## Usage Guidelines:
- * - Use CardHeader for titles and descriptions
- * - Place main content in CardContent
- * - Use CardFooter for actions and secondary information
- * - Maintain consistent padding and spacing
+ * - Use CardHeader for titles and metadata
+ * - CardContent for main content
+ * - CardFooter for actions or additional info
+ * - Keep content concise and scannable
  */
 const meta: Meta<typeof Card> = {
   title: 'UI/Card',
@@ -28,184 +29,190 @@ const meta: Meta<typeof Card> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A card container component that groups related content with consistent styling.',
+        component: 'A versatile card component for displaying grouped content with optional header, content, and footer sections.',
       },
     },
   },
   tags: ['autodocs'],
+  argTypes: {
+    className: {
+      control: 'text',
+      description: 'Additional CSS classes for styling',
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Basic: Story = {
+export const Default: Story = {
   render: () => (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Create project</CardTitle>
-        <CardDescription>Deploy your new project in one-click.</CardDescription>
+        <CardTitle>Card Title</CardTitle>
+        <CardDescription>Card description goes here</CardDescription>
       </CardHeader>
       <CardContent>
-        <p>Card content goes here. This is where you would place the main information.</p>
+        <p>This is the main content of the card.</p>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline">Cancel</Button>
-        <Button>Deploy</Button>
+      <CardFooter>
+        <Button>Action</Button>
       </CardFooter>
     </Card>
   ),
 };
 
-export const WithNotification: Story = {
+export const ProductCard: Story = {
   render: () => (
-    <Card className="w-[380px]">
+    <Card className="w-[350px]">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notifications
-          </CardTitle>
-          <Badge variant="secondary">3 new</Badge>
-        </div>
-        <CardDescription>
-          You have 3 unread messages.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center space-x-4 rounded-md border p-4">
-          <Bell className="h-4 w-4" />
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              Push Notifications
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Send notifications to device.
-            </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle>Premium Plan</CardTitle>
+            <CardDescription>Perfect for growing teams</CardDescription>
           </div>
+          <Badge>Popular</Badge>
         </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">$29/month</div>
+        <ul className="mt-4 space-y-2 text-sm">
+          <li>✓ Up to 50 team members</li>
+          <li>✓ Advanced analytics</li>
+          <li>✓ Priority support</li>
+          <li>✓ Custom integrations</li>
+        </ul>
       </CardContent>
+      <CardFooter>
+        <Button className="w-full">Get Started</Button>
+      </CardFooter>
+    </Card>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Example of a product/pricing card with features list and CTA button.',
+      },
+    },
+  },
+};
+
+export const BlogPostCard: Story = {
+  render: () => (
+    <Card className="w-[350px]">
+      <CardHeader>
+        <CardTitle>Getting Started with React</CardTitle>
+        <CardDescription>Published on March 15, 2024</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">
+          Learn the fundamentals of React and build your first component in this comprehensive guide...
+        </p>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <div className="flex space-x-4 text-sm text-muted-foreground">
+          <span className="flex items-center">
+            <Heart className="mr-1 h-4 w-4" />
+            24
+          </span>
+          <span className="flex items-center">
+            <MessageCircle className="mr-1 h-4 w-4" />
+            5
+          </span>
+        </div>
+        <Button variant="ghost" size="sm">
+          <Share className="h-4 w-4" />
+        </Button>
+      </CardFooter>
     </Card>
   ),
 };
 
-export const Dashboard: Story = {
+export const InteractiveCard: Story = {
   render: () => (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Total Revenue
-          </CardTitle>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            className="h-4 w-4 text-muted-foreground"
-          >
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg>
+    <Card className="w-[350px] transition-all hover:shadow-lg cursor-pointer">
+      <CardHeader>
+        <CardTitle>Interactive Card</CardTitle>
+        <CardDescription>Hover to see the effect</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>This card has hover effects and can be clicked.</p>
+      </CardContent>
+    </Card>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Card with hover effects for interactive use cases.',
+      },
+    },
+  },
+};
+
+export const Variations: Story = {
+  render: () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Minimal Card</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">$45,231.89</div>
-          <p className="text-xs text-muted-foreground">
-            +20.1% from last month
-          </p>
+          <p>Simple card with just header and content.</p>
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Subscriptions
-          </CardTitle>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            className="h-4 w-4 text-muted-foreground"
-          >
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">+2350</div>
-          <p className="text-xs text-muted-foreground">
-            +180.1% from last month
-          </p>
+      <Card className="w-full">
+        <CardContent className="pt-6">
+          <p>Content-only card without header or footer.</p>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Sales</CardTitle>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            className="h-4 w-4 text-muted-foreground"
-          >
-            <rect width="20" height="14" x="2" y="5" rx="2" />
-            <path d="M2 10h20" />
-          </svg>
+      
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Header + Footer</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">+12,234</div>
-          <p className="text-xs text-muted-foreground">
-            +19% from last month
-          </p>
+        <CardFooter>
+          <Button variant="outline">Action</Button>
+        </CardFooter>
+      </Card>
+      
+      <Card className="w-full border-dashed">
+        <CardContent className="pt-6 text-center">
+          <p className="text-muted-foreground">Dashed border variation</p>
         </CardContent>
       </Card>
     </div>
   ),
   parameters: {
-    layout: 'padded',
+    docs: {
+      description: {
+        story: 'Different card layouts and styling variations.',
+      },
+    },
   },
 };
 
-export const WithForm: Story = {
+export const ResponsiveCards: Story = {
   render: () => (
-    <Card className="w-[400px]">
-      <CardHeader>
-        <CardTitle>Account Settings</CardTitle>
-        <CardDescription>
-          Make changes to your account here. Click save when you're done.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="name" className="text-sm font-medium">Name</label>
-          <input
-            id="name"
-            placeholder="Enter your name"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          />
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="username" className="text-sm font-medium">Username</label>
-          <input
-            id="username"
-            placeholder="Enter your username"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          />
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button className="w-full">Save changes</Button>
-      </CardFooter>
-    </Card>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Card key={i}>
+          <CardHeader>
+            <CardTitle>Card {i + 1}</CardTitle>
+            <CardDescription>Responsive grid layout</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>This demonstrates responsive card layouts.</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Cards in a responsive grid layout that adapts to screen size.',
+      },
+    },
+  },
 };
