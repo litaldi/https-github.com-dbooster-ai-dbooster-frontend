@@ -6,10 +6,7 @@ import { productionLogger } from './productionLogger';
 
 export function initializeEnhancedSecurity(): void {
   try {
-    // Initialize consolidated security services
-    consolidatedAuthenticationSecurity.initializeSecurityFeatures();
-    
-    // Log security initialization
+    // Log security initialization - the consolidated services are already initialized
     productionLogger.warn('Enhanced security features initialized', {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',

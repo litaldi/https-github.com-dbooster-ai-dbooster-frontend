@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { PasswordStrengthIndicator } from '@/components/security/PasswordStrengthIndicator';
 import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
@@ -36,7 +36,38 @@ export function PasswordField({
   showStrength = false,
   showPasswordToggle = true
 }: PasswordFieldProps) {
-  const strengthResult = consolidatedAuthenticationSecurity.validateStrongPassword(value);
+  const [strengthResult, setStrengthResult] = useState({
+    score: 0,
+    feedback: [] as string[],
+    isValid: false
+  });
+
+  useEffect(() => {
+    if (value && showStrength) {
+      // Validate password strength asynchronously
+      consolidatedAuthenticationSecurity.validateStrongPassword(value)
+        .then(result => {
+          setStrengthResult({
+            score: result.score,
+            feedback: result.feedback,
+            isValid: result.isValid
+          });
+        })
+        .catch(() => {
+          setStrengthResult({
+            score: 0,
+            feedback: ['Unable to validate password strength'],
+            isValid: false
+          });
+        });
+    } else {
+      setStrengthResult({
+        score: 0,
+        feedback: [],
+        isValid: false
+      });
+    }
+  }, [value, showStrength]);
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -59,11 +90,7 @@ export function PasswordField({
       {showStrength && (
         <PasswordStrengthIndicator 
           password={value} 
-          strengthResult={{
-            score: strengthResult.score,
-            feedback: strengthResult.feedback,
-            isValid: strengthResult.isValid
-          }}
+          strengthResult={strengthResult}
         />
       )}
     </div>
