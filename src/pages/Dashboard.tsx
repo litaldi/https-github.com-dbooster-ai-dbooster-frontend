@@ -80,14 +80,7 @@ export default function Dashboard() {
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                {isDemo && (
-                  <Badge variant="secondary" className="text-xs">
-                    Demo
-                  </Badge>
-                )}
-              </div>
+              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
               <p className="text-muted-foreground">
                 Welcome back, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}. 
                 Monitor your database performance and optimization insights.
