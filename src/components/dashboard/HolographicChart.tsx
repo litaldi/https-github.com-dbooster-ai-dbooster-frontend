@@ -1,11 +1,9 @@
 
-import React, { useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, TrendingUp, Activity } from 'lucide-react';
-import * as THREE from 'three';
 
 interface DataPoint {
   x: number;
@@ -13,97 +11,6 @@ interface DataPoint {
   z: number;
   value: number;
   label: string;
-}
-
-function HolographicBar({ position, height, color, delay }: {
-  position: [number, number, number];
-  height: number;
-  color: string;
-  delay: number;
-}) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      const time = state.clock.elapsedTime;
-      meshRef.current.scale.y = height + Math.sin(time * 2 + delay) * 0.1;
-      const material = meshRef.current.material as THREE.MeshStandardMaterial;
-      if (material.emissiveIntensity !== undefined) {
-        material.emissiveIntensity = 0.2 + Math.sin(time * 3 + delay) * 0.1;
-      }
-    }
-  });
-
-  const colorMap = {
-    blue: '#3b82f6',
-    green: '#10b981',
-    purple: '#8b5cf6',
-    red: '#ef4444',
-    yellow: '#f59e0b'
-  };
-
-  return (
-    <mesh
-      ref={meshRef}
-      position={position}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-      scale={hovered ? [1.1, height, 1.1] : [1, height, 1]}
-    >
-      <boxGeometry args={[0.3, 1, 0.3]} />
-      <meshStandardMaterial
-        color={colorMap[color as keyof typeof colorMap] || '#3b82f6'}
-        transparent
-        opacity={0.8}
-        emissive={colorMap[color as keyof typeof colorMap] || '#3b82f6'}
-        emissiveIntensity={hovered ? 0.4 : 0.2}
-      />
-    </mesh>
-  );
-}
-
-function DataConnection({ start, end }: { start: [number, number, number]; end: [number, number, number] }) {
-  const points = [new THREE.Vector3(...start), new THREE.Vector3(...end)];
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-
-  return (
-    <primitive object={new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({ color: '#8b5cf6', transparent: true, opacity: 0.6 }))} />
-  );
-}
-
-function HolographicScene({ data }: { data: DataPoint[] }) {
-  return (
-    <>
-      <ambientLight intensity={0.4} />
-      <pointLight position={[10, 10, 10]} intensity={1} color="#8b5cf6" />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
-      
-      {data.map((point, index) => (
-        <HolographicBar
-          key={index}
-          position={[point.x, point.y, point.z]}
-          height={point.value}
-          color={point.value > 0.7 ? 'green' : point.value > 0.4 ? 'blue' : 'red'}
-          delay={index * 0.5}
-        />
-      ))}
-      
-      {/* Neural Network Connections */}
-      {data.map((point, index) => {
-        if (index < data.length - 1) {
-          return (
-            <DataConnection
-              key={`connection-${index}`}
-              start={[point.x, point.y + point.value / 2, point.z]}
-              end={[data[index + 1].x, data[index + 1].y + data[index + 1].value / 2, data[index + 1].z]}
-            />
-          );
-        }
-        return null;
-      })}
-    </>
-  );
 }
 
 export function HolographicChart() {
@@ -131,7 +38,7 @@ export function HolographicChart() {
           Holographic Analytics
           <Badge className="bg-gradient-to-r from-purple-500 to-pink-600 text-white animate-pulse">
             <Activity className="h-3 w-3 mr-1" />
-            Real-time 3D
+            Real-time Analytics
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -156,11 +63,41 @@ export function HolographicChart() {
           ))}
         </div>
 
-        {/* 3D Chart */}
-        <div className="h-80 rounded-xl overflow-hidden bg-gradient-to-b from-transparent to-purple-900/20 border border-purple-500/30">
-          <Canvas camera={{ position: [0, 2, 5], fov: 60 }}>
-            <HolographicScene data={performanceData} />
-          </Canvas>
+        {/* Simplified Chart Visualization */}
+        <div className="h-80 rounded-xl overflow-hidden bg-gradient-to-b from-transparent to-purple-900/20 border border-purple-500/30 p-6">
+          <div className="h-full flex items-end justify-center gap-4">
+            {performanceData.map((point, index) => (
+              <motion.div
+                key={index}
+                className="flex flex-col items-center gap-2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <motion.div
+                  className="w-12 bg-gradient-to-t from-purple-600 to-pink-500 rounded-t-lg relative overflow-hidden"
+                  style={{ height: `${point.value * 200}px` }}
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20"
+                    animate={{
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: index * 0.2,
+                    }}
+                  />
+                </motion.div>
+                <div className="text-xs text-center text-gray-300">
+                  <div className="font-medium">{Math.round(point.value * 100)}%</div>
+                  <div className="text-gray-400">{point.label}</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         {/* Data Insights */}
@@ -187,14 +124,14 @@ export function HolographicChart() {
           ))}
         </div>
 
-        {/* Neural Network Visualization */}
+        {/* AI Insights */}
         <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-purple-900/20 to-pink-900/20 border border-purple-500/30">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="h-4 w-4 text-purple-300" />
             <span className="text-sm font-medium text-white">AI Pattern Recognition</span>
           </div>
           <div className="text-xs text-gray-300 leading-relaxed">
-            Neural networks detected optimal performance correlation between index efficiency and cache hit rates. 
+            Analytics show optimal performance correlation between index efficiency and cache hit rates. 
             Recommended optimization strategy: Implement adaptive indexing with 94% confidence.
           </div>
         </div>
