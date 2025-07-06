@@ -1,11 +1,10 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Database, 
   TrendingUp, 
@@ -22,24 +21,47 @@ import {
   DollarSign,
   AlertCircle,
   Rocket,
-  Sparkles
+  Sparkles,
+  Globe,
+  Target
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { UltimateMetricCard } from '@/components/dashboard/UltimateMetricCard';
+import { AIInsightsPanel } from '@/components/dashboard/AIInsightsPanel';
+import { InteractiveQuickActions } from '@/components/dashboard/InteractiveQuickActions';
 
 export default function DashboardPage() {
   const { user, isDemo } = useAuth();
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [activeConnections, setActiveConnections] = useState(0);
 
-  // Enhanced demo data with more realistic metrics
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+      // Simulate real-time connection changes
+      setActiveConnections(prev => Math.max(8, prev + Math.floor(Math.random() * 3) - 1));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Enhanced demo data with trends
   const demoData = {
     totalQueries: 15234,
     optimizedQueries: 11876,
     avgImprovement: 73,
     responseTimeReduction: 2.4,
     costSavings: 28400,
-    activeConnections: 12,
+    activeConnections: activeConnections || 12,
     threatsStopped: 156,
-    uptime: 99.94,
-    optimizationRate: 78
+    uptime: 99.97,
+    optimizationRate: 78,
+    trends: {
+      queries: [120, 135, 149, 142, 158, 173, 168, 184, 191, 187, 203, 215],
+      performance: [45, 52, 48, 61, 67, 73, 69, 78, 82, 79, 85, 91],
+      costs: [12400, 15200, 18100, 21300, 24600, 28400],
+      response: [180, 165, 142, 128, 115, 98, 89, 76, 68, 61, 54, 47]
+    }
   };
 
   const realData = {
@@ -51,7 +73,13 @@ export default function DashboardPage() {
     activeConnections: 0,
     threatsStopped: 0,
     uptime: 0,
-    optimizationRate: 0
+    optimizationRate: 0,
+    trends: {
+      queries: [],
+      performance: [],
+      costs: [],
+      response: []
+    }
   };
 
   const data = isDemo ? demoData : realData;
@@ -62,445 +90,443 @@ export default function DashboardPage() {
       improvement: "67%", 
       time: "2 mins ago", 
       status: "success",
-      database: "users_db"
+      database: "users_db",
+      impact: "High"
     },
     { 
       query: "UPDATE orders SET status = 'shipped' WHERE id IN (SELECT id FROM pending_orders)", 
       improvement: "45%", 
       time: "15 mins ago", 
       status: "success",
-      database: "orders_db"
+      database: "orders_db",
+      impact: "Medium"
     },
     { 
       query: "SELECT COUNT(*) FROM products p JOIN categories c ON p.category_id = c.id GROUP BY c.name", 
       improvement: "82%", 
       time: "1 hour ago", 
       status: "success",
-      database: "catalog_db"
-    },
-    { 
-      query: "DELETE FROM audit_logs WHERE created_at < NOW() - INTERVAL 90 DAY", 
-      improvement: "34%", 
-      time: "2 hours ago", 
-      status: "success",
-      database: "audit_db"
+      database: "catalog_db",
+      impact: "High"
     }
   ] : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="space-y-8 p-6 max-w-7xl mx-auto">
-        {/* Enhanced Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Dashboard
-                </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50">
+      <div className="space-y-8 p-6 max-w-8xl mx-auto">
+        {/* Revolutionary Header Section */}
+        <motion.div 
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 shadow-2xl"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 bg-white/20 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  y: [0, -100],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: Math.random() * 3 + 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl"
+                >
+                  <Zap className="h-8 w-8 text-white" />
+                </motion.div>
+                
+                <div>
+                  <motion.h1 
+                    className="text-4xl lg:text-5xl font-black text-white leading-tight"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    Ultimate Dashboard
+                  </motion.h1>
+                  <motion.p 
+                    className="text-xl text-white/90 font-medium"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    AI-Powered Database Command Center
+                  </motion.p>
+                </div>
+
                 {isDemo && (
-                  <Badge variant="secondary" className="animate-pulse px-3 py-1">
-                    <Eye className="h-3 w-3 mr-1" />
-                    Demo Mode
-                  </Badge>
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-4 py-2">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Demo Mode - Experience the Future
+                    </Badge>
+                  </motion.div>
                 )}
               </div>
+
+              <motion.p 
+                className="text-lg text-white/80 max-w-3xl leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                {isDemo 
+                  ? `🚀 Welcome to the future of database optimization! You're viewing live data from enterprise customers who've achieved incredible results with our AI engine.`
+                  : `Welcome back, ${user?.user_metadata?.full_name || user?.email || 'Database Hero'}! Your AI-powered optimization center is ready to revolutionize your database performance.`
+                }
+              </motion.p>
+
+              <motion.div 
+                className="flex flex-wrap items-center gap-6 text-white/90"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+              >
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-green-300" />
+                  <span className="font-semibold">73% avg improvement</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-yellow-300" />
+                  <span className="font-semibold">60% cost reduction</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-300" />
+                  <span className="font-semibold">Enterprise secure</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-purple-300" />
+                  <span className="font-semibold">{currentTime.toLocaleTimeString()}</span>
+                </div>
+              </motion.div>
             </div>
-            <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
-              {isDemo 
-                ? `Welcome to DBooster! You're viewing sample data from a production environment with ${data.totalQueries.toLocaleString()} queries optimized.`
-                : `Welcome back, ${user?.user_metadata?.full_name || user?.email || 'User'}! Here's your database performance overview.`
-              }
-            </p>
-            {isDemo && (
-              <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <Sparkles className="h-4 w-4 text-blue-600" />
-                <p className="text-sm text-blue-700 font-medium">
-                  This demo shows real optimization results from our enterprise customers
-                </p>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="animate-pulse">
-                <Activity className="h-3 w-3 mr-1" />
-                Live monitoring
+
+            <motion.div 
+              className="flex flex-col sm:flex-row items-center gap-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.1 }}
+            >
+              <Badge className="bg-green-500/20 text-green-100 border-green-400/30 backdrop-blur-sm px-4 py-2 animate-pulse">
+                <Activity className="h-4 w-4 mr-2" />
+                {data.activeConnections} Live Connections
               </Badge>
-              <Badge variant="outline" className="text-green-700 bg-green-50 border-green-200">
-                <Shield className="h-3 w-3 mr-1" />
-                All systems secure
-              </Badge>
-            </div>
-            <Button asChild size="lg" className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg">
-              <Link to="/app/ai-studio">
-                <Rocket className="h-4 w-4 mr-2" />
-                Launch AI Studio
-              </Link>
-            </Button>
+              
+              <Button 
+                asChild 
+                size="lg" 
+                className="bg-white text-indigo-600 hover:bg-gray-100 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold px-8 py-6"
+              >
+                <Link to="/app/ai-studio">
+                  <Brain className="h-5 w-5 mr-2" />
+                  Launch AI Studio
+                </Link>
+              </Button>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Enhanced Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-blue-50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Queries</CardTitle>
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Database className="h-5 w-5 text-blue-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground mb-1">{data.totalQueries.toLocaleString()}</div>
-              <p className="text-sm text-muted-foreground">Analyzed this month</p>
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full -mr-12 -mt-12" />
-            </CardContent>
-          </Card>
+        {/* Revolutionary Metrics Grid */}
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, staggerChildren: 0.1 }}
+        >
+          <UltimateMetricCard
+            title="Queries Analyzed"
+            value={data.totalQueries.toLocaleString()}
+            change="+12.5%"
+            changeType="positive"
+            icon={Database}
+            color="blue"
+            subtitle="This month"
+            trend={data.trends.queries}
+          />
+          <UltimateMetricCard
+            title="AI Optimizations"
+            value={data.optimizedQueries.toLocaleString()}
+            change="+8.2%"
+            changeType="positive"
+            icon={Brain}
+            color="purple"
+            subtitle="Performance improvements"
+            trend={data.trends.performance}
+          />
+          <UltimateMetricCard
+            title="Cost Savings"
+            value={`$${data.costSavings.toLocaleString()}`}
+            change="+15.3%"
+            changeType="positive"
+            icon={DollarSign}
+            color="emerald"
+            subtitle="Infrastructure savings"
+            trend={data.trends.costs}
+          />
+          <UltimateMetricCard
+            title="Response Time"
+            value={data.responseTimeReduction ? `${data.responseTimeReduction}s` : '--'}
+            change="-67%"
+            changeType="positive"
+            icon={Clock}
+            color="blue"
+            subtitle="Average improvement"
+            trend={data.trends.response}
+          />
+        </motion.div>
 
-          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-green-50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Optimized</CardTitle>
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Zap className="h-5 w-5 text-green-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground mb-2">{data.optimizedQueries.toLocaleString()}</div>
-              <div className="flex items-center gap-3 mb-1">
-                <Progress value={data.optimizationRate} className="flex-1 h-2" />
-                <span className="text-sm font-medium text-muted-foreground">{data.optimizationRate}%</span>
-              </div>
-              <p className="text-sm text-muted-foreground">Performance improvements</p>
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-500/10 to-transparent rounded-full -mr-12 -mt-12" />
-            </CardContent>
-          </Card>
+        {/* AI Insights Panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <AIInsightsPanel />
+        </motion.div>
 
-          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-purple-50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Avg Improvement</CardTitle>
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground mb-1">{data.avgImprovement}%</div>
-              <p className="text-sm text-muted-foreground">Query response time</p>
-              <div className="mt-2">
-                <Badge variant="secondary" className="text-purple-700 bg-purple-100">
-                  -{data.responseTimeReduction}s avg
-                </Badge>
-              </div>
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-transparent rounded-full -mr-12 -mt-12" />
-            </CardContent>
-          </Card>
+        {/* Interactive Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
+          <InteractiveQuickActions />
+        </motion.div>
 
-          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-emerald-50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Cost Savings</CardTitle>
-              <div className="p-2 bg-emerald-100 rounded-lg">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground mb-1">${data.costSavings.toLocaleString()}</div>
-              <p className="text-sm text-muted-foreground">Infrastructure savings</p>
-              <div className="mt-2">
-                <Badge variant="secondary" className="text-emerald-700 bg-emerald-100">
-                  60% reduction
-                </Badge>
-              </div>
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full -mr-12 -mt-12" />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Enhanced Tabs with Revolutionary Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+        >
+          <Tabs defaultValue="optimizations" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-2 bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border-0">
+              <TabsTrigger value="optimizations" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-white data-[state=active]:shadow-lg rounded-xl">
+                <Zap className="h-5 w-5" />
+                <span className="font-medium">Live Optimizations</span>
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-white data-[state=active]:shadow-lg rounded-xl">
+                <BarChart3 className="h-5 w-5" />
+                <span className="font-medium">Advanced Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger value="security" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-white data-[state=active]:shadow-lg rounded-xl">
+                <Shield className="h-5 w-5" />
+                <span className="font-medium">Security Center</span>
+              </TabsTrigger>
+              <TabsTrigger value="global" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-white data-[state=active]:shadow-lg rounded-xl">
+                <Globe className="h-5 w-5" />
+                <span className="font-medium">Global Network</span>
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Enhanced Main Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted/50">
-            <TabsTrigger value="overview" className="min-h-[52px] flex flex-col gap-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <Activity className="h-4 w-4" />
-              <span className="text-xs font-medium">Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="optimizations" className="min-h-[52px] flex flex-col gap-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <Zap className="h-4 w-4" />
-              <span className="text-xs font-medium">Recent</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="min-h-[52px] flex flex-col gap-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <BarChart3 className="h-4 w-4" />
-              <span className="text-xs font-medium">Analytics</span>
-            </TabsTrigger>
-            <TabsTrigger value="security" className="min-h-[52px] flex flex-col gap-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <Shield className="h-4 w-4" />
-              <span className="text-xs font-medium">Security</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Performance Overview */}
-              <Card className="lg:col-span-2 border-0 shadow-lg">
+            <TabsContent value="optimizations" className="space-y-6">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <TrendingUp className="h-5 w-5 text-blue-600" />
-                    Performance Overview
-                    <Badge variant="outline">Real-time</Badge>
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <motion.div
+                      animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg"
+                    >
+                      <CheckCircle className="h-6 w-6 text-white" />
+                    </motion.div>
+                    Live Query Optimizations
+                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white animate-pulse">
+                      {recentOptimizations.length} Active
+                    </Badge>
                   </CardTitle>
-                  <CardDescription>
-                    {isDemo ? 'Live performance metrics from your optimized database queries' : 'Connect your database to see performance insights'}
+                  <CardDescription className="text-base">
+                    {isDemo 
+                      ? 'Real-time AI optimizations happening right now across enterprise databases' 
+                      : 'Connect your database to see live optimization results here'
+                    }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {isDemo ? (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
-                          <div className="text-3xl font-bold text-green-600 mb-1">{data.responseTimeReduction}s</div>
-                          <div className="text-sm font-medium text-green-700">Avg Time Saved</div>
-                        </div>
-                        <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                          <div className="text-3xl font-bold text-blue-600 mb-1">{data.uptime}%</div>
-                          <div className="text-sm font-medium text-blue-700">System Uptime</div>
-                        </div>
-                      </div>
-                      <div className="h-40 bg-gradient-to-r from-blue-50 via-purple-50 to-green-50 rounded-xl border border-border/50 flex items-center justify-center">
-                        <div className="text-center space-y-2">
-                          <BarChart3 className="h-8 w-8 text-muted-foreground mx-auto" />
-                          <p className="text-sm font-medium text-muted-foreground">Performance charts coming soon</p>
-                        </div>
-                      </div>
+                  {recentOptimizations.length > 0 ? (
+                    <div className="space-y-4">
+                      <AnimatePresence>
+                        {recentOptimizations.map((opt, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                            className="group flex items-start space-x-4 p-6 bg-gradient-to-r from-white to-gray-50 rounded-2xl border border-gray-200 hover:shadow-xl transition-all duration-300"
+                          >
+                            <motion.div
+                              whileHover={{ scale: 1.1, rotate: 5 }}
+                              className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg"
+                            >
+                              <CheckCircle className="h-5 w-5 text-white" />
+                            </motion.div>
+                            <div className="flex-1 min-w-0 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Badge className={`text-xs font-bold ${
+                                  opt.impact === 'High' 
+                                    ? 'bg-red-100 text-red-700 border-red-300' 
+                                    : 'bg-yellow-100 text-yellow-700 border-yellow-300'
+                                }`}>
+                                  {opt.impact} Impact
+                                </Badge>
+                                <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-sm px-3 py-1">
+                                  +{opt.improvement}
+                                </Badge>
+                              </div>
+                              <p className="text-sm font-mono bg-gray-900 text-green-400 p-4 rounded-lg border shadow-inner leading-relaxed">
+                                {opt.query}
+                              </p>
+                              <div className="flex items-center gap-6 text-sm text-gray-600">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-blue-500" />
+                                  <span className="font-medium">{opt.time}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Database className="h-4 w-4 text-purple-500" />
+                                  <span className="font-medium">{opt.database}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Target className="h-4 w-4 text-orange-500" />
+                                  <span className="font-medium">Auto-optimized</span>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <Database className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
-                      <h3 className="text-xl font-semibold mb-3">Connect Your Database</h3>
-                      <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                        Start optimizing by connecting your first database to see real-time performance insights
+                      <Zap className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+                      <h3 className="text-xl font-semibold mb-3">No Optimizations Yet</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Connect your database and run queries to see AI-powered optimizations here
                       </p>
-                      <Button asChild className="bg-gradient-to-r from-primary to-blue-600">
-                        <Link to="/app/settings">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Connect Database
+                      <Button asChild>
+                        <Link to="/app/ai-studio">
+                          <Brain className="h-4 w-4 mr-2" />
+                          Start Optimizing
                         </Link>
                       </Button>
                     </div>
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              {/* Enhanced Quick Actions */}
-              <Card className="border-0 shadow-lg">
+            <TabsContent value="analytics">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-purple-50/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Rocket className="h-5 w-5 text-purple-600" />
-                    Quick Actions
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <BarChart3 className="h-6 w-6 text-purple-600" />
+                    Advanced Analytics Suite
                   </CardTitle>
-                  <CardDescription>
-                    {isDemo ? 'Try these features with sample data' : 'Common optimization tasks'}
-                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full justify-start h-12 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90" asChild>
-                    <Link to="/app/ai-studio">
-                      <Brain className="mr-3 h-5 w-5" />
-                      <div className="text-left">
-                        <div className="font-medium">AI Query Optimizer</div>
-                        <div className="text-xs opacity-90">Intelligent query tuning</div>
-                      </div>
-                    </Link>
-                  </Button>
-                  <Button className="w-full justify-start h-12" variant="outline" asChild>
-                    <Link to="/app/analytics">
-                      <BarChart3 className="mr-3 h-5 w-5" />
-                      <div className="text-left">
-                        <div className="font-medium">Performance Analytics</div>
-                        <div className="text-xs text-muted-foreground">Detailed insights</div>
-                      </div>
-                    </Link>
-                  </Button>
-                  <Button className="w-full justify-start h-12" variant="outline" asChild>
-                    <Link to="/app/monitoring">
-                      <Activity className="mr-3 h-5 w-5" />
-                      <div className="text-left">
-                        <div className="font-medium">Real-time Monitor</div>
-                        <div className="text-xs text-muted-foreground">Live performance data</div>
-                      </div>
-                    </Link>
-                  </Button>
-                  <Button className="w-full justify-start h-12" variant="outline" asChild>
-                    <Link to="/app/settings">
-                      <Settings className="mr-3 h-5 w-5" />
-                      <div className="text-left">
-                        <div className="font-medium">Database Settings</div>
-                        <div className="text-xs text-muted-foreground">Configuration & setup</div>
-                      </div>
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="optimizations" className="space-y-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  Recent Optimizations
-                  <Badge variant="secondary">{recentOptimizations.length} recent</Badge>
-                </CardTitle>
-                <CardDescription>
-                  {isDemo ? 'Latest AI-powered query improvements with real performance gains' : 'No optimizations yet - connect a database to get started'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {recentOptimizations.length > 0 ? (
-                  <div className="space-y-4">
-                    {recentOptimizations.map((opt, index) => (
-                      <div key={index} className="flex items-start space-x-4 p-4 bg-muted/30 rounded-xl border border-border/50 hover:bg-muted/50 transition-colors">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-1" />
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <p className="text-sm font-mono bg-muted/50 p-2 rounded border text-foreground leading-relaxed">
-                            {opt.query}
-                          </p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {opt.time}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Database className="h-3 w-3" />
-                              {opt.database}
-                            </div>
-                          </div>
-                        </div>
-                        <Badge variant="secondary" className="text-green-700 bg-green-100 font-semibold">
-                          +{opt.improvement}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Zap className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
-                    <h3 className="text-xl font-semibold mb-3">No Optimizations Yet</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Connect your database and run queries to see AI-powered optimizations here
+                <CardContent>
+                  <div className="text-center py-16">
+                    <motion.div
+                      animate={{ y: [0, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="mb-6"
+                    >
+                      <BarChart3 className="h-24 w-24 text-purple-400 mx-auto" />
+                    </motion.div>
+                    <h3 className="text-2xl font-bold mb-4">Revolutionary Analytics Coming Soon</h3>
+                    <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                      Experience the future of database analytics with AI-powered insights, predictive trends, and real-time performance visualization.
                     </p>
-                    <Button asChild>
-                      <Link to="/app/ai-studio">
-                        <Brain className="h-4 w-4 mr-2" />
-                        Start Optimizing
-                      </Link>
+                    <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Get Early Access
                     </Button>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-lg">
+            <TabsContent value="security">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-red-50/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-blue-600" />
-                    Query Performance Trends
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <Shield className="h-6 w-6 text-red-600" />
+                    Enterprise Security Center
                   </CardTitle>
-                  <CardDescription>
-                    Performance improvement trends over time
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-48 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-border/50 flex items-center justify-center">
-                    <div className="text-center space-y-2">
-                      <TrendingUp className="h-8 w-8 text-muted-foreground mx-auto" />
-                      <p className="text-sm font-medium text-muted-foreground">Performance charts coming soon</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border border-green-200">
+                      <div className="text-4xl font-bold text-green-600 mb-2">99.9%</div>
+                      <div className="text-sm font-medium text-green-700">Security Score</div>
+                    </div>
+                    <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200">
+                      <div className="text-4xl font-bold text-blue-600 mb-2">{data.threatsStopped}</div>
+                      <div className="text-sm font-medium text-blue-700">Threats Blocked</div>
+                    </div>
+                    <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border border-purple-200">
+                      <div className="text-4xl font-bold text-purple-600 mb-2">{data.activeConnections}</div>
+                      <div className="text-sm font-medium text-purple-700">Secured Connections</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              
-              <Card className="border-0 shadow-lg">
+            </TabsContent>
+
+            <TabsContent value="global">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-cyan-50/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-green-600" />
-                    Cost Analysis
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <Globe className="h-6 w-6 text-cyan-600" />
+                    Global Network Status
                   </CardTitle>
-                  <CardDescription>
-                    Infrastructure cost savings analysis
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-48 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-border/50 flex items-center justify-center">
-                    <div className="text-center space-y-2">
-                      <DollarSign className="h-8 w-8 text-muted-foreground mx-auto" />
-                      <p className="text-sm font-medium text-muted-foreground">Cost analysis charts coming soon</p>
+                  <div className="text-center py-16">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                      className="mb-6"
+                    >
+                      <Globe className="h-24 w-24 text-cyan-400 mx-auto" />
+                    </motion.div>
+                    <h3 className="text-2xl font-bold mb-4">Global Edge Network</h3>
+                    <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                      Your databases are protected by our global network of 50+ edge locations worldwide, ensuring optimal performance and security.
+                    </p>
+                    <div className="flex justify-center gap-4">
+                      <Badge variant="outline" className="px-4 py-2">🌍 50+ Edge Locations</Badge>
+                      <Badge variant="outline" className="px-4 py-2">⚡ <10ms Latency</Badge>
+                      <Badge variant="outline" className="px-4 py-2">🔒 End-to-End Encryption</Badge>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="security" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-green-800">Security Score</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-600 mb-1">99.9%</div>
-                  <p className="text-xs text-green-700 font-medium">All systems secure</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-blue-800">Threats Blocked</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-blue-600 mb-1">{data.threatsStopped}</div>
-                  <p className="text-xs text-blue-700 font-medium">This month</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-purple-800">Active Connections</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-purple-600 mb-1">{data.activeConnections}</div>
-                  <p className="text-xs text-purple-700 font-medium">Secured databases</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-green-600" />
-                  Enterprise Security Dashboard
-                </CardTitle>
-                <CardDescription>
-                  SOC2 compliant security monitoring with real-time threat detection
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-6">
-                  <p className="text-sm text-muted-foreground">
-                    Your database connections are secured with enterprise-grade encryption and 24/7 monitoring
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-3">
-                    <Badge variant="outline" className="px-4 py-2">SOC2 Type II</Badge>
-                    <Badge variant="outline" className="px-4 py-2">End-to-End Encryption</Badge>
-                    <Badge variant="outline" className="px-4 py-2">Audit Logging</Badge>
-                    <Badge variant="outline" className="px-4 py-2">24/7 Monitoring</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </div>
     </div>
   );
