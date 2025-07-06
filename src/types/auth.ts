@@ -1,6 +1,8 @@
 
 export type AuthMode = 'login' | 'signup' | 'reset';
 
+export type LoginType = 'email' | 'phone';
+
 export interface User {
   id: string;
   email?: string;
