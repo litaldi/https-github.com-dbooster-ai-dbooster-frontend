@@ -65,15 +65,30 @@ export function Typography({
 }: TypographyProps) {
   const Component = variant.startsWith('h') ? variant as keyof JSX.IntrinsicElements : 'p';
   
-  const MotionComponent = animated ? motion.div : 'div';
-  const animationProps = animated ? {
-    initial: { opacity: 0, y: 20 },
-    whileInView: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
-    viewport: { once: true }
-  } : {};
+  if (animated) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <Component 
+          className={cn(
+            variantStyles[variant],
+            color && colorStyles[color],
+            weight && weightStyles[weight],
+            alignStyles[align],
+            className
+          )}
+        >
+          {children}
+        </Component>
+      </motion.div>
+    );
+  }
 
-  const textContent = (
+  return (
     <Component 
       className={cn(
         variantStyles[variant],
@@ -86,16 +101,6 @@ export function Typography({
       {children}
     </Component>
   );
-
-  if (animated) {
-    return (
-      <MotionComponent {...animationProps}>
-        {textContent}
-      </MotionComponent>
-    );
-  }
-
-  return textContent;
 }
 
 export function PageTitle({ 

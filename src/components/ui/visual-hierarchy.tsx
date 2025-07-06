@@ -150,15 +150,30 @@ export function Heading({
   const appliedSize = size || defaultSizes[level];
   const appliedWeight = weight || defaultWeights[level];
 
-  const MotionComponent = animated ? motion.div : 'div';
-  const animationProps = animated ? {
-    initial: { opacity: 0, y: 20 },
-    whileInView: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
-    viewport: { once: true }
-  } : {};
+  if (animated) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <Component 
+          className={cn(
+            sizeClasses[appliedSize], 
+            weightClasses[appliedWeight],
+            'tracking-tight leading-tight',
+            gradient && 'bg-gradient-to-r from-primary via-primary to-purple-600 bg-clip-text text-transparent',
+            className
+          )}
+        >
+          {children}
+        </Component>
+      </motion.div>
+    );
+  }
 
-  const headingContent = (
+  return (
     <Component 
       className={cn(
         sizeClasses[appliedSize], 
@@ -171,16 +186,6 @@ export function Heading({
       {children}
     </Component>
   );
-
-  if (animated) {
-    return (
-      <MotionComponent {...animationProps}>
-        {headingContent}
-      </MotionComponent>
-    );
-  }
-
-  return headingContent;
 }
 
 interface TextProps {
@@ -225,16 +230,28 @@ export function TextElement({
     bold: 'font-bold'
   };
 
-  const Component = animated ? motion.p : 'p';
-  const animationProps = animated ? {
-    initial: { opacity: 0, y: 10 },
-    whileInView: { opacity: 1, y: 0 },
-    transition: { duration: 0.5 },
-    viewport: { once: true }
-  } : {};
+  if (animated) {
+    return (
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+        className={cn(
+          sizeClasses[size], 
+          variantClasses[variant], 
+          weightClasses[weight],
+          'leading-relaxed',
+          className
+        )}
+      >
+        {children}
+      </motion.p>
+    );
+  }
 
   return (
-    <Component 
+    <p 
       className={cn(
         sizeClasses[size], 
         variantClasses[variant], 
@@ -242,10 +259,9 @@ export function TextElement({
         'leading-relaxed',
         className
       )}
-      {...animationProps}
     >
       {children}
-    </Component>
+    </p>
   );
 }
 
