@@ -12,7 +12,6 @@ import {
   Activity, 
   Shield, 
   Brain, 
-  Users, 
   DollarSign,
   Bell,
   Eye,
@@ -25,6 +24,7 @@ import { MetricCard } from "@/components/ui/metric-card";
 import { UnifiedQuickActions } from "@/components/dashboard/UnifiedQuickActions";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { PerformanceTrends } from "@/components/dashboard/PerformanceTrends";
+import { productionLogger } from "@/utils/productionLogger";
 
 // System alerts component
 function SystemAlerts() {
@@ -61,7 +61,7 @@ function SystemAlerts() {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
 
   // Sample data for metrics
   const data = {
@@ -116,6 +116,15 @@ export default function Dashboard() {
       progress: 78
     }
   ];
+
+  // Log dashboard access for analytics
+  React.useEffect(() => {
+    productionLogger.info('Dashboard accessed', { 
+      userId: user?.id,
+      isDemo,
+      timestamp: new Date().toISOString()
+    }, 'Dashboard');
+  }, [user?.id, isDemo]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">

@@ -69,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         localStorage.removeItem('demo_user');
+        productionLogger.warn('Invalid demo user data cleared', {}, 'AuthContext');
       }
     }
 
@@ -218,7 +219,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       };
       
-      // Store demo user in localStorage for persistence
       localStorage.setItem('demo_user', JSON.stringify(mockUser));
       
       setIsDemo(true);

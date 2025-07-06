@@ -206,6 +206,7 @@ export function PerformanceDashboard() {
                   <span>Potential Savings</span>
                   <Badge variant="secondary">{Math.round(bundleData.potentialSavings / 1024)} KB</Badge>
                 </div>
+                <Progress value={(bundleData.potentialSavings / bundleData.totalSize) * 100} className="mt-2" />
               </div>
             </CardContent>
           </Card>
@@ -216,17 +217,24 @@ export function PerformanceDashboard() {
             <CardHeader>
               <CardTitle>Optimization Recommendations</CardTitle>
               <CardDescription>
-                Actionable steps to improve performance
+                Suggested improvements for better performance
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {[...performanceData.recommendations, ...bundleData.recommendations].map((rec, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
-                    <span className="text-sm">{rec}</span>
+                {performanceData.recommendations.length > 0 ? (
+                  performanceData.recommendations.map((recommendation, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-border/50">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                      <span className="text-sm">{recommendation}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-green-800">No performance issues detected</span>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
