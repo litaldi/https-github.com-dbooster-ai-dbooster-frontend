@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +26,11 @@ import {
   Target
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { UltimateMetricCard } from '@/components/dashboard/UltimateMetricCard';
+import { QuantumMetricCube } from '@/components/dashboard/QuantumMetricCube';
+import { AIAvatarAssistant } from '@/components/dashboard/AIAvatarAssistant';
+import { HolographicChart } from '@/components/dashboard/HolographicChart';
+import { ParticleField } from '@/components/dashboard/ParticleField';
+import { GestureController } from '@/components/dashboard/GestureController';
 import { AIInsightsPanel } from '@/components/dashboard/AIInsightsPanel';
 import { InteractiveQuickActions } from '@/components/dashboard/InteractiveQuickActions';
 
@@ -35,6 +38,7 @@ export default function DashboardPage() {
   const { user, isDemo } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeConnections, setActiveConnections] = useState(0);
+  const [hypernova, setHypernova] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -113,33 +117,43 @@ export default function DashboardPage() {
   ] : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50">
-      <div className="space-y-8 p-6 max-w-8xl mx-auto">
-        {/* Revolutionary Header Section */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 relative overflow-hidden">
+      {/* Particle Field Background */}
+      <ParticleField />
+      
+      {/* Gesture Controller */}
+      <GestureController />
+      
+      {/* AI Avatar Assistant */}
+      <AIAvatarAssistant />
+
+      <div className="space-y-8 p-6 max-w-8xl mx-auto relative z-10">
+        {/* Hypernova Header Section */}
         <motion.div 
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 shadow-2xl"
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 p-8 shadow-2xl"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          {/* Animated Background Elements */}
+          {/* Animated Holographic Elements */}
           <div className="absolute inset-0 overflow-hidden">
-            {[...Array(20)].map((_, i) => (
+            {[...Array(30)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 bg-white/20 rounded-full"
+                className="absolute w-2 h-2 bg-white/30 rounded-full"
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
                 }}
                 animate={{
-                  y: [0, -100],
+                  y: [0, -150],
                   opacity: [0, 1, 0],
+                  scale: [0, 1, 0],
                 }}
                 transition={{
-                  duration: Math.random() * 3 + 2,
+                  duration: Math.random() * 4 + 3,
                   repeat: Infinity,
-                  delay: Math.random() * 2,
+                  delay: Math.random() * 3,
                 }}
               />
             ))}
@@ -149,21 +163,27 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl"
+                  animate={{ 
+                    rotate: [0, 360],
+                    scale: [1, 1.2, 1]
+                  }}
+                  transition={{ 
+                    rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+                    scale: { duration: 2, repeat: Infinity }
+                  }}
+                  className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl shadow-2xl"
                 >
-                  <Zap className="h-8 w-8 text-white" />
+                  <Brain className="h-8 w-8 text-white" />
                 </motion.div>
                 
                 <div>
                   <motion.h1 
-                    className="text-4xl lg:text-5xl font-black text-white leading-tight"
+                    className="text-5xl lg:text-6xl font-black text-white leading-tight bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    Ultimate Dashboard
+                    Hypernova Dashboard
                   </motion.h1>
                   <motion.p 
                     className="text-xl text-white/90 font-medium"
@@ -171,32 +191,32 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 }}
                   >
-                    AI-Powered Database Command Center
+                    🚀 Next-Generation AI Command Center
                   </motion.p>
                 </div>
 
                 {isDemo && (
                   <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 3, repeat: Infinity }}
                   >
-                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-4 py-2">
-                      <Eye className="h-4 w-4 mr-2" />
-                      Demo Mode - Experience the Future
+                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-none backdrop-blur-sm px-6 py-3 text-lg font-bold">
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      10B x Enhanced Demo
                     </Badge>
                   </motion.div>
                 )}
               </div>
 
               <motion.p 
-                className="text-lg text-white/80 max-w-3xl leading-relaxed"
+                className="text-lg text-white/80 max-w-4xl leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
               >
                 {isDemo 
-                  ? `🚀 Welcome to the future of database optimization! You're viewing live data from enterprise customers who've achieved incredible results with our AI engine.`
-                  : `Welcome back, ${user?.user_metadata?.full_name || user?.email || 'Database Hero'}! Your AI-powered optimization center is ready to revolutionize your database performance.`
+                  ? `🌟 Experience the future of database optimization! Revolutionary AI, quantum visualizations, and hypernova performance monitoring combined into the ultimate enterprise dashboard.`
+                  : `Welcome to the future, ${user?.user_metadata?.full_name || user?.email || 'Database Hero'}! Your hypernova-powered optimization center with quantum AI assistance.`
                 }
               </motion.p>
 
@@ -208,18 +228,18 @@ export default function DashboardPage() {
               >
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-green-300" />
-                  <span className="font-semibold">73% avg improvement</span>
+                  <span className="font-semibold">95% AI accuracy</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-yellow-300" />
-                  <span className="font-semibold">60% cost reduction</span>
+                  <Rocket className="h-5 w-5 text-cyan-300" />
+                  <span className="font-semibold">Quantum processing</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-blue-300" />
-                  <span className="font-semibold">Enterprise secure</span>
+                  <Brain className="h-5 w-5 text-purple-300" />
+                  <span className="font-semibold">Neural optimization</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-purple-300" />
+                  <Clock className="h-5 w-5 text-yellow-300" />
                   <span className="font-semibold">{currentTime.toLocaleTimeString()}</span>
                 </div>
               </motion.div>
@@ -231,79 +251,84 @@ export default function DashboardPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.1 }}
             >
-              <Badge className="bg-green-500/20 text-green-100 border-green-400/30 backdrop-blur-sm px-4 py-2 animate-pulse">
+              <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-black border-none animate-pulse px-4 py-2 font-bold">
                 <Activity className="h-4 w-4 mr-2" />
-                {data.activeConnections} Live Connections
+                {data.activeConnections} Quantum Connections
               </Badge>
               
               <Button 
                 asChild 
                 size="lg" 
-                className="bg-white text-indigo-600 hover:bg-gray-100 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold px-8 py-6"
+                className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-500 hover:via-blue-600 hover:to-purple-700 text-white shadow-2xl hover:shadow-cyan-500/25 transition-all duration-300 font-bold px-8 py-6"
               >
                 <Link to="/app/ai-studio">
                   <Brain className="h-5 w-5 mr-2" />
-                  Launch AI Studio
+                  Launch Quantum AI
                 </Link>
               </Button>
             </motion.div>
           </div>
         </motion.div>
 
-        {/* Revolutionary Metrics Grid */}
+        {/* Quantum Metrics Grid */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, staggerChildren: 0.1 }}
         >
-          <UltimateMetricCard
+          <QuantumMetricCube
             title="Queries Analyzed"
             value={data.totalQueries.toLocaleString()}
             change="+12.5%"
             changeType="positive"
             icon={Database}
             color="blue"
-            subtitle="This month"
             trend={data.trends.queries}
           />
-          <UltimateMetricCard
+          <QuantumMetricCube
             title="AI Optimizations"
             value={data.optimizedQueries.toLocaleString()}
             change="+8.2%"
             changeType="positive"
             icon={Brain}
             color="purple"
-            subtitle="Performance improvements"
             trend={data.trends.performance}
           />
-          <UltimateMetricCard
+          <QuantumMetricCube
             title="Cost Savings"
             value={`$${data.costSavings.toLocaleString()}`}
             change="+15.3%"
             changeType="positive"
             icon={DollarSign}
             color="emerald"
-            subtitle="Infrastructure savings"
             trend={data.trends.costs}
           />
-          <UltimateMetricCard
+          <QuantumMetricCube
             title="Response Time"
             value={data.responseTimeReduction ? `${data.responseTimeReduction}s` : '--'}
             change="-67%"
             changeType="positive"
             icon={Clock}
             color="blue"
-            subtitle="Average improvement"
             trend={data.trends.response}
           />
+        </motion.div>
+
+        {/* Holographic Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <HolographicChart />
         </motion.div>
 
         {/* AI Insights Panel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.7 }}
         >
           <AIInsightsPanel />
         </motion.div>
@@ -312,7 +337,7 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 0.9 }}
         >
           <InteractiveQuickActions />
         </motion.div>
@@ -321,49 +346,51 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
+          transition={{ delay: 1.1 }}
         >
-          <Tabs defaultValue="optimizations" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-2 bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border-0">
-              <TabsTrigger value="optimizations" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-white data-[state=active]:shadow-lg rounded-xl">
-                <Zap className="h-5 w-5" />
-                <span className="font-medium">Live Optimizations</span>
+          <Tabs defaultValue="hypernova" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto p-2 bg-gradient-to-r from-slate-800/50 to-purple-800/50 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-500/30">
+              <TabsTrigger value="hypernova" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl">
+                <Rocket className="h-5 w-5" />
+                <span className="font-medium">Hypernova</span>
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-white data-[state=active]:shadow-lg rounded-xl">
+              <TabsTrigger value="quantum" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl">
+                <Brain className="h-5 w-5" />
+                <span className="font-medium">Quantum AI</span>
+              </TabsTrigger>
+              <TabsTrigger value="neural" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl">
                 <BarChart3 className="h-5 w-5" />
-                <span className="font-medium">Advanced Analytics</span>
+                <span className="font-medium">Neural Net</span>
               </TabsTrigger>
-              <TabsTrigger value="security" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-white data-[state=active]:shadow-lg rounded-xl">
+              <TabsTrigger value="security" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl">
                 <Shield className="h-5 w-5" />
-                <span className="font-medium">Security Center</span>
+                <span className="font-medium">Quantum Shield</span>
               </TabsTrigger>
-              <TabsTrigger value="global" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-white data-[state=active]:shadow-lg rounded-xl">
+              <TabsTrigger value="multiverse" className="min-h-[60px] flex flex-col gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl">
                 <Globe className="h-5 w-5" />
-                <span className="font-medium">Global Network</span>
+                <span className="font-medium">Multiverse</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="optimizations" className="space-y-6">
-              <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm">
+            <TabsContent value="hypernova" className="space-y-6">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-slate-900/80 to-purple-900/80 backdrop-blur-sm border border-purple-500/30">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-2xl">
+                  <CardTitle className="flex items-center gap-3 text-2xl text-white">
                     <motion.div
-                      animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg"
+                      animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      className="p-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl shadow-lg"
                     >
-                      <CheckCircle className="h-6 w-6 text-white" />
+                      <Rocket className="h-6 w-6 text-white" />
                     </motion.div>
-                    Live Query Optimizations
-                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white animate-pulse">
-                      {recentOptimizations.length} Active
+                    Hypernova Performance Matrix
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-600 text-white animate-pulse">
+                      <Sparkles className="h-4 w-4 mr-1" />
+                      Live Quantum Data
                     </Badge>
                   </CardTitle>
-                  <CardDescription className="text-base">
-                    {isDemo 
-                      ? 'Real-time AI optimizations happening right now across enterprise databases' 
-                      : 'Connect your database to see live optimization results here'
-                    }
+                  <CardDescription className="text-base text-gray-300">
+                    Real-time hypernova-powered optimization happening across dimensional databases
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -377,42 +404,43 @@ export default function DashboardPage() {
                             animate={{ opacity: 1, x: 0, scale: 1 }}
                             exit={{ opacity: 0, x: 20, scale: 0.95 }}
                             transition={{ duration: 0.3, delay: index * 0.1 }}
-                            className="group flex items-start space-x-4 p-6 bg-gradient-to-r from-white to-gray-50 rounded-2xl border border-gray-200 hover:shadow-xl transition-all duration-300"
+                            className="group flex items-start space-x-4 p-6 bg-gradient-to-r from-slate-800/50 to-purple-800/30 rounded-2xl border border-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300"
                           >
                             <motion.div
-                              whileHover={{ scale: 1.1, rotate: 5 }}
-                              className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg"
+                              whileHover={{ scale: 1.2, rotate: 360 }}
+                              transition={{ duration: 0.5 }}
+                              className="p-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg shadow-lg"
                             >
                               <CheckCircle className="h-5 w-5 text-white" />
                             </motion.div>
                             <div className="flex-1 min-w-0 space-y-3">
                               <div className="flex items-center justify-between">
-                                <Badge className={`text-xs font-bold ${
+                                <Badge className={`text-xs font-bold border-none ${
                                   opt.impact === 'High' 
-                                    ? 'bg-red-100 text-red-700 border-red-300' 
-                                    : 'bg-yellow-100 text-yellow-700 border-yellow-300'
+                                    ? 'bg-gradient-to-r from-red-400 to-pink-500 text-white' 
+                                    : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black'
                                 }`}>
-                                  {opt.impact} Impact
+                                  {opt.impact} Quantum Impact
                                 </Badge>
-                                <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-sm px-3 py-1">
+                                <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white font-bold text-sm px-4 py-2">
                                   +{opt.improvement}
                                 </Badge>
                               </div>
-                              <p className="text-sm font-mono bg-gray-900 text-green-400 p-4 rounded-lg border shadow-inner leading-relaxed">
+                              <p className="text-sm font-mono bg-slate-900 text-green-400 p-4 rounded-lg border border-green-500/30 shadow-inner leading-relaxed">
                                 {opt.query}
                               </p>
-                              <div className="flex items-center gap-6 text-sm text-gray-600">
+                              <div className="flex items-center gap-6 text-sm text-gray-300">
                                 <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-blue-500" />
+                                  <Clock className="h-4 w-4 text-cyan-400" />
                                   <span className="font-medium">{opt.time}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <Database className="h-4 w-4 text-purple-500" />
+                                  <Database className="h-4 w-4 text-purple-400" />
                                   <span className="font-medium">{opt.database}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <Target className="h-4 w-4 text-orange-500" />
-                                  <span className="font-medium">Auto-optimized</span>
+                                  <Brain className="h-4 w-4 text-pink-400" />
+                                  <span className="font-medium">Quantum-optimized</span>
                                 </div>
                               </div>
                             </div>
@@ -422,15 +450,20 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <Zap className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
-                      <h3 className="text-xl font-semibold mb-3">No Optimizations Yet</h3>
-                      <p className="text-muted-foreground mb-6">
-                        Connect your database and run queries to see AI-powered optimizations here
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Rocket className="h-24 w-24 text-purple-400 mx-auto mb-6" />
+                      </motion.div>
+                      <h3 className="text-2xl font-bold mb-3 text-white">Ready for Hypernova Launch</h3>
+                      <p className="text-gray-300 mb-6">
+                        Connect your database to experience quantum-powered optimizations
                       </p>
-                      <Button asChild>
+                      <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700">
                         <Link to="/app/ai-studio">
                           <Brain className="h-4 w-4 mr-2" />
-                          Start Optimizing
+                          Launch Quantum Engine
                         </Link>
                       </Button>
                     </div>
@@ -439,12 +472,12 @@ export default function DashboardPage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="analytics">
-              <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-purple-50/50">
+            <TabsContent value="quantum">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-slate-900/80 to-cyan-900/80 backdrop-blur-sm border border-cyan-500/30">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-2xl">
-                    <BarChart3 className="h-6 w-6 text-purple-600" />
-                    Advanced Analytics Suite
+                  <CardTitle className="flex items-center gap-3 text-2xl text-white">
+                    <Brain className="h-6 w-6 text-cyan-400" />
+                    Quantum AI Insights
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -454,15 +487,45 @@ export default function DashboardPage() {
                       transition={{ duration: 2, repeat: Infinity }}
                       className="mb-6"
                     >
-                      <BarChart3 className="h-24 w-24 text-purple-400 mx-auto" />
+                      <Brain className="h-24 w-24 text-cyan-400 mx-auto" />
                     </motion.div>
-                    <h3 className="text-2xl font-bold mb-4">Revolutionary Analytics Coming Soon</h3>
-                    <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                    <h3 className="text-2xl font-bold mb-4 text-white">Quantum AI Core</h3>
+                    <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
                       Experience the future of database analytics with AI-powered insights, predictive trends, and real-time performance visualization.
                     </p>
-                    <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700">
+                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
                       <Sparkles className="h-4 w-4 mr-2" />
-                      Get Early Access
+                      Unlock Quantum Insights
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="neural">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-slate-900/80 to-indigo-900/80 backdrop-blur-sm border border-indigo-500/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-2xl text-white">
+                    <BarChart3 className="h-6 w-6 text-indigo-400" />
+                    Neural Network Analytics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-16">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                      className="mb-6"
+                    >
+                      <BarChart3 className="h-24 w-24 text-indigo-400 mx-auto" />
+                    </motion.div>
+                    <h3 className="text-2xl font-bold mb-4 text-white">Neural Network Insights</h3>
+                    <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
+                      Visualize complex data patterns with our advanced neural network analytics engine.
+                    </p>
+                    <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Explore Neural Insights
                     </Button>
                   </div>
                 </CardContent>
@@ -470,38 +533,38 @@ export default function DashboardPage() {
             </TabsContent>
 
             <TabsContent value="security">
-              <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-red-50/50">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-slate-900/80 to-red-900/80 backdrop-blur-sm border border-red-500/30">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-2xl">
-                    <Shield className="h-6 w-6 text-red-600" />
-                    Enterprise Security Center
+                  <CardTitle className="flex items-center gap-3 text-2xl text-white">
+                    <Shield className="h-6 w-6 text-red-400" />
+                    Quantum Shield Security
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border border-green-200">
-                      <div className="text-4xl font-bold text-green-600 mb-2">99.9%</div>
-                      <div className="text-sm font-medium text-green-700">Security Score</div>
+                    <div className="text-center p-6 bg-gradient-to-br from-red-50/50 to-red-100/50 rounded-2xl border border-red-200">
+                      <div className="text-4xl font-bold text-red-400 mb-2">99.9%</div>
+                      <div className="text-sm font-medium text-red-300">Security Score</div>
                     </div>
-                    <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200">
-                      <div className="text-4xl font-bold text-blue-600 mb-2">{data.threatsStopped}</div>
-                      <div className="text-sm font-medium text-blue-700">Threats Blocked</div>
+                    <div className="text-center p-6 bg-gradient-to-br from-red-50/50 to-red-100/50 rounded-2xl border border-red-200">
+                      <div className="text-4xl font-bold text-red-400 mb-2">{data.threatsStopped}</div>
+                      <div className="text-sm font-medium text-red-300">Threats Blocked</div>
                     </div>
-                    <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border border-purple-200">
-                      <div className="text-4xl font-bold text-purple-600 mb-2">{data.activeConnections}</div>
-                      <div className="text-sm font-medium text-purple-700">Secured Connections</div>
+                    <div className="text-center p-6 bg-gradient-to-br from-red-50/50 to-red-100/50 rounded-2xl border border-red-200">
+                      <div className="text-4xl font-bold text-red-400 mb-2">{data.activeConnections}</div>
+                      <div className="text-sm font-medium text-red-300">Secured Connections</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="global">
-              <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-cyan-50/50">
+            <TabsContent value="multiverse">
+              <Card className="border-0 shadow-2xl bg-gradient-to-br from-slate-900/80 to-green-900/80 backdrop-blur-sm border border-green-500/30">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-2xl">
-                    <Globe className="h-6 w-6 text-cyan-600" />
-                    Global Network Status
+                  <CardTitle className="flex items-center gap-3 text-2xl text-white">
+                    <Globe className="h-6 w-6 text-green-400" />
+                    Multiverse Network Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -511,10 +574,10 @@ export default function DashboardPage() {
                       transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                       className="mb-6"
                     >
-                      <Globe className="h-24 w-24 text-cyan-400 mx-auto" />
+                      <Globe className="h-24 w-24 text-green-400 mx-auto" />
                     </motion.div>
-                    <h3 className="text-2xl font-bold mb-4">Global Edge Network</h3>
-                    <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                    <h3 className="text-2xl font-bold mb-4 text-white">Global Edge Network</h3>
+                    <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
                       Your databases are protected by our global network of 50+ edge locations worldwide, ensuring optimal performance and security.
                     </p>
                     <div className="flex justify-center gap-4">
