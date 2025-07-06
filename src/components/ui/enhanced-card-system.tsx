@@ -19,6 +19,16 @@ const Card = React.forwardRef<
     glass: 'bg-background/60 backdrop-blur-xl border border-white/20 text-card-foreground shadow-soft'
   };
 
+  // Separate HTML props from potential Framer Motion props
+  const {
+    onDrag,
+    onDragStart,
+    onDragEnd,
+    onAnimationStart,
+    onAnimationEnd,
+    ...htmlProps
+  } = props;
+
   return (
     <motion.div
       ref={ref}
@@ -31,7 +41,7 @@ const Card = React.forwardRef<
       )}
       whileHover={interactive ? { y: -4 } : undefined}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      {...props}
+      {...htmlProps}
     />
   );
 });
@@ -209,15 +219,17 @@ const FeatureCard = React.forwardRef<HTMLDivElement, FeatureCardProps>(
   ({ title, description, icon, badge, href, onClick, className, children }, ref) => {
     if (href) {
       return (
-        <Card
-          as="a"
+        <motion.a
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          variant="elevated"
-          interactive
-          className={cn('group', className)}
-          ref={ref}
+          ref={ref as React.ForwardedRef<HTMLAnchorElement>}
+          className={cn(
+            'block rounded-xl transition-all duration-200 bg-card text-card-foreground shadow-medium hover:shadow-strong cursor-pointer hover:scale-[1.02] active:scale-[0.98] group',
+            className
+          )}
+          whileHover={{ y: -4 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         >
           <CardHeader badge={badge}>
             {icon && (
@@ -229,7 +241,7 @@ const FeatureCard = React.forwardRef<HTMLDivElement, FeatureCardProps>(
             <CardDescription>{description}</CardDescription>
           </CardHeader>
           {children && <CardContent>{children}</CardContent>}
-        </Card>
+        </motion.a>
       );
     }
 

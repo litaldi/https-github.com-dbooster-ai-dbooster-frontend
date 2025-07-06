@@ -110,6 +110,16 @@ const EnhancedInteractiveButton = React.forwardRef<
     );
   }
 
+  // Separate HTML props from potential Framer Motion props
+  const {
+    onDrag,
+    onDragStart,
+    onDragEnd,
+    onAnimationStart,
+    onAnimationEnd,
+    ...htmlProps
+  } = props;
+
   return (
     <motion.button
       className={cn(enhancedButtonVariants({ variant, size, loading, className }))}
@@ -119,7 +129,7 @@ const EnhancedInteractiveButton = React.forwardRef<
       whileHover={{ y: -2 }}
       whileTap={{ y: 0, scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-      {...props}
+      {...htmlProps}
     >
       {ripple && rippleArray.map((ripple) => (
         <motion.span
