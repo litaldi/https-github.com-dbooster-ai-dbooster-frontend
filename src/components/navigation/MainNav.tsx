@@ -33,7 +33,6 @@ export function MainNav() {
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       role="navigation"
       aria-label="Main navigation"
-      dir="ltr"
     >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
@@ -72,7 +71,7 @@ export function MainNav() {
                   <Menu className="h-5 w-5" />
                 </StandardizedButton>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 p-0" dir="ltr">
+              <SheetContent side="right" className="w-80 p-0">
                 <div className="flex flex-col h-full">
                   <div className="p-6 border-b">
                     <NavigationLogo user={user} />
@@ -80,7 +79,7 @@ export function MainNav() {
                   
                   <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-foreground mb-3">Navigation</h4>
+                      <h4 className="text-sm font-semibold text-foreground mb-3 text-left">Navigation</h4>
                       <EnhancedNavigationItems 
                         items={navItems} 
                         mobile 
@@ -91,7 +90,7 @@ export function MainNav() {
                     
                     {/* Company section */}
                     <div className="border-t pt-4 space-y-2">
-                      <h4 className="text-sm font-semibold text-muted-foreground mb-3">Learn More</h4>
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-left">Learn More</h4>
                       <EnhancedNavigationItems 
                         items={companyMenuItems}
                         mobile
@@ -102,7 +101,7 @@ export function MainNav() {
                     
                     {/* Legal section */}
                     <div className="border-t pt-4 space-y-2">
-                      <h4 className="text-sm font-semibold text-muted-foreground mb-3">Legal & Support</h4>
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-left">Legal & Support</h4>
                       <EnhancedNavigationItems 
                         items={legalMenuItems}
                         mobile

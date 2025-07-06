@@ -26,15 +26,15 @@ export function EnhancedNavigationItems({
   return (
     <div className={cn(
       mobile ? "flex flex-col space-y-1" : "flex items-center space-x-1"
-    )} dir="ltr">
+    )}>
       {items.map((item) => (
         <Button
           key={item.href}
           variant={isCurrentRoute(item.href) ? "default" : "ghost"}
           className={cn(
-            "relative transition-all duration-200",
+            "relative transition-all duration-200 text-left justify-start",
             mobile 
-              ? "w-full justify-start h-12 px-4 text-left" 
+              ? "w-full h-12 px-4" 
               : "h-10 px-4 hover:scale-105",
             !mobile && isCurrentRoute(item.href) && "shadow-sm"
           )}
@@ -42,7 +42,7 @@ export function EnhancedNavigationItems({
         >
           <Link to={item.href} onClick={handleClick} className="flex items-center gap-3">
             <item.icon className="h-4 w-4 flex-shrink-0" />
-            <span className="font-medium">{item.label}</span>
+            <span className="font-medium text-left">{item.label}</span>
             {item.badge && (
               <Badge variant="secondary" className="ml-auto text-xs">
                 {item.badge}
