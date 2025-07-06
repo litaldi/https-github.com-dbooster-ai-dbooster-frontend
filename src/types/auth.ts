@@ -1,36 +1,27 @@
-export interface AuthFormData {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-}
 
 export type AuthMode = 'login' | 'signup' | 'reset';
-export type LoginType = 'email' | 'phone';
-export type OAuthProvider = 'github' | 'google';
 
-export interface ValidationResult {
-  isValid: boolean;
-  hasError: boolean;
-  errorMessage?: string;
-}
-
-export interface AuthContextValue {
-  signIn: (identifier: string, password: string) => Promise<{ error?: any }>;
-  signUp: (userData: any) => Promise<{ error?: any }>;
-}
-
-export interface AuthResult {
-  success: boolean;
-  error?: string;
-  data?: any;
-}
-
-export interface AuthCredentials {
+export interface User {
+  id: string;
   email?: string;
-  phone?: string;
-  password?: string;
-  name?: string;
-  rememberMe?: boolean;
+  user_metadata?: {
+    full_name?: string;
+    name?: string;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+
+export interface Session {
+  user: User;
+  access_token?: string;
+  refresh_token?: string;
+  [key: string]: any;
+}
+
+export interface AuthState {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  initialized: boolean;
 }

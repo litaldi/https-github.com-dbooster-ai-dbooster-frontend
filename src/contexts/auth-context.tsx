@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [isDemo, setIsDemo] = useState(false);
+  const [githubAccessToken, setGithubAccessToken] = useState<string | undefined>();
 
   const updateAuthState = useCallback((session: Session | null) => {
     setAuthState(prev => ({
@@ -51,6 +52,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Check for existing demo mode
+    const demoUser = localStorage.getItem('demo_user');
+    if (demoUser) {
+      try {
+        const user = JSON.parse(demoUser);
+        if (user.email === 'demo@dbooster.ai') {
+          setIsDemo(true);
+          setAuthState({
+            user: user as User,
+            session: { user: user } as Session,
+            loading: false,
+            initialized: true,
+          });
+          return;
+        }
+      } catch (error) {
+        localStorage.removeItem('demo_user');
+      }
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         updateAuthState(session as Session | null);
@@ -173,6 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       cleanupAuthState();
       setIsDemo(false);
+      localStorage.removeItem('demo_user');
       await supabase.auth.signOut({ scope: 'global' });
       window.location.href = '/';
     } catch (error) {
@@ -187,21 +209,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginDemo = useCallback(async (): Promise<void> => {
     try {
-      setIsDemo(true);
-      // Demo mode - create mock user session
       const mockUser = {
         id: 'demo-user-id',
         email: 'demo@dbooster.ai',
-        user_metadata: { full_name: 'Demo User' }
+        user_metadata: { 
+          full_name: 'Demo User',
+          name: 'Demo User'
+        }
       };
       
-      setAuthState(prev => ({
-        ...prev,
+      // Store demo user in localStorage for persistence
+      localStorage.setItem('demo_user', JSON.stringify(mockUser));
+      
+      setIsDemo(true);
+      setAuthState({
         user: mockUser as User,
         session: { user: mockUser } as Session,
         loading: false,
         initialized: true,
-      }));
+      });
       
       productionLogger.info('Demo mode activated', {}, 'AuthContext');
     } catch (error) {
@@ -251,7 +277,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loginDemo,
     logout,
     isDemo,
-    githubAccessToken: undefined,
+    githubAccessToken,
   };
 
   return (
