@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -149,7 +150,7 @@ export function Heading({
   const appliedSize = size || defaultSizes[level];
   const appliedWeight = weight || defaultWeights[level];
 
-  const MotionComponent = animated ? motion.div : React.Fragment;
+  const MotionComponent = animated ? motion.div : 'div';
   const animationProps = animated ? {
     initial: { opacity: 0, y: 20 },
     whileInView: { opacity: 1, y: 0 },
