@@ -28,7 +28,10 @@ function HolographicBar({ position, height, color, delay }: {
     if (meshRef.current) {
       const time = state.clock.elapsedTime;
       meshRef.current.scale.y = height + Math.sin(time * 2 + delay) * 0.1;
-      meshRef.current.material.emissiveIntensity = 0.2 + Math.sin(time * 3 + delay) * 0.1;
+      const material = meshRef.current.material as THREE.MeshStandardMaterial;
+      if (material.emissiveIntensity !== undefined) {
+        material.emissiveIntensity = 0.2 + Math.sin(time * 3 + delay) * 0.1;
+      }
     }
   });
 
@@ -65,9 +68,7 @@ function DataConnection({ start, end }: { start: [number, number, number]; end: 
   const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
 
   return (
-    <line geometry={lineGeometry}>
-      <lineBasicMaterial color="#8b5cf6" transparent opacity={0.6} />
-    </line>
+    <primitive object={new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({ color: '#8b5cf6', transparent: true, opacity: 0.6 }))} />
   );
 }
 

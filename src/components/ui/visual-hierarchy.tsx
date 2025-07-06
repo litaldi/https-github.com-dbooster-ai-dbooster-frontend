@@ -191,7 +191,7 @@ interface TextProps {
   animated?: boolean;
 }
 
-export function Text({ 
+export function TextElement({ 
   children, 
   size = 'base', 
   variant = 'default', 
@@ -247,6 +247,9 @@ export function Text({
     </Component>
   );
 }
+
+// Export as Text for backward compatibility
+export const Text = TextElement;
 
 interface DividerProps {
   className?: string;

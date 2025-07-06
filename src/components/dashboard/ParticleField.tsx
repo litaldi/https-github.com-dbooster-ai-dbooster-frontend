@@ -102,10 +102,10 @@ function NeuralConnections() {
     <group ref={linesRef}>
       {connections.map((points, index) => {
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: '#8b5cf6', transparent: true, opacity: 0.3 });
+        const line = new THREE.Line(geometry, material);
         return (
-          <line key={index} geometry={geometry}>
-            <lineBasicMaterial color="#8b5cf6" transparent opacity={0.3} />
-          </line>
+          <primitive key={index} object={line} />
         );
       })}
     </group>
