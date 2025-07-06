@@ -1,50 +1,60 @@
 
-interface SEOOptions {
+interface SEOConfig {
   title: string;
   description: string;
-  keywords?: string;
-  canonicalUrl?: string;
+  keywords: string;
+  canonicalUrl: string;
+  ogImage?: string;
 }
 
 class SEOOptimizer {
-  updatePageSEO({ title, description, keywords, canonicalUrl }: SEOOptions) {
-    // Update title
-    if (title) {
-      document.title = title;
-    }
-
+  updatePageSEO(config: SEOConfig) {
+    // Update document title
+    document.title = config.title;
+    
     // Update meta description
-    this.updateMetaTag('description', description);
-
+    this.updateMeta('description', config.description);
+    
     // Update meta keywords
-    if (keywords) {
-      this.updateMetaTag('keywords', keywords);
-    }
-
+    this.updateMeta('keywords', config.keywords);
+    
     // Update canonical URL
-    if (canonicalUrl) {
-      this.updateCanonical(canonicalUrl);
+    this.updateLink('canonical', config.canonicalUrl);
+    
+    // Update Open Graph tags
+    this.updateMeta('og:title', config.title, 'property');
+    this.updateMeta('og:description', config.description, 'property');
+    this.updateMeta('og:url', config.canonicalUrl, 'property');
+    this.updateMeta('og:type', 'website', 'property');
+    
+    if (config.ogImage) {
+      this.updateMeta('og:image', config.ogImage, 'property');
     }
+    
+    // Update Twitter Card tags
+    this.updateMeta('twitter:card', 'summary_large_image');
+    this.updateMeta('twitter:title', config.title);
+    this.updateMeta('twitter:description', config.description);
   }
-
-  private updateMetaTag(name: string, content: string) {
-    let meta = document.querySelector(`meta[name="${name}"]`);
+  
+  private updateMeta(name: string, content: string, attribute: string = 'name') {
+    let meta = document.querySelector(`meta[${attribute}="${name}"]`);
     if (!meta) {
       meta = document.createElement('meta');
-      meta.setAttribute('name', name);
+      meta.setAttribute(attribute, name);
       document.head.appendChild(meta);
     }
     meta.setAttribute('content', content);
   }
-
-  private updateCanonical(url: string) {
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
+  
+  private updateLink(rel: string, href: string) {
+    let link = document.querySelector(`link[rel="${rel}"]`);
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', rel);
+      document.head.appendChild(link);
     }
-    canonical.setAttribute('href', url);
+    link.setAttribute('href', href);
   }
 }
 

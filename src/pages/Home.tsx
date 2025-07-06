@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { ImprovedHomepage } from '@/components/home/ImprovedHomepage';
+import { EnhancedHomepage } from '@/components/home/EnhancedHomepage';
 
 export default function Home() {
-  return <ImprovedHomepage />;
+  return <EnhancedHomepage />;
 }
