@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -223,7 +222,6 @@ const FeatureCard = React.forwardRef<HTMLDivElement, FeatureCardProps>(
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          ref={ref as React.ForwardedRef<HTMLAnchorElement>}
           className={cn(
             'block rounded-xl transition-all duration-200 bg-card text-card-foreground shadow-medium hover:shadow-strong cursor-pointer hover:scale-[1.02] active:scale-[0.98] group',
             className
