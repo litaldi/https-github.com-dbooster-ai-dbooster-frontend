@@ -10,7 +10,7 @@ import { PublicLayout } from '@/components/PublicLayout';
 import Layout from '@/components/layout';
 
 // Public Pages
-import EnhancedHome from '@/pages/EnhancedHome';
+import Home from '@/pages/Home';
 import FeaturesPage from '@/pages/FeaturesPage';
 import HowItWorksPage from '@/pages/HowItWorksPage';
 import AIStudioPage from '@/pages/AIStudioPage';
@@ -61,7 +61,7 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<PublicLayout />}>
-                <Route index element={<EnhancedHome />} />
+                <Route index element={<Home />} />
                 <Route path="home" element={<Navigate to="/" replace />} />
                 
                 {/* Product Routes */}
