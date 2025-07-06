@@ -63,8 +63,14 @@ export function Typography({
   align = 'left',
   animated = false
 }: TypographyProps) {
-  const Component = variant.startsWith('h') ? variant as keyof JSX.IntrinsicElements : 'p';
-  
+  const commonClassName = cn(
+    variantStyles[variant],
+    color && colorStyles[color],
+    weight && weightStyles[weight],
+    alignStyles[align],
+    className
+  );
+
   if (animated) {
     return (
       <motion.div
@@ -73,34 +79,25 @@ export function Typography({
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
       >
-        <Component 
-          className={cn(
-            variantStyles[variant],
-            color && colorStyles[color],
-            weight && weightStyles[weight],
-            alignStyles[align],
-            className
-          )}
-        >
-          {children}
-        </Component>
+        {variant === 'h1' && <h1 className={commonClassName}>{children}</h1>}
+        {variant === 'h2' && <h2 className={commonClassName}>{children}</h2>}
+        {variant === 'h3' && <h3 className={commonClassName}>{children}</h3>}
+        {variant === 'h4' && <h4 className={commonClassName}>{children}</h4>}
+        {variant === 'h5' && <h5 className={commonClassName}>{children}</h5>}
+        {variant === 'h6' && <h6 className={commonClassName}>{children}</h6>}
+        {!variant.startsWith('h') && <p className={commonClassName}>{children}</p>}
       </motion.div>
     );
   }
 
-  return (
-    <Component 
-      className={cn(
-        variantStyles[variant],
-        color && colorStyles[color],
-        weight && weightStyles[weight],
-        alignStyles[align],
-        className
-      )}
-    >
-      {children}
-    </Component>
-  );
+  if (variant === 'h1') return <h1 className={commonClassName}>{children}</h1>;
+  if (variant === 'h2') return <h2 className={commonClassName}>{children}</h2>;
+  if (variant === 'h3') return <h3 className={commonClassName}>{children}</h3>;
+  if (variant === 'h4') return <h4 className={commonClassName}>{children}</h4>;
+  if (variant === 'h5') return <h5 className={commonClassName}>{children}</h5>;
+  if (variant === 'h6') return <h6 className={commonClassName}>{children}</h6>;
+  
+  return <p className={commonClassName}>{children}</p>;
 }
 
 export function PageTitle({ 

@@ -108,8 +108,6 @@ export function Heading({
   gradient = false,
   animated = false 
 }: HeadingProps) {
-  const Component = `h${level}` as keyof JSX.IntrinsicElements;
-  
   const sizeClasses = {
     xs: 'text-sm',
     sm: 'text-base',
@@ -150,6 +148,14 @@ export function Heading({
   const appliedSize = size || defaultSizes[level];
   const appliedWeight = weight || defaultWeights[level];
 
+  const commonClassName = cn(
+    sizeClasses[appliedSize], 
+    weightClasses[appliedWeight],
+    'tracking-tight leading-tight',
+    gradient && 'bg-gradient-to-r from-primary via-primary to-purple-600 bg-clip-text text-transparent',
+    className
+  );
+
   if (animated) {
     return (
       <motion.div
@@ -158,34 +164,24 @@ export function Heading({
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
       >
-        <Component 
-          className={cn(
-            sizeClasses[appliedSize], 
-            weightClasses[appliedWeight],
-            'tracking-tight leading-tight',
-            gradient && 'bg-gradient-to-r from-primary via-primary to-purple-600 bg-clip-text text-transparent',
-            className
-          )}
-        >
-          {children}
-        </Component>
+        {level === 1 && <h1 className={commonClassName}>{children}</h1>}
+        {level === 2 && <h2 className={commonClassName}>{children}</h2>}
+        {level === 3 && <h3 className={commonClassName}>{children}</h3>}
+        {level === 4 && <h4 className={commonClassName}>{children}</h4>}
+        {level === 5 && <h5 className={commonClassName}>{children}</h5>}
+        {level === 6 && <h6 className={commonClassName}>{children}</h6>}
       </motion.div>
     );
   }
 
-  return (
-    <Component 
-      className={cn(
-        sizeClasses[appliedSize], 
-        weightClasses[appliedWeight],
-        'tracking-tight leading-tight',
-        gradient && 'bg-gradient-to-r from-primary via-primary to-purple-600 bg-clip-text text-transparent',
-        className
-      )}
-    >
-      {children}
-    </Component>
-  );
+  if (level === 1) return <h1 className={commonClassName}>{children}</h1>;
+  if (level === 2) return <h2 className={commonClassName}>{children}</h2>;
+  if (level === 3) return <h3 className={commonClassName}>{children}</h3>;
+  if (level === 4) return <h4 className={commonClassName}>{children}</h4>;
+  if (level === 5) return <h5 className={commonClassName}>{children}</h5>;
+  if (level === 6) return <h6 className={commonClassName}>{children}</h6>;
+  
+  return <h1 className={commonClassName}>{children}</h1>;
 }
 
 interface TextProps {
@@ -230,6 +226,14 @@ export function TextElement({
     bold: 'font-bold'
   };
 
+  const commonClassName = cn(
+    sizeClasses[size], 
+    variantClasses[variant], 
+    weightClasses[weight],
+    'leading-relaxed',
+    className
+  );
+
   if (animated) {
     return (
       <motion.p
@@ -237,13 +241,7 @@ export function TextElement({
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className={cn(
-          sizeClasses[size], 
-          variantClasses[variant], 
-          weightClasses[weight],
-          'leading-relaxed',
-          className
-        )}
+        className={commonClassName}
       >
         {children}
       </motion.p>
@@ -251,15 +249,7 @@ export function TextElement({
   }
 
   return (
-    <p 
-      className={cn(
-        sizeClasses[size], 
-        variantClasses[variant], 
-        weightClasses[weight],
-        'leading-relaxed',
-        className
-      )}
-    >
+    <p className={commonClassName}>
       {children}
     </p>
   );
