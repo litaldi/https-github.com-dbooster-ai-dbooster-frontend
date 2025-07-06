@@ -14,6 +14,12 @@ export function RealTimeMetrics() {
     return 'down';
   };
 
+  const getSystemColor = (status: string): 'blue' | 'green' | 'purple' | 'orange' => {
+    if (status === 'online') return 'green';
+    if (status === 'degraded') return 'orange';
+    return 'blue';
+  };
+
   const metrics = [
     {
       title: "Active Queries",
@@ -71,7 +77,7 @@ export function RealTimeMetrics() {
       change: status.lastChecked.toLocaleTimeString(),
       trend: getChangeType(overallStatus),
       icon: Activity,
-      color: overallStatus === 'online' ? 'green' : overallStatus === 'degraded' ? 'orange' : 'blue',
+      color: getSystemColor(overallStatus),
       description: `All systems ${overallStatus}`,
       progress: overallStatus === 'online' ? 100 : overallStatus === 'degraded' ? 85 : 45
     }
