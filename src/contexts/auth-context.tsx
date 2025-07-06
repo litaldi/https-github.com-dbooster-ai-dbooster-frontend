@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { unifiedSecurityService } from '@/services/security/unifiedSecurityService';
-import { consolidatedInputValidation } from '@/services/security/consolidatedInputValidation';
 import { cleanupAuthState } from '@/utils/authUtils';
 import { productionLogger } from '@/utils/productionLogger';
 import type { User, Session, AuthState } from '@/types';
@@ -12,8 +11,6 @@ interface AuthContextType extends AuthState {
   signIn: (email: string, password: string, options?: { rememberMe?: boolean }) => Promise<{ error?: string }>;
   signUp: (email: string, password: string, name: string, acceptedTerms: boolean) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
-  secureLogin: (email: string, password: string, options?: { rememberMe?: boolean }) => Promise<{ error?: string }>;
-  secureSignup: (email: string, password: string, name: string, acceptedTerms: boolean) => Promise<{ error?: string }>;
   loginDemo: () => Promise<void>;
   logout: () => Promise<void>;
   isDemo: boolean;
@@ -101,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     options: { rememberMe?: boolean } = {}
   ): Promise<{ error?: string }> => {
     try {
-      const emailValidation = consolidatedInputValidation.validateAndSanitize(email, 'email');
+      const emailValidation = await unifiedSecurityService.validateInput(email, 'email');
       if (!emailValidation.isValid) {
         return { error: 'Invalid email format' };
       }
@@ -145,8 +142,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const emailValidation = consolidatedInputValidation.validateAndSanitize(email, 'email');
-      const nameValidation = consolidatedInputValidation.validateAndSanitize(name, 'general');
+      const emailValidation = await unifiedSecurityService.validateInput(email, 'email');
+      const nameValidation = await unifiedSecurityService.validateInput(name, 'general');
       
       if (!emailValidation.isValid) {
         return { error: 'Invalid email format' };
@@ -235,45 +232,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const secureLogin = useCallback(async (
-    email: string,
-    password: string,
-    options: { rememberMe?: boolean } = {}
-  ): Promise<{ error?: string }> => {
-    const result = await unifiedSecurityService.secureLogin(email, password, options);
-    
-    if (!result.success) {
-      return { error: result.error };
-    }
-    
-    return {};
-  }, []);
-
-  const secureSignup = useCallback(async (
-    email: string,
-    password: string,
-    name: string,
-    acceptedTerms: boolean
-  ): Promise<{ error?: string }> => {
-    const result = await unifiedSecurityService.secureSignup(email, password, { 
-      fullName: name, 
-      acceptedTerms 
-    });
-    
-    if (!result.success) {
-      return { error: result.error };
-    }
-    
-    return {};
-  }, []);
-
   const contextValue: AuthContextType = {
     ...authState,
     signIn,
     signUp,
     signOut,
-    secureLogin,
-    secureSignup,
     loginDemo,
     logout,
     isDemo,

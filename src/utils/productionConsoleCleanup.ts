@@ -5,14 +5,6 @@ interface ConsoleMethod {
   info: (...args: any[]) => void;
   debug: (...args: any[]) => void;
   trace: (...args: any[]) => void;
-  table: (...args: any[]) => void;
-  group: (...args: any[]) => void;
-  groupEnd: (...args: any[]) => void;
-  groupCollapsed: (...args: any[]) => void;
-  time: (...args: any[]) => void;
-  timeEnd: (...args: any[]) => void;
-  count: (...args: any[]) => void;
-  countReset: (...args: any[]) => void;
   clear: () => void;
 }
 
@@ -46,14 +38,6 @@ class ProductionConsoleCleanup {
         info: console.info,
         debug: console.debug,
         trace: console.trace,
-        table: console.table,
-        group: console.group,
-        groupEnd: console.groupEnd,
-        groupCollapsed: console.groupCollapsed,
-        time: console.time,
-        timeEnd: console.timeEnd,
-        count: console.count,
-        countReset: console.countReset,
         clear: console.clear
       };
 
@@ -64,26 +48,16 @@ class ProductionConsoleCleanup {
       console.info = noOp;
       console.debug = noOp;
       console.trace = noOp;
-      console.table = noOp;
-      console.group = noOp;
-      console.groupEnd = noOp;
-      console.groupCollapsed = noOp;
-      console.time = noOp;
-      console.timeEnd = noOp;
-      console.count = noOp;
-      console.countReset = noOp;
       console.clear = noOp;
 
       // Keep error and warn for critical issues, but sanitize them
       console.error = (...args: any[]) => {
-        // Only log critical errors in production
         if (args[0] && typeof args[0] === 'string' && args[0].includes('critical')) {
           this.originalConsole.error?.('Critical error detected');
         }
       };
 
       console.warn = (...args: any[]) => {
-        // Only log security warnings in production
         if (args[0] && typeof args[0] === 'string' && args[0].includes('security')) {
           this.originalConsole.warn?.('Security warning detected');
         }
@@ -108,7 +82,6 @@ class ProductionConsoleCleanup {
     }
   }
 
-  // Development helper to temporarily restore console
   enableDevConsole(): void {
     if (import.meta.env.DEV) {
       this.restoreConsole();
