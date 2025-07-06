@@ -207,16 +207,39 @@ interface FeatureCardProps {
 
 const FeatureCard = React.forwardRef<HTMLDivElement, FeatureCardProps>(
   ({ title, description, icon, badge, href, onClick, className, children }, ref) => {
-    const CardComponent = href ? motion.a : Card;
-    const cardProps = href ? { href, target: '_blank', rel: 'noopener noreferrer' } : { onClick };
+    if (href) {
+      return (
+        <Card
+          as="a"
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="elevated"
+          interactive
+          className={cn('group', className)}
+          ref={ref}
+        >
+          <CardHeader badge={badge}>
+            {icon && (
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-primary/10 to-blue-600/10 flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform duration-200">
+                {icon}
+              </div>
+            )}
+            <CardTitle gradient>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </CardHeader>
+          {children && <CardContent>{children}</CardContent>}
+        </Card>
+      );
+    }
 
     return (
-      <CardComponent
-        ref={ref}
+      <Card
         variant="elevated"
         interactive
         className={cn('group', className)}
-        {...cardProps}
+        onClick={onClick}
+        ref={ref}
       >
         <CardHeader badge={badge}>
           {icon && (
@@ -228,7 +251,7 @@ const FeatureCard = React.forwardRef<HTMLDivElement, FeatureCardProps>(
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         {children && <CardContent>{children}</CardContent>}
-      </CardComponent>
+      </Card>
     );
   }
 );

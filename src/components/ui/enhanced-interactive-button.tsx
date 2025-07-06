@@ -97,10 +97,21 @@ const EnhancedInteractiveButton = React.forwardRef<
     onClick?.(event);
   };
 
-  const Comp = asChild ? Slot : motion.button;
+  if (asChild) {
+    return (
+      <Slot
+        className={cn(enhancedButtonVariants({ variant, size, loading, className }))}
+        ref={ref}
+        onClick={handleClick}
+        {...props}
+      >
+        {children}
+      </Slot>
+    );
+  }
 
   return (
-    <Comp
+    <motion.button
       className={cn(enhancedButtonVariants({ variant, size, loading, className }))}
       ref={ref}
       onClick={handleClick}
@@ -168,7 +179,7 @@ const EnhancedInteractiveButton = React.forwardRef<
           </motion.span>
         )}
       </div>
-    </Comp>
+    </motion.button>
   );
 });
 
