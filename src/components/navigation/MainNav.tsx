@@ -39,13 +39,15 @@ export function MainNav() {
         <div className="flex h-16 items-center justify-between">
           <NavigationLogo user={user} />
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
-            <EnhancedNavigationItems 
-              items={navItems} 
-              isCurrentRoute={isCurrentRoute}
-            />
-            <div className="mx-2 h-6 w-px bg-border" aria-hidden="true" />
+          {/* Desktop Navigation - Properly aligned LTR */}
+          <div className="hidden lg:flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
+              <EnhancedNavigationItems 
+                items={navItems} 
+                isCurrentRoute={isCurrentRoute}
+              />
+            </div>
+            <div className="h-6 w-px bg-border mx-4" aria-hidden="true" />
             <EnhancedUserMenu
               user={user}
               userMenuItems={userMenuItems}
@@ -65,25 +67,31 @@ export function MainNav() {
                   size="icon" 
                   aria-label="Open navigation menu"
                   aria-expanded={isOpen}
+                  className="min-h-[44px] min-w-[44px]"
                 >
                   <Menu className="h-5 w-5" />
                 </StandardizedButton>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 p-6" dir="ltr">
-                <div className="flex flex-col space-y-6">
-                  <NavigationLogo user={user} />
+              <SheetContent side="right" className="w-80 p-0" dir="ltr">
+                <div className="flex flex-col h-full">
+                  <div className="p-6 border-b">
+                    <NavigationLogo user={user} />
+                  </div>
                   
-                  <div className="flex flex-col space-y-4">
-                    <EnhancedNavigationItems 
-                      items={navItems} 
-                      mobile 
-                      closeMenu={closeMenu}
-                      isCurrentRoute={isCurrentRoute}
-                    />
+                  <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-foreground mb-3">Navigation</h4>
+                      <EnhancedNavigationItems 
+                        items={navItems} 
+                        mobile 
+                        closeMenu={closeMenu}
+                        isCurrentRoute={isCurrentRoute}
+                      />
+                    </div>
                     
                     {/* Company section */}
-                    <div className="border-t pt-4 space-y-1">
-                      <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Learn More</h4>
+                    <div className="border-t pt-4 space-y-2">
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-3">Learn More</h4>
                       <EnhancedNavigationItems 
                         items={companyMenuItems}
                         mobile
@@ -93,8 +101,8 @@ export function MainNav() {
                     </div>
                     
                     {/* Legal section */}
-                    <div className="border-t pt-4 space-y-1">
-                      <h4 className="text-sm font-medium text-muted-foreground px-3 mb-2">Legal & Support</h4>
+                    <div className="border-t pt-4 space-y-2">
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-3">Legal & Support</h4>
                       <EnhancedNavigationItems 
                         items={legalMenuItems}
                         mobile
@@ -102,7 +110,9 @@ export function MainNav() {
                         isCurrentRoute={isCurrentRoute}
                       />
                     </div>
-                    
+                  </div>
+
+                  <div className="border-t p-6">
                     <EnhancedUserMenu
                       user={user}
                       userMenuItems={userMenuItems}
