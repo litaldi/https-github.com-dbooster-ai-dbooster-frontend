@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -518,7 +519,7 @@ export default function DashboardPage() {
                     </p>
                     <div className="flex justify-center gap-4">
                       <Badge variant="outline" className="px-4 py-2">🌍 50+ Edge Locations</Badge>
-                      <Badge variant="outline" className="px-4 py-2">⚡ <10ms Latency</Badge>
+                      <Badge variant="outline" className="px-4 py-2">⚡ &lt;10ms Latency</Badge>
                       <Badge variant="outline" className="px-4 py-2">🔒 End-to-End Encryption</Badge>
                     </div>
                   </div>
