@@ -1,11 +1,8 @@
 
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import React from 'react';
+import Login from './Login';
 
+// This ensures the Login page is accessible via /login route
 export default function LoginPage() {
-  return (
-    <PagePlaceholder
-      title="Login"
-      description="Sign in to your DBooster account to access your dashboard and optimization tools."
-    />
-  );
+  return <Login />;
 }
