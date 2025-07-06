@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { EnhancedDashboardSidebar } from '@/components/navigation/EnhancedDashboardSidebar';
 import { Header } from '@/components/header';
-import { DemoWalkthrough } from '@/components/demo-walkthrough';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { EnhancedFooter } from '@/components/navigation/EnhancedFooter';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
@@ -37,7 +36,6 @@ export default function Layout() {
               </div>
               <ScrollToTop />
             </div>
-            <DemoWalkthrough />
             <OnboardingTour />
             <KeyboardShortcuts />
             <TourOverlay />
