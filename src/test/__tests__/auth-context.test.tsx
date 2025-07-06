@@ -51,22 +51,22 @@ describe('AuthContext', () => {
     expect(result.current.isDemo).toBe(false);
   });
 
-  it('should handle secure login', async () => {
+  it('should handle sign in', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
-      await result.current.secureLogin('test@example.com', 'password');
+      await result.current.signIn('test@example.com', 'password');
     });
 
     // Test passes if no error is thrown
     expect(true).toBe(true);
   });
 
-  it('should handle secure signup', async () => {
+  it('should handle sign up', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
-      await result.current.secureSignup('test@example.com', 'password', 'Test User', true);
+      await result.current.signUp('test@example.com', 'password', 'Test User', true);
     });
 
     // Test passes if no error is thrown

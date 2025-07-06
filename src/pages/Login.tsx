@@ -25,7 +25,7 @@ export default function Login() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { secureLogin, secureSignup, user } = useAuth();
+  const { signIn, signUp, user } = useAuth();
 
   // Redirect if already authenticated
   if (user) {
@@ -38,7 +38,7 @@ export default function Login() {
 
     try {
       if (authMode === 'login') {
-        const result = await secureLogin(data.email, data.password, {
+        const result = await signIn(data.email, data.password, {
           rememberMe: data.rememberMe
         });
         
@@ -51,7 +51,7 @@ export default function Login() {
         }
         
         const fullName = `${data.firstName.trim()} ${data.lastName.trim()}`;
-        const result = await secureSignup(data.email, data.password, fullName, true);
+        const result = await signUp(data.email, data.password, fullName, true);
         
         if (!result.error) {
           enhancedToast.info({
