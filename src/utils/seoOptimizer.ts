@@ -4,58 +4,62 @@ interface SEOConfig {
   description: string;
   keywords: string;
   canonicalUrl: string;
-  ogImage?: string;
 }
 
 class SEOOptimizer {
-  updatePageSEO(config: SEOConfig) {
-    // Update document title
-    document.title = config.title;
-    
-    // Update meta description
-    this.updateMeta('description', config.description);
-    
-    // Update meta keywords
-    this.updateMeta('keywords', config.keywords);
-    
-    // Update canonical URL
-    this.updateLink('canonical', config.canonicalUrl);
-    
-    // Update Open Graph tags
-    this.updateMeta('og:title', config.title, 'property');
-    this.updateMeta('og:description', config.description, 'property');
-    this.updateMeta('og:url', config.canonicalUrl, 'property');
-    this.updateMeta('og:type', 'website', 'property');
-    
-    if (config.ogImage) {
-      this.updateMeta('og:image', config.ogImage, 'property');
+  private static instance: SEOOptimizer;
+
+  static getInstance(): SEOOptimizer {
+    if (!SEOOptimizer.instance) {
+      SEOOptimizer.instance = new SEOOptimizer();
     }
-    
-    // Update Twitter Card tags
-    this.updateMeta('twitter:card', 'summary_large_image');
-    this.updateMeta('twitter:title', config.title);
-    this.updateMeta('twitter:description', config.description);
+    return SEOOptimizer.instance;
   }
-  
-  private updateMeta(name: string, content: string, attribute: string = 'name') {
-    let meta = document.querySelector(`meta[${attribute}="${name}"]`);
+
+  updatePageSEO(config: SEOConfig) {
+    if (typeof document === 'undefined') return;
+
+    // Update title
+    document.title = config.title;
+
+    // Update or create meta description
+    this.updateMetaTag('description', config.description);
+
+    // Update or create meta keywords
+    this.updateMetaTag('keywords', config.keywords);
+
+    // Update or create canonical URL
+    this.updateCanonicalUrl(config.canonicalUrl);
+
+    // Update Open Graph tags
+    this.updateMetaTag('og:title', config.title, 'property');
+    this.updateMetaTag('og:description', config.description, 'property');
+    this.updateMetaTag('og:url', config.canonicalUrl, 'property');
+  }
+
+  private updateMetaTag(name: string, content: string, attribute: string = 'name') {
+    let meta = document.querySelector(`meta[${attribute}="${name}"]`) as HTMLMetaElement;
+    
     if (!meta) {
       meta = document.createElement('meta');
       meta.setAttribute(attribute, name);
       document.head.appendChild(meta);
     }
-    meta.setAttribute('content', content);
+    
+    meta.content = content;
   }
-  
-  private updateLink(rel: string, href: string) {
-    let link = document.querySelector(`link[rel="${rel}"]`);
-    if (!link) {
-      link = document.createElement('link');
-      link.setAttribute('rel', rel);
-      document.head.appendChild(link);
+
+  private updateCanonicalUrl(url: string) {
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
     }
-    link.setAttribute('href', href);
+    
+    canonical.href = url;
   }
 }
 
-export const seoOptimizer = new SEOOptimizer();
+export const seoOptimizer = SEOOptimizer.getInstance();

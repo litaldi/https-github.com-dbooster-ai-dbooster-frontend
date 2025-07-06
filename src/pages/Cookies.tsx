@@ -1,210 +1,270 @@
 
-import { SmartHeader } from '@/components/navigation/SmartHeader';
-import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
-import { FadeIn } from '@/components/ui/animations';
-import { Card, CardContent } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Cookie, Settings, Shield, Info, CheckCircle2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Cookie, Shield, Settings, Info } from 'lucide-react';
 
 export default function Cookies() {
+  const cookieTypes = [
+    {
+      name: 'Essential Cookies',
+      description: 'Required for the website to function properly',
+      examples: ['Authentication tokens', 'Security preferences', 'Session management'],
+      required: true,
+      duration: 'Session or up to 1 year'
+    },
+    {
+      name: 'Analytics Cookies',
+      description: 'Help us understand how you use our website',
+      examples: ['Page views', 'User interactions', 'Performance metrics'],
+      required: false,
+      duration: 'Up to 2 years'
+    },
+    {
+      name: 'Marketing Cookies',
+      description: 'Used to deliver relevant advertisements and marketing content',
+      examples: ['Ad preferences', 'Campaign tracking', 'Social media integration'],
+      required: false,
+      duration: 'Up to 1 year'
+    },
+    {
+      name: 'Functional Cookies',
+      description: 'Enable enhanced functionality and personalization',
+      examples: ['User preferences', 'Language settings', 'Theme selection'],
+      required: false,
+      duration: 'Up to 1 year'
+    }
+  ];
+
+  const thirdPartyServices = [
+    {
+      service: 'Google Analytics',
+      purpose: 'Website analytics and performance monitoring',
+      cookies: '_ga, _gid, _gat',
+      privacyPolicy: 'https://policies.google.com/privacy'
+    },
+    {
+      service: 'Stripe',
+      purpose: 'Payment processing and fraud prevention',
+      cookies: '__stripe_mid, __stripe_sid',
+      privacyPolicy: 'https://stripe.com/privacy'
+    },
+    {
+      service: 'Intercom',
+      purpose: 'Customer support and communication',
+      cookies: 'intercom-*',
+      privacyPolicy: 'https://www.intercom.com/legal/privacy'
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      <SmartHeader />
-      
-      <main className="pt-16">
-        <Section spacing="xl" className="bg-gradient-to-b from-background to-muted/20">
-          <Container>
-            <FadeIn>
-              <div className="text-center space-y-4 mb-12">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-                  <Cookie className="h-8 w-8 text-orange-600" />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 py-12">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <Cookie className="h-4 w-4" />
+            Cookie Policy
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Cookie Policy
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Last updated: January 20, 2024
+          </p>
+        </div>
+
+        {/* Introduction */}
+        <Card className="mb-8">
+          <CardContent className="p-8">
+            <p className="text-muted-foreground mb-4">
+              This Cookie Policy explains how DBooster ("we", "us", or "our") uses cookies 
+              and similar technologies when you visit our website at dbooster.com (the "Service"). 
+              It explains what these technologies are and why we use them, as well as your rights 
+              to control our use of them.
+            </p>
+            <p className="text-muted-foreground">
+              In some cases we may use cookies to collect personal information, or that becomes 
+              personal information if we combine it with other information. In such cases our 
+              Privacy Policy will apply in addition to this Cookie Policy.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* What are cookies */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              What are cookies?
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Cookies are small data files that are placed on your computer or mobile device 
+              when you visit a website. Cookies are widely used by website owners in order 
+              to make their websites work, or to work more efficiently, as well as to provide 
+              reporting information.
+            </p>
+            <p className="text-muted-foreground">
+              Cookies set by the website owner (in this case, DBooster) are called "first party cookies". 
+              Cookies set by parties other than the website owner are called "third party cookies". 
+              Third party cookies enable third party features or functionality to be provided on or 
+              through the website (e.g., like advertising, interactive content and analytics).
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Cookie Types */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold mb-6">Types of Cookies We Use</h2>
+          <div className="space-y-6">
+            {cookieTypes.map((type, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">{type.name}</CardTitle>
+                    <Badge variant={type.required ? "default" : "secondary"}>
+                      {type.required ? "Required" : "Optional"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">{type.description}</p>
+                  <div className="grid md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <h4 className="font-semibold mb-2">Examples:</h4>
+                      <ul className="space-y-1 text-muted-foreground">
+                        {type.examples.map((example, idx) => (
+                          <li key={idx}>• {example}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Duration:</h4>
+                      <p className="text-muted-foreground">{type.duration}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Third Party Services */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Third-Party Services</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-6">
+              We use various third-party services that may set cookies on your device. 
+              Here are the main services we use:
+            </p>
+            <div className="space-y-4">
+              {thirdPartyServices.map((service, index) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-semibold">{service.service}</h4>
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={service.privacyPolicy} target="_blank" rel="noopener noreferrer">
+                        Privacy Policy
+                      </a>
+                    </Button>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-2">{service.purpose}</p>
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Cookies:</strong> {service.cookies}
+                  </p>
                 </div>
-                <Heading level={1} size="3xl">Cookie Policy</Heading>
-                <Text size="lg" variant="muted" className="max-w-2xl mx-auto">
-                  How we use cookies to improve your experience while respecting your privacy
-                </Text>
-                <Text size="sm" variant="muted">
-                  Last updated: December 2024
-                </Text>
-              </div>
-            </FadeIn>
-          </Container>
-        </Section>
-
-        <Section spacing="lg">
-          <Container size="md">
-            <div className="space-y-8">
-              <FadeIn delay={0.1}>
-                <Card className="border-blue-200 bg-blue-50/50">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Info className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div className="space-y-3">
-                        <Heading level={2} size="lg">What Are Cookies?</Heading>
-                        <Text variant="muted">
-                          Cookies are small text files that are placed on your device when you visit our website. 
-                          They help us provide you with a better, faster, and safer experience by remembering your 
-                          preferences and enabling essential website functionality.
-                        </Text>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-
-              <FadeIn delay={0.2}>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="space-y-6">
-                      <Heading level={2} size="lg">Types of Cookies We Use</Heading>
-                      
-                      <div className="grid gap-4">
-                        <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                            <Text size="sm" className="font-medium text-green-800">Essential Cookies</Text>
-                          </div>
-                          <Text size="sm" variant="muted" className="text-green-700">
-                            Required for basic website functionality, security, and user authentication. 
-                            These cannot be disabled.
-                          </Text>
-                          <div className="mt-2 text-xs text-green-600">
-                            Examples: Session management, security tokens, load balancing
-                          </div>
-                        </div>
-
-                        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Settings className="h-5 w-5 text-blue-600" />
-                            <Text size="sm" className="font-medium text-blue-800">Functional Cookies</Text>
-                          </div>
-                          <Text size="sm" variant="muted" className="text-blue-700">
-                            Remember your preferences and settings to provide a personalized experience.
-                          </Text>
-                          <div className="mt-2 text-xs text-blue-600">
-                            Examples: Language preferences, theme settings, dashboard layout
-                          </div>
-                        </div>
-
-                        <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Shield className="h-5 w-5 text-purple-600" />
-                            <Text size="sm" className="font-medium text-purple-800">Analytics Cookies</Text>
-                          </div>
-                          <Text size="sm" variant="muted" className="text-purple-700">
-                            Help us understand how you use our website to improve performance and user experience.
-                          </Text>
-                          <div className="mt-2 text-xs text-purple-600">
-                            Examples: Page views, feature usage, performance metrics (anonymized)
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-
-              <FadeIn delay={0.3}>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <Heading level={2} size="lg">Your Cookie Choices</Heading>
-                      <Text variant="muted">
-                        You have control over which cookies you accept. Here are your options:
-                      </Text>
-                      
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                          <Text size="sm" className="font-medium">Browser Settings</Text>
-                          <Text size="sm" variant="muted">
-                            Most browsers allow you to control cookies through their settings. 
-                            You can block or delete cookies, but this may affect website functionality.
-                          </Text>
-                        </div>
-                        <div className="space-y-3">
-                          <Text size="sm" className="font-medium">Cookie Preferences</Text>
-                          <Text size="sm" variant="muted">
-                            Use our cookie preference center to customize which types of cookies you accept.
-                          </Text>
-                          <Button size="sm" variant="outline">
-                            Manage Cookie Preferences
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-
-              <FadeIn delay={0.4}>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <Heading level={2} size="lg">Third-Party Cookies</Heading>
-                      <Text variant="muted">
-                        We may use third-party services that set their own cookies. These include:
-                      </Text>
-                      
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                          <li>• <strong>Authentication providers</strong> - For secure login functionality</li>
-                          <li>• <strong>Analytics services</strong> - To understand website usage (anonymized data only)</li>
-                          <li>• <strong>Performance monitoring</strong> - To ensure optimal website performance</li>
-                        </ul>
-                      </div>
-                      
-                      <Text size="sm" variant="muted">
-                        We carefully vet all third-party services to ensure they meet our privacy standards.
-                      </Text>
-                    </div>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-
-              <FadeIn delay={0.5}>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <Heading level={2} size="lg">Data Retention</Heading>
-                      <Text variant="muted">
-                        Different types of cookies are stored for different periods:
-                      </Text>
-                      
-                      <div className="grid gap-3">
-                        <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
-                          <Text size="sm">Session Cookies</Text>
-                          <Text size="sm" variant="muted">Deleted when you close your browser</Text>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
-                          <Text size="sm">Functional Cookies</Text>
-                          <Text size="sm" variant="muted">Up to 1 year</Text>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
-                          <Text size="sm">Analytics Cookies</Text>
-                          <Text size="sm" variant="muted">Up to 2 years (anonymized)</Text>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-
-              <FadeIn delay={0.6}>
-                <div className="text-center py-8 border-t">
-                  <Text size="sm" variant="muted">
-                    Questions about our cookie policy? Contact us at{' '}
-                    <a href="mailto:privacy@dbooster.ai" className="text-primary hover:underline">
-                      privacy@dbooster.ai
-                    </a>
-                  </Text>
-                </div>
-              </FadeIn>
+              ))}
             </div>
-          </Container>
-        </Section>
-      </main>
+          </CardContent>
+        </Card>
+
+        {/* Cookie Controls */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Your Cookie Choices
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-2">Browser Settings</h4>
+                <p className="text-muted-foreground text-sm">
+                  Most web browsers allow you to control cookies through their settings preferences. 
+                  However, if you limit the ability of websites to set cookies, you may worsen your 
+                  overall user experience, since it will no longer be personalized to you.
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-2">Cookie Preferences</h4>
+                <p className="text-muted-foreground text-sm mb-4">
+                  You can manage your cookie preferences using our cookie consent tool. 
+                  Click the button below to review and update your preferences.
+                </p>
+                <Button>
+                  Manage Cookie Preferences
+                </Button>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-2">Opt-out Links</h4>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <strong>Google Analytics:</strong>{' '}
+                    <a 
+                      href="https://tools.google.com/dlpage/gaoptout" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Google Analytics Opt-out Browser Add-on
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Updates */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Updates to This Policy
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              We may update this Cookie Policy from time to time in order to reflect, 
+              for example, changes to the cookies we use or for other operational, legal 
+              or regulatory reasons. Please therefore re-visit this Cookie Policy regularly 
+              to stay informed about our use of cookies and related technologies.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Contact */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Us</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              If you have any questions about our use of cookies or other technologies, 
+              please email us at:
+            </p>
+            <p className="text-primary font-medium">privacy@dbooster.com</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

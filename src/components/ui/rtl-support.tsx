@@ -9,15 +9,15 @@ interface RTLSupportProps {
 }
 
 /**
- * LTR (Left-to-Right) support component
- * Ensures proper text direction for English content
+ * RTL (Right-to-Left) support component
+ * Provides proper layout direction for international users
  */
-export function LTRSupport({ children, className, direction = 'ltr' }: RTLSupportProps) {
+export function RTLSupport({ children, className, direction = 'auto' }: RTLSupportProps) {
   return (
     <div
       className={cn(
-        'text-left',
-        'flex-row',
+        'rtl:text-right ltr:text-left',
+        'rtl:flex-row-reverse ltr:flex-row',
         className
       )}
       dir={direction}
@@ -28,33 +28,31 @@ export function LTRSupport({ children, className, direction = 'ltr' }: RTLSuppor
 }
 
 /**
- * LTR-aware spacing utilities for English content
+ * RTL-aware spacing utilities
  */
-export const ltrStyles = {
-  marginStart: 'ml-4',
-  marginEnd: 'mr-4',
-  paddingStart: 'pl-4',
-  paddingEnd: 'pr-4',
-  borderStart: 'border-l',
-  borderEnd: 'border-r',
-  roundedStart: 'rounded-l',
-  roundedEnd: 'rounded-r',
+export const rtlStyles = {
+  marginStart: 'rtl:mr-4 ltr:ml-4',
+  marginEnd: 'rtl:ml-4 ltr:mr-4',
+  paddingStart: 'rtl:pr-4 ltr:pl-4',
+  paddingEnd: 'rtl:pl-4 ltr:pr-4',
+  borderStart: 'rtl:border-r ltr:border-l',
+  borderEnd: 'rtl:border-l ltr:border-r',
+  roundedStart: 'rtl:rounded-r ltr:rounded-l',
+  roundedEnd: 'rtl:rounded-l ltr:rounded-r',
 };
 
 /**
- * Hook for ensuring LTR direction
+ * Hook for detecting RTL language
  */
-export function useLTR() {
+export function useRTL() {
+  const [isRTL, setIsRTL] = React.useState(false);
+
   React.useEffect(() => {
-    // Ensure document direction is LTR for English content
-    document.documentElement.dir = 'ltr';
-    document.documentElement.lang = 'en';
+    const direction = document.documentElement.dir || 
+                     getComputedStyle(document.documentElement).direction ||
+                     'ltr';
+    setIsRTL(direction === 'rtl');
   }, []);
 
-  return 'ltr';
+  return isRTL;
 }
-
-// Alias for backward compatibility
-export const RTLSupport = LTRSupport;
-export const rtlStyles = ltrStyles;
-export const useRTL = useLTR;

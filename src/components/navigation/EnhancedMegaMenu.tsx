@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ExternalLink } from 'lucide-react';
+import { ChevronDown, Search, ExternalLink } from 'lucide-react';
 import { NavigationItem } from '@/config/navigation';
 
 interface MegaMenuProps {
@@ -14,6 +14,7 @@ interface MegaMenuProps {
 
 export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -41,13 +42,20 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
 
   const isActiveRoute = (href: string) => location.pathname === href;
 
+  const filteredItems = (children: NavigationItem[]) => {
+    if (!searchQuery) return children;
+    return children.filter(item =>
+      item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
+
   return (
     <nav 
       ref={menuRef}
       className={cn("hidden lg:flex items-center space-x-1", className)}
       role="navigation"
       aria-label="Main navigation"
-      dir="ltr"
     >
       {items.map((item) => {
         const hasChildren = item.children && item.children.length > 0;
@@ -105,7 +113,6 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                   "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
                 )}
                 onMouseLeave={() => setActiveMenu(null)}
-                dir="ltr"
               >
                 <div className="mb-4">
                   <h3 className="font-semibold text-lg mb-2">{item.label}</h3>
@@ -114,8 +121,19 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                   )}
                 </div>
 
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder={`Search ${item.label.toLowerCase()}...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 text-sm border rounded-md bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
                 <div className="space-y-1">
-                  {item.children!.map((child) => (
+                  {filteredItems(item.children!).map((child) => (
                     <Link
                       key={child.href}
                       to={child.href}
@@ -144,6 +162,17 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                       </div>
                     </Link>
                   ))}
+                </div>
+
+                <div className="mt-6 pt-4 border-t">
+                  <Button 
+                    asChild 
+                    className="w-full bg-gradient-to-r from-primary to-blue-600"
+                  >
+                    <Link to="/ai-studio">
+                      Try AI Studio Free
+                    </Link>
+                  </Button>
                 </div>
               </div>
             )}

@@ -1,3 +1,4 @@
+
 import { 
   Home, 
   BarChart3, 
@@ -32,13 +33,7 @@ import {
   Handshake,
   Award,
   Clock,
-  MessageCircle,
-  Code,
-  Play,
-  Lightbulb,
-  Rocket,
-  Package,
-  Plus
+  MessageCircle
 } from 'lucide-react';
 
 export interface NavigationItem {
@@ -48,49 +43,9 @@ export interface NavigationItem {
   badge?: string;
   description?: string;
   children?: NavigationItem[];
-  shortcut?: string;
 }
 
-// Dashboard sidebar navigation
-export const dashboardSidebarNavigation = [
-  {
-    group: 'Overview',
-    items: [
-      { href: '/app', label: 'Dashboard', icon: BarChart3, description: 'Performance overview and metrics' },
-      { href: '/app/analytics', label: 'Analytics', icon: TrendingUp, description: 'Detailed performance analytics' },
-    ]
-  },
-  {
-    group: 'Optimization',
-    items: [
-      { href: '/app/queries', label: 'Query Manager', icon: Search, description: 'Optimize and manage SQL queries', shortcut: '⌘K' },
-      { href: '/app/repositories', label: 'Repositories', icon: Database, description: 'Database connections and repos' },
-      { href: '/app/ai-studio', label: 'AI Studio', icon: Brain, badge: 'AI', description: 'AI-powered optimization tools' },
-    ]
-  },
-  {
-    group: 'Reports',
-    items: [
-      { href: '/app/reports', label: 'Performance Reports', icon: FileText, description: 'Detailed analytics and insights' },
-      { href: '/app/monitoring', label: 'Real-time Monitor', icon: Activity, description: 'Live performance monitoring' },
-    ]
-  },
-  {
-    group: 'Settings',
-    items: [
-      { href: '/app/settings', label: 'Settings', icon: Settings, description: 'App configuration and preferences' },
-      { href: '/app/account', label: 'Profile', icon: User, description: 'Account and profile settings' },
-    ]
-  }
-];
-
-// Quick actions for dashboard
-export const quickActions = [
-  { href: '/app/queries/new', label: 'New Query', icon: Plus, shortcut: 'Cmd+N' },
-  { href: '/app/repositories/connect', label: 'Connect DB', icon: Database, shortcut: 'Cmd+D' },
-];
-
-// Main navigation structure with updated mega menu
+// Enhanced navigation structure with mega menu support
 export const megaMenuNavigation: NavigationItem[] = [
   {
     href: '/product',
@@ -118,10 +73,10 @@ export const megaMenuNavigation: NavigationItem[] = [
         description: 'Interactive AI-powered query optimization workspace' 
       },
       { 
-        href: '/demo', 
-        label: 'Demo Mode', 
-        icon: Play, 
-        description: 'Try DBooster with sample data' 
+        href: '/pricing', 
+        label: 'Pricing', 
+        icon: DollarSign, 
+        description: 'Flexible plans for teams and enterprises' 
       }
     ]
   },
@@ -132,22 +87,16 @@ export const megaMenuNavigation: NavigationItem[] = [
     description: 'Tailored solutions for your specific needs',
     children: [
       { 
-        href: '/for-developers', 
-        label: 'For Developers', 
-        icon: Code, 
-        description: 'Tools and features designed for individual developers' 
-      },
-      { 
-        href: '/for-teams', 
-        label: 'Teams', 
-        icon: Users, 
-        description: 'Collaboration features for development teams' 
-      },
-      { 
-        href: '/for-enterprises', 
-        label: 'Enterprises', 
+        href: '/enterprise', 
+        label: 'Enterprise', 
         icon: Building, 
         description: 'Scalable solutions for large organizations' 
+      },
+      { 
+        href: '/database-types', 
+        label: 'Database Types', 
+        icon: Database, 
+        description: 'Support for PostgreSQL, MySQL, MongoDB and more' 
       },
       { 
         href: '/use-cases', 
@@ -176,28 +125,16 @@ export const megaMenuNavigation: NavigationItem[] = [
         description: 'Industry insights and product updates' 
       },
       { 
-        href: '/faq', 
-        label: 'FAQ', 
-        icon: HelpCircle, 
-        description: 'Frequently asked questions and answers' 
+        href: '/learn', 
+        label: 'Learning Hub', 
+        icon: GraduationCap, 
+        description: 'Tutorials, courses, and best practices' 
       },
       { 
         href: '/support', 
-        label: 'Support Center', 
-        icon: MessageCircle, 
+        label: 'Support', 
+        icon: HelpCircle, 
         description: '24/7 expert support and community forums' 
-      },
-      { 
-        href: '/status', 
-        label: 'System Status', 
-        icon: Activity, 
-        description: 'Real-time system status and uptime monitoring' 
-      },
-      { 
-        href: '/changelog', 
-        label: 'Changelog', 
-        icon: Clock, 
-        description: 'Latest updates and feature releases' 
       }
     ]
   },
@@ -220,46 +157,119 @@ export const megaMenuNavigation: NavigationItem[] = [
         description: 'Get in touch with our team' 
       },
       { 
+        href: '/careers', 
+        label: 'Careers', 
+        icon: UserPlus, 
+        description: 'Join our team and shape the future of databases' 
+      },
+      { 
         href: '/partners', 
         label: 'Partners', 
         icon: Handshake, 
         description: 'Technology partnerships and integrations' 
-      },
-      { 
-        href: '/press', 
-        label: 'Press Kit', 
-        icon: Package, 
-        description: 'Media resources and press materials' 
-      },
-      { 
-        href: '/careers', 
-        label: 'Careers', 
-        icon: Rocket, 
-        description: 'Join our team and build the future of database optimization' 
       }
     ]
   }
 ];
 
-// Updated footer navigation
+// Dashboard sidebar navigation with contextual grouping
+export const dashboardSidebarNavigation = [
+  {
+    group: 'Overview',
+    items: [
+      { 
+        href: '/app', 
+        label: 'Dashboard', 
+        icon: BarChart3, 
+        description: 'Performance overview and key metrics',
+        shortcut: 'D'
+      }
+    ]
+  },
+  {
+    group: 'Optimization',
+    items: [
+      { 
+        href: '/queries', 
+        label: 'Query Manager', 
+        icon: Search, 
+        description: 'Optimize and manage SQL queries',
+        shortcut: 'Q'
+      },
+      { 
+        href: '/ai-studio', 
+        label: 'AI Studio', 
+        icon: Brain, 
+        badge: 'AI', 
+        description: 'AI-powered optimization workspace',
+        shortcut: 'A'
+      }
+    ]
+  },
+  {
+    group: 'Data & Analytics',
+    items: [
+      { 
+        href: '/repositories', 
+        label: 'Repositories', 
+        icon: Database, 
+        description: 'Database connections and configurations',
+        shortcut: 'R'
+      },
+      { 
+        href: '/reports', 
+        label: 'Performance Reports', 
+        icon: FileText, 
+        description: 'Detailed analytics and insights',
+        shortcut: 'P'
+      }
+    ]
+  },
+  {
+    group: 'Collaboration',
+    items: [
+      { 
+        href: '/approvals', 
+        label: 'Query Approvals', 
+        icon: CheckSquare, 
+        description: 'Review and approve query changes',
+        shortcut: 'V'
+      },
+      { 
+        href: '/teams', 
+        label: 'Team Management', 
+        icon: Users, 
+        description: 'Manage team members and permissions',
+        shortcut: 'T'
+      }
+    ]
+  },
+  {
+    group: 'Tools',
+    items: [
+      { 
+        href: '/sandbox', 
+        label: 'Testing Sandbox', 
+        icon: Settings, 
+        description: 'Safe environment for testing queries',
+        shortcut: 'S'
+      }
+    ]
+  }
+];
+
+// Footer navigation structure
 export const footerNavigation = {
   product: [
     { href: '/features', label: 'Features' },
     { href: '/how-it-works', label: 'How It Works' },
     { href: '/ai-studio', label: 'AI Studio' },
-    { href: '/demo', label: 'Demo Mode' },
-    { href: '/pricing', label: 'Pricing' }
-  ],
-  solutions: [
-    { href: '/for-developers', label: 'For Developers' },
-    { href: '/for-teams', label: 'Teams' },
-    { href: '/for-enterprises', label: 'Enterprises' },
-    { href: '/use-cases', label: 'Use Cases' }
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/integrations', label: 'Integrations' }
   ],
   resources: [
     { href: '/learn', label: 'Documentation' },
     { href: '/blog', label: 'Blog' },
-    { href: '/faq', label: 'FAQ' },
     { href: '/support', label: 'Support Center' },
     { href: '/status', label: 'System Status' },
     { href: '/changelog', label: 'Changelog' }
@@ -267,22 +277,50 @@ export const footerNavigation = {
   company: [
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact' },
+    { href: '/careers', label: 'Careers' },
     { href: '/partners', label: 'Partners' },
-    { href: '/press', label: 'Press Kit' },
-    { href: '/careers', label: 'Careers' }
-  ],
-  support: [
-    { href: '/faq', label: 'Help Center' },
-    { href: '/support', label: 'Contact Support' },
-    { href: '/status', label: 'System Status' }
+    { href: '/press', label: 'Press Kit' }
   ],
   legal: [
-    { href: '/terms', label: 'Terms of Service' },
     { href: '/privacy', label: 'Privacy Policy' },
-    { href: '/cookies', label: 'Cookie Policy' },
+    { href: '/terms', label: 'Terms of Service' },
     { href: '/security', label: 'Security' },
-    { href: '/accessibility', label: 'Accessibility' }
+    { href: '/accessibility', label: 'Accessibility' },
+    { href: '/cookies', label: 'Cookie Policy' }
   ]
+};
+
+// Quick actions for dashboard
+export const quickActions = [
+  {
+    href: '/ai-studio',
+    label: 'Optimize Query',
+    icon: Brain,
+    description: 'Get AI recommendations for your SQL queries',
+    shortcut: 'Cmd+O'
+  },
+  {
+    href: '/repositories/new',
+    label: 'Add Database',
+    icon: Database,
+    description: 'Connect a new database for optimization',
+    shortcut: 'Cmd+N'
+  },
+  {
+    href: '/reports/new',
+    label: 'Generate Report',
+    icon: FileText,
+    description: 'Create a performance analysis report',
+    shortcut: 'Cmd+R'
+  }
+];
+
+export const socialProofIndicators = {
+  customerCount: '50,000+',
+  queryOptimizations: '2.5M+',
+  averageImprovement: '73%',
+  costSavings: '60%',
+  certifications: ['SOC2 Type II', 'ISO 27001', 'GDPR Compliant']
 };
 
 // Legacy exports for backward compatibility
@@ -301,6 +339,9 @@ export const authenticatedNavItems: NavigationItem[] = [
   { href: '/repositories', label: 'Repositories', icon: Database, description: 'Manage your database connections' },
   { href: '/ai-studio', label: 'AI Studio', icon: Brain, badge: 'AI', description: 'AI-powered optimization tools' },
   { href: '/reports', label: 'Performance Reports', icon: FileText, description: 'Detailed analytics and insights' },
+  { href: '/approvals', label: 'Query Approvals', icon: CheckSquare, description: 'Review and approve query changes' },
+  { href: '/teams', label: 'Team Management', icon: Users, description: 'Manage team members and permissions' },
+  { href: '/sandbox', label: 'Testing Sandbox', icon: Settings, description: 'Safe environment for testing queries' },
 ];
 
 export const userMenuItems: NavigationItem[] = [
@@ -319,23 +360,3 @@ export const legalMenuItems: NavigationItem[] = [
   { href: '/terms', label: 'Terms of Service', icon: FileCheck, description: 'Legal terms and conditions' },
   { href: '/accessibility', label: 'Accessibility', icon: Globe, description: 'Our commitment to accessibility' },
 ];
-
-export const socialProofIndicators = {
-  customerCount: '50,000+',
-  queryOptimizations: '2.5M+',
-  averageImprovement: '73%',
-  costSavings: '60%',
-  certifications: ['SOC2 Type II', 'ISO 27001', 'GDPR Compliant']
-};
-
-// Contact information
-export const contactInfo = {
-  email: 'support@dbooster.ai',
-  phone: '+972-54-000-0000',
-  address: 'Tel Aviv, Israel',
-  social: {
-    linkedin: 'https://linkedin.com/company/dbooster',
-    twitter: 'https://twitter.com/dbooster',
-    github: 'https://github.com/dbooster'
-  }
-};

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { NotificationBell } from '@/components/notifications/SmartNotifications';
 import { AccessibilityMenu } from '@/components/accessibility-menu';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { EnhancedSearch } from '@/components/ui/enhanced-search';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
 
 export function Header() {
   const { user, logout, isDemo } = useAuth();
@@ -30,8 +32,14 @@ export function Header() {
     }
   };
 
+  const handleGlobalSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" dir="ltr">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden" />
@@ -42,8 +50,15 @@ export function Header() {
           </div>
         </div>
 
-        {/* Center space for future content */}
-        <div className="flex-1" />
+        {/* Global Search Bar */}
+        <div className="flex-1 max-w-md mx-8">
+          <EnhancedSearch
+            placeholder="Search features, docs, help..."
+            onSearch={handleGlobalSearch}
+            showRecentSearches={true}
+            className="w-full"
+          />
+        </div>
 
         <div className="flex items-center gap-2">
           {isDemo && (

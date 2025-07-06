@@ -66,7 +66,7 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
-      await result.current.secureSignup('test@example.com', 'password', 'Test User', true);
+      await result.current.secureSignup('test@example.com', 'password', 'Test User');
     });
 
     // Test passes if no error is thrown

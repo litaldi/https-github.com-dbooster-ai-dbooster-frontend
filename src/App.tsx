@@ -1,130 +1,161 @@
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
-import { NotificationProvider } from '@/components/ui/enhanced-notification-system';
-
-// Layouts
+import { Toaster } from 'sonner';
+import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import { PublicLayout } from '@/components/PublicLayout';
+import { GlobalLoadingOverlay } from '@/components/ui/GlobalLoadingOverlay';
+import { UpdateBanner } from '@/components/ui/update-banner';
+import { SkipToMainContent } from '@/components/ui/accessibility-enhanced';
 import Layout from '@/components/layout';
+import ProtectedRoute from '@/components/protected-route';
+import { ResourcePreloader, CriticalCSSLoader } from '@/components/ui/critical-css-loader';
+import { appInitializer } from '@/utils/appInitializer';
+import { useEffect } from 'react';
 
-// Public Pages
-import Home from '@/pages/Home';
-import FeaturesPage from '@/pages/FeaturesPage';
-import HowItWorksPage from '@/pages/HowItWorksPage';
-import AIStudioPage from '@/pages/AIStudioPage';
-import DemoPage from '@/pages/DemoPage';
-import PricingPage from '@/pages/PricingPage';
-import ForDevelopersPage from '@/pages/ForDevelopersPage';
-import ForTeamsPage from '@/pages/ForTeamsPage';
-import ForEnterprisesPage from '@/pages/ForEnterprisesPage';
-import UseCasesPage from '@/pages/UseCasesPage';
-import LearnPage from '@/pages/LearnPage';
-import BlogPage from '@/pages/BlogPage';
-import FAQPage from '@/pages/FAQPage';
-import SupportPage from '@/pages/SupportPage';
-import StatusPage from '@/pages/StatusPage';
-import ChangelogPage from '@/pages/ChangelogPage';
-import AboutPage from '@/pages/AboutPage';
-import ContactPage from '@/pages/ContactPage';
-import PartnersPage from '@/pages/PartnersPage';
-import PressPage from '@/pages/PressPage';
-import CareersPage from '@/pages/CareersPage';
-import LoginPage from '@/pages/LoginPage';
-import SearchPage from '@/pages/SearchPage';
+// Lazy load pages for better performance
+import { lazy, Suspense } from 'react';
+import { PageLoading } from '@/components/ui/loading-states';
 
-// Legal Pages
-import TermsPage from '@/pages/legal/TermsPage';
-import PrivacyPage from '@/pages/legal/PrivacyPage';
-import CookiesPage from '@/pages/legal/CookiesPage';
-import SecurityPage from '@/pages/legal/SecurityPage';
-import AccessibilityPage from '@/pages/legal/AccessibilityPage';
+// Critical pages (loaded immediately)
+import EnhancedHome from '@/pages/EnhancedHome';
+import Login from '@/pages/Login';
 
-// Dashboard Pages
-import DashboardPage from '@/pages/app/DashboardPage';
-import AnalyticsPage from '@/pages/app/AnalyticsPage';
-import QueriesPage from '@/pages/app/QueriesPage';
-import RepositoriesPage from '@/pages/app/RepositoriesPage';
-import AIStudioAppPage from '@/pages/app/AIStudioAppPage';
-import ReportsPage from '@/pages/app/ReportsPage';
-import MonitoringPage from '@/pages/app/MonitoringPage';
-import SettingsPage from '@/pages/app/SettingsPage';
-import AccountPage from '@/pages/app/AccountPage';
+// Non-critical pages (lazy loaded)
+const Features = lazy(() => import('@/pages/Features'));
+const HowItWorks = lazy(() => import('@/pages/HowItWorks'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
+const Learn = lazy(() => import('@/pages/Learn'));
+const Blog = lazy(() => import('@/pages/Blog'));
+const About = lazy(() => import('@/pages/About'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const Support = lazy(() => import('@/pages/Support'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const Accessibility = lazy(() => import('@/pages/Accessibility'));
+const AIOptimizationStudio = lazy(() => import('@/pages/AIOptimizationStudio'));
+const EnhancedDashboard = lazy(() => import('@/pages/EnhancedDashboard'));
+const Queries = lazy(() => import('@/pages/Queries'));
+const Repositories = lazy(() => import('@/pages/Repositories'));
+const Reports = lazy(() => import('@/pages/Reports'));
+const SecurityDashboardPage = lazy(() => import('@/components/security/SecurityDashboardPage').then(module => ({ default: module.SecurityDashboardPage })));
+const Search = lazy(() => import('@/pages/Search'));
+
+// New pages
+const Enterprise = lazy(() => import('@/pages/Enterprise'));
+const DatabaseTypes = lazy(() => import('@/pages/DatabaseTypes'));
+const UseCases = lazy(() => import('@/pages/UseCases'));
+const Integrations = lazy(() => import('@/pages/Integrations'));
+const Status = lazy(() => import('@/pages/Status'));
+const Changelog = lazy(() => import('@/pages/Changelog'));
+const Careers = lazy(() => import('@/pages/Careers'));
+const Partners = lazy(() => import('@/pages/Partners'));
+const Press = lazy(() => import('@/pages/Press'));
+const Cookies = lazy(() => import('@/pages/Cookies'));
+const NotFound = lazy(() => import('@/components/error/NotFound').then(module => ({ default: module.NotFound })));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false, // Reduce unnecessary requests
+    },
+  },
+});
 
 function App() {
+  useEffect(() => {
+    // Initialize app with performance optimizations
+    appInitializer.initialize();
+  }, []);
+
   return (
-    <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
-      <AuthProvider>
-        <NotificationProvider>
-          <Router>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<PublicLayout />}>
-                <Route index element={<Home />} />
-                <Route path="home" element={<Navigate to="/" replace />} />
-                
-                {/* Product Routes */}
-                <Route path="features" element={<FeaturesPage />} />
-                <Route path="how-it-works" element={<HowItWorksPage />} />
-                <Route path="ai-studio" element={<AIStudioPage />} />
-                <Route path="demo" element={<DemoPage />} />
-                <Route path="pricing" element={<PricingPage />} />
-                
-                {/* Solutions Routes */}
-                <Route path="for-developers" element={<ForDevelopersPage />} />
-                <Route path="for-teams" element={<ForTeamsPage />} />
-                <Route path="for-enterprises" element={<ForEnterprisesPage />} />
-                <Route path="use-cases" element={<UseCasesPage />} />
-                
-                {/* Resources Routes */}
-                <Route path="learn" element={<LearnPage />} />
-                <Route path="blog" element={<BlogPage />} />
-                <Route path="faq" element={<FAQPage />} />
-                <Route path="support" element={<SupportPage />} />
-                <Route path="status" element={<StatusPage />} />
-                <Route path="changelog" element={<ChangelogPage />} />
-                
-                {/* Company Routes */}
-                <Route path="about" element={<AboutPage />} />
-                <Route path="contact" element={<ContactPage />} />
-                <Route path="partners" element={<PartnersPage />} />
-                <Route path="press" element={<PressPage />} />
-                <Route path="careers" element={<CareersPage />} />
-                
-                {/* Legal Routes */}
-                <Route path="terms" element={<TermsPage />} />
-                <Route path="privacy" element={<PrivacyPage />} />
-                <Route path="cookies" element={<CookiesPage />} />
-                <Route path="security" element={<SecurityPage />} />
-                <Route path="accessibility" element={<AccessibilityPage />} />
-                
-                {/* Auth & Search */}
-                <Route path="login" element={<LoginPage />} />
-                <Route path="search" element={<SearchPage />} />
-              </Route>
+    <EnhancedErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
+          <AuthProvider>
+            <Router>
+              <SkipToMainContent />
+              <CriticalCSSLoader />
+              <ResourcePreloader />
+              <GlobalLoadingOverlay />
+              <UpdateBanner />
+              
+              <div id="main-content">
+                <Suspense fallback={<PageLoading />}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<PublicLayout />}>
+                      <Route index element={<EnhancedHome />} />
+                      <Route path="login" element={<Login />} />
+                      <Route path="features" element={<Features />} />
+                      <Route path="how-it-works" element={<HowItWorks />} />
+                      <Route path="pricing" element={<Pricing />} />
+                      <Route path="learn" element={<Learn />} />
+                      <Route path="blog" element={<Blog />} />
+                      <Route path="about" element={<About />} />
+                      <Route path="contact" element={<Contact />} />
+                      <Route path="support" element={<Support />} />
+                      <Route path="privacy" element={<Privacy />} />
+                      <Route path="terms" element={<Terms />} />
+                      <Route path="accessibility" element={<Accessibility />} />
+                      <Route path="ai-studio" element={<AIOptimizationStudio />} />
+                      <Route path="search" element={<Search />} />
+                      
+                      {/* New public pages */}
+                      <Route path="enterprise" element={<Enterprise />} />
+                      <Route path="database-types" element={<DatabaseTypes />} />
+                      <Route path="use-cases" element={<UseCases />} />
+                      <Route path="integrations" element={<Integrations />} />
+                      <Route path="status" element={<Status />} />
+                      <Route path="changelog" element={<Changelog />} />
+                      <Route path="careers" element={<Careers />} />
+                      <Route path="partners" element={<Partners />} />
+                      <Route path="press" element={<Press />} />
+                      <Route path="cookies" element={<Cookies />} />
+                    </Route>
+                    
+                    {/* Protected authenticated routes */}
+                    <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                      <Route index element={<EnhancedDashboard />} />
+                    </Route>
+                    
+                    <Route path="/queries" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                      <Route index element={<Queries />} />
+                    </Route>
+                    
+                    <Route path="/repositories" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                      <Route index element={<Repositories />} />
+                    </Route>
+                    
+                    <Route path="/reports" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                      <Route index element={<Reports />} />
+                    </Route>
 
-              {/* Dashboard Routes */}
-              <Route path="/app" element={<Layout />}>
-                <Route index element={<DashboardPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="queries" element={<QueriesPage />} />
-                <Route path="repositories" element={<RepositoriesPage />} />
-                <Route path="ai-studio" element={<AIStudioAppPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="monitoring" element={<MonitoringPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="account" element={<AccountPage />} />
-              </Route>
-
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-            <Toaster position="top-right" richColors />
-          </Router>
-        </NotificationProvider>
-      </AuthProvider>
-    </ThemeProvider>
+                    <Route path="/security" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                      <Route index element={<SecurityDashboardPage />} />
+                    </Route>
+                    
+                    {/* 404 fallback */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </div>
+              
+              <Toaster 
+                position="top-right"
+                expand={true}
+                richColors
+                closeButton
+              />
+            </Router>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </EnhancedErrorBoundary>
   );
 }
 
