@@ -73,72 +73,44 @@ function QuickActionsGrid({ actions }) {
   );
 }
 
-// Recent optimizations component
-function RecentOptimizations({ optimizations }) {
-  if (optimizations.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Ready to Optimize</h3>
-        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          Connect your database to start analyzing queries and see performance improvements here.
-        </p>
+// Getting started component for new users
+function GettingStarted() {
+  return (
+    <div className="text-center py-12">
+      <Database className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+      <h3 className="text-xl font-semibold mb-3">Welcome to Your Dashboard</h3>
+      <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+        Connect your database to start analyzing queries and see performance improvements.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button asChild>
           <Link to="/app/query-analyzer">
             <Database className="h-4 w-4 mr-2" />
-            Start Analysis
+            Connect Database
+          </Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/app/ai-studio">
+            <Brain className="h-4 w-4 mr-2" />
+            Try AI Studio
           </Link>
         </Button>
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {optimizations.map((item, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-          className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors duration-200"
-        >
-          <div className="flex items-center space-x-4 flex-1 min-w-0">
-            <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate font-mono bg-muted/50 px-2 py-1 rounded">
-                {item.query}
-              </p>
-              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{item.time}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <Badge variant="secondary" className="ml-4 flex-shrink-0 bg-green-100 text-green-800">
-            +{item.improvement}
-          </Badge>
-        </motion.div>
-      ))}
     </div>
   );
 }
 
 export default function Dashboard() {
-  const { user, isDemo } = useAuth();
+  const { user } = useAuth();
 
-  // Clean demo data with realistic values
+  // Clean data without demo values
   const data = {
-    totalQueries: isDemo ? 15234 : 0,
-    optimized: isDemo ? 11876 : 0,
-    avgImprovement: isDemo ? 67 : 0,
-    monthlySavings: isDemo ? 2840 : 0,
-    activeConnections: isDemo ? 12 : 0,
-    uptime: isDemo ? 99.97 : 0
+    totalQueries: 0,
+    optimized: 0,
+    avgImprovement: 0,
+    monthlySavings: 0,
+    activeConnections: 0,
+    uptime: 0
   };
 
   const quickActions = [
@@ -167,24 +139,6 @@ export default function Dashboard() {
       href: "/app/security"
     }
   ];
-
-  const recentOptimizations = isDemo ? [
-    { 
-      query: "SELECT users.* FROM users WHERE created_at > ?", 
-      improvement: "45%", 
-      time: "2 hours ago"
-    },
-    { 
-      query: "UPDATE orders SET status = ? WHERE id IN (?)", 
-      improvement: "62%", 
-      time: "4 hours ago"
-    },
-    { 
-      query: "SELECT COUNT(*) FROM analytics WHERE date >= ?", 
-      improvement: "73%", 
-      time: "1 day ago"
-    }
-  ] : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -228,28 +182,28 @@ export default function Dashboard() {
             <MetricsCard
               title="Total Queries"
               value={data.totalQueries.toLocaleString()}
-              change="+12% this month"
+              change=""
               icon={Database}
               description="Analyzed this month"
             />
             <MetricsCard
               title="Optimized"
               value={data.optimized.toLocaleString()}
-              change="+8% improvement"
+              change=""
               icon={Zap}
               description="Performance improvements"
             />
             <MetricsCard
               title="Avg Improvement"
               value={`${data.avgImprovement}%`}
-              change="+5% vs last month"
+              change=""
               icon={TrendingUp}
               description="Response time reduction"
             />
             <MetricsCard
               title="Monthly Savings"
               value={`$${data.monthlySavings.toLocaleString()}`}
-              change="+15% cost reduction"
+              change=""
               icon={DollarSign}
               description="Infrastructure savings"
             />
@@ -258,7 +212,7 @@ export default function Dashboard() {
 
         {/* Main Content Grid */}
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Recent Activity */}
+          {/* Getting Started */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -270,21 +224,15 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      Recent Optimizations
+                      <Database className="h-5 w-5 text-primary" />
+                      Get Started
                     </CardTitle>
-                    <CardDescription>Latest database performance improvements</CardDescription>
+                    <CardDescription>Connect your database to begin optimization</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/app/reports">
-                      View All
-                      <ArrowRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <RecentOptimizations optimizations={recentOptimizations} />
+                <GettingStarted />
               </CardContent>
             </Card>
           </motion.div>
@@ -308,41 +256,39 @@ export default function Dashboard() {
         </div>
 
         {/* System Status */}
-        {isDemo && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-green-600" />
-                  System Status
-                </CardTitle>
-                <CardDescription>Real-time system health and performance monitoring</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-                    <span className="text-sm font-medium">Active Connections</span>
-                    <Badge variant="secondary">{data.activeConnections}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-                    <span className="text-sm font-medium">System Uptime</span>
-                    <Badge variant="secondary">{data.uptime}%</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-                    <span className="text-sm font-medium">Status</span>
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                      All Systems Operational
-                    </Badge>
-                  </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-green-600" />
+                System Status
+              </CardTitle>
+              <CardDescription>System health and performance monitoring</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                  <span className="text-sm font-medium">Active Connections</span>
+                  <Badge variant="secondary">{data.activeConnections}</Badge>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                  <span className="text-sm font-medium">System Uptime</span>
+                  <Badge variant="secondary">{data.uptime}%</Badge>
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                  <span className="text-sm font-medium">Status</span>
+                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                    Ready to Connect
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
