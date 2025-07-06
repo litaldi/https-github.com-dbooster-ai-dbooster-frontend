@@ -8,13 +8,15 @@ export function initializeSecurityHardening() {
   }
 
   try {
-    // Disable console in production
+    // Disable console in production for security
     if (typeof window !== 'undefined') {
-      console.log = () => {};
-      console.warn = () => {};
-      console.error = () => {};
-      console.info = () => {};
-      console.debug = () => {};
+      // Override console methods in production
+      const noop = () => {};
+      console.log = noop;
+      console.warn = noop;
+      console.error = noop;
+      console.info = noop;
+      console.debug = noop;
     }
 
     // Add security headers check
