@@ -134,7 +134,7 @@ export function EnhancedUserMenu({
             <span className="hidden md:inline text-sm font-medium">{user.email}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64 bg-background border shadow-lg" dir="ltr">
+        <DropdownMenuContent align="end" className="w-64 bg-background border shadow-lg">
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-2">
               <div className="flex items-center gap-3">
