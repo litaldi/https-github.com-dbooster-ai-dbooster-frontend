@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { EnhancedInput } from '@/components/ui/enhanced-input';
 import { PasswordStrengthIndicator } from '@/components/security/PasswordStrengthIndicator';
 import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
+import { productionLogger } from '@/utils/productionLogger';
 import { Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -50,7 +51,15 @@ export function PasswordField({
         const result = await checkPasswordStrength(newValue);
         setStrengthResult(result);
       } catch (err) {
-        console.error('Password strength check failed:', err);
+        // Use production-safe logging instead of console.error
+        productionLogger.error('Password strength check failed', err, 'PasswordField');
+        
+        // Set safe fallback state
+        setStrengthResult({
+          score: 0,
+          feedback: ['Unable to check password strength'],
+          isValid: false
+        });
       }
     }
   };
