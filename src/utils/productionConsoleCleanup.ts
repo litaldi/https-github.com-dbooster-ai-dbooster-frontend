@@ -12,7 +12,7 @@ class ProductionConsoleCleanup {
   private static instance: ProductionConsoleCleanup;
   private originalConsole: Partial<ConsoleMethod> = {};
   private isInitialized = false;
-  private allowedContexts = new Set(['test', 'development', 'storybook']);
+  private allowedContexts = ['test', 'development', 'storybook'];
 
   static getInstance(): ProductionConsoleCleanup {
     if (!ProductionConsoleCleanup.instance) {
