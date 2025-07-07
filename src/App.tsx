@@ -41,8 +41,8 @@ import CookiesPage from '@/pages/legal/CookiesPage';
 import SecurityPage from '@/pages/legal/SecurityPage';
 import AccessibilityPage from '@/pages/legal/AccessibilityPage';
 
-// Dashboard Pages
-import DashboardPage from '@/pages/app/DashboardPage';
+// Dashboard Pages - using the existing Dashboard component
+import Dashboard from '@/pages/Dashboard';
 import AnalyticsPage from '@/pages/app/AnalyticsPage';
 import QueriesPage from '@/pages/app/QueriesPage';
 import RepositoriesPage from '@/pages/app/RepositoriesPage';
@@ -106,7 +106,7 @@ function App() {
 
               {/* Dashboard Routes */}
               <Route path="/app" element={<Layout />}>
-                <Route index element={<DashboardPage />} />
+                <Route index element={<Dashboard />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="queries" element={<QueriesPage />} />
                 <Route path="repositories" element={<RepositoriesPage />} />
