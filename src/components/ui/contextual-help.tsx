@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { HelpCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,11 +26,7 @@ const helpContent = {
 
 export function ContextualHelp() {
   const [isVisible, setIsVisible] = useState(false);
-  const [currentPath, setCurrentPath] = useState('/');
-
-  useEffect(() => {
-    setCurrentPath(window.location.pathname);
-  }, []);
+  const currentPath = window.location.pathname;
 
   const helpInfo = helpContent[currentPath as keyof typeof helpContent];
 
@@ -57,11 +53,9 @@ export function ContextualHelp() {
           >
             <Card className="w-80 shadow-xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div>
-                  <CardTitle className="text-sm font-medium">
-                    {helpInfo.title}
-                  </CardTitle>
-                </div>
+                <CardTitle className="text-sm font-medium">
+                  {helpInfo.title}
+                </CardTitle>
                 <Button
                   variant="ghost"
                   size="icon"
