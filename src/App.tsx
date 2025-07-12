@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -53,9 +54,6 @@ import MonitoringPage from '@/pages/app/MonitoringPage';
 import SettingsPage from '@/pages/app/SettingsPage';
 import AccountPage from '@/pages/app/AccountPage';
 import DashboardPage from '@/pages/app/DashboardPage';
-
-// Error Pages
-import { NotFound } from '@/components/error/NotFound';
 
 // Lazy load the security dashboard
 const SecurityDashboardPage = React.lazy(() => 
@@ -121,9 +119,6 @@ function App() {
                   {/* Auth & Search */}
                   <Route path="login" element={<LoginPage />} />
                   <Route path="search" element={<SearchPage />} />
-                  
-                  {/* 404 for public routes */}
-                  <Route path="*" element={<NotFound />} />
                 </Route>
 
                 {/* Protected Dashboard Routes */}
@@ -147,9 +142,10 @@ function App() {
                       <SecurityDashboardPage />
                     </Suspense>
                   } />
-                  {/* 404 for dashboard routes */}
-                  <Route path="*" element={<NotFound />} />
                 </Route>
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
             <Toaster 

@@ -35,12 +35,3 @@ export {
   HoverLift,
   ScaleOnHover
 } from '../micro-interactions';
-
-// Page transitions - export from page-transition file
-export {
-  PageTransition,
-  AnimatedRouteWrapper
-} from '../page-transition';
-
-// Backward compatibility aliases
-export { StaggerContainer as Stagger } from './stagger-animations';
