@@ -1,4 +1,3 @@
-
 interface ConsoleMethod {
   log: (...args: any[]) => void;
   warn: (...args: any[]) => void;
@@ -19,7 +18,7 @@ class ProductionConsoleManager {
     return ProductionConsoleManager.instance;
   }
 
-  initializeConsoleOptimization(): void {
+  initializeConsoleCleanup(): void {
     if (!this.isProduction || typeof console === 'undefined') {
       return;
     }
@@ -39,6 +38,14 @@ class ProductionConsoleManager {
     console.debug = () => {}; // Disable debug logs in production
     console.warn = this.createOptimizedLogger('warn');
     console.error = this.createOptimizedLogger('error');
+  }
+
+  enableDevConsole(): void {
+    if (!import.meta.env.DEV) {
+      return;
+    }
+    // In development, keep all console methods active
+    console.log('Development console enabled');
   }
 
   private createOptimizedLogger(level: string) {
@@ -66,4 +73,4 @@ class ProductionConsoleManager {
   }
 }
 
-export const productionConsoleManager = ProductionConsoleManager.getInstance();
+export const productionConsole = ProductionConsoleManager.getInstance();
