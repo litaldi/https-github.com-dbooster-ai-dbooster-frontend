@@ -1,74 +1,95 @@
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HelpCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const helpContent = {
-  '/': {
-    title: 'Welcome to DBooster',
-    content: 'Get started by connecting your database or trying our demo queries.'
-  },
-  '/app/dashboard': {
-    title: 'Dashboard Overview',
-    content: 'Monitor your query performance and optimization metrics here.'
-  },
-  '/app/queries': {
-    title: 'Query Management',
-    content: 'Analyze, optimize, and manage your SQL queries efficiently.'
-  },
-  '/app/repositories': {
-    title: 'Repository Scanner',
-    content: 'Connect your repositories to automatically scan and optimize queries.'
-  }
-};
+interface HelpTip {
+  id: string;
+  title: string;
+  content: string;
+  position: { x: number; y: number };
+}
 
 export function ContextualHelp() {
   const [isVisible, setIsVisible] = useState(false);
-  const currentPath = window.location.pathname;
+  const [currentTip, setCurrentTip] = useState<HelpTip | null>(null);
 
-  const helpInfo = helpContent[currentPath as keyof typeof helpContent];
+  const helpTips: HelpTip[] = [
+    {
+      id: 'dashboard',
+      title: 'Dashboard Overview',
+      content: 'Your main dashboard shows key metrics and recent activity.',
+      position: { x: 20, y: 20 }
+    },
+    {
+      id: 'queries',
+      title: 'Query Management',
+      content: 'Manage and optimize your database queries here.',
+      position: { x: 20, y: 80 }
+    }
+  ];
 
-  if (!helpInfo) return null;
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'F1' || (e.ctrlKey && e.key === 'h')) {
+        e.preventDefault();
+        setIsVisible(!isVisible);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [isVisible]);
 
   return (
     <>
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
-        className="fixed bottom-6 right-6 z-50 rounded-full shadow-lg"
+        className="fixed bottom-4 right-4 z-50 rounded-full shadow-lg"
         onClick={() => setIsVisible(!isVisible)}
+        aria-label="Toggle help"
       >
-        <HelpCircle className="h-4 w-4" />
+        <HelpCircle className="h-5 w-5" />
       </Button>
 
       <AnimatePresence>
         {isVisible && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="fixed bottom-20 right-6 z-50"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed bottom-16 right-4 z-50"
           >
-            <Card className="w-80 shadow-xl">
+            <Card className="w-80">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {helpInfo.title}
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Quick Help</CardTitle>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
                   onClick={() => setIsVisible(false)}
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm">
-                  {helpInfo.content}
-                </CardDescription>
+              <CardContent className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Press F1 or Ctrl+H for help
+                </p>
+                <div className="space-y-1">
+                  {helpTips.map((tip) => (
+                    <button
+                      key={tip.id}
+                      className="w-full text-left text-xs p-2 rounded hover:bg-accent"
+                      onClick={() => setCurrentTip(tip)}
+                    >
+                      {tip.title}
+                    </button>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </motion.div>

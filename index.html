@@ -1,153 +1,38 @@
 
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
+<!doctype html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' https://cdn.gpteng.co https://www.googletagmanager.com https://www.google-analytics.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
-      img-src 'self' data: https: blob:;
-      connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://vitals.vercel-analytics.com;
-      frame-src 'none';
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self';
-      upgrade-insecure-requests;
-    " />
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="DENY" />
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
-    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()" />
-    
-    <!-- Primary Meta Tags -->
-    <title>DBooster - AI-Powered Database Query Optimizer | Optimize SQL Performance</title>
-    <meta name="title" content="DBooster - AI-Powered Database Query Optimizer | Optimize SQL Performance" />
-    <meta name="description" content="DBooster uses AI to automatically optimize your database queries. Connect your GitHub repositories, scan SQL queries, and improve database performance with intelligent recommendations." />
+    <meta name="description" content="AI-powered database query optimization that reduces response times by up to 10x and cuts infrastructure costs by 60%. Transform your database performance today." />
+    <meta name="keywords" content="database optimization, SQL queries, AI performance, database tuning" />
     <meta name="author" content="DBooster Team" />
-    <meta name="keywords" content="database optimization, SQL performance, query optimization, AI database tools, GitHub integration, PostgreSQL, MySQL, database performance, SQL analyzer, query tuning" />
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://dbooster.lovable.app/" />
-    
-    <!-- Favicon and Icons -->
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="manifest" href="/manifest.json" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://dbooster.lovable.app/" />
-    <meta property="og:title" content="DBooster - AI-Powered Database Query Optimizer" />
-    <meta property="og:description" content="Optimize your database queries with AI-powered insights. Connect GitHub repositories and improve SQL performance automatically." />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-    <meta property="og:image:alt" content="DBooster - AI-Powered Database Query Optimizer" />
+    <meta property="og:title" content="DBooster - AI-Powered Database Query Optimization" />
+    <meta property="og:description" content="Reduce database response times by up to 10x with AI-powered query optimization." />
     <meta property="og:site_name" content="DBooster" />
-    <meta property="og:locale" content="en_US" />
-
+    
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://dbooster.lovable.app/" />
-    <meta name="twitter:title" content="DBooster - AI-Powered Database Query Optimizer" />
-    <meta name="twitter:description" content="Optimize your database queries with AI-powered insights. Connect GitHub repositories and improve SQL performance automatically." />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-    <meta name="twitter:image:alt" content="DBooster Dashboard Screenshot" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:creator" content="@lovable_dev" />
-
-    <!-- Additional Meta Tags -->
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    <meta name="theme-color" content="#1f2937" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="DBooster" />
+    <meta name="twitter:title" content="DBooster - AI-Powered Database Query Optimization" />
+    <meta name="twitter:description" content="Reduce database response times by up to 10x with AI-powered query optimization." />
     
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'GA_MEASUREMENT_ID', {
-        page_title: document.title,
-        page_location: window.location.href,
-        anonymize_ip: true,
-        allow_google_signals: false,
-        allow_ad_personalization_signals: false
-      });
-    </script>
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "DBooster",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Web",
-      "description": "AI-powered database query optimizer that helps developers improve SQL performance through intelligent analysis and recommendations.",
-      "url": "https://dbooster.lovable.app",
-      "author": {
-        "@type": "Organization",
-        "name": "DBooster Team"
-      },
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "127"
-      }
-    }
-    </script>
-    
-    <!-- Preconnect to external domains for performance -->
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://cdn.gpteng.co" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <title>DBooster - AI-Powered Database Query Optimization</title>
   </head>
-
   <body>
-    <noscript>
-      <div style="text-align: center; padding: 2rem; background: #f8f9fa; border: 1px solid #dee2e6; margin: 1rem;">
-        <h1>JavaScript Required</h1>
-        <p>DBooster requires JavaScript to function properly. Please enable JavaScript in your browser and refresh the page.</p>
-      </div>
-    </noscript>
-    
     <div id="root"></div>
-    
-    <!-- Service Worker Registration -->
-    <script>
-      if ('serviceWorker' in navigator && 'production' === 'production') {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
-    </script>
-    
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

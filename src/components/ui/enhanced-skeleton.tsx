@@ -1,54 +1,103 @@
 
+import React from 'react';
 import { cn } from '@/lib/utils';
 
-interface EnhancedSkeletonProps {
-  className?: string;
-  variant?: 'default' | 'text' | 'avatar' | 'card' | 'button';
-  animate?: boolean;
-}
-
-export function EnhancedSkeleton({ 
-  className, 
-  variant = 'default',
-  animate = true 
-}: EnhancedSkeletonProps) {
-  const variants = {
-    default: 'h-4 w-full',
-    text: 'h-4 w-3/4',
-    avatar: 'h-12 w-12 rounded-full',
-    card: 'h-48 w-full rounded-lg',
-    button: 'h-10 w-24 rounded-md'
-  };
-
+function Skeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        'bg-gradient-to-r from-muted via-muted/50 to-muted rounded-md',
-        animate && 'animate-pulse',
-        variants[variant],
-        className
-      )}
-      role="status"
-      aria-label="Loading content"
+      className={cn("animate-pulse rounded-md bg-muted", className)}
+      {...props}
     />
   );
 }
 
-export function ContentSkeleton() {
+interface ContentSkeletonProps {
+  lines?: number;
+  showHeader?: boolean;
+  className?: string;
+}
+
+function ContentSkeleton({ 
+  lines = 3, 
+  showHeader = true, 
+  className 
+}: ContentSkeletonProps) {
   return (
-    <div className="space-y-4 p-6" role="status" aria-label="Loading page content">
-      <EnhancedSkeleton variant="text" className="w-1/2" />
-      <EnhancedSkeleton variant="text" className="w-3/4" />
-      <EnhancedSkeleton variant="card" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="space-y-3">
-            <EnhancedSkeleton variant="avatar" />
-            <EnhancedSkeleton variant="text" />
-            <EnhancedSkeleton variant="button" />
-          </div>
+    <div className={cn("space-y-4 p-4", className)}>
+      {showHeader && (
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      )}
+      
+      <div className="space-y-2">
+        {Array.from({ length: lines }).map((_, i) => (
+          <Skeleton
+            key={i}
+            className={cn(
+              "h-4",
+              i === lines - 1 ? "w-1/2" : "w-full"
+            )}
+          />
         ))}
       </div>
     </div>
   );
 }
+
+function CardSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={cn("rounded-lg border p-4 space-y-3", className)}>
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-1/4" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-2/3" />
+      </div>
+    </div>
+  );
+}
+
+function TableSkeleton({ 
+  rows = 5, 
+  columns = 4, 
+  className 
+}: { 
+  rows?: number; 
+  columns?: number; 
+  className?: string; 
+}) {
+  return (
+    <div className={cn("space-y-3", className)}>
+      {/* Header */}
+      <div className="flex space-x-4">
+        {Array.from({ length: columns }).map((_, i) => (
+          <Skeleton key={i} className="h-4 flex-1" />
+        ))}
+      </div>
+      
+      {/* Rows */}
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <div key={rowIndex} className="flex space-x-4">
+          {Array.from({ length: columns }).map((_, colIndex) => (
+            <Skeleton 
+              key={colIndex} 
+              className={cn(
+                "h-4 flex-1",
+                colIndex === 0 && "w-16" // First column smaller
+              )} 
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export { Skeleton, ContentSkeleton, CardSkeleton, TableSkeleton };

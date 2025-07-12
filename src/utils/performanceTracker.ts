@@ -1,38 +1,22 @@
 
 interface PerformanceMetrics {
-  fcp: number;
-  lcp: number;
-  cls: number;
-  fid: number;
-  ttfb: number;
-  tti: number;
+  fcp?: number;
+  lcp?: number;
+  cls?: number;
+  fid?: number;
+  ttfb?: number;
+  tti?: number;
 }
 
-interface PerformanceThresholds {
-  fcp: { good: number; poor: number };
-  lcp: { good: number; poor: number };
-  cls: { good: number; poor: number };
-  fid: { good: number; poor: number };
+interface PerformanceReport {
+  metrics: PerformanceMetrics;
+  score: number;
+  recommendations: string[];
 }
 
-export class PerformanceTracker {
-  private static instance: PerformanceTracker;
-  private metrics: Partial<PerformanceMetrics> = {};
+class PerformanceTracker {
+  private metrics: PerformanceMetrics = {};
   private observers: PerformanceObserver[] = [];
-
-  private readonly thresholds: PerformanceThresholds = {
-    fcp: { good: 1800, poor: 3000 },
-    lcp: { good: 2500, poor: 4000 },
-    cls: { good: 0.1, poor: 0.25 },
-    fid: { good: 100, poor: 300 }
-  };
-
-  static getInstance(): PerformanceTracker {
-    if (!PerformanceTracker.instance) {
-      PerformanceTracker.instance = new PerformanceTracker();
-    }
-    return PerformanceTracker.instance;
-  }
 
   initialize() {
     if (typeof window === 'undefined' || !('PerformanceObserver' in window)) {
@@ -40,145 +24,114 @@ export class PerformanceTracker {
     }
 
     this.observeWebVitals();
-    this.measureNavigationTiming();
-    this.trackResourceTiming();
+    this.observeNavigationTiming();
   }
 
   private observeWebVitals() {
     // First Contentful Paint
-    this.createObserver(['paint'], (entries) => {
-      entries.forEach(entry => {
-        if (entry.name === 'first-contentful-paint') {
-          this.metrics.fcp = entry.startTime;
-          this.reportMetric('fcp', entry.startTime);
+    try {
+      const fcpObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.name === 'first-contentful-paint') {
+            this.metrics.fcp = entry.startTime;
+          }
         }
       });
-    });
+      fcpObserver.observe({ type: 'paint', buffered: true });
+      this.observers.push(fcpObserver);
+    } catch (error) {
+      console.warn('FCP observation not supported');
+    }
 
     // Largest Contentful Paint
-    this.createObserver(['largest-contentful-paint'], (entries) => {
-      const lastEntry = entries[entries.length - 1];
-      this.metrics.lcp = lastEntry.startTime;
-      this.reportMetric('lcp', lastEntry.startTime);
-    });
+    try {
+      const lcpObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const lastEntry = entries[entries.length - 1] as any;
+        this.metrics.lcp = lastEntry.startTime;
+      });
+      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+      this.observers.push(lcpObserver);
+    } catch (error) {
+      console.warn('LCP observation not supported');
+    }
 
     // Cumulative Layout Shift
-    this.createObserver(['layout-shift'], (entries) => {
-      let clsValue = 0;
-      entries.forEach(entry => {
-        const layoutShiftEntry = entry as any;
-        if (!layoutShiftEntry.hadRecentInput) {
-          clsValue += layoutShiftEntry.value;
-        }
-      });
-      this.metrics.cls = clsValue;
-      this.reportMetric('cls', clsValue);
-    });
-
-    // First Input Delay
-    this.createObserver(['first-input'], (entries) => {
-      const firstInput = entries[0] as any;
-      const fid = firstInput.processingStart - firstInput.startTime;
-      this.metrics.fid = fid;
-      this.reportMetric('fid', fid);
-    });
-  }
-
-  private createObserver(entryTypes: string[], callback: (entries: PerformanceEntry[]) => void) {
     try {
-      const observer = new PerformanceObserver((list) => {
-        callback(list.getEntries());
-      });
-      observer.observe({ entryTypes });
-      this.observers.push(observer);
-    } catch (error) {
-      console.warn('Performance observer not supported:', error);
-    }
-  }
-
-  private measureNavigationTiming() {
-    if (!performance.getEntriesByType) return;
-
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    if (navigation) {
-      this.metrics.ttfb = navigation.responseStart - navigation.requestStart;
-      this.metrics.tti = navigation.domInteractive - navigation.fetchStart;
-    }
-  }
-
-  private trackResourceTiming() {
-    this.createObserver(['resource'], (entries) => {
-      entries.forEach(entry => {
-        const resource = entry as PerformanceResourceTiming;
-        if (resource.duration > 1000) { // Track slow resources
-          console.warn(`Slow resource detected: ${resource.name} (${Math.round(resource.duration)}ms)`);
+      const clsObserver = new PerformanceObserver((list) => {
+        let cls = 0;
+        for (const entry of list.getEntries()) {
+          const layoutShiftEntry = entry as any;
+          if (!layoutShiftEntry.hadRecentInput) {
+            cls += layoutShiftEntry.value;
+          }
         }
+        this.metrics.cls = Math.max(this.metrics.cls || 0, cls);
       });
-    });
-  }
-
-  private reportMetric(name: keyof PerformanceMetrics, value: number) {
-    const threshold = this.thresholds[name as keyof PerformanceThresholds];
-    let rating: 'good' | 'needs-improvement' | 'poor' = 'good';
-    
-    if (threshold) {
-      if (value > threshold.poor) rating = 'poor';
-      else if (value > threshold.good) rating = 'needs-improvement';
-    }
-
-    // Send to analytics in production
-    if (import.meta.env.PROD && window.gtag) {
-      window.gtag('event', 'web_vitals', {
-        event_category: 'Web Vitals',
-        event_label: name,
-        value: Math.round(value),
-        custom_map: { metric_rating: rating }
-      });
-    }
-
-    // Log in development
-    if (import.meta.env.DEV) {
-      console.log(`📊 ${name.toUpperCase()}: ${Math.round(value)}ms (${rating})`);
+      clsObserver.observe({ type: 'layout-shift', buffered: true });
+      this.observers.push(clsObserver);
+    } catch (error) {
+      console.warn('CLS observation not supported');
     }
   }
 
-  getMetrics(): Partial<PerformanceMetrics> {
-    return { ...this.metrics };
+  private observeNavigationTiming() {
+    if (typeof window !== 'undefined' && window.performance?.getEntriesByType) {
+      const navEntries = window.performance.getEntriesByType('navigation');
+      if (navEntries.length > 0) {
+        const navEntry = navEntries[0] as PerformanceNavigationTiming;
+        this.metrics.ttfb = navEntry.responseStart - navEntry.requestStart;
+      }
+    }
   }
 
-  calculateScore(): number {
-    const { fcp, lcp, cls, fid } = this.metrics;
+  generateReport(): PerformanceReport {
+    const { fcp, lcp, cls, fid, ttfb } = this.metrics;
+    const recommendations: string[] = [];
     let score = 100;
 
-    if (fcp && fcp > this.thresholds.fcp.good) score -= 20;
-    if (lcp && lcp > this.thresholds.lcp.good) score -= 25;
-    if (cls && cls > this.thresholds.cls.good) score -= 15;
-    if (fid && fid > this.thresholds.fid.good) score -= 20;
-
-    return Math.max(0, score);
-  }
-
-  generateReport(): {
-    score: number;
-    metrics: Partial<PerformanceMetrics>;
-    recommendations: string[];
-  } {
-    const score = this.calculateScore();
-    const recommendations: string[] = [];
-
-    if (this.metrics.fcp && this.metrics.fcp > this.thresholds.fcp.good) {
-      recommendations.push('Optimize First Contentful Paint - consider preloading critical resources');
+    // FCP scoring (Good: <1.8s, Needs Improvement: 1.8s-3s, Poor: >3s)
+    if (fcp) {
+      if (fcp > 3000) {
+        score -= 20;
+        recommendations.push('Improve First Contentful Paint (currently >3s)');
+      } else if (fcp > 1800) {
+        score -= 10;
+        recommendations.push('Optimize First Contentful Paint (currently >1.8s)');
+      }
     }
-    if (this.metrics.lcp && this.metrics.lcp > this.thresholds.lcp.good) {
-      recommendations.push('Improve Largest Contentful Paint - optimize images and reduce render-blocking resources');
+
+    // LCP scoring (Good: <2.5s, Needs Improvement: 2.5s-4s, Poor: >4s)
+    if (lcp) {
+      if (lcp > 4000) {
+        score -= 25;
+        recommendations.push('Improve Largest Contentful Paint (currently >4s)');
+      } else if (lcp > 2500) {
+        score -= 15;
+        recommendations.push('Optimize Largest Contentful Paint (currently >2.5s)');
+      }
     }
-    if (this.metrics.cls && this.metrics.cls > this.thresholds.cls.good) {
-      recommendations.push('Reduce Cumulative Layout Shift - set explicit dimensions for dynamic content');
+
+    // CLS scoring (Good: <0.1, Needs Improvement: 0.1-0.25, Poor: >0.25)
+    if (cls !== undefined) {
+      if (cls > 0.25) {
+        score -= 20;
+        recommendations.push('Reduce Cumulative Layout Shift (currently >0.25)');
+      } else if (cls > 0.1) {
+        score -= 10;
+        recommendations.push('Minimize Cumulative Layout Shift (currently >0.1)');
+      }
+    }
+
+    // TTFB scoring (Good: <800ms, Poor: >800ms)
+    if (ttfb && ttfb > 800) {
+      score -= 15;
+      recommendations.push('Improve Time to First Byte (currently >800ms)');
     }
 
     return {
-      score,
       metrics: this.metrics,
+      score: Math.max(0, score),
       recommendations
     };
   }
@@ -189,4 +142,4 @@ export class PerformanceTracker {
   }
 }
 
-export const performanceTracker = PerformanceTracker.getInstance();
+export const performanceTracker = new PerformanceTracker();

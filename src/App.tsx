@@ -1,10 +1,13 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import { NotificationProvider } from '@/components/ui/enhanced-notification-system';
+
+// Import production manager
+import { productionManager } from '@/utils/productionManager';
 
 // Layouts
 import { PublicLayout } from '@/components/PublicLayout';
@@ -69,6 +72,16 @@ const LoadingFallback = () => (
 );
 
 function App() {
+  useEffect(() => {
+    // Initialize production optimizations
+    productionManager.initialize();
+
+    // Cleanup on unmount
+    return () => {
+      productionManager.cleanup();
+    };
+  }, []);
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
       <AuthProvider>

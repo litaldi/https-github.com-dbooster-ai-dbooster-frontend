@@ -1,7 +1,7 @@
 
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { toast } from 'sonner';
 
 interface ShortcutConfig {
   key: string;
@@ -25,59 +25,47 @@ export function useKeyboardShortcuts() {
     {
       key: 'd',
       ctrlKey: true,
-      action: () => navigate('/dashboard'),
+      action: () => navigate('/app'),
       description: 'Go to Dashboard'
     },
     {
       key: 'q',
       ctrlKey: true,
-      action: () => navigate('/query-builder'),
-      description: 'Open Query Builder'
-    },
-    {
-      key: 's',
-      ctrlKey: true,
-      action: () => navigate('/settings'),
-      description: 'Open Settings'
+      action: () => navigate('/app/queries'),
+      description: 'Go to Queries'
     },
     {
       key: '/',
       ctrlKey: true,
       action: () => {
-        enhancedToast.info({
-          title: 'Keyboard Shortcuts',
-          description: 'Ctrl+H: Home, Ctrl+D: Dashboard, Ctrl+Q: Query Builder, Ctrl+S: Settings'
+        toast.info('Keyboard Shortcuts', {
+          description: shortcuts.map(s => 
+            `${s.ctrlKey ? 'Ctrl+' : ''}${s.altKey ? 'Alt+' : ''}${s.shiftKey ? 'Shift+' : ''}${s.key.toUpperCase()}: ${s.description}`
+          ).join('\n')
         });
       },
-      description: 'Show shortcuts help'
+      description: 'Show shortcuts'
     }
   ];
 
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    // Don't trigger shortcuts when typing in inputs
-    if (event.target instanceof HTMLInputElement || 
-        event.target instanceof HTMLTextAreaElement ||
-        event.target instanceof HTMLSelectElement) {
-      return;
-    }
-
-    const shortcut = shortcuts.find(s => 
-      s.key.toLowerCase() === event.key.toLowerCase() &&
-      !!s.ctrlKey === event.ctrlKey &&
-      !!s.altKey === event.altKey &&
-      !!s.shiftKey === event.shiftKey
-    );
-
-    if (shortcut) {
-      event.preventDefault();
-      shortcut.action();
-    }
-  }, [shortcuts]);
-
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const shortcut = shortcuts.find(s => 
+        s.key.toLowerCase() === event.key.toLowerCase() &&
+        !!s.ctrlKey === event.ctrlKey &&
+        !!s.altKey === event.altKey &&
+        !!s.shiftKey === event.shiftKey
+      );
+
+      if (shortcut) {
+        event.preventDefault();
+        shortcut.action();
+      }
+    };
+
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  }, [navigate]);
 
   return { shortcuts };
 }
