@@ -1,10 +1,10 @@
 
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import { NotificationProvider } from '@/components/ui/enhanced-notification-system';
-import { Suspense } from 'react';
 
 // Layouts
 import { PublicLayout } from '@/components/PublicLayout';
@@ -54,6 +54,13 @@ import MonitoringPage from '@/pages/app/MonitoringPage';
 import SettingsPage from '@/pages/app/SettingsPage';
 import AccountPage from '@/pages/app/AccountPage';
 import DashboardPage from '@/pages/app/DashboardPage';
+
+// Lazy load the security dashboard
+const SecurityDashboardPage = React.lazy(() => 
+  import('@/components/security/SecurityDashboardPage').then(m => ({
+    default: m.SecurityDashboardPage
+  }))
+);
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -132,7 +139,7 @@ function App() {
                   <Route path="account" element={<AccountPage />} />
                   <Route path="security" element={
                     <Suspense fallback={<LoadingFallback />}>
-                      {React.lazy(() => import('@/components/security/SecurityDashboardPage').then(m => ({default: m.SecurityDashboardPage})))}
+                      <SecurityDashboardPage />
                     </Suspense>
                   } />
                 </Route>
