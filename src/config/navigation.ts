@@ -1,6 +1,14 @@
 
+// Navigation types
+export interface NavigationItem {
+  title: string;
+  href: string;
+  description?: string;
+  items?: NavigationItem[];
+}
+
 // Navigation configuration for the application
-export const megaMenuNavigation = [
+export const megaMenuNavigation: NavigationItem[] = [
   {
     title: "Product",
     href: "/features",

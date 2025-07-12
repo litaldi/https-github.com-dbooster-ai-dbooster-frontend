@@ -35,3 +35,16 @@ export {
   HoverLift,
   ScaleOnHover
 } from '../micro-interactions';
+
+// Re-export from main animations file for backward compatibility
+export {
+  FadeIn,
+  ScaleIn,
+  SlideIn,
+  Stagger,
+  StaggerItem,
+  HoverScale
+} from '../animations';
+
+// Additional exports for compatibility
+export { StaggerContainer, StaggerChild } from '../animations';
