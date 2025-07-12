@@ -25,6 +25,9 @@ export class SecurityInitializer {
       // Apply strict security headers
       enhancedSecurityHeaders.applyStrictSecurityHeaders();
 
+      // Initialize enhanced security monitoring
+      await this.initializeEnhancedMonitoring();
+
       // Initialize global security monitoring
       this.initializeGlobalSecurityMonitoring();
 
@@ -41,6 +44,17 @@ export class SecurityInitializer {
     } catch (error) {
       productionLogger.error('Failed to initialize security system', error, 'SecurityInit');
       throw new Error('Critical security initialization failure');
+    }
+  }
+
+  private async initializeEnhancedMonitoring(): Promise<void> {
+    try {
+      // Dynamically import to avoid circular dependencies
+      const { enhancedSecurityMonitor } = await import('@/services/security/enhancedSecurityMonitor');
+      await enhancedSecurityMonitor.startMonitoring();
+      productionLogger.info('Enhanced security monitoring initialized');
+    } catch (error) {
+      productionLogger.error('Failed to initialize enhanced monitoring', error, 'SecurityInit');
     }
   }
 
@@ -127,34 +141,38 @@ export class SecurityInitializer {
   }
 
   private initializeSecurityEventMonitoring(): void {
-    // Monitor for suspicious form submissions
+    // Monitor for suspicious form submissions with enhanced validation
     document.addEventListener('submit', async (event) => {
       const form = event.target as HTMLFormElement;
       const formData = new FormData(form);
       
-      // Check form inputs for threats
+      // Convert FormData to object for validation
+      const formObject: Record<string, any> = {};
       for (const [key, value] of formData.entries()) {
-        if (typeof value === 'string') {
-          const result = await enhancedThreatDetection.detectThreats(value, {
-            inputType: `form_${key}`,
-            userAgent: navigator.userAgent
-          });
+        formObject[key] = value;
+      }
+
+      // Enhanced form validation
+      try {
+        const { securityService } = await import('@/services/securityService');
+        const validation = await securityService.validateFormData(formObject, `form_${form.action || 'unknown'}`);
+        
+        if (!validation.isValid) {
+          event.preventDefault();
+          productionLogger.error('Form submission blocked due to security validation failure', {
+            formAction: form.action,
+            errors: validation.errors
+          }, 'SecurityMonitor');
           
-          if (result.shouldBlock) {
-            event.preventDefault();
-            productionLogger.error('Form submission blocked due to security threat', {
-              formAction: form.action,
-              fieldName: key
-            }, 'SecurityMonitor');
-            
-            alert('Your submission contains potentially dangerous content and has been blocked for security reasons.');
-            return;
-          }
+          alert('Your submission contains potentially dangerous content and has been blocked for security reasons.');
+          return;
         }
+      } catch (error) {
+        productionLogger.error('Form security validation failed', error, 'SecurityMonitor');
       }
     });
 
-    // Monitor for suspicious link clicks
+    // Monitor for suspicious link clicks with enhanced validation
     document.addEventListener('click', async (event) => {
       const target = event.target as HTMLElement;
       const link = target.closest('a') as HTMLAnchorElement;
@@ -169,6 +187,34 @@ export class SecurityInitializer {
           }, 'SecurityMonitor');
           
           alert(`This link has been blocked for security reasons: ${urlValidation.reason}`);
+        }
+      }
+    });
+
+    // Enhanced input monitoring
+    document.addEventListener('input', async (event) => {
+      const target = event.target as HTMLInputElement;
+      
+      // Only monitor sensitive inputs
+      if (target.type === 'password' || target.name?.includes('token') || target.name?.includes('key')) {
+        return; // Don't log sensitive data
+      }
+
+      // Monitor for potential injection attempts in regular inputs
+      if (target.value.length > 100) { // Only check longer inputs
+        try {
+          const { securityService } = await import('@/services/securityService');
+          const validation = await securityService.validateUserInput(target.value, `input_${target.name || 'unknown'}`);
+          
+          if (!validation.valid && validation.threatTypes?.length) {
+            productionLogger.warn('Potentially malicious input detected', {
+              inputName: target.name,
+              threatTypes: validation.threatTypes,
+              riskLevel: validation.riskLevel
+            }, 'SecurityMonitor');
+          }
+        } catch (error) {
+          // Silently handle validation errors to avoid disrupting user experience
         }
       }
     });
