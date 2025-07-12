@@ -41,7 +41,7 @@ const itemVariants = {
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.4, ease: "easeOut" }
   }
 };
 
@@ -150,7 +150,7 @@ export const OptimizedDashboardLayout = memo(() => {
                   className="text-display-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
+                  transition={{ delay: 0.2, ease: "easeOut" }}
                 >
                   Dashboard Overview
                 </motion.h1>
@@ -163,7 +163,7 @@ export const OptimizedDashboardLayout = memo(() => {
                 className="text-body-lg text-slate-600 max-w-2xl leading-relaxed"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.3, ease: "easeOut" }}
               >
                 Welcome back, <span className="font-semibold text-slate-900">
                   {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Demo User'}
@@ -176,7 +176,7 @@ export const OptimizedDashboardLayout = memo(() => {
               className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.4, ease: "easeOut" }}
             >
               <Button variant="outline" size="lg" className="btn-modern group" asChild>
                 <Link to="/app/reports">
@@ -258,7 +258,7 @@ export const OptimizedDashboardLayout = memo(() => {
                         key={action.title}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 + index * 0.1 }}
+                        transition={{ delay: 0.5 + index * 0.1, ease: "easeOut" }}
                       >
                         <Button 
                           variant="outline" 
@@ -306,7 +306,7 @@ export const OptimizedDashboardLayout = memo(() => {
                         key={stat.label}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.7 + index * 0.1 }}
+                        transition={{ delay: 0.7 + index * 0.1, ease: "easeOut" }}
                         className="p-4 rounded-xl bg-white/60 backdrop-blur-sm shadow-sm border border-emerald-200/50"
                       >
                         <div className="flex items-center justify-between">
