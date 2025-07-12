@@ -1,13 +1,21 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { EnhancedCTASection } from '@/components/home/EnhancedCTASection';
 import { FeaturesSection } from '@/components/home/FeaturesSection';
 import { InteractiveDemoSection } from '@/components/home/InteractiveDemoSection';
 import { SocialProofSection } from '@/components/home/SocialProofSection';
 import { TestimonialsSection } from '@/components/marketing/TestimonialsSection';
+import { features } from '@/data/homePageData';
 import { motion } from 'framer-motion';
 
 export default function Home() {
+  const navigate = useNavigate();
+
+  const handleViewAllFeatures = () => {
+    navigate('/features');
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section with Enhanced CTA */}
@@ -20,7 +28,10 @@ export default function Home() {
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
-        <FeaturesSection />
+        <FeaturesSection 
+          features={features}
+          onViewAllFeatures={handleViewAllFeatures}
+        />
       </motion.div>
       
       {/* Interactive Demo */}
