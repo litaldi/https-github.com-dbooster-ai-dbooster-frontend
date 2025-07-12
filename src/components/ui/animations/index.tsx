@@ -36,7 +36,7 @@ export {
   ScaleOnHover
 } from '../micro-interactions';
 
-// Page transitions
+// Page transitions - export from page-transition file
 export {
   PageTransition,
   AnimatedRouteWrapper

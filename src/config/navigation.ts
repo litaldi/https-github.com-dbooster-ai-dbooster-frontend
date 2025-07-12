@@ -73,3 +73,58 @@ export const mainNavigation: NavigationItem[] = [
   { title: "Resources", href: "/resources", label: "Resources" },
   { title: "About", href: "/about", label: "About" }
 ];
+
+// Footer navigation structure
+export const footerNavigation = {
+  product: [
+    { href: "/features", label: "Features" },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/enterprise", label: "Enterprise" },
+    { href: "/integrations", label: "Integrations" }
+  ],
+  solutions: [
+    { href: "/solutions/monitoring", label: "Performance Monitoring" },
+    { href: "/solutions/optimization", label: "Query Optimization" },
+    { href: "/solutions/cost-reduction", label: "Cost Reduction" },
+    { href: "/solutions/security", label: "Security & Compliance" }
+  ],
+  resources: [
+    { href: "/docs", label: "Documentation" },
+    { href: "/blog", label: "Blog" },
+    { href: "/case-studies", label: "Case Studies" },
+    { href: "/support", label: "Support" },
+    { href: "/community", label: "Community" }
+  ],
+  company: [
+    { href: "/about", label: "About Us" },
+    { href: "/careers", label: "Careers" },
+    { href: "/contact", label: "Contact" },
+    { href: "/press", label: "Press" }
+  ],
+  legal: [
+    { href: "/privacy", label: "Privacy Policy" },
+    { href: "/terms", label: "Terms of Service" },
+    { href: "/cookies", label: "Cookie Policy" }
+  ]
+};
+
+// Social proof indicators
+export const socialProofIndicators = {
+  customerCount: "10,000+",
+  queryOptimizations: "2.5M+",
+  averageImprovement: "73%",
+  costSavings: "60%",
+  certifications: ["SOC 2", "ISO 27001", "GDPR"]
+};
+
+// Contact information
+export const contactInfo = {
+  email: "hello@dbooster.ai",
+  phone: "+1 (555) 123-4567",
+  address: "123 Innovation Drive, San Francisco, CA 94105",
+  social: {
+    twitter: "https://twitter.com/dbooster",
+    linkedin: "https://linkedin.com/company/dbooster",
+    github: "https://github.com/dbooster"
+  }
+};
