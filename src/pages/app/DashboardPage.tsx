@@ -77,8 +77,8 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-8 animate-fade-in-up">
+      {/* Enhanced Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,15 +87,15 @@ export default function DashboardPage() {
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="heading-2">
                 Dashboard Overview
               </h1>
-              <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 border-emerald-200">
+              <Badge className="badge-success-enhanced">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Online
               </Badge>
             </div>
-            <p className="text-lg text-muted-foreground">
+            <p className="body-large">
               Welcome back, <span className="font-semibold text-foreground">
                 {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Demo User'}
               </span>. 
@@ -104,13 +104,13 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <Button variant="outline" size="lg" asChild>
+            <Button variant="outline" size="lg" asChild className="btn-secondary-enhanced">
               <Link to="/app/reports">
                 <BarChart3 className="h-4 w-4 mr-2" />
                 View Reports
               </Link>
             </Button>
-            <Button size="lg" className="bg-gradient-to-r from-primary to-blue-600" asChild>
+            <Button size="lg" className="btn-cta-enhanced" asChild>
               <Link to="/app/ai-studio">
                 <Brain className="h-4 w-4 mr-2" />
                 AI Studio
@@ -120,7 +120,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Performance Metrics */}
+      {/* Enhanced Performance Metrics */}
       <section>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {metricsData.map((metric, index) => (
@@ -129,6 +129,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
+              className="interactive-card"
             >
               <MetricCard {...metric} />
             </motion.div>
@@ -136,49 +137,52 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Quick Actions */}
+      {/* Enhanced Quick Actions */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card>
+        <Card className="card-enhanced">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 heading-4">
               <Activity className="h-5 w-5 text-primary" />
               Quick Actions
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="body-base">
               Essential tools for database optimization
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              <Button variant="outline" className="justify-start h-auto p-4" asChild>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Button variant="outline" className="justify-start h-auto p-6 card-interactive-enhanced" asChild>
                 <Link to="/app/queries">
-                  <Database className="h-4 w-4 mr-3" />
+                  <Database className="h-5 w-5 mr-4 text-blue-500" />
                   <div className="text-left">
-                    <div className="font-medium">Query Manager</div>
-                    <div className="text-xs text-muted-foreground">Optimize SQL queries</div>
+                    <div className="font-medium heading-4">Query Manager</div>
+                    <div className="text-sm text-muted-foreground body-small">Optimize SQL queries</div>
                   </div>
+                  <ArrowUpRight className="h-4 w-4 ml-auto text-muted-foreground" />
                 </Link>
               </Button>
-              <Button variant="outline" className="justify-start h-auto p-4" asChild>
+              <Button variant="outline" className="justify-start h-auto p-6 card-interactive-enhanced" asChild>
                 <Link to="/app/repositories">
-                  <Shield className="h-4 w-4 mr-3" />
+                  <Shield className="h-5 w-5 mr-4 text-green-500" />
                   <div className="text-left">
-                    <div className="font-medium">Repositories</div>
-                    <div className="text-xs text-muted-foreground">Manage connections</div>
+                    <div className="font-medium heading-4">Repositories</div>
+                    <div className="text-sm text-muted-foreground body-small">Manage connections</div>
                   </div>
+                  <ArrowUpRight className="h-4 w-4 ml-auto text-muted-foreground" />
                 </Link>
               </Button>
-              <Button variant="outline" className="justify-start h-auto p-4" asChild>
+              <Button variant="outline" className="justify-start h-auto p-6 card-interactive-enhanced" asChild>
                 <Link to="/app/monitoring">
-                  <TrendingUp className="h-4 w-4 mr-3" />
+                  <TrendingUp className="h-5 w-5 mr-4 text-purple-500" />
                   <div className="text-left">
-                    <div className="font-medium">Monitoring</div>
-                    <div className="text-xs text-muted-foreground">Real-time metrics</div>
+                    <div className="font-medium heading-4">Monitoring</div>
+                    <div className="text-sm text-muted-foreground body-small">Real-time metrics</div>
                   </div>
+                  <ArrowUpRight className="h-4 w-4 ml-auto text-muted-foreground" />
                 </Link>
               </Button>
             </div>
@@ -186,39 +190,41 @@ export default function DashboardPage() {
         </Card>
       </motion.div>
 
-      {/* System Status */}
+      {/* Enhanced System Status */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50">
+        <Card className="border-success/20 card-glass" style={{
+          background: 'linear-gradient(135deg, hsl(var(--success) / 0.05) 0%, hsl(var(--success) / 0.1) 100%)'
+        }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-emerald-800">
-              <Shield className="h-5 w-5 text-emerald-600" />
+            <CardTitle className="flex items-center gap-2 heading-4 text-success">
+              <Shield className="h-5 w-5 text-success" />
               System Status
             </CardTitle>
-            <CardDescription className="text-emerald-700">
+            <CardDescription className="text-success/80 body-base">
               All systems operational and secure
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/60">
-                <span className="text-sm font-medium text-emerald-700">Security Score</span>
-                <Badge className="bg-emerald-600">
+              <div className="flex items-center justify-between p-4 rounded-xl card-glass">
+                <span className="text-sm font-medium text-success">Security Score</span>
+                <Badge className="badge-success-enhanced">
                   {data.securityScore}%
                 </Badge>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/60">
-                <span className="text-sm font-medium text-emerald-700">Uptime</span>
-                <Badge className="bg-emerald-600">
+              <div className="flex items-center justify-between p-4 rounded-xl card-glass">
+                <span className="text-sm font-medium text-success">Uptime</span>
+                <Badge className="badge-success-enhanced">
                   {data.uptime}%
                 </Badge>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/60">
-                <span className="text-sm font-medium text-emerald-700">Connections</span>
-                <Badge className="bg-emerald-600">
+              <div className="flex items-center justify-between p-4 rounded-xl card-glass">
+                <span className="text-sm font-medium text-success">Connections</span>
+                <Badge className="badge-success-enhanced">
                   {data.activeConnections}
                 </Badge>
               </div>
