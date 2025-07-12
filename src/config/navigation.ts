@@ -1,12 +1,12 @@
 
 import { LucideIcon } from 'lucide-react';
 
-// Navigation types
+// Navigation types - Updated to be more flexible
 export interface NavigationItem {
-  title: string;
+  title?: string;
+  label?: string;
   href: string;
   description?: string;
-  label?: string;
   icon?: LucideIcon;
   badge?: string;
   children?: NavigationItem[];

@@ -50,11 +50,12 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
       dir="ltr"
     >
       {items.map((item) => {
+        const displayLabel = item.label || item.title || '';
         const hasChildren = item.children && item.children.length > 0;
-        const isActive = activeMenu === item.label;
+        const isActive = activeMenu === displayLabel;
         
         return (
-          <div key={item.label} className="relative">
+          <div key={displayLabel} className="relative">
             {hasChildren ? (
               <Button
                 variant="ghost"
@@ -64,12 +65,12 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive && "bg-accent/30 text-accent-foreground"
                 )}
-                onClick={() => setActiveMenu(isActive ? null : item.label)}
-                onMouseEnter={() => setActiveMenu(item.label)}
+                onClick={() => setActiveMenu(isActive ? null : displayLabel)}
+                onMouseEnter={() => setActiveMenu(displayLabel)}
                 aria-expanded={isActive}
                 aria-haspopup="true"
               >
-                <span>{item.label}</span>
+                <span>{displayLabel}</span>
                 <ChevronDown className={cn(
                   "h-3 w-3 transition-transform duration-200",
                   isActive && "rotate-180"
@@ -87,7 +88,7 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                 )}
               >
                 <Link to={item.href}>
-                  <span>{item.label}</span>
+                  <span>{displayLabel}</span>
                   {item.badge && (
                     <Badge variant="secondary" className="text-xs">
                       {item.badge}
@@ -108,42 +109,45 @@ export function EnhancedMegaMenu({ items, className }: MegaMenuProps) {
                 dir="ltr"
               >
                 <div className="mb-4">
-                  <h3 className="font-semibold text-lg mb-2">{item.label}</h3>
+                  <h3 className="font-semibold text-lg mb-2">{displayLabel}</h3>
                   {item.description && (
                     <p className="text-sm text-muted-foreground">{item.description}</p>
                   )}
                 </div>
 
                 <div className="space-y-1">
-                  {item.children!.map((child) => (
-                    <Link
-                      key={child.href}
-                      to={child.href}
-                      className={cn(
-                        "flex items-start gap-3 p-3 rounded-md transition-colors duration-200",
-                        "hover:bg-accent/50 group",
-                        isActiveRoute(child.href) && "bg-accent/30"
-                      )}
-                      onClick={() => setActiveMenu(null)}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm">{child.label}</span>
-                          {child.badge && (
-                            <Badge variant="secondary" className="text-xs">
-                              {child.badge}
-                            </Badge>
-                          )}
-                          <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
-                        </div>
-                        {child.description && (
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            {child.description}
-                          </p>
+                  {item.children!.map((child) => {
+                    const childLabel = child.label || child.title || '';
+                    return (
+                      <Link
+                        key={child.href}
+                        to={child.href}
+                        className={cn(
+                          "flex items-start gap-3 p-3 rounded-md transition-colors duration-200",
+                          "hover:bg-accent/50 group",
+                          isActiveRoute(child.href) && "bg-accent/30"
                         )}
-                      </div>
-                    </Link>
-                  ))}
+                        onClick={() => setActiveMenu(null)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-sm">{childLabel}</span>
+                            {child.badge && (
+                              <Badge variant="secondary" className="text-xs">
+                                {child.badge}
+                              </Badge>
+                            )}
+                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                          </div>
+                          {child.description && (
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              {child.description}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}
