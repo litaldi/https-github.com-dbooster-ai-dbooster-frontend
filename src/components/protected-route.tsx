@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (user && session) {
-      validateSession();
+      validateSession().catch(console.error);
     }
   }, [user, session, validateSession]);
 

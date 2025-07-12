@@ -1,5 +1,6 @@
 
-import { toast } from "sonner";
+import { toast as sonnerToast } from 'sonner';
+import { CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 interface ToastOptions {
   title: string;
@@ -7,51 +8,52 @@ interface ToastOptions {
   duration?: number;
 }
 
-export const enhancedToast = {
+const enhancedToast = {
   success: ({ title, description, duration = 4000 }: ToastOptions) => {
-    toast.success(title, {
+    return sonnerToast.success(title, {
       description,
       duration,
+      icon: <CheckCircle className="h-4 w-4" />,
+      className: 'bg-emerald-50 border-emerald-200 text-emerald-900',
     });
   },
 
-  error: ({ title, description, duration = 6000 }: ToastOptions) => {
-    toast.error(title, {
+  error: ({ title, description, duration = 5000 }: ToastOptions) => {
+    return sonnerToast.error(title, {
       description,
       duration,
+      icon: <AlertCircle className="h-4 w-4" />,
+      className: 'bg-red-50 border-red-200 text-red-900',
     });
   },
 
-  warning: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast.warning(title, {
+  warning: ({ title, description, duration = 4000 }: ToastOptions) => {
+    return sonnerToast.warning(title, {
       description,
       duration,
+      icon: <AlertTriangle className="h-4 w-4" />,
+      className: 'bg-yellow-50 border-yellow-200 text-yellow-900',
     });
   },
 
   info: ({ title, description, duration = 4000 }: ToastOptions) => {
-    toast.info(title, {
+    return sonnerToast.info(title, {
       description,
       duration,
+      icon: <Info className="h-4 w-4" />,
+      className: 'bg-blue-50 border-blue-200 text-blue-900',
     });
   },
 
-  promise: async <T,>(
-    promise: Promise<T>,
-    {
-      loading,
-      success,
-      error,
-    }: {
-      loading: string;
-      success: string | ((data: T) => string);
-      error: string | ((error: any) => string);
-    }
-  ) => {
-    return toast.promise(promise, {
-      loading,
-      success,
-      error,
+  loading: ({ title, description }: Omit<ToastOptions, 'duration'>) => {
+    return sonnerToast.loading(title, {
+      description,
     });
   },
+
+  dismiss: (toastId?: string | number) => {
+    return sonnerToast.dismiss(toastId);
+  }
 };
+
+export { enhancedToast };

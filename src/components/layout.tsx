@@ -10,6 +10,7 @@ import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import { ScrollToTop } from '@/components/ui/scroll-to-top';
 import { KeyboardShortcuts } from '@/components/ui/keyboard-shortcuts';
 import { NotificationProvider } from '@/components/notifications/SmartNotifications';
+import { Suspense } from 'react';
 
 export default function Layout() {
   return (
@@ -25,7 +26,13 @@ export default function Layout() {
                 <div className="max-w-7xl mx-auto w-full">
                   <BreadcrumbNav />
                   <EnhancedErrorBoundary>
-                    <Outlet />
+                    <Suspense fallback={
+                      <div className="flex items-center justify-center min-h-[400px]">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      </div>
+                    }>
+                      <Outlet />
+                    </Suspense>
                   </EnhancedErrorBoundary>
                 </div>
               </main>

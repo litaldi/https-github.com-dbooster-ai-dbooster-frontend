@@ -1,5 +1,5 @@
 
-import React, { memo } from 'react';
+import React, { memo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,8 +24,9 @@ import {
   Lock
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { OptimizedMetricCard } from './OptimizedMetricCard';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -49,6 +50,20 @@ const itemVariants = {
 
 export const OptimizedDashboardLayout = memo(() => {
   const { user, isDemo } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const handleNavigation = useCallback((path: string) => {
+    try {
+      navigate(path);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      enhancedToast.error({
+        title: 'Navigation Error',
+        description: 'Unable to navigate to the requested page.'
+      });
+    }
+  }, [navigate]);
 
   const data = {
     totalQueries: 15234,
@@ -139,6 +154,10 @@ export const OptimizedDashboardLayout = memo(() => {
     }
   ];
 
+  const handleQuickAction = useCallback((href: string) => {
+    handleNavigation(href);
+  }, [handleNavigation]);
+
   return (
     <motion.div 
       variants={containerVariants}
@@ -203,18 +222,23 @@ export const OptimizedDashboardLayout = memo(() => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Button variant="outline" size="lg" className="btn-modern group interactive-scale bg-slate-800/50 border-slate-700 hover:bg-slate-700/50 hover:border-slate-600" asChild>
-                <Link to="/app/reports">
-                  <BarChart3 className="h-4 w-4 mr-2 transition-transform group-hover:scale-110" />
-                  View Reports
-                  <ArrowUpRight className="h-3 w-3 ml-2 opacity-50 group-hover:opacity-100 transition-opacity" />
-                </Link>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="btn-modern group interactive-scale bg-slate-800/50 border-slate-700 hover:bg-slate-700/50 hover:border-slate-600" 
+                onClick={() => handleNavigation('/app/reports')}
+              >
+                <BarChart3 className="h-4 w-4 mr-2 transition-transform group-hover:scale-110" />
+                View Reports
+                <ArrowUpRight className="h-3 w-3 ml-2 opacity-50 group-hover:opacity-100 transition-opacity" />
               </Button>
-              <Button size="lg" className="btn-modern bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 elevation-2 interactive-scale glow-primary" asChild>
-                <Link to="/app/ai-studio">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  AI Studio
-                </Link>
+              <Button 
+                size="lg" 
+                className="btn-modern bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 elevation-2 interactive-scale glow-primary" 
+                onClick={() => handleNavigation('/app/ai-studio')}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Studio
               </Button>
             </motion.div>
           </div>
@@ -237,7 +261,7 @@ export const OptimizedDashboardLayout = memo(() => {
 
         {/* Enhanced Tabs Section */}
         <motion.div variants={itemVariants}>
-          <Tabs defaultValue="overview" className="space-y-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-3 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 elevation-2 p-2 rounded-2xl">
               <TabsTrigger 
                 value="overview" 
@@ -288,18 +312,16 @@ export const OptimizedDashboardLayout = memo(() => {
                         <Button 
                           variant="outline" 
                           className={`w-full h-auto p-6 flex flex-col items-start gap-4 interactive-scale hover:elevation-3 transition-all duration-300 group card-modern bg-slate-800/30 border-slate-700/50 hover:bg-slate-700/50 hover:border-slate-600/50 ${action.glow}`}
-                          asChild
+                          onClick={() => handleQuickAction(action.href)}
                         >
-                          <Link to={action.href}>
-                            <div className={`p-4 rounded-xl bg-gradient-to-br ${action.color} elevation-2 group-hover:elevation-3 transition-all duration-300 group-hover:scale-110`}>
-                              <action.icon className="h-5 w-5 text-white" />
-                            </div>
-                            <div className="text-left space-y-2">
-                              <div className="font-semibold text-sm text-white group-hover:text-white transition-colors">{action.title}</div>
-                              <div className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">{action.description}</div>
-                            </div>
-                            <ArrowUpRight className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-all text-slate-400 group-hover:scale-110" />
-                          </Link>
+                          <div className={`p-4 rounded-xl bg-gradient-to-br ${action.color} elevation-2 group-hover:elevation-3 transition-all duration-300 group-hover:scale-110`}>
+                            <action.icon className="h-5 w-5 text-white" />
+                          </div>
+                          <div className="text-left space-y-2">
+                            <div className="font-semibold text-sm text-white group-hover:text-white transition-colors">{action.title}</div>
+                            <div className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">{action.description}</div>
+                          </div>
+                          <ArrowUpRight className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-all text-slate-400 group-hover:scale-110" />
                         </Button>
                       </motion.div>
                     ))}
@@ -325,7 +347,7 @@ export const OptimizedDashboardLayout = memo(() => {
                     {[
                       { label: "Security Score", value: `${data.securityScore}%`, color: "emerald" },
                       { label: "Uptime", value: `${data.uptime}%`, color: "emerald" },
-                      { label: "Active Connections", value: data.activeConnections, color: "emerald" }
+                      { label: "Active Connections", value: data.activeConnections.toString(), color: "emerald" }
                     ].map((stat, index) => (
                       <motion.div
                         key={stat.label}
@@ -357,6 +379,13 @@ export const OptimizedDashboardLayout = memo(() => {
                   <div className="text-center py-16 text-slate-500">
                     <TrendingUp className="h-16 w-16 mx-auto mb-6 opacity-40" />
                     <p className="text-body-base">Performance analytics coming soon...</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4 bg-slate-800/50 border-slate-700 hover:bg-slate-700/50"
+                      onClick={() => handleNavigation('/app/monitoring')}
+                    >
+                      Go to Monitoring
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -372,6 +401,13 @@ export const OptimizedDashboardLayout = memo(() => {
                   <div className="text-center py-16 text-slate-500">
                     <Settings className="h-16 w-16 mx-auto mb-6 opacity-40" />
                     <p className="text-body-base">Settings panel coming soon...</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4 bg-slate-800/50 border-slate-700 hover:bg-slate-700/50"
+                      onClick={() => handleNavigation('/app/settings')}
+                    >
+                      Go to Settings
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
