@@ -1,5 +1,5 @@
 
-import { productionConsoleManager } from './productionConsoleCleanup';
+import { productionConsole } from './productionConsoleCleanup';
 import { performanceTracker } from './performanceTracker';
 import { logger } from './logger';
 
@@ -39,7 +39,7 @@ class ProductionManager {
       logger.info('Initializing production environment', {}, 'ProductionManager');
 
       // Initialize console optimization
-      productionConsoleManager.initializeConsoleOptimization();
+      productionConsole.initializeConsoleCleanup();
 
       // Initialize performance tracking
       performanceTracker.initialize();
@@ -147,7 +147,7 @@ class ProductionManager {
 
   cleanup(): void {
     if (this.isProduction) {
-      productionConsoleManager.restoreConsole();
+      productionConsole.restoreConsole();
       performanceTracker.cleanup();
     }
   }
