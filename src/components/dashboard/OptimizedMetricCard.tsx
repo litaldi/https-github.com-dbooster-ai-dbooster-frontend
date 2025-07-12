@@ -91,9 +91,9 @@ export const OptimizedMetricCard = memo(({
       className="will-change-transform"
     >
       <Card className={`
-        relative overflow-hidden border-0 shadow-sm
+        relative overflow-hidden border-0 shadow-soft
         bg-gradient-to-br ${colors.bg} ${colors.border}
-        hover:shadow-md transition-shadow duration-200
+        hover:shadow-medium transition-shadow duration-200
         enhanced-focus
         ${priority === 'primary' ? 'ring-1 ring-primary/20' : ''}
       `}>
