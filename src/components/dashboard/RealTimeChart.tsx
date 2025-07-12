@@ -58,7 +58,7 @@ export function RealTimeChart() {
   const previousData = data[data.length - 2];
 
   const getPercentageChange = (current: number, previous: number) => {
-    if (!previous) return 0;
+    if (!previous) return "0";
     return ((current - previous) / previous * 100).toFixed(1);
   };
 
@@ -193,7 +193,7 @@ export function RealTimeChart() {
                   ) : (
                     <TrendingDown className="h-3 w-3 mr-1" />
                   )}
-                  {Math.abs(parseFloat(getPercentageChange(latestData?.queries || 0, previousData.queries)))}%
+                  {Math.abs(parseFloat(getPercentageChange(latestData?.queries || 0, previousData.queries))).toString()}%
                 </Badge>
               )}
             </div>
