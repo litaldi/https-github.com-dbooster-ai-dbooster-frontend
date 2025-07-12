@@ -36,15 +36,11 @@ export {
   ScaleOnHover
 } from '../micro-interactions';
 
-// Re-export from main animations file for backward compatibility
+// Page transitions
 export {
-  FadeIn,
-  ScaleIn,
-  SlideIn,
-  Stagger,
-  StaggerItem,
-  HoverScale
-} from '../animations';
+  PageTransition,
+  AnimatedRouteWrapper
+} from '../page-transition';
 
-// Additional exports for compatibility
-export { StaggerContainer, StaggerChild } from '../animations';
+// Backward compatibility aliases
+export { StaggerContainer as Stagger } from './stagger-animations';

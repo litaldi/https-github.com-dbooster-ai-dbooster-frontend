@@ -1,9 +1,15 @@
 
+import { LucideIcon } from 'lucide-react';
+
 // Navigation types
 export interface NavigationItem {
   title: string;
   href: string;
   description?: string;
+  label?: string;
+  icon?: LucideIcon;
+  badge?: string;
+  children?: NavigationItem[];
   items?: NavigationItem[];
 }
 
@@ -12,97 +18,58 @@ export const megaMenuNavigation: NavigationItem[] = [
   {
     title: "Product",
     href: "/features",
+    description: "Discover our powerful database optimization tools",
     items: [
-      { title: "Features", href: "/features", description: "Discover powerful optimization features" },
-      { title: "How It Works", href: "/how-it-works", description: "Learn about our AI-powered approach" },
-      { title: "AI Studio", href: "/ai-studio", description: "Advanced AI tools for optimization" },
-      { title: "Demo", href: "/demo", description: "See DBooster in action" },
+      { title: "Features", href: "/features", description: "Core functionality and capabilities" },
+      { title: "Pricing", href: "/pricing", description: "Plans for every team size" },
+      { title: "Enterprise", href: "/enterprise", description: "Advanced solutions for large organizations" }
     ]
   },
   {
     title: "Solutions",
-    href: "/for-developers",
+    href: "/solutions", 
+    description: "Database optimization for every use case",
     items: [
-      { title: "For Developers", href: "/for-developers", description: "Tools built for developers" },
-      { title: "For Teams", href: "/for-teams", description: "Collaboration features for teams" },
-      { title: "For Enterprises", href: "/for-enterprises", description: "Enterprise-grade solutions" },
-      { title: "Use Cases", href: "/use-cases", description: "Real-world optimization scenarios" },
+      { title: "Performance Monitoring", href: "/solutions/monitoring", description: "Real-time database performance insights" },
+      { title: "Query Optimization", href: "/solutions/optimization", description: "AI-powered query performance tuning" },
+      { title: "Cost Reduction", href: "/solutions/cost-reduction", description: "Reduce infrastructure costs by up to 60%" }
     ]
   },
   {
     title: "Resources",
-    href: "/learn",
+    href: "/resources",
+    description: "Learn and get support",
     items: [
-      { title: "Learn", href: "/learn", description: "Guides and tutorials" },
-      { title: "Blog", href: "/blog", description: "Latest insights and updates" },
-      { title: "FAQ", href: "/faq", description: "Frequently asked questions" },
-      { title: "Support", href: "/support", description: "Get help when you need it" },
+      { title: "Documentation", href: "/docs", description: "Complete guides and API reference" },
+      { title: "Blog", href: "/blog", description: "Latest insights and best practices" },
+      { title: "Case Studies", href: "/case-studies", description: "Success stories from our customers" },
+      { title: "Support", href: "/support", description: "Get help when you need it" }
     ]
   },
   {
-    title: "Pricing",
-    href: "/pricing"
-  },
+    title: "Company",
+    href: "/about",
+    description: "About DBooster",
+    items: [
+      { title: "About Us", href: "/about", description: "Our mission and team" },
+      { title: "Careers", href: "/careers", description: "Join our growing team" },
+      { title: "Contact", href: "/contact", description: "Get in touch with us" }
+    ]
+  }
 ];
 
-export const footerNavigation = {
-  product: [
-    { label: "Features", href: "/features" },
-    { label: "How It Works", href: "/how-it-works" },
-    { label: "AI Studio", href: "/ai-studio" },
-    { label: "Demo", href: "/demo" },
-    { label: "Pricing", href: "/pricing" },
-  ],
-  solutions: [
-    { label: "For Developers", href: "/for-developers" },
-    { label: "For Teams", href: "/for-teams" },
-    { label: "For Enterprises", href: "/for-enterprises" },
-    { label: "Use Cases", href: "/use-cases" },
-  ],
-  resources: [
-    { label: "Learn", href: "/learn" },
-    { label: "Blog", href: "/blog" },
-    { label: "FAQ", href: "/faq" },
-    { label: "Support", href: "/support" },
-    { label: "Status", href: "/status" },
-    { label: "Changelog", href: "/changelog" },
-  ],
-  company: [
-    { label: "About", href: "/about" },
-    { label: "Contact", href: "/contact" },
-    { label: "Partners", href: "/partners" },
-    { label: "Press", href: "/press" },
-    { label: "Careers", href: "/careers" },
-  ],
-  support: [
-    { label: "Help Center", href: "/support" },
-    { label: "Documentation", href: "/learn" },
-    { label: "Community", href: "/support" },
-    { label: "Contact Support", href: "/contact" },
-  ],
-  legal: [
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-    { label: "Cookie Policy", href: "/cookies" },
-    { label: "Security", href: "/security" },
-  ],
-};
+// User menu navigation
+export const userMenuNavigation: NavigationItem[] = [
+  { title: "Dashboard", href: "/app", label: "Dashboard" },
+  { title: "Settings", href: "/settings", label: "Settings" },
+  { title: "Support", href: "/support", label: "Support" },
+  { title: "Sign Out", href: "/logout", label: "Sign Out" }
+];
 
-export const socialProofIndicators = {
-  customerCount: "10,000+",
-  queryOptimizations: "2.5M+",
-  averageImprovement: "73%",
-  costSavings: "60%",
-  certifications: ["SOC 2", "GDPR", "ISO 27001"],
-};
-
-export const contactInfo = {
-  email: "support@dbooster.ai",
-  phone: "+1 (555) 123-4567",
-  address: "123 Innovation Drive, San Francisco, CA 94105",
-  social: {
-    linkedin: "https://linkedin.com/company/dbooster",
-    twitter: "https://twitter.com/dbooster",
-    github: "https://github.com/dbooster",
-  },
-};
+// Main navigation items
+export const mainNavigation: NavigationItem[] = [
+  { title: "Features", href: "/features", label: "Features" },
+  { title: "Pricing", href: "/pricing", label: "Pricing" },
+  { title: "Resources", href: "/resources", label: "Resources" },
+  { title: "About", href: "/about", label: "About" }
+];
