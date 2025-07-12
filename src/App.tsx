@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -51,6 +50,7 @@ import ReportsPage from '@/pages/app/ReportsPage';
 import MonitoringPage from '@/pages/app/MonitoringPage';
 import SettingsPage from '@/pages/app/SettingsPage';
 import AccountPage from '@/pages/app/AccountPage';
+import DashboardPage from '@/pages/app/DashboardPage';
 
 function App() {
   return (
@@ -107,6 +107,7 @@ function App() {
               {/* Dashboard Routes */}
               <Route path="/app" element={<Layout />}>
                 <Route index element={<Dashboard />} />
+                <Route path="dashboard-alt" element={<DashboardPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="queries" element={<QueriesPage />} />
                 <Route path="repositories" element={<RepositoriesPage />} />
