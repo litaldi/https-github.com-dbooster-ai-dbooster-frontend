@@ -1,3 +1,4 @@
+
 import { auditLogger } from './auditLogger';
 import { rateLimitService } from './security/rateLimitService';
 import { threatDetectionService } from './threatDetectionService';
@@ -7,7 +8,7 @@ import { enhancedThreatDetection } from './security/threatDetectionEnhanced';
 import { rbac } from './security/roleBasedAccessControl';
 import { apiSecurity } from './security/apiSecurityEnhancement';
 import { securityDashboard } from './security/securityDashboardService';
-import { logger } from '@/utils/logger';
+import { productionLogger } from '@/utils/productionLogger';
 import type { ValidationResult } from '@/types';
 
 // Re-export essential security services

@@ -2,6 +2,24 @@
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 
+// Define types for better type safety
+interface SecurityEvent {
+  id: string;
+  event_type: string;
+  event_data: {
+    threatTypes?: string[];
+    validationType?: string;
+    input?: string;
+    context?: string;
+    activityType?: string;
+    details?: any;
+  } | null;
+  user_id: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
+}
+
 export class EnhancedSecurityMonitor {
   private static instance: EnhancedSecurityMonitor;
   private securityEventListeners: Map<string, Function[]> = new Map();
@@ -42,13 +60,13 @@ export class EnhancedSecurityMonitor {
           table: 'security_audit_log'
         },
         (payload) => {
-          this.handleSecurityEvent(payload.new);
+          this.handleSecurityEvent(payload.new as SecurityEvent);
         }
       )
       .subscribe();
   }
 
-  private async handleSecurityEvent(event: any): Promise<void> {
+  private async handleSecurityEvent(event: SecurityEvent): Promise<void> {
     const { event_type, event_data, user_id, ip_address } = event;
 
     // Check for high-risk events
@@ -68,7 +86,7 @@ export class EnhancedSecurityMonitor {
     listeners.forEach(listener => listener(event));
   }
 
-  private async triggerSecurityAlert(event: any): Promise<void> {
+  private async triggerSecurityAlert(event: SecurityEvent): Promise<void> {
     productionLogger.error('High-risk security event detected', event, 'SecurityMonitor');
 
     // Could integrate with external alerting systems here
@@ -79,13 +97,13 @@ export class EnhancedSecurityMonitor {
     }
   }
 
-  private async handleThreatDetection(event: any): Promise<void> {
+  private async handleThreatDetection(event: SecurityEvent): Promise<void> {
     const { event_data, ip_address, user_id } = event;
     const threatTypes = event_data?.threatTypes || [];
 
     // For high-risk threats, implement temporary blocking
     if (threatTypes.includes('sql_injection') || threatTypes.includes('command_injection')) {
-      await this.temporarilyBlockSource(ip_address, user_id, 'high_risk_threat');
+      await this.temporarilyBlockSource(ip_address || 'unknown', user_id || '', 'high_risk_threat');
     }
   }
 
@@ -147,19 +165,22 @@ export class EnhancedSecurityMonitor {
       const threatTypes: Record<string, number> = {};
 
       recentEvents.forEach(event => {
-        // Count events by IP
-        if (event.ip_address) {
-          ipCounts[event.ip_address] = (ipCounts[event.ip_address] || 0) + 1;
+        // Count events by IP (with proper type checking)
+        const ipAddress = event.ip_address as string | null;
+        if (ipAddress) {
+          ipCounts[ipAddress] = (ipCounts[ipAddress] || 0) + 1;
         }
 
-        // Count events by user
-        if (event.user_id) {
-          userCounts[event.user_id] = (userCounts[event.user_id] || 0) + 1;
+        // Count events by user (with proper type checking)
+        const userId = event.user_id as string | null;
+        if (userId) {
+          userCounts[userId] = (userCounts[userId] || 0) + 1;
         }
 
-        // Count threat types
-        if (event.event_data?.threatTypes) {
-          event.event_data.threatTypes.forEach((threat: string) => {
+        // Count threat types (with proper type checking)
+        const eventData = event.event_data as { threatTypes?: string[] } | null;
+        if (eventData?.threatTypes) {
+          eventData.threatTypes.forEach((threat: string) => {
             threatTypes[threat] = (threatTypes[threat] || 0) + 1;
           });
         }
@@ -194,7 +215,7 @@ export class EnhancedSecurityMonitor {
 
   private setupAutomatedThreatResponse(): void {
     // Set up automated responses to certain threat types
-    this.addEventListener('security_validation_threat_detected', async (event) => {
+    this.addEventListener('security_validation_threat_detected', async (event: SecurityEvent) => {
       const threatTypes = event.event_data?.threatTypes || [];
       
       if (threatTypes.includes('sql_injection') || threatTypes.includes('command_injection')) {
