@@ -19,7 +19,9 @@ import {
   ArrowUpRight,
   Eye,
   Settings,
-  RefreshCw
+  Sparkles,
+  Globe,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Link } from 'react-router-dom';
@@ -108,28 +110,32 @@ export const OptimizedDashboardLayout = memo(() => {
       description: "Optimize SQL queries",
       icon: Database,
       href: "/app/queries",
-      color: "from-blue-500 to-blue-600"
+      color: "from-blue-600 to-blue-700",
+      glow: "glow-primary"
     },
     {
       title: "AI Studio",
       description: "Intelligent optimization",
       icon: Brain,
       href: "/app/ai-studio",
-      color: "from-purple-500 to-purple-600"
+      color: "from-purple-600 to-purple-700",
+      glow: "glow-purple"
     },
     {
       title: "Performance Monitor",
       description: "Real-time metrics",
       icon: Activity,
       href: "/app/monitoring",
-      color: "from-emerald-500 to-emerald-600"
+      color: "from-emerald-600 to-emerald-700",
+      glow: "glow-success"
     },
     {
       title: "Security Center",
       description: "Database security",
       icon: Shield,
       href: "/app/security",
-      color: "from-orange-500 to-orange-600"
+      color: "from-orange-600 to-orange-700",
+      glow: "glow-warning"
     }
   ];
 
@@ -138,38 +144,57 @@ export const OptimizedDashboardLayout = memo(() => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="min-h-screen bg-gradient-to-br from-slate-50/80 via-white to-slate-100/40"
+      className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"
     >
       <div className="container mx-auto px-6 py-10 max-w-7xl">
         {/* Enhanced Header */}
         <motion.div variants={itemVariants} className="mb-12">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-            <div className="space-y-5">
+            <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <motion.h1 
-                  className="text-display-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent"
+                  className="text-display-2xl bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 }}
                 >
                   Dashboard Overview
                 </motion.h1>
-                <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 elevation-1 px-3 py-1.5 badge-modern">
-                  <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                <Badge className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 elevation-2 px-4 py-2 badge-modern glow-success">
+                  <CheckCircle className="h-4 w-4 mr-2" />
                   Live
                 </Badge>
               </div>
               <motion.p 
-                className="text-body-lg text-slate-600 max-w-2xl leading-relaxed"
+                className="text-body-lg text-slate-300 max-w-2xl leading-relaxed"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                Welcome back, <span className="font-semibold text-slate-900">
+                Welcome back, <span className="font-semibold text-white">
                   {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Demo User'}
                 </span>. 
                 Monitor your database performance and optimization metrics in real-time.
               </motion.p>
+              <motion.div 
+                className="flex items-center gap-6 text-sm text-slate-400"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse glow-success"></div>
+                  <span>System Online</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-blue-400" />
+                  <span>156 Active Connections</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-purple-400" />
+                  <span>SOC2 Compliant</span>
+                </div>
+              </motion.div>
             </div>
             
             <motion.div 
@@ -178,16 +203,16 @@ export const OptimizedDashboardLayout = memo(() => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Button variant="outline" size="lg" className="btn-modern group interactive-scale" asChild>
+              <Button variant="outline" size="lg" className="btn-modern group interactive-scale bg-slate-800/50 border-slate-700 hover:bg-slate-700/50 hover:border-slate-600" asChild>
                 <Link to="/app/reports">
                   <BarChart3 className="h-4 w-4 mr-2 transition-transform group-hover:scale-110" />
                   View Reports
                   <ArrowUpRight className="h-3 w-3 ml-2 opacity-50 group-hover:opacity-100 transition-opacity" />
                 </Link>
               </Button>
-              <Button size="lg" className="btn-modern bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 elevation-1 interactive-scale" asChild>
+              <Button size="lg" className="btn-modern bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 elevation-2 interactive-scale glow-primary" asChild>
                 <Link to="/app/ai-studio">
-                  <Brain className="h-4 w-4 mr-2" />
+                  <Sparkles className="h-4 w-4 mr-2" />
                   AI Studio
                 </Link>
               </Button>
@@ -196,7 +221,7 @@ export const OptimizedDashboardLayout = memo(() => {
         </motion.div>
 
         {/* Enhanced Metrics Grid */}
-        <motion.section variants={itemVariants} className="mb-14">
+        <motion.section variants={itemVariants} className="mb-16">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {metricsData.map((metric, index) => (
               <motion.div
@@ -213,24 +238,24 @@ export const OptimizedDashboardLayout = memo(() => {
         {/* Enhanced Tabs Section */}
         <motion.div variants={itemVariants}>
           <Tabs defaultValue="overview" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-3 bg-white/90 backdrop-blur-sm border elevation-1 p-1.5 rounded-xl">
+            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-3 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 elevation-2 p-2 rounded-2xl">
               <TabsTrigger 
                 value="overview" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-200 rounded-lg font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-xl font-medium text-slate-300 hover:text-white"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 Overview
               </TabsTrigger>
               <TabsTrigger 
                 value="performance"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white transition-all duration-200 rounded-lg font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-emerald-700 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-xl font-medium text-slate-300 hover:text-white"
               >
                 <Activity className="h-4 w-4 mr-2" />
                 Performance
               </TabsTrigger>
               <TabsTrigger 
                 value="settings"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-500 data-[state=active]:to-slate-600 data-[state=active]:text-white transition-all duration-200 rounded-lg font-medium"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-600 data-[state=active]:to-slate-700 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 rounded-xl font-medium text-slate-300 hover:text-white"
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
@@ -239,15 +264,15 @@ export const OptimizedDashboardLayout = memo(() => {
 
             <TabsContent value="overview" className="space-y-10">
               {/* Quick Actions Grid */}
-              <Card className="card-modern elevation-2">
+              <Card className="card-modern elevation-3 bg-slate-900/50 border-slate-700/50 backdrop-blur-xl">
                 <CardHeader className="pb-8">
-                  <CardTitle className="flex items-center gap-4 text-display-md">
-                    <div className="p-3 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-xl elevation-0">
+                  <CardTitle className="flex items-center gap-4 text-display-md text-white">
+                    <div className="p-3 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-xl elevation-1 backdrop-blur-sm">
                       <Activity className="h-6 w-6 text-primary" />
                     </div>
                     Quick Actions
                   </CardTitle>
-                  <CardDescription className="text-body-base text-slate-600 mt-2">
+                  <CardDescription className="text-body-base text-slate-400 mt-2">
                     Essential tools for database optimization and management
                   </CardDescription>
                 </CardHeader>
@@ -262,18 +287,18 @@ export const OptimizedDashboardLayout = memo(() => {
                       >
                         <Button 
                           variant="outline" 
-                          className="w-full h-auto p-6 flex flex-col items-start gap-4 interactive-scale hover:elevation-2 transition-all duration-250 group card-modern" 
+                          className={`w-full h-auto p-6 flex flex-col items-start gap-4 interactive-scale hover:elevation-3 transition-all duration-300 group card-modern bg-slate-800/30 border-slate-700/50 hover:bg-slate-700/50 hover:border-slate-600/50 ${action.glow}`}
                           asChild
                         >
                           <Link to={action.href}>
-                            <div className={`p-3.5 rounded-xl bg-gradient-to-br ${action.color} elevation-1 group-hover:elevation-2 transition-all duration-250`}>
+                            <div className={`p-4 rounded-xl bg-gradient-to-br ${action.color} elevation-2 group-hover:elevation-3 transition-all duration-300 group-hover:scale-110`}>
                               <action.icon className="h-5 w-5 text-white" />
                             </div>
                             <div className="text-left space-y-2">
-                              <div className="font-semibold text-sm text-slate-900">{action.title}</div>
-                              <div className="text-xs text-slate-600 leading-relaxed">{action.description}</div>
+                              <div className="font-semibold text-sm text-white group-hover:text-white transition-colors">{action.title}</div>
+                              <div className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">{action.description}</div>
                             </div>
-                            <ArrowUpRight className="h-3.5 w-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
+                            <ArrowUpRight className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-all text-slate-400 group-hover:scale-110" />
                           </Link>
                         </Button>
                       </motion.div>
@@ -283,15 +308,15 @@ export const OptimizedDashboardLayout = memo(() => {
               </Card>
 
               {/* System Status */}
-              <Card className="border-0 bg-gradient-to-br from-emerald-50/80 via-emerald-50/40 to-emerald-100/60 elevation-2">
+              <Card className="border-0 bg-gradient-to-br from-emerald-900/30 via-emerald-800/20 to-emerald-900/30 elevation-3 backdrop-blur-xl border border-emerald-700/30 glow-success">
                 <CardHeader className="pb-8">
-                  <CardTitle className="flex items-center gap-4 text-emerald-900 text-display-md">
-                    <div className="p-3 bg-gradient-to-br from-emerald-100/80 to-emerald-200/60 rounded-xl elevation-0">
-                      <Shield className="h-6 w-6 text-emerald-700" />
+                  <CardTitle className="flex items-center gap-4 text-emerald-100 text-display-md">
+                    <div className="p-3 bg-gradient-to-br from-emerald-600/30 to-emerald-700/30 rounded-xl elevation-1 backdrop-blur-sm border border-emerald-600/20">
+                      <Shield className="h-6 w-6 text-emerald-400" />
                     </div>
                     System Status
                   </CardTitle>
-                  <CardDescription className="text-emerald-800/80 text-body-base mt-2">
+                  <CardDescription className="text-emerald-200 text-body-base mt-2">
                     All systems operational and secure
                   </CardDescription>
                 </CardHeader>
@@ -307,11 +332,11 @@ export const OptimizedDashboardLayout = memo(() => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.7 + index * 0.1 }}
-                        className="p-5 rounded-xl bg-white/70 backdrop-blur-sm elevation-1 border border-emerald-200/40"
+                        className="p-6 rounded-xl bg-slate-900/40 backdrop-blur-sm elevation-2 border border-emerald-700/20 hover:border-emerald-600/30 transition-all duration-300 hover:elevation-3"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-emerald-800">{stat.label}</span>
-                          <Badge className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 elevation-0 badge-modern">
+                          <span className="text-sm font-medium text-emerald-200">{stat.label}</span>
+                          <Badge className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 elevation-1 badge-modern px-3 py-1.5">
                             {stat.value}
                           </Badge>
                         </div>
@@ -323,10 +348,10 @@ export const OptimizedDashboardLayout = memo(() => {
             </TabsContent>
 
             <TabsContent value="performance">
-              <Card className="card-modern elevation-2">
+              <Card className="card-modern elevation-3 bg-slate-900/50 border-slate-700/50 backdrop-blur-xl">
                 <CardHeader>
-                  <CardTitle className="text-display-md">Performance Analytics</CardTitle>
-                  <CardDescription>Detailed insights into your database performance</CardDescription>
+                  <CardTitle className="text-display-md text-white">Performance Analytics</CardTitle>
+                  <CardDescription className="text-slate-400">Detailed insights into your database performance</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-16 text-slate-500">
@@ -338,10 +363,10 @@ export const OptimizedDashboardLayout = memo(() => {
             </TabsContent>
 
             <TabsContent value="settings">
-              <Card className="card-modern elevation-2">
+              <Card className="card-modern elevation-3 bg-slate-900/50 border-slate-700/50 backdrop-blur-xl">
                 <CardHeader>
-                  <CardTitle className="text-display-md">Dashboard Settings</CardTitle>
-                  <CardDescription>Customize your dashboard experience</CardDescription>
+                  <CardTitle className="text-display-md text-white">Dashboard Settings</CardTitle>
+                  <CardDescription className="text-slate-400">Customize your dashboard experience</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-16 text-slate-500">

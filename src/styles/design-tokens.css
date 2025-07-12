@@ -1,5 +1,5 @@
 
-/* Modern Design System Tokens - MUI Inspired */
+/* Modern Design System Tokens - Dark Theme Enhanced */
 :root {
   /* Enhanced Spacing System - More refined scale */
   --space-0: 0;
@@ -41,13 +41,19 @@
   --radius-2xl: 1rem;       /* 16px */
   --radius-3xl: 1.5rem;     /* 24px */
   
-  /* Enhanced Shadow System - MUI Inspired */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  /* Enhanced Dark Theme Shadow System */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.25), 0 1px 2px -1px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  
+  /* Dark Theme Glows */
+  --glow-primary: 0 0 20px rgba(59, 130, 246, 0.3);
+  --glow-success: 0 0 20px rgba(34, 197, 94, 0.3);
+  --glow-warning: 0 0 20px rgba(251, 146, 60, 0.3);
+  --glow-purple: 0 0 20px rgba(147, 51, 234, 0.3);
   
   /* Modern Color Elevation */
   --elevation-0: var(--shadow-xs);
@@ -66,23 +72,30 @@
   --focus-ring-offset: 2px;
   --focus-ring-opacity: 0.8;
   
-  /* MUI-Inspired Color Tokens */
-  --surface-elevated: hsl(0 0% 100%);
-  --surface-overlay: hsla(0, 0%, 100%, 0.95);
-  --text-primary: hsl(210 10% 23%);
-  --text-secondary: hsl(214 16% 47%);
-  --text-tertiary: hsl(215 14% 64%);
-  --divider: hsl(214 32% 91%);
-  --divider-light: hsl(214 25% 95%);
+  /* Dark Theme Color Tokens */
+  --surface-elevated: hsl(220 13% 9%);
+  --surface-overlay: hsla(220, 13%, 9%, 0.95);
+  --surface-card: hsl(220 13% 11%);
+  --surface-hover: hsl(220 13% 13%);
+  --text-primary: hsl(210 40% 98%);
+  --text-secondary: hsl(215 20% 65%);
+  --text-tertiary: hsl(215 16% 47%);
+  --text-muted: hsl(215 14% 34%);
+  --divider: hsl(217 32% 17%);
+  --divider-light: hsl(217 25% 15%);
+  --border-subtle: hsl(217 32% 14%);
+  --border-default: hsl(217 32% 17%);
+  --border-emphasis: hsl(217 32% 22%);
 }
 
-/* Modern Typography Classes */
+/* Dark Theme Typography Classes */
 .text-display-2xl { 
   font-size: var(--text-4xl); 
   line-height: var(--leading-tight); 
   font-weight: 700; 
   letter-spacing: -0.025em;
   color: var(--text-primary);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .text-display-xl { 
@@ -91,6 +104,7 @@
   font-weight: 600; 
   letter-spacing: -0.025em;
   color: var(--text-primary);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .text-display-lg { 
@@ -112,14 +126,14 @@
   font-size: var(--text-lg); 
   line-height: var(--leading-relaxed); 
   font-weight: 400;
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 .text-body-base { 
   font-size: var(--text-base); 
   line-height: var(--leading-normal); 
   font-weight: 400;
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 .text-body-sm { 
@@ -134,7 +148,7 @@
   line-height: var(--leading-normal); 
   font-weight: 500;
   letter-spacing: 0.025em;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 
 /* Modern Spacing Classes */
@@ -144,7 +158,7 @@
 .space-system-lg { gap: var(--space-6); }
 .space-system-xl { gap: var(--space-8); }
 
-/* Enhanced Elevation System */
+/* Enhanced Dark Theme Elevation System */
 .elevation-0 { box-shadow: var(--elevation-0); }
 .elevation-1 { box-shadow: var(--elevation-1); }
 .elevation-2 { box-shadow: var(--elevation-2); }
@@ -160,54 +174,60 @@
 
 /* Enhanced Interactive Elements */
 .interactive-scale {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .interactive-scale:hover {
-  transform: scale(1.015);
+  transform: scale(1.02) translateY(-2px);
 }
 
 .interactive-scale:active {
-  transform: scale(0.985);
+  transform: scale(0.98);
 }
 
-/* Modern Card Styles */
+/* Dark Theme Card Styles */
 .card-modern {
-  background: var(--surface-elevated);
-  border: 1px solid var(--divider);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   box-shadow: var(--elevation-1);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 
 .card-modern:hover {
-  box-shadow: var(--elevation-2);
-  border-color: var(--divider-light);
-  transform: translateY(-1px);
+  box-shadow: var(--elevation-3);
+  border-color: var(--border-emphasis);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
 }
 
 .card-elevated {
   box-shadow: var(--elevation-2);
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
 }
 
 .card-elevated:hover {
-  box-shadow: var(--elevation-3);
-  transform: translateY(-2px);
+  box-shadow: var(--elevation-4);
+  transform: translateY(-3px);
+  border-color: var(--border-emphasis);
 }
 
-/* Modern Button Styles */
+/* Dark Theme Button Styles */
 .btn-modern {
   border-radius: var(--radius-lg);
   font-weight: 500;
   letter-spacing: 0.015em;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: var(--touch-target-comfortable);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--elevation-1);
+  backdrop-filter: blur(10px);
 }
 
 .btn-modern:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--elevation-2);
+  transform: translateY(-2px);
+  box-shadow: var(--elevation-3);
 }
 
 .btn-modern:active {
@@ -221,15 +241,16 @@
   font-size: var(--text-xs);
   letter-spacing: 0.025em;
   padding: var(--space-2) var(--space-3);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--elevation-1);
+  backdrop-filter: blur(8px);
 }
 
-/* Modern Progress Bar */
+/* Dark Theme Progress Bar */
 .progress-modern {
   border-radius: var(--radius-sm);
-  background: hsl(var(--muted));
+  background: var(--surface-elevated);
   overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .progress-modern .progress-bar {
@@ -248,32 +269,49 @@
 
 /* Modern Animation Curves */
 .transition-smooth {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .transition-bounce {
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .transition-sharp {
   transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
 }
 
-/* MUI-Inspired Surface Variants */
+/* Dark Theme Surface Variants */
 .surface-paper {
-  background: var(--surface-elevated);
-  border: 1px solid var(--divider);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
 }
 
 .surface-outlined {
   background: transparent;
-  border: 1px solid var(--divider);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
 }
 
 .surface-filled {
-  background: hsl(var(--secondary));
+  background: var(--surface-hover);
   border: none;
   border-radius: var(--radius-lg);
+}
+
+/* Dark Theme Glow Effects */
+.glow-primary {
+  box-shadow: var(--glow-primary);
+}
+
+.glow-success {
+  box-shadow: var(--glow-success);
+}
+
+.glow-warning {
+  box-shadow: var(--glow-warning);
+}
+
+.glow-purple {
+  box-shadow: var(--glow-purple);
 }
