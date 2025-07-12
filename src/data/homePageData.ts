@@ -1,31 +1,33 @@
 
+import { Brain, Activity, Zap, Shield } from 'lucide-react';
+
 export const features = [
   {
-    id: 1,
+    icon: Brain,
     title: "AI-Powered Analysis",
     description: "Advanced algorithms analyze your database queries for optimal performance recommendations.",
-    icon: "brain",
-    category: "AI & Intelligence"
+    highlight: true,
+    details: "Our AI continuously learns from your query patterns and provides intelligent suggestions to improve performance, reduce costs, and prevent bottlenecks before they impact your application."
   },
   {
-    id: 2,
+    icon: Activity,
     title: "Real-time Monitoring",
     description: "Monitor your database performance in real-time with comprehensive dashboards and alerts.",
-    icon: "activity",
-    category: "Monitoring"
+    highlight: false,
+    details: "Get instant visibility into query execution times, resource usage, and system health with customizable dashboards and proactive alerting that keeps you informed of critical issues."
   },
   {
-    id: 3,
+    icon: Zap,
     title: "Query Optimization",
     description: "Get specific suggestions to improve slow queries and reduce database load.",
-    icon: "zap",
-    category: "Performance"
+    highlight: true,
+    details: "Receive actionable recommendations including index suggestions, query rewrites, and schema optimizations that can dramatically improve your database performance."
   },
   {
-    id: 4,
+    icon: Shield,
     title: "Security Scanning",
     description: "Identify potential security vulnerabilities in your database queries and configurations.",
-    icon: "shield",
-    category: "Security"
+    highlight: false,
+    details: "Comprehensive security analysis that detects SQL injection risks, privilege escalation vulnerabilities, and configuration weaknesses to keep your data safe."
   }
 ];
