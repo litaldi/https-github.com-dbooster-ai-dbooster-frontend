@@ -41,13 +41,13 @@
   --radius-2xl: 1rem;       /* 16px */
   --radius-3xl: 1.5rem;     /* 24px */
   
-  /* Enhanced Shadow System */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  /* Enhanced Shadow System - MUI Inspired */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
   
   /* Modern Color Elevation */
   --elevation-0: var(--shadow-xs);
@@ -65,21 +65,32 @@
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
   --focus-ring-opacity: 0.8;
+  
+  /* MUI-Inspired Color Tokens */
+  --surface-elevated: hsl(0 0% 100%);
+  --surface-overlay: hsla(0, 0%, 100%, 0.95);
+  --text-primary: hsl(210 10% 23%);
+  --text-secondary: hsl(214 16% 47%);
+  --text-tertiary: hsl(215 14% 64%);
+  --divider: hsl(214 32% 91%);
+  --divider-light: hsl(214 25% 95%);
 }
 
 /* Modern Typography Classes */
 .text-display-2xl { 
   font-size: var(--text-4xl); 
   line-height: var(--leading-tight); 
-  font-weight: 800; 
+  font-weight: 700; 
   letter-spacing: -0.025em;
+  color: var(--text-primary);
 }
 
 .text-display-xl { 
   font-size: var(--text-3xl); 
   line-height: var(--leading-tight); 
-  font-weight: 700; 
+  font-weight: 600; 
   letter-spacing: -0.025em;
+  color: var(--text-primary);
 }
 
 .text-display-lg { 
@@ -87,30 +98,35 @@
   line-height: var(--leading-snug); 
   font-weight: 600; 
   letter-spacing: -0.015em;
+  color: var(--text-primary);
 }
 
 .text-display-md { 
   font-size: var(--text-xl); 
   line-height: var(--leading-snug); 
-  font-weight: 600; 
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .text-body-lg { 
   font-size: var(--text-lg); 
   line-height: var(--leading-relaxed); 
   font-weight: 400;
+  color: var(--text-primary);
 }
 
 .text-body-base { 
   font-size: var(--text-base); 
   line-height: var(--leading-normal); 
   font-weight: 400;
+  color: var(--text-primary);
 }
 
 .text-body-sm { 
   font-size: var(--text-sm); 
   line-height: var(--leading-normal); 
   font-weight: 400;
+  color: var(--text-secondary);
 }
 
 .text-caption { 
@@ -118,6 +134,7 @@
   line-height: var(--leading-normal); 
   font-weight: 500;
   letter-spacing: 0.025em;
+  color: var(--text-secondary);
 }
 
 /* Modern Spacing Classes */
@@ -137,7 +154,7 @@
 
 /* Modern Focus States */
 .focus-ring-modern {
-  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/80 focus-visible:ring-offset-2;
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2;
   transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -147,25 +164,25 @@
 }
 
 .interactive-scale:hover {
-  transform: scale(1.02);
+  transform: scale(1.015);
 }
 
 .interactive-scale:active {
-  transform: scale(0.98);
+  transform: scale(0.985);
 }
 
 /* Modern Card Styles */
 .card-modern {
-  background: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
+  background: var(--surface-elevated);
+  border: 1px solid var(--divider);
   border-radius: var(--radius-xl);
   box-shadow: var(--elevation-1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-modern:hover {
   box-shadow: var(--elevation-2);
-  border-color: hsl(var(--border) / 0.8);
+  border-color: var(--divider-light);
   transform: translateY(-1px);
 }
 
@@ -182,9 +199,10 @@
 .btn-modern {
   border-radius: var(--radius-lg);
   font-weight: 500;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.015em;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: var(--touch-target-comfortable);
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-modern:hover {
@@ -192,13 +210,18 @@
   box-shadow: var(--elevation-2);
 }
 
+.btn-modern:active {
+  transform: translateY(0);
+}
+
 /* Enhanced Badge Styles */
 .badge-modern {
   border-radius: var(--radius-md);
   font-weight: 500;
   font-size: var(--text-xs);
-  letter-spacing: 0.05em;
-  padding: var(--space-1) var(--space-3);
+  letter-spacing: 0.025em;
+  padding: var(--space-2) var(--space-3);
+  box-shadow: var(--shadow-xs);
 }
 
 /* Modern Progress Bar */
@@ -206,6 +229,7 @@
   border-radius: var(--radius-sm);
   background: hsl(var(--muted));
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .progress-modern .progress-bar {
@@ -224,7 +248,7 @@
 
 /* Modern Animation Curves */
 .transition-smooth {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .transition-bounce {
@@ -233,4 +257,23 @@
 
 .transition-sharp {
   transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* MUI-Inspired Surface Variants */
+.surface-paper {
+  background: var(--surface-elevated);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-lg);
+}
+
+.surface-outlined {
+  background: transparent;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-lg);
+}
+
+.surface-filled {
+  background: hsl(var(--secondary));
+  border: none;
+  border-radius: var(--radius-lg);
 }

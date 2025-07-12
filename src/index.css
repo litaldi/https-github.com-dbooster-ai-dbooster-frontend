@@ -79,23 +79,25 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
   }
   
   /* Enhanced Typography Base */
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     line-height: 1.2;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.015em;
   }
   
   p {
     line-height: 1.6;
+    color: hsl(var(--foreground) / 0.8);
   }
   
   /* Enhanced Button Base */
   button {
     font-weight: 500;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.015em;
   }
   
   /* Enhanced Input Base */
@@ -111,7 +113,7 @@
   
   /* Enhanced Focus Base */
   :focus-visible {
-    outline: 2px solid hsl(var(--ring));
+    outline: 2px solid hsl(var(--ring) / 0.6);
     outline-offset: 2px;
     border-radius: 0.25rem;
   }
@@ -120,7 +122,7 @@
 @layer components {
   /* Modern Card Components */
   .card-elevated {
-    @apply bg-card border border-border/50 shadow-lg backdrop-blur-sm;
+    @apply bg-card border border-border/40 shadow-md backdrop-blur-sm;
     border-radius: var(--radius);
   }
   
@@ -130,11 +132,11 @@
   
   /* Modern Button Components */
   .btn-primary-modern {
-    @apply bg-gradient-to-r from-primary to-blue-600 text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 font-medium;
+    @apply bg-gradient-to-r from-primary to-blue-600 text-primary-foreground shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium;
   }
   
   .btn-secondary-modern {
-    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border/50 hover:border-border transition-all duration-200 font-medium;
+    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border/40 hover:border-border transition-all duration-200 font-medium;
   }
   
   /* Modern Badge Components */
@@ -167,16 +169,16 @@
   
   /* Modern Shadow Utilities */
   .shadow-modern {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
   }
   
   .shadow-modern-lg {
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   }
   
   /* Modern Border Utilities */
   .border-modern {
-    border: 1px solid hsl(var(--border) / 0.8);
+    border: 1px solid hsl(var(--border) / 0.6);
   }
   
   /* Performance Optimizations */
@@ -187,6 +189,16 @@
   
   .smooth-scroll {
     scroll-behavior: smooth;
+  }
+  
+  /* Enhanced Interactive States */
+  .interactive-hover {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .interactive-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   }
 }
 
