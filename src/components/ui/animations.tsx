@@ -1,71 +1,92 @@
 
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface AnimationProps {
   children: React.ReactNode;
-  delay?: number;
-  duration?: number;
   className?: string;
 }
 
-export function FadeIn({ children, delay = 0, duration = 0.5, className }: AnimationProps) {
+export function FadeIn({ children, className }: AnimationProps) {
   return (
-    <div 
-      className={cn("animate-fade-in", className)}
-      style={{ 
-        animationDelay: `${delay}s`,
-        animationDuration: `${duration}s`
-      }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={className}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
-export function ScaleIn({ children, delay = 0, duration = 0.3, className }: AnimationProps) {
+export function ScaleIn({ children, className }: AnimationProps) {
   return (
-    <div 
-      className={cn("animate-scale-in", className)}
-      style={{ 
-        animationDelay: `${delay}s`,
-        animationDuration: `${duration}s`
-      }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+      className={className}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
-export function SlideIn({ children, delay = 0, duration = 0.4, className }: AnimationProps) {
+export function SlideIn({ children, className, direction = 'left' }: AnimationProps & { direction?: 'left' | 'right' | 'up' | 'down' }) {
+  const getInitialPosition = () => {
+    switch (direction) {
+      case 'left': return { x: -30, opacity: 0 };
+      case 'right': return { x: 30, opacity: 0 };
+      case 'up': return { y: -30, opacity: 0 };
+      case 'down': return { y: 30, opacity: 0 };
+      default: return { x: -30, opacity: 0 };
+    }
+  };
+
   return (
-    <div 
-      className={cn("animate-slide-in-right", className)}
-      style={{ 
-        animationDelay: `${delay}s`,
-        animationDuration: `${duration}s`
-      }}
+    <motion.div
+      initial={getInitialPosition()}
+      animate={{ x: 0, y: 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className={className}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
-// Page transition wrapper
-export function PageTransition({ children }: { children: React.ReactNode }) {
+export function Stagger({ children, className }: AnimationProps) {
   return (
-    <div className="animate-fade-in">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+          },
+        },
+      }}
+      className={className}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
-// Export all animation components from the modular system without duplicates
-export * from './animations/basic-animations';
-export * from './animations/interactive-animations';
-export { 
-  StaggerContainer, 
-  StaggerItem,
-  FastStaggerContainer,
-  FastStaggerItem
-} from './animations/stagger-animations';
+export function StaggerItem({ children, className }: AnimationProps) {
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 },
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
