@@ -16,7 +16,12 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (user && session) {
-      validateSession().catch(console.error);
+      validateSession().catch(error => {
+        // Use production logger here instead of console.error
+        import('@/utils/cleanLogger').then(({ cleanLogger }) => {
+          cleanLogger.error('Session validation failed', error, 'ProtectedRoute');
+        });
+      });
     }
   }, [user, session, validateSession]);
 

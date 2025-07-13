@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 import { supabase } from '@/integrations/supabase/client';
 import { unifiedSecurityService } from '@/services/security/unifiedSecurityService';
 import { cleanupAuthState } from '@/utils/authUtils';
-import { productionLogger } from '@/utils/productionLogger';
+import { cleanLogger } from '@/utils/cleanLogger';
 import type { User, Session, AuthState } from '@/types';
 import type { AuthError } from '@supabase/supabase-js';
 
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         localStorage.removeItem('demo_user');
-        productionLogger.warn('Invalid demo user data cleared', {}, 'AuthContext');
+        cleanLogger.warn('Invalid demo user data cleared', {}, 'AuthContext');
       }
     }
 
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return {};
     } catch (err) {
       const error = err as AuthError;
-      productionLogger.error('Authentication error', error, 'AuthContext');
+      cleanLogger.error('Authentication error', error, 'AuthContext');
       return { error: error.message || 'An error occurred during sign in' };
     }
   }, []);
@@ -183,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return {};
     } catch (err) {
       const error = err as AuthError;
-      productionLogger.error('Registration error', error, 'AuthContext');
+      cleanLogger.error('Registration error', error, 'AuthContext');
       return { error: error.message || 'An error occurred during sign up' };
     }
   }, []);
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await supabase.auth.signOut({ scope: 'global' });
       window.location.href = '/';
     } catch (error) {
-      productionLogger.error('Sign out error', error, 'AuthContext');
+      cleanLogger.error('Sign out error', error, 'AuthContext');
       window.location.href = '/';
     }
   }, []);
@@ -226,9 +226,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         initialized: true,
       });
       
-      productionLogger.info('Demo mode activated', {}, 'AuthContext');
+      cleanLogger.info('Demo mode activated', {}, 'AuthContext');
     } catch (error) {
-      productionLogger.error('Demo login failed', error, 'AuthContext');
+      cleanLogger.error('Demo login failed', error, 'AuthContext');
     }
   }, []);
 

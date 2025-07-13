@@ -1,15 +1,11 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/auth-context';
-import { ArrowRight, Zap, Shield, TrendingUp, Users } from 'lucide-react';
+import { StandardizedCTAButton } from '@/components/ui/standardized-cta-button';
+import { Zap, Shield, TrendingUp, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function EnhancedCTASection() {
-  const { user } = useAuth();
-
   const features = [
     {
       icon: Zap,
@@ -91,27 +87,16 @@ export function EnhancedCTASection() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Button 
-              asChild
+            <StandardizedCTAButton
               size="lg"
               className="btn-cta-enhanced group h-14 px-8 text-base font-semibold"
-            >
-              <Link to={user ? "/app" : "/login"}>
-                {user ? "Go to Dashboard" : "Start Optimizing"}
-                <ArrowRight className="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
+            />
             
-            <Button 
-              asChild
-              variant="outline"
+            <StandardizedCTAButton
+              variant="demo"
               size="lg"
               className="h-14 px-8 text-base font-medium border-border/60 hover:border-border bg-background/50 backdrop-blur-sm"
-            >
-              <Link to="/demo">
-                View Demo
-              </Link>
-            </Button>
+            />
           </motion.div>
 
           {/* Trust Indicators */}

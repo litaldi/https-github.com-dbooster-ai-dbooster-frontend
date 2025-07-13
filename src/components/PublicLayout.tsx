@@ -4,9 +4,9 @@ import { Toaster } from 'sonner';
 import { EnhancedMegaMenu } from '@/components/navigation/EnhancedMegaMenu';
 import { EnhancedFooter } from '@/components/navigation/EnhancedFooter';
 import { EnhancedSearch } from '@/components/ui/enhanced-search';
+import { StandardizedCTAButton } from '@/components/ui/standardized-cta-button';
 import { megaMenuNavigation } from '@/config/navigation';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Zap } from 'lucide-react';
 
 export function PublicLayout() {
@@ -50,13 +50,11 @@ export function PublicLayout() {
                 />
               </div>
 
-              {/* CTA Button */}
-              <Button 
-                onClick={() => navigate('/login')}
+              {/* Standardized CTA Button */}
+              <StandardizedCTAButton
+                size="default"
                 className="px-6 py-2 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
-              >
-                Get Started Free
-              </Button>
+              />
             </div>
           </div>
         </div>

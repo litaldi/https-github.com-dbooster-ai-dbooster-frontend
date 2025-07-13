@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StandardizedCTAButton } from '@/components/ui/standardized-cta-button';
 import { Play, Code, Database, Zap } from 'lucide-react';
 
 export function InteractiveDemoSection() {
@@ -34,10 +34,12 @@ export function InteractiveDemoSection() {
                 <p className="text-muted-foreground mb-4">
                   Upload your SQL queries and get instant optimization recommendations
                 </p>
-                <Button variant="outline" className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Try Demo
-                </Button>
+                <StandardizedCTAButton
+                  variant="demo"
+                  className="w-full"
+                  text="Try Demo"
+                  showIcon={true}
+                />
               </CardContent>
             </Card>
           </motion.div>
@@ -59,10 +61,12 @@ export function InteractiveDemoSection() {
                 <p className="text-muted-foreground mb-4">
                   Connect your database and discover performance bottlenecks
                 </p>
-                <Button variant="outline" className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Try Demo
-                </Button>
+                <StandardizedCTAButton
+                  variant="demo"
+                  className="w-full"
+                  text="Try Demo"
+                  showIcon={true}
+                />
               </CardContent>
             </Card>
           </motion.div>
@@ -84,10 +88,12 @@ export function InteractiveDemoSection() {
                 <p className="text-muted-foreground mb-4">
                   See how AI transforms slow queries into lightning-fast ones
                 </p>
-                <Button variant="outline" className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Try Demo
-                </Button>
+                <StandardizedCTAButton
+                  variant="demo"
+                  className="w-full"
+                  text="Try Demo"
+                  showIcon={true}
+                />
               </CardContent>
             </Card>
           </motion.div>
