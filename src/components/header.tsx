@@ -19,8 +19,22 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function Header() {
-  const { user, isDemo } = useAuth();
+  const { user, isDemo, loginDemo } = useAuth();
   const navigate = useNavigate();
+
+  const handleStartForFree = async () => {
+    if (user) {
+      navigate('/app');
+    } else {
+      try {
+        await loginDemo();
+        navigate('/app');
+      } catch (error) {
+        console.error('Demo login failed:', error);
+        navigate('/login');
+      }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" dir="ltr">
@@ -47,6 +61,35 @@ export function Header() {
           <NotificationBell />
           <AccessibilityMenu />
           <ThemeToggle />
+
+          {/* New action buttons */}
+          <div className="flex items-center gap-2 border-l pl-2 ml-2">
+            <Button 
+              onClick={handleStartForFree}
+              className="bg-gradient-to-r from-primary to-blue-600"
+            >
+              Start for Free
+            </Button>
+            
+            {!user ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/login?mode=signup')}
+                >
+                  Sign Up
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/login')}
+                >
+                  Login
+                </Button>
+              </>
+            ) : (
+              <LogoutButton variant="outline" size="default" />
+            )}
+          </div>
 
           {user ? (
             <DropdownMenu>
@@ -81,6 +124,10 @@ export function Header() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/app')}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Dashboard</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/account')}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Account Settings</span>

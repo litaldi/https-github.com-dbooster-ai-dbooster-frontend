@@ -223,6 +223,25 @@ This project is proprietary software. All rights reserved.
 - **Live Chat**: Available 24/7 through our support center
 - **Phone Support**: +972-54-000-0000 (business hours)
 
+## 📋 Recent Changes
+
+### Header Menu Updates (Latest)
+- **New Primary CTA**: Replaced the blue "Dashboard" button with "Start for Free" button
+- **Authentication Buttons**: Added dedicated Sign Up, Login, and Logout buttons in the header
+- **Enhanced UX**: 
+  - "Start for Free" button launches demo mode for new users or navigates to dashboard for authenticated users
+  - Sign Up and Login buttons are shown for unauthenticated users
+  - Logout button is displayed for authenticated users
+  - Original Dashboard button remains accessible in the user dropdown menu
+- **Maintained Functionality**: All existing authentication flows and user management features remain intact
+- **Responsive Design**: All new buttons are properly styled and responsive across device sizes
+
+### Authentication Flow
+- **Demo Mode**: Seamless access to application features without registration
+- **User Registration**: Complete signup flow with form validation and error handling
+- **Login/Logout**: Secure authentication with proper session management
+- **Protected Routes**: Automatic redirect handling for authenticated and unauthenticated states
+
 ---
 
 Built with ❤️ by the DBooster team using modern web technologies for optimal performance and developer experience.
