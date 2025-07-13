@@ -88,7 +88,7 @@ export function AuthFormFields({
           required
         />
         {errors.email && (
-          <p className="text-sm text-descriptive">{errors.email}</p>
+          <p className="text-sm text-destructive">{errors.email}</p>
         )}
       </div>
 

@@ -1,6 +1,12 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { auditLogger } from './auditLogger';
+import { productionLogger } from '@/utils/productionLogger';
+
+interface ThreatDetectionResult {
+  isThreat: boolean;
+  confidence: number;
+  threatType?: string;
+  details?: string;
+}
 
 export class ThreatDetectionService {
   private static instance: ThreatDetectionService;
@@ -12,47 +18,54 @@ export class ThreatDetectionService {
     return ThreatDetectionService.instance;
   }
 
-  async detectSuspiciousActivity(userId: string): Promise<boolean> {
+  async detectThreats(input: string, context?: any): Promise<ThreatDetectionResult> {
     try {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      
-      const { data: recentEvents } = await supabase
-        .from('security_audit_log')
-        .select('event_type, created_at, event_data')
-        .eq('user_id', userId)
-        .gte('created_at', oneHourAgo.toISOString())
-        .order('created_at', { ascending: false });
+      // Basic threat detection patterns
+      const sqlInjectionPatterns = [
+        /(\bor\b|\band\b).*=.*=/i,
+        /union\s+select/i,
+        /drop\s+table/i,
+        /delete\s+from/i
+      ];
 
-      if (!recentEvents) return false;
+      const xssPatterns = [
+        /<script[^>]*>.*?<\/script>/gi,
+        /javascript:/i,
+        /on\w+\s*=/i
+      ];
 
-      // Check for suspicious patterns
-      const failedLogins = recentEvents.filter(e => 
-        e.event_type === 'auth_login' && 
-        e.event_data && 
-        typeof e.event_data === 'object' && 
-        'success' in e.event_data && 
-        !e.event_data.success
-      ).length;
-      
-      const multipleIPs = new Set(
-        recentEvents
-          .map(e => e.event_data && typeof e.event_data === 'object' && 'ip_address' in e.event_data ? e.event_data.ip_address : null)
-          .filter(Boolean)
-      ).size;
-      
-      const isSuspicious = failedLogins > 3 || multipleIPs > 2;
-      
-      if (isSuspicious) {
-        await auditLogger.logSecurityEvent({
-          event_type: 'suspicious_activity_detected',
-          event_data: { userId, failedLogins, multipleIPs }
-        });
+      for (const pattern of sqlInjectionPatterns) {
+        if (pattern.test(input)) {
+          return {
+            isThreat: true,
+            confidence: 0.8,
+            threatType: 'sql_injection',
+            details: 'Potential SQL injection detected'
+          };
+        }
       }
-      
-      return isSuspicious;
+
+      for (const pattern of xssPatterns) {
+        if (pattern.test(input)) {
+          return {
+            isThreat: true,
+            confidence: 0.7,
+            threatType: 'xss',
+            details: 'Potential XSS attack detected'
+          };
+        }
+      }
+
+      return {
+        isThreat: false,
+        confidence: 0.1
+      };
     } catch (error) {
-      console.error('Suspicious activity detection failed:', error);
-      return false;
+      productionLogger.error('Threat detection failed', error, 'ThreatDetectionService');
+      return {
+        isThreat: false,
+        confidence: 0
+      };
     }
   }
 }
