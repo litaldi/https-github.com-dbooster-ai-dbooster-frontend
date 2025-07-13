@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/enhanced-card-system';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Search } from 'lucide-react';
 
 export default function QueriesPage() {
@@ -19,7 +19,7 @@ export default function QueriesPage() {
         </Button>
       </div>
 
-      <Card variant="elevated">
+      <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Recent Queries</CardTitle>
         </CardHeader>
