@@ -52,9 +52,11 @@ export class ProductionManager {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
           if (entry.entryType === 'navigation') {
+            // Properly cast to PerformanceNavigationTiming
+            const navEntry = entry as PerformanceNavigationTiming;
             productionLogger.info('Navigation timing', {
-              domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
-              loadComplete: entry.loadEventEnd - entry.loadEventStart
+              domContentLoaded: navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
+              loadComplete: navEntry.loadEventEnd - navEntry.loadEventStart
             });
           }
         });
