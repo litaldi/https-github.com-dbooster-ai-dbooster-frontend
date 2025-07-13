@@ -1,7 +1,7 @@
-
 import { productionLogger } from '@/utils/productionLogger';
 import { rateLimitService } from './rateLimitService';
 import { enhancedThreatDetection } from './threatDetectionEnhanced';
+import { enhancedPasswordValidation } from './enhancedPasswordValidation';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthAttempt {
@@ -12,12 +12,21 @@ interface AuthAttempt {
   email?: string;
 }
 
+interface DemoSession {
+  id: string;
+  createdAt: number;
+  lastActivity: number;
+  isActive: boolean;
+}
+
 export class ConsolidatedAuthenticationSecurity {
   private static instance: ConsolidatedAuthenticationSecurity;
   private authAttempts: AuthAttempt[] = [];
   private suspiciousIPs: Set<string> = new Set();
+  private demoSessions: Map<string, DemoSession> = new Map();
   private maxFailedAttempts = 5;
   private lockoutDurationMs = 900000; // 15 minutes
+  private demoSessionTimeout = 3600000; // 1 hour
 
   static getInstance(): ConsolidatedAuthenticationSecurity {
     if (!ConsolidatedAuthenticationSecurity.instance) {
@@ -91,49 +100,78 @@ export class ConsolidatedAuthenticationSecurity {
     }
   }
 
-  async validateStrongPassword(password: string, email?: string): Promise<{
+  async validateStrongPassword(password: string, email?: string, userData?: {
+    name?: string;
+    username?: string;
+  }): Promise<{
     isValid: boolean;
     score: number;
     feedback: string[];
+    riskLevel: 'low' | 'medium' | 'high' | 'critical';
   }> {
-    const feedback: string[] = [];
-    let score = 0;
+    return enhancedPasswordValidation.validatePassword(password, email, userData);
+  }
 
-    // Length check
-    if (password.length >= 8) score += 1;
-    else feedback.push('Password must be at least 8 characters long');
+  generateSecureDemoSession(): string {
+    // Generate cryptographically secure demo session ID
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    const sessionId = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    
+    const session: DemoSession = {
+      id: sessionId,
+      createdAt: Date.now(),
+      lastActivity: Date.now(),
+      isActive: true
+    };
+    
+    this.demoSessions.set(sessionId, session);
+    this.cleanupExpiredDemoSessions();
+    
+    productionLogger.secureInfo('Demo session created', {
+      sessionId: sessionId.substring(0, 8) + '...',
+      totalActiveSessions: this.demoSessions.size
+    }, 'AuthSecurity');
+    
+    return sessionId;
+  }
 
-    if (password.length >= 12) score += 1;
-
-    // Character variety checks
-    if (/[a-z]/.test(password)) score += 1;
-    else feedback.push('Include lowercase letters');
-
-    if (/[A-Z]/.test(password)) score += 1;
-    else feedback.push('Include uppercase letters');
-
-    if (/[0-9]/.test(password)) score += 1;
-    else feedback.push('Include numbers');
-
-    if (/[^a-zA-Z0-9]/.test(password)) score += 1;
-    else feedback.push('Include special characters');
-
-    // Common password checks
-    const commonPasswords = ['password', '123456', 'qwerty', 'admin'];
-    if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
-      feedback.push('Avoid common passwords');
-      score = Math.max(0, score - 2);
+  validateDemoSession(sessionId: string): boolean {
+    const session = this.demoSessions.get(sessionId);
+    if (!session || !session.isActive) {
+      return false;
     }
-
-    // Email similarity check
-    if (email && password.toLowerCase().includes(email.split('@')[0].toLowerCase())) {
-      feedback.push('Password should not contain your email');
-      score = Math.max(0, score - 1);
+    
+    const now = Date.now();
+    if (now - session.lastActivity > this.demoSessionTimeout) {
+      session.isActive = false;
+      this.demoSessions.delete(sessionId);
+      return false;
     }
+    
+    // Update last activity
+    session.lastActivity = now;
+    return true;
+  }
 
-    const isValid = score >= 4 && feedback.length === 0;
-
-    return { isValid, score, feedback };
+  private cleanupExpiredDemoSessions(): void {
+    const now = Date.now();
+    const expired: string[] = [];
+    
+    for (const [id, session] of this.demoSessions.entries()) {
+      if (now - session.lastActivity > this.demoSessionTimeout) {
+        expired.push(id);
+      }
+    }
+    
+    expired.forEach(id => this.demoSessions.delete(id));
+    
+    if (expired.length > 0) {
+      productionLogger.secureInfo('Demo sessions cleaned up', {
+        expiredCount: expired.length,
+        activeCount: this.demoSessions.size
+      }, 'AuthSecurity');
+    }
   }
 
   async secureLogin(email: string, password: string, options: { 
@@ -197,8 +235,13 @@ export class ConsolidatedAuthenticationSecurity {
         return { success: false, error: 'You must accept the terms and conditions' };
       }
 
-      // Validate password strength
-      const passwordValidation = await this.validateStrongPassword(password, email);
+      // Validate password strength with enhanced validation
+      const passwordValidation = await this.validateStrongPassword(
+        password, 
+        email, 
+        { name: options.fullName }
+      );
+      
       if (!passwordValidation.isValid) {
         return { 
           success: false, 
@@ -337,6 +380,7 @@ export class ConsolidatedAuthenticationSecurity {
     failedAttempts: number;
     suspiciousIPs: number;
     recentFailureRate: number;
+    activeDemoSessions: number;
   } {
     const recentCutoff = Date.now() - (60 * 60 * 1000); // Last hour
     const recentAttempts = this.authAttempts.filter(a => a.timestamp > recentCutoff);
@@ -355,7 +399,8 @@ export class ConsolidatedAuthenticationSecurity {
       successfulAttempts,
       failedAttempts,
       suspiciousIPs: this.suspiciousIPs.size,
-      recentFailureRate: Math.round(recentFailureRate * 100) / 100
+      recentFailureRate: Math.round(recentFailureRate * 100) / 100,
+      activeDemoSessions: this.demoSessions.size
     };
   }
 
