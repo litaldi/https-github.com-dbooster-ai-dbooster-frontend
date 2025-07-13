@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { 
-  HandShake, 
+  Handshake, 
   Users, 
   Building, 
   Award, 
@@ -198,7 +198,7 @@ export default function PartnersPage() {
               className="text-center"
             >
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500/10 to-violet-500/10 rounded-xl flex items-center justify-center">
-                <HandShake className="h-8 w-8 text-purple-600" />
+                <Handshake className="h-8 w-8 text-purple-600" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Strong Support</h3>
               <p className="text-sm text-muted-foreground">
@@ -232,7 +232,7 @@ export default function PartnersPage() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <HandShake className="h-16 w-16 mx-auto mb-6 text-primary" />
+            <Handshake className="h-16 w-16 mx-auto mb-6 text-primary" />
             <h2 className="text-3xl font-bold mb-4">Ready to Partner with Us?</h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Let's discuss how we can work together to help organizations optimize their database performance.

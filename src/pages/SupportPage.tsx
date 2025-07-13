@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +17,8 @@ import {
   ExternalLink,
   HelpCircle,
   FileText,
-  Search
+  Search,
+  Activity
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -32,7 +32,7 @@ const supportChannels = [
     action: "mailto:support@dbooster.ai"
   },
   {
-    title: "Phone Support",
+    title: "Phone Support", 
     description: "Speak directly with our support team",
     icon: <Phone className="h-8 w-8 text-green-600" />,
     contact: "+972-54-000-0000",
