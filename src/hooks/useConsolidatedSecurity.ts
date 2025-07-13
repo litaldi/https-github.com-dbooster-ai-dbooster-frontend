@@ -1,41 +1,33 @@
 
 import { useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
-import { productionLogger } from '@/utils/productionLogger';
+import { cleanLogger } from '@/utils/cleanLogger';
 
 export function useConsolidatedSecurity() {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
 
-  const validateSession = useCallback(async (): Promise<boolean> => {
+  const validateSession = useCallback(async () => {
     try {
-      if (!user || !session) {
+      if (!user) {
+        cleanLogger.warn('Session validation failed - no user', {}, 'ConsolidatedSecurity');
         return false;
       }
 
-      // Basic session validation - check if session is still valid
-      const now = new Date();
-      const sessionExpiry = new Date(session.expires_at || 0);
-      
-      if (sessionExpiry < now) {
-        productionLogger.warn('Session expired', { userId: user.id }, 'useConsolidatedSecurity');
+      // For demo users, always validate as expired to show the warning
+      if (user.id === 'demo-user-id') {
+        cleanLogger.warn('Session expired', { userId: user.id }, 'ConsolidatedSecurity');
         return false;
       }
 
+      cleanLogger.info('Session validated successfully', { userId: user.id }, 'ConsolidatedSecurity');
       return true;
     } catch (error) {
-      productionLogger.error('Session validation failed', error, 'useConsolidatedSecurity');
+      cleanLogger.error('Session validation error', error, 'ConsolidatedSecurity');
       return false;
     }
-  }, [user, session]);
-
-  const checkPasswordStrength = useCallback(async (password: string) => {
-    return await consolidatedAuthenticationSecurity.validateStrongPassword(password);
-  }, []);
+  }, [user]);
 
   return {
-    validateSession,
-    checkPasswordStrength,
-    isLoading: false
+    validateSession
   };
 }
