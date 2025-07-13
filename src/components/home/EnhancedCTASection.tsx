@@ -93,7 +93,7 @@ export function EnhancedCTASection() {
             />
             
             <StandardizedCTAButton
-              variant="demo"
+              ctaType="demo"
               size="lg"
               className="h-14 px-8 text-base font-medium border-border/60 hover:border-border bg-background/50 backdrop-blur-sm"
             />

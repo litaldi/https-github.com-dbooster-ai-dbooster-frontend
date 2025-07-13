@@ -35,7 +35,7 @@ export function InteractiveDemoSection() {
                   Upload your SQL queries and get instant optimization recommendations
                 </p>
                 <StandardizedCTAButton
-                  variant="demo"
+                  ctaType="demo"
                   className="w-full"
                   text="Try Demo"
                   showIcon={true}
@@ -62,7 +62,7 @@ export function InteractiveDemoSection() {
                   Connect your database and discover performance bottlenecks
                 </p>
                 <StandardizedCTAButton
-                  variant="demo"
+                  ctaType="demo"
                   className="w-full"
                   text="Try Demo"
                   showIcon={true}
@@ -89,7 +89,7 @@ export function InteractiveDemoSection() {
                   See how AI transforms slow queries into lightning-fast ones
                 </p>
                 <StandardizedCTAButton
-                  variant="demo"
+                  ctaType="demo"
                   className="w-full"
                   text="Try Demo"
                   showIcon={true}
