@@ -34,6 +34,33 @@ class ProductionLogger {
     }
   }
 
+  secureInfo(message: string, data?: any, context?: string) {
+    // Same as info but with additional security considerations
+    this.log(LOG_LEVELS.INFO, message, this.sanitizeData(data), context);
+  }
+
+  secureDebug(message: string, data?: any, context?: string) {
+    if (this.isDevelopment) {
+      this.log(LOG_LEVELS.DEBUG, message, this.sanitizeData(data), context);
+    }
+  }
+
+  private sanitizeData(data?: any): any {
+    if (!data) return data;
+    
+    // Remove sensitive information from logged data
+    const sanitized = { ...data };
+    const sensitiveKeys = ['password', 'token', 'secret', 'key', 'credential'];
+    
+    Object.keys(sanitized).forEach(key => {
+      if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
+        sanitized[key] = '[REDACTED]';
+      }
+    });
+    
+    return sanitized;
+  }
+
   private log(level: string, message: string, data?: any, context?: string) {
     const timestamp = new Date().toISOString();
     const logEntry = {

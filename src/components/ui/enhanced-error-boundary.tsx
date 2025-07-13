@@ -48,12 +48,14 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       eventId
     });
 
-    // Log error for monitoring
-    productionLogger.error('React Error Boundary caught error', error, 'ErrorBoundary', {
+    // Log error for monitoring - fix the argument count
+    productionLogger.error('React Error Boundary caught error', {
+      error: error.message,
+      stack: error.stack,
       componentStack: errorInfo.componentStack,
       errorBoundary: this.constructor.name,
       eventId
-    });
+    }, 'ErrorBoundary');
 
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
@@ -197,10 +199,12 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 // Hook version for functional components
 export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
-    productionLogger.error('Manual error report', error, 'useErrorHandler', {
+    productionLogger.error('Manual error report', {
+      error: error.message,
+      stack: error.stack,
       errorInfo,
       timestamp: new Date().toISOString()
-    });
+    }, 'useErrorHandler');
 
     if (import.meta.env.DEV) {
       console.error('Manual error:', error, errorInfo);
