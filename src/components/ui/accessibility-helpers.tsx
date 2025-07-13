@@ -1,6 +1,7 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { ChevronDown } from 'lucide-react';
 
 interface AccessibilityEnhancedProps {
   children: React.ReactNode;
@@ -124,6 +125,42 @@ export function LiveRegion({
       className={cn('sr-only', className)}
     >
       {children}
+    </div>
+  );
+}
+
+export function ProgressiveDisclosure({ 
+  summary, 
+  children, 
+  className 
+}: { 
+  summary: React.ReactNode; 
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className={cn('space-y-2', className)}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 text-sm font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+        aria-expanded={isOpen}
+        aria-controls="disclosure-content"
+      >
+        {summary}
+        <ChevronDown 
+          className={cn(
+            'h-4 w-4 transition-transform duration-200',
+            isOpen && 'rotate-180'
+          )} 
+        />
+      </button>
+      {isOpen && (
+        <div id="disclosure-content" className="animate-in slide-in-from-top-2 duration-200">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

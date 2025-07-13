@@ -23,7 +23,8 @@ import {
   Send,
   Loader2,
   Star,
-  ThumbsUp
+  ThumbsUp,
+  ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
