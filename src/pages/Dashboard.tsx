@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { OptimizedDashboardLayout } from '@/components/dashboard/OptimizedDashboardLayout';
+import { EnhancedRealTimeDashboard } from '@/components/dashboard/EnhancedRealTimeDashboard';
 import { useAuth } from '@/contexts/auth-context';
 import { cleanLogger } from '@/utils/cleanLogger';
 import { Navigate } from 'react-router-dom';
@@ -30,5 +30,5 @@ export default function Dashboard() {
     return <Navigate to="/login" replace />;
   }
 
-  return <OptimizedDashboardLayout />;
+  return <EnhancedRealTimeDashboard />;
 }

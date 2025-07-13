@@ -1,79 +1,103 @@
 
 import React, { useState, useEffect } from 'react';
-import { ResponsiveContainer } from 'recharts';
-import { ChartControls } from './chart/ChartControls';
-import { MetricIndicators } from './chart/MetricIndicators';
-import { AreaChartView } from './chart/AreaChartView';
-import { LineChartView } from './chart/LineChartView';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface ChartDataPoint {
   time: string;
   queries: number;
   responseTime: number;
-  optimization: number;
-  errors: number;
+  throughput: number;
 }
 
 export function RealTimeChart() {
   const [data, setData] = useState<ChartDataPoint[]>([]);
-  const [chartType, setChartType] = useState<'line' | 'area'>('area');
 
   useEffect(() => {
-    // Initialize with some data
-    const initialData: ChartDataPoint[] = Array.from({ length: 20 }, (_, i) => ({
-      time: new Date(Date.now() - (19 - i) * 60000).toLocaleTimeString('en-US', { 
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
-      queries: Math.floor(Math.random() * 100) + 50,
-      responseTime: Math.floor(Math.random() * 200) + 100,
-      optimization: Math.floor(Math.random() * 50) + 60,
-      errors: Math.floor(Math.random() * 5)
-    }));
-    setData(initialData);
-
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      setData(prevData => {
-        const newData = [...prevData.slice(1)];
+    // Generate initial data
+    const generateData = () => {
+      const now = new Date();
+      const newData: ChartDataPoint[] = [];
+      
+      for (let i = 29; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * 60000);
         newData.push({
-          time: new Date().toLocaleTimeString('en-US', { 
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
+          time: time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
           queries: Math.floor(Math.random() * 100) + 50,
           responseTime: Math.floor(Math.random() * 200) + 100,
-          optimization: Math.floor(Math.random() * 50) + 60,
-          errors: Math.floor(Math.random() * 5)
+          throughput: Math.floor(Math.random() * 1000) + 500,
         });
-        return newData;
+      }
+      
+      return newData;
+    };
+
+    setData(generateData());
+
+    // Update data every 30 seconds
+    const interval = setInterval(() => {
+      setData(prevData => {
+        const newPoint: ChartDataPoint = {
+          time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+          queries: Math.floor(Math.random() * 100) + 50,
+          responseTime: Math.floor(Math.random() * 200) + 100,
+          throughput: Math.floor(Math.random() * 1000) + 500,
+        };
+        
+        return [...prevData.slice(1), newPoint];
       });
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const latestData = data[data.length - 1];
-  const previousData = data[data.length - 2];
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <MetricIndicators latestData={latestData} previousData={previousData} />
-        <ChartControls chartType={chartType} onChartTypeChange={setChartType} />
-      </div>
-
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          {chartType === 'area' ? (
-            <AreaChartView data={data} />
-          ) : (
-            <LineChartView data={data} />
-          )}
-        </ResponsiveContainer>
-      </div>
+    <div className="h-80 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+          <XAxis 
+            dataKey="time" 
+            tick={{ fontSize: 12 }}
+            tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+          />
+          <YAxis 
+            tick={{ fontSize: 12 }}
+            tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'hsl(var(--popover))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '8px',
+              color: 'hsl(var(--popover-foreground))'
+            }}
+          />
+          <Line 
+            type="monotone" 
+            dataKey="queries" 
+            stroke="hsl(var(--primary))" 
+            strokeWidth={2}
+            dot={false}
+            name="Queries/min"
+          />
+          <Line 
+            type="monotone" 
+            dataKey="responseTime" 
+            stroke="hsl(var(--chart-2))" 
+            strokeWidth={2}
+            dot={false}
+            name="Response Time (ms)"
+          />
+          <Line 
+            type="monotone" 
+            dataKey="throughput" 
+            stroke="hsl(var(--chart-3))" 
+            strokeWidth={2}
+            dot={false}
+            name="Throughput"
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
