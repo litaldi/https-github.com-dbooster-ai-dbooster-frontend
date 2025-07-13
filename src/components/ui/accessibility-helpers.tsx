@@ -1,55 +1,76 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
-interface SkipLinkProps {
-  href: string;
+interface AccessibilityEnhancedProps {
   children: React.ReactNode;
   className?: string;
+  role?: string;
+  ariaLabel?: string;
+  ariaDescribedBy?: string;
+  tabIndex?: number;
+  focusOnMount?: boolean;
 }
 
-export function SkipLink({ href, children, className }: SkipLinkProps) {
+export function AccessibilityEnhanced({
+  children,
+  className,
+  role,
+  ariaLabel,
+  ariaDescribedBy,
+  tabIndex,
+  focusOnMount = false,
+  ...props
+}: AccessibilityEnhancedProps) {
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (focusOnMount && elementRef.current) {
+      elementRef.current.focus();
+    }
+  }, [focusOnMount]);
+
+  return (
+    <div
+      ref={elementRef}
+      className={cn(
+        'focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2',
+        className
+      )}
+      role={role}
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
+      tabIndex={tabIndex}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function SkipLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <a
       href={href}
-      className={cn(
-        'skip-link sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50',
-        'bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium',
-        'transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-        className
-      )}
+      className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50 transition-all"
     >
       {children}
     </a>
   );
 }
 
-interface VisuallyHiddenProps {
-  children: React.ReactNode;
-  className?: string;
+export function ScreenReaderOnly({ children }: { children: React.ReactNode }) {
+  return <span className="sr-only">{children}</span>;
 }
 
-export function VisuallyHidden({ children, className }: VisuallyHiddenProps) {
-  return (
-    <span className={cn('sr-only', className)}>
-      {children}
-    </span>
-  );
-}
+export function FocusTrap({ children, active = true }: { children: React.ReactNode; active?: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
 
-interface FocusTrapProps {
-  children: React.ReactNode;
-  enabled?: boolean;
-}
+  useEffect(() => {
+    if (!active || !containerRef.current) return;
 
-export function FocusTrap({ children, enabled = true }: FocusTrapProps) {
-  const trapRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (!enabled || !trapRef.current) return;
-
-    const trap = trapRef.current;
-    const focusableElements = trap.querySelectorAll(
+    const container = containerRef.current;
+    const focusableElements = container.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
     
@@ -72,126 +93,37 @@ export function FocusTrap({ children, enabled = true }: FocusTrapProps) {
       }
     };
 
-    trap.addEventListener('keydown', handleTabKey);
+    container.addEventListener('keydown', handleTabKey);
     firstElement?.focus();
 
     return () => {
-      trap.removeEventListener('keydown', handleTabKey);
+      container.removeEventListener('keydown', handleTabKey);
     };
-  }, [enabled]);
+  }, [active]);
 
   return (
-    <div ref={trapRef}>
+    <div ref={containerRef}>
       {children}
     </div>
   );
-}
-
-interface ProgressiveDisclosureProps {
-  summary: React.ReactNode;
-  children: React.ReactNode;
-  className?: string;
-  defaultOpen?: boolean;
-  onToggle?: (isOpen: boolean) => void;
-}
-
-export function ProgressiveDisclosure({ 
-  summary, 
-  children, 
-  className,
-  defaultOpen = false,
-  onToggle
-}: ProgressiveDisclosureProps) {
-  const [isOpen, setIsOpen] = React.useState(defaultOpen);
-  const contentId = React.useId();
-
-  const handleToggle = () => {
-    const newState = !isOpen;
-    setIsOpen(newState);
-    onToggle?.(newState);
-  };
-
-  return (
-    <div className={cn('progressive-disclosure', className)}>
-      <button
-        type="button"
-        onClick={handleToggle}
-        className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity cursor-pointer w-full"
-        aria-expanded={isOpen}
-        aria-controls={contentId}
-      >
-        <span className={cn(
-          'transition-transform duration-200 flex-shrink-0',
-          isOpen ? 'rotate-90' : 'rotate-0'
-        )}>
-          ▶
-        </span>
-        <span className="flex-1">{summary}</span>
-      </button>
-      
-      {isOpen && (
-        <div 
-          id={contentId}
-          className="mt-2 pl-6 animate-in slide-in-from-top-2 duration-200"
-          role="region"
-          aria-label="Expanded content"
-        >
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface LiveRegionProps {
-  children: React.ReactNode;
-  priority?: 'polite' | 'assertive';
-  atomic?: boolean;
-  className?: string;
 }
 
 export function LiveRegion({ 
   children, 
-  priority = 'polite', 
-  atomic = false,
+  politeness = 'polite' as 'polite' | 'assertive' | 'off',
   className 
-}: LiveRegionProps) {
+}: { 
+  children: React.ReactNode; 
+  politeness?: 'polite' | 'assertive' | 'off';
+  className?: string;
+}) {
   return (
-    <div
-      aria-live={priority}
-      aria-atomic={atomic}
+    <div 
+      aria-live={politeness}
+      aria-atomic="true"
       className={cn('sr-only', className)}
     >
       {children}
     </div>
-  );
-}
-
-interface LandmarkProps {
-  children: React.ReactNode;
-  role?: 'main' | 'navigation' | 'complementary' | 'banner' | 'contentinfo' | 'region';
-  ariaLabel?: string;
-  className?: string;
-}
-
-export function Landmark({ 
-  children, 
-  role = 'region', 
-  ariaLabel,
-  className 
-}: LandmarkProps) {
-  const Component = role === 'main' ? 'main' : 
-                   role === 'navigation' ? 'nav' :
-                   role === 'banner' ? 'header' :
-                   role === 'contentinfo' ? 'footer' : 'section';
-
-  return (
-    <Component
-      role={role}
-      aria-label={ariaLabel}
-      className={className}
-    >
-      {children}
-    </Component>
   );
 }
