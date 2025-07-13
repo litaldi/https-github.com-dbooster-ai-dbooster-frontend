@@ -89,3 +89,65 @@ export function validateName(name: string): string | null {
   
   return null;
 }
+
+// Enhanced validation utilities
+export class ValidationUtils {
+  static validateUserInput(input: string, context: string = 'general'): {
+    valid: boolean;
+    sanitized: string;
+    threats: string[];
+    riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  } {
+    const threats: string[] = [];
+    let sanitized = input.trim();
+    let riskLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
+
+    // Check for potential XSS
+    if (/<script|javascript:/i.test(input)) {
+      threats.push('Potential XSS detected');
+      riskLevel = 'high';
+      sanitized = sanitized.replace(/<script[^>]*>.*?<\/script>/gi, '');
+    }
+
+    // Check for SQL injection patterns
+    if (/('|(--)|;|\/\*|\*\/|xp_|sp_)/i.test(input)) {
+      threats.push('Potential SQL injection detected');
+      riskLevel = 'high';
+    }
+
+    // Basic sanitization
+    sanitized = sanitized.replace(/[<>'"]/g, '');
+
+    return {
+      valid: threats.length === 0,
+      sanitized,
+      threats,
+      riskLevel
+    };
+  }
+
+  static validateFormData(formData: Record<string, any>, context: string): {
+    valid: boolean;
+    errors: Record<string, string[]>;
+    sanitized: Record<string, any>;
+  } {
+    const errors: Record<string, string[]> = {};
+    const sanitized: Record<string, any> = {};
+    let valid = true;
+
+    for (const [key, value] of Object.entries(formData)) {
+      if (typeof value === 'string') {
+        const result = this.validateUserInput(value, `${context}.${key}`);
+        if (!result.valid) {
+          errors[key] = result.threats;
+          valid = false;
+        }
+        sanitized[key] = result.sanitized;
+      } else {
+        sanitized[key] = value;
+      }
+    }
+
+    return { valid, errors, sanitized };
+  }
+}

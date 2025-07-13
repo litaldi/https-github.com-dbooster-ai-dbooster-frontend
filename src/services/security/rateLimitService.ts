@@ -1,28 +1,24 @@
 
-import { productionLogger } from '@/utils/productionLogger';
-
-interface RateLimitEntry {
-  count: number;
-  resetTime: number;
-  firstRequest: number;
-}
-
 interface RateLimitConfig {
   windowMs: number;
-  maxRequests: number;
-  blockDurationMs: number;
+  maxAttempts: number;
+  blockDurationMs?: number;
+}
+
+interface RateLimitRecord {
+  attempts: number;
+  windowStart: number;
+  blockedUntil?: number;
 }
 
 export class RateLimitService {
   private static instance: RateLimitService;
-  private limits: Map<string, RateLimitEntry> = new Map();
-  private blockedIPs: Set<string> = new Set();
+  private limits: Map<string, RateLimitRecord> = new Map();
   
   private configs: Record<string, RateLimitConfig> = {
-    api: { windowMs: 60000, maxRequests: 100, blockDurationMs: 300000 }, // 100 req/min, 5min block
-    auth: { windowMs: 300000, maxRequests: 5, blockDurationMs: 900000 }, // 5 req/5min, 15min block
-    form: { windowMs: 60000, maxRequests: 10, blockDurationMs: 60000 }, // 10 req/min, 1min block
-    search: { windowMs: 60000, maxRequests: 30, blockDurationMs: 120000 } // 30 req/min, 2min block
+    auth: { windowMs: 15 * 60 * 1000, maxAttempts: 5, blockDurationMs: 15 * 60 * 1000 },
+    api: { windowMs: 60 * 1000, maxAttempts: 100 },
+    default: { windowMs: 60 * 1000, maxAttempts: 50 }
   };
 
   static getInstance(): RateLimitService {
@@ -32,121 +28,84 @@ export class RateLimitService {
     return RateLimitService.instance;
   }
 
-  async checkRateLimit(identifier: string, action: string): Promise<{
+  async checkRateLimit(identifier: string, actionType: string = 'default'): Promise<{
     allowed: boolean;
-    remaining: number;
-    resetTime: number;
     retryAfter?: number;
+    remaining?: number;
   }> {
-    const config = this.configs[action] || this.configs.api;
-    const key = `${identifier}:${action}`;
+    const config = this.configs[actionType] || this.configs.default;
+    const key = `${identifier}:${actionType}`;
     const now = Date.now();
-
-    // Check if IP is currently blocked
-    if (this.blockedIPs.has(identifier)) {
-      productionLogger.warn('Blocked IP attempted access', { identifier, action }, 'RateLimitService');
+    
+    let record = this.limits.get(key);
+    
+    // Check if currently blocked
+    if (record?.blockedUntil && now < record.blockedUntil) {
       return {
         allowed: false,
-        remaining: 0,
-        resetTime: now + config.blockDurationMs,
-        retryAfter: config.blockDurationMs
+        retryAfter: Math.ceil((record.blockedUntil - now) / 1000)
       };
     }
-
-    let entry = this.limits.get(key);
-
-    // Initialize or reset if window expired
-    if (!entry || now >= entry.resetTime) {
-      entry = {
-        count: 0,
-        resetTime: now + config.windowMs,
-        firstRequest: now
-      };
-    }
-
-    entry.count++;
-    this.limits.set(key, entry);
-
-    const allowed = entry.count <= config.maxRequests;
-    const remaining = Math.max(0, config.maxRequests - entry.count);
-
-    // Block IP if severely exceeding limits
-    if (entry.count > config.maxRequests * 2) {
-      this.blockedIPs.add(identifier);
-      productionLogger.error('IP blocked for severe rate limit violation', {
-        identifier,
-        action,
-        attemptedRequests: entry.count,
-        limit: config.maxRequests
-      }, 'RateLimitService');
-      
-      // Auto-unblock after block duration
-      setTimeout(() => {
-        this.blockedIPs.delete(identifier);
-        productionLogger.info('IP unblocked after timeout', { identifier }, 'RateLimitService');
-      }, config.blockDurationMs);
-    }
-
-    if (!allowed) {
-      productionLogger.warn('Rate limit exceeded', {
-        identifier,
-        action,
-        count: entry.count,
-        limit: config.maxRequests
-      }, 'RateLimitService');
-    }
-
-    return {
-      allowed,
-      remaining,
-      resetTime: entry.resetTime,
-      retryAfter: allowed ? undefined : (entry.resetTime - now)
-    };
-  }
-
-  async cleanupExpiredEntries(): Promise<void> {
-    const now = Date.now();
-    let cleanedCount = 0;
-
-    for (const [key, entry] of this.limits.entries()) {
-      if (now >= entry.resetTime) {
-        this.limits.delete(key);
-        cleanedCount++;
-      }
-    }
-
-    if (cleanedCount > 0) {
-      productionLogger.secureDebug('Cleaned up expired rate limit entries', { cleanedCount }, 'RateLimitService');
-    }
-  }
-
-  getRateLimitStats(): {
-    totalEntries: number;
-    blockedIPs: number;
-    topLimitedActions: Array<{ action: string; count: number }>;
-  } {
-    const actionCounts: Record<string, number> = {};
     
-    for (const key of this.limits.keys()) {
-      const action = key.split(':')[1];
-      actionCounts[action] = (actionCounts[action] || 0) + 1;
+    // Initialize or reset window
+    if (!record || (now - record.windowStart) >= config.windowMs) {
+      record = {
+        attempts: 1,
+        windowStart: now
+      };
+    } else {
+      record.attempts++;
     }
-
-    const topLimitedActions = Object.entries(actionCounts)
-      .map(([action, count]) => ({ action, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
+    
+    // Check if limit exceeded
+    if (record.attempts > config.maxAttempts) {
+      if (config.blockDurationMs) {
+        record.blockedUntil = now + config.blockDurationMs;
+      }
+      
+      this.limits.set(key, record);
+      
+      return {
+        allowed: false,
+        retryAfter: config.blockDurationMs ? Math.ceil(config.blockDurationMs / 1000) : undefined
+      };
+    }
+    
+    this.limits.set(key, record);
+    
     return {
-      totalEntries: this.limits.size,
-      blockedIPs: this.blockedIPs.size,
-      topLimitedActions
+      allowed: true,
+      remaining: config.maxAttempts - record.attempts
     };
   }
 
-  updateRateLimitConfig(action: string, config: RateLimitConfig): void {
-    this.configs[action] = config;
-    productionLogger.secureInfo('Rate limit configuration updated', { action, config }, 'RateLimitService');
+  clearRateLimit(identifier: string, actionType: string = 'default'): void {
+    const key = `${identifier}:${actionType}`;
+    this.limits.delete(key);
+  }
+
+  getRateLimitStatus(identifier: string, actionType: string = 'default'): {
+    attempts: number;
+    remaining: number;
+    resetTime: number;
+    blocked: boolean;
+  } | null {
+    const config = this.configs[actionType] || this.configs.default;
+    const key = `${identifier}:${actionType}`;
+    const record = this.limits.get(key);
+    const now = Date.now();
+    
+    if (!record) return null;
+    
+    const blocked = record.blockedUntil ? now < record.blockedUntil : false;
+    const resetTime = record.windowStart + config.windowMs;
+    
+    return {
+      attempts: record.attempts,
+      remaining: Math.max(0, config.maxAttempts - record.attempts),
+      resetTime,
+      blocked
+    };
   }
 }
 

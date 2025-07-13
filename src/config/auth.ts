@@ -4,15 +4,15 @@ export const AUTH_CONFIG = {
     REMEMBER_ME: 'dbooster_remember_me',
     EMAIL: 'dbooster_email',
   },
-  RATE_LIMIT: {
-    MAX_ATTEMPTS: 5,
-    WINDOW_MS: 15 * 60 * 1000, // 15 minutes
-  },
-  OAUTH_PROVIDERS: ['github', 'google'] as const,
   REDIRECT_PATHS: {
-    SUCCESS: '/',
-    ERROR: '/login?error=auth_failed',
+    SUCCESS: '/app',
+    LOGIN: '/login',
+  },
+  PASSWORD_REQUIREMENTS: {
+    MIN_LENGTH: 8,
+    REQUIRE_UPPERCASE: true,
+    REQUIRE_LOWERCASE: true,
+    REQUIRE_NUMBERS: true,
+    REQUIRE_SPECIAL: false,
   },
 } as const;
-
-export type OAuthProvider = typeof AUTH_CONFIG.OAUTH_PROVIDERS[number];
