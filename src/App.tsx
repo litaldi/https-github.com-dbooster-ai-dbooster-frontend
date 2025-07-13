@@ -1,4 +1,3 @@
-
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -16,6 +15,8 @@ import ProtectedRoute from '@/components/protected-route';
 
 // Public Pages
 import Home from '@/pages/Home';
+import ProductPage from '@/pages/ProductPage';
+import SolutionsPage from '@/pages/SolutionsPage';
 import FeaturesPage from '@/pages/FeaturesPage';
 import HowItWorksPage from '@/pages/HowItWorksPage';
 import AIStudioPage from '@/pages/AIStudioPage';
@@ -93,6 +94,10 @@ function App() {
                 <Route path="/" element={<PublicLayout />}>
                   <Route index element={<Home />} />
                   <Route path="home" element={<Navigate to="/" replace />} />
+                  
+                  {/* Main Landing Pages */}
+                  <Route path="product" element={<ProductPage />} />
+                  <Route path="solutions" element={<SolutionsPage />} />
                   
                   {/* Product Routes */}
                   <Route path="features" element={<FeaturesPage />} />
