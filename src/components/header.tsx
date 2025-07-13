@@ -2,7 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/auth-context';
-import { LogOut, User, Settings, Bell } from 'lucide-react';
+import { LogoutButton } from '@/components/auth/LogoutButton';
+import { User, Settings, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { NotificationBell } from '@/components/notifications/SmartNotifications';
@@ -18,17 +19,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function Header() {
-  const { user, logout, isDemo } = useAuth();
+  const { user, isDemo } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" dir="ltr">
@@ -102,9 +94,8 @@ export function Header() {
                   <span>Support & Help</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                <DropdownMenuItem asChild>
+                  <LogoutButton variant="ghost" className="w-full justify-start text-red-600 focus:text-red-600" />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

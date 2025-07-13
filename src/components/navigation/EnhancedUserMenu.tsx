@@ -3,8 +3,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { NavigationItem } from '@/config/navigation';
-import { User, LogOut, Sun, Moon } from 'lucide-react';
+import { User, Sun, Moon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { LogoutButton } from '@/components/auth/LogoutButton';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -84,19 +85,10 @@ export function EnhancedUserMenu({
           </Button>
           
           {user ? (
-            <Button
+            <LogoutButton 
               variant="ghost"
               className="w-full justify-start h-12 text-red-600 hover:text-red-700 hover:bg-red-50 text-left"
-              onClick={() => {
-                handleLogout();
-                if (closeMenu) closeMenu();
-              }}
-            >
-              <div className="flex items-center gap-3 text-left">
-                <LogOut className="h-4 w-4" />
-                <span className="text-left">Sign Out</span>
-              </div>
-            </Button>
+            />
           ) : (
             <Button className="w-full h-12 text-left" asChild>
               <Link to="/login" onClick={closeMenu} className="flex items-center gap-3 text-left">
@@ -168,11 +160,11 @@ export function EnhancedUserMenu({
           ))}
           
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-            <div className="flex items-center gap-3 w-full text-left">
-              <LogOut className="h-4 w-4" />
-              <span className="text-left">Sign Out</span>
-            </div>
+          <DropdownMenuItem asChild>
+            <LogoutButton 
+              variant="ghost" 
+              className="w-full justify-start text-red-600 focus:text-red-600 focus:bg-red-50"
+            />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
