@@ -130,7 +130,7 @@ export default function HowItWorksPage() {
           <Card className="text-center shadow-lg">
             <CardContent className="pt-8">
               <Clock className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <div className="text-3xl font-bold mb-2">< 5 min</div>
+              <div className="text-3xl font-bold mb-2">5 min</div>
               <p className="text-muted-foreground">Setup Time</p>
             </CardContent>
           </Card>
