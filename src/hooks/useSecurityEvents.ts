@@ -1,14 +1,17 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface SecurityEvent {
   id: string;
   event_type: string;
+  event_data: Json;
   created_at: string;
   user_id?: string;
-  ip_address?: string;
+  ip_address?: string | null;
+  user_agent?: string | null;
 }
 
 interface SecurityStats {
@@ -26,77 +29,78 @@ export function useSecurityEvents() {
     rateLimitHits: 0,
     recentActivity: 0
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const { data, error } = await supabase
+      const { data: eventsData, error: eventsError } = await supabase
         .from('security_audit_log')
-        .select('id, event_type, created_at, user_id, ip_address')
+        .select('id, event_type, event_data, created_at, user_id, ip_address::text, user_agent')
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) {
-        throw error;
+      if (eventsError) {
+        productionLogger.error('Failed to fetch security events', eventsError, 'useSecurityEvents');
+        return;
       }
 
-      // Fix type issue by ensuring ip_address is properly typed
-      const typedEvents: SecurityEvent[] = (data || []).map(event => ({
+      // Map the data to ensure proper types
+      const mappedEvents: SecurityEvent[] = (eventsData || []).map(event => ({
         id: event.id,
         event_type: event.event_type,
+        event_data: event.event_data || {},
         created_at: event.created_at,
         user_id: event.user_id || undefined,
-        ip_address: event.ip_address ? String(event.ip_address) : undefined
+        ip_address: event.ip_address || null,
+        user_agent: event.user_agent || null
       }));
 
-      setEvents(typedEvents);
+      setEvents(mappedEvents);
 
       // Calculate stats
-      const now = new Date();
-      const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+      const totalEvents = mappedEvents.length;
+      const securityViolations = mappedEvents.filter(event => 
+        event.event_type.includes('violation') || 
+        event.event_type.includes('threat') || 
+        event.event_type.includes('suspicious')
+      ).length;
       
-      setStats({
-        totalEvents: typedEvents.length,
-        securityViolations: typedEvents.filter(e => 
-          e.event_type.includes('violation') || 
-          e.event_type.includes('threat') || 
-          e.event_type.includes('suspicious')
-        ).length,
-        rateLimitHits: typedEvents.filter(e => 
-          e.event_type.includes('rate_limit') || 
-          e.event_type.includes('blocked')
-        ).length,
-        recentActivity: typedEvents.filter(e => 
-          new Date(e.created_at) > hourAgo
-        ).length
-      });
+      const rateLimitHits = mappedEvents.filter(event => 
+        event.event_type.includes('rate_limit') || 
+        event.event_type.includes('blocked')
+      ).length;
 
-      setError(null);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch security events';
-      setError(errorMessage);
-      productionLogger.error('Failed to fetch security events', err, 'useSecurityEvents');
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentActivity = mappedEvents.filter(event => 
+        new Date(event.created_at) > oneHourAgo
+      ).length;
+
+      setStats({
+        totalEvents,
+        securityViolations,
+        rateLimitHits,
+        recentActivity
+      });
+    } catch (error) {
+      productionLogger.error('Error fetching security events', error, 'useSecurityEvents');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }, []);
+
+  const refreshEvents = useCallback(async () => {
+    setLoading(true);
+    await fetchEvents();
+  }, [fetchEvents]);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
-  const refreshEvents = async () => {
-    await fetchEvents();
-  };
-
-  return { 
-    events, 
-    stats, 
-    isLoading, 
-    loading: isLoading, // Add alias for backward compatibility
-    error: error || '',
-    refreshEvents 
+  return {
+    events,
+    stats,
+    loading,
+    refreshEvents
   };
 }

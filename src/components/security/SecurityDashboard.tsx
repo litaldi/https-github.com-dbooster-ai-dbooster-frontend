@@ -55,14 +55,6 @@ export function SecurityDashboard() {
     ]);
   };
 
-  // Provide default values if stats is undefined
-  const safeStats = stats || {
-    totalEvents: 0,
-    securityViolations: 0,
-    rateLimitHits: 0,
-    recentActivity: 0
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -80,14 +72,14 @@ export function SecurityDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <SecurityStatsCard
           title="Total Events"
-          value={safeStats.totalEvents}
+          value={stats.totalEvents}
           description="Last 50 events"
           icon={Shield}
         />
         
         <SecurityStatsCard
           title="Security Issues"
-          value={safeStats.securityViolations}
+          value={stats.securityViolations}
           description="Violations detected"
           icon={AlertTriangle}
           variant="destructive"
@@ -95,7 +87,7 @@ export function SecurityDashboard() {
         
         <SecurityStatsCard
           title="Rate Limits"
-          value={safeStats.rateLimitHits}
+          value={stats.rateLimitHits}
           description="Rate limit events"
           icon={Clock}
           variant="warning"
@@ -103,7 +95,7 @@ export function SecurityDashboard() {
         
         <SecurityStatsCard
           title="Recent Activity"
-          value={safeStats.recentActivity}
+          value={stats.recentActivity}
           description="Last hour"
           icon={CheckCircle}
           variant="success"
