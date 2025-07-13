@@ -109,21 +109,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginDemo = async () => {
     try {
       setIsDemo(true);
-      setUser({
+      
+      // Create a properly typed demo user object
+      const demoUser: User = {
         id: 'demo-user',
         email: 'demo@example.com',
-        user_metadata: { full_name: 'Demo User' }
-      } as User);
-      setSession({
+        user_metadata: { full_name: 'Demo User' },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+        phone: '',
+        confirmation_sent_at: '',
+        confirmed_at: new Date().toISOString(),
+        email_confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        role: 'authenticated',
+        updated_at: new Date().toISOString()
+      };
+
+      const demoSession: Session = {
         access_token: 'demo-token',
         token_type: 'bearer',
         expires_in: 3600,
         refresh_token: 'demo-refresh',
-        user: {
-          id: 'demo-user',
-          email: 'demo@example.com'
-        }
-      } as Session);
+        user: demoUser,
+        expires_at: Math.floor(Date.now() / 1000) + 3600
+      };
+
+      setUser(demoUser);
+      setSession(demoSession);
     } catch (error) {
       productionLogger.error('Demo login failed', error, 'AuthContext');
       throw error;
