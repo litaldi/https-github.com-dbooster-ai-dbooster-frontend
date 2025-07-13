@@ -1,103 +1,97 @@
 
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
-function Skeleton({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function ContentSkeleton() {
   return (
-    <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
-      {...props}
-    />
-  );
-}
-
-interface ContentSkeletonProps {
-  lines?: number;
-  showHeader?: boolean;
-  className?: string;
-}
-
-function ContentSkeleton({ 
-  lines = 3, 
-  showHeader = true, 
-  className 
-}: ContentSkeletonProps) {
-  return (
-    <div className={cn("space-y-4 p-4", className)}>
-      {showHeader && (
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-1/3" />
-          <Skeleton className="h-4 w-2/3" />
-        </div>
-      )}
+    <div className="container mx-auto px-4 py-8 space-y-6">
+      <div className="space-y-4">
+        <motion.div
+          className="h-8 bg-muted rounded-md w-1/3"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        <motion.div
+          className="h-4 bg-muted rounded-md w-2/3"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+        />
+      </div>
       
-      <div className="space-y-2">
-        {Array.from({ length: lines }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className={cn(
-              "h-4",
-              i === lines - 1 ? "w-1/2" : "w-full"
-            )}
-          />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Card key={i} className="shadow-lg">
+            <CardHeader>
+              <motion.div
+                className="h-6 bg-muted rounded-md w-3/4"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 }}
+              />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <motion.div
+                className="h-4 bg-muted rounded-md w-full"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 + 0.3 }}
+              />
+              <motion.div
+                className="h-4 bg-muted rounded-md w-2/3"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 + 0.5 }}
+              />
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
   );
 }
 
-function CardSkeleton({ className }: { className?: string }) {
+export function PageSkeleton() {
   return (
-    <div className={cn("rounded-lg border p-4 space-y-3", className)}>
-      <div className="space-y-2">
-        <Skeleton className="h-5 w-1/4" />
-        <Skeleton className="h-4 w-3/4" />
-      </div>
-      <div className="space-y-2">
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-2/3" />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <ContentSkeleton />
     </div>
   );
 }
 
-function TableSkeleton({ 
-  rows = 5, 
-  columns = 4, 
-  className 
-}: { 
-  rows?: number; 
-  columns?: number; 
-  className?: string; 
-}) {
+export function DashboardSkeleton() {
   return (
-    <div className={cn("space-y-3", className)}>
-      {/* Header */}
-      <div className="flex space-x-4">
-        {Array.from({ length: columns }).map((_, i) => (
-          <Skeleton key={i} className="h-4 flex-1" />
+    <div className="container mx-auto px-6 py-8 space-y-8">
+      {/* Header Skeleton */}
+      <div className="space-y-4">
+        <motion.div
+          className="h-10 bg-muted rounded-md w-1/4"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        <motion.div
+          className="h-6 bg-muted rounded-md w-1/2"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+        />
+      </div>
+
+      {/* Metrics Grid Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} className="shadow-lg">
+            <CardContent className="p-6 space-y-3">
+              <motion.div
+                className="h-8 bg-muted rounded-md w-2/3"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 }}
+              />
+              <motion.div
+                className="h-12 bg-muted rounded-md w-1/2"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 + 0.3 }}
+              />
+            </CardContent>
+          </Card>
         ))}
       </div>
-      
-      {/* Rows */}
-      {Array.from({ length: rows }).map((_, rowIndex) => (
-        <div key={rowIndex} className="flex space-x-4">
-          {Array.from({ length: columns }).map((_, colIndex) => (
-            <Skeleton 
-              key={colIndex} 
-              className={cn(
-                "h-4 flex-1",
-                colIndex === 0 && "w-16" // First column smaller
-              )} 
-            />
-          ))}
-        </div>
-      ))}
     </div>
   );
 }
-
-export { Skeleton, ContentSkeleton, CardSkeleton, TableSkeleton };

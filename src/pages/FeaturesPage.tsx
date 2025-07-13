@@ -1,251 +1,146 @@
 
 import React from 'react';
-import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
-  Brain, 
   Zap, 
+  Database, 
+  Brain, 
   Shield, 
   BarChart3, 
-  Database, 
   Clock, 
   Users, 
-  Settings,
-  Search,
-  Target,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle2,
+  Globe,
+  CheckCircle,
   ArrowRight
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 const features = [
   {
-    icon: <Brain className="h-8 w-8 text-blue-600" />,
-    title: "AI-Powered Query Optimization",
-    description: "Advanced machine learning algorithms analyze your queries and provide intelligent optimization recommendations that reduce execution time by up to 73%.",
-    badge: "AI-Powered",
-    benefits: [
-      "Automatic slow query detection",
-      "Smart index recommendations", 
-      "Query rewriting suggestions",
-      "Performance impact predictions"
-    ]
+    icon: <Brain className="h-6 w-6" />,
+    title: 'AI-Powered Optimization',
+    description: 'Advanced machine learning algorithms analyze your queries and suggest optimizations automatically.',
+    benefits: ['90% faster query execution', 'Automated index recommendations', 'Smart caching strategies']
   },
   {
-    icon: <Shield className="h-8 w-8 text-green-600" />,
-    title: "Enterprise Security & Compliance",
-    description: "SOC2 Type II certified platform with bank-grade encryption, comprehensive audit logging, and enterprise-ready security controls.",
-    badge: "SOC2 Certified",
-    benefits: [
-      "End-to-end encryption",
-      "Role-based access control",
-      "Comprehensive audit trails",
-      "GDPR & CCPA compliant"
-    ]
+    icon: <Database className="h-6 w-6" />,
+    title: 'Multi-Database Support',
+    description: 'Works seamlessly with PostgreSQL, MySQL, MongoDB, and other popular databases.',
+    benefits: ['Universal compatibility', 'Zero configuration required', 'Cloud & on-premise support']
   },
   {
-    icon: <BarChart3 className="h-8 w-8 text-purple-600" />,
-    title: "Real-Time Performance Analytics",
-    description: "Comprehensive monitoring dashboards with predictive analytics, anomaly detection, and automated alerting to prevent issues before they impact users.",
-    badge: "Real-Time",
-    benefits: [
-      "Live performance monitoring",
-      "Predictive anomaly detection",
-      "Custom alert configurations",
-      "Historical trend analysis"
-    ]
+    icon: <BarChart3 className="h-6 w-6" />,
+    title: 'Real-Time Analytics',
+    description: 'Monitor performance metrics and get insights into your database operations.',
+    benefits: ['Live performance dashboards', 'Historical trend analysis', 'Custom alerting']
   },
   {
-    icon: <Database className="h-8 w-8 text-orange-600" />,
-    title: "Universal Database Support",
-    description: "Native support for PostgreSQL, MySQL, MongoDB, Oracle, SQL Server, and more. One platform for your entire database infrastructure.",
-    badge: "Multi-DB",
-    benefits: [
-      "15+ database engines supported",
-      "Cloud & on-premise compatibility",
-      "Unified management interface",
-      "Cross-database optimization"
-    ]
+    icon: <Shield className="h-6 w-6" />,
+    title: 'Enterprise Security',
+    description: 'SOC2 compliant with end-to-end encryption and role-based access control.',
+    benefits: ['SOC2 Type II certified', 'Advanced threat detection', 'Audit logging']
   },
   {
-    icon: <Search className="h-8 w-8 text-indigo-600" />,
-    title: "Intelligent Query Builder",
-    description: "Natural language query interface that converts plain English into optimized SQL, making database optimization accessible to everyone.",
-    badge: "Natural Language",
-    benefits: [
-      "Plain English to SQL conversion",
-      "Query validation and testing",
-      "Performance estimation",
-      "Collaborative query development"
-    ]
+    icon: <Clock className="h-6 w-6" />,
+    title: 'Automated Monitoring',
+    description: '24/7 monitoring with intelligent alerts and performance recommendations.',
+    benefits: ['Proactive issue detection', 'Smart alerting system', 'Performance baselines']
   },
   {
-    icon: <TrendingUp className="h-8 w-8 text-emerald-600" />,
-    title: "Cost Optimization Engine",
-    description: "Automatically identify and eliminate wasteful queries, optimize resource usage, and reduce infrastructure costs by up to 60%.",
-    badge: "Cost Savings",
-    benefits: [
-      "Resource usage optimization",
-      "Cost impact analysis",
-      "Scaling recommendations",
-      "ROI tracking and reporting"
-    ]
+    icon: <Users className="h-6 w-6" />,
+    title: 'Team Collaboration',
+    description: 'Share insights, collaborate on optimizations, and manage team access.',
+    benefits: ['Team workspaces', 'Shared dashboards', 'Role-based permissions']
   }
-];
-
-const integrations = [
-  "PostgreSQL", "MySQL", "MongoDB", "Oracle", "SQL Server", "Redis",
-  "AWS RDS", "Google Cloud SQL", "Azure Database", "Snowflake",
-  "BigQuery", "Redshift", "DynamoDB", "Cassandra", "MariaDB"
 ];
 
 export default function FeaturesPage() {
   return (
-    <StandardPageLayout
-      title="Powerful Features for Modern Databases"
-      subtitle="Everything you need to optimize, monitor, and scale your database infrastructure"
-      description="Comprehensive AI-powered tools and features designed to transform your database performance and reduce operational costs."
-    >
-      <div className="space-y-20">
-        {/* Hero Stats */}
-        <section className="text-center">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-center"
-            >
-              <div className="text-4xl font-bold text-primary mb-2">73%</div>
-              <div className="text-muted-foreground">Query Speed Improvement</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-center"
-            >
-              <div className="text-4xl font-bold text-primary mb-2">60%</div>
-              <div className="text-muted-foreground">Cost Reduction</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="text-center"
-            >
-              <div className="text-4xl font-bold text-primary mb-2">50K+</div>
-              <div className="text-muted-foreground">Developers Trust Us</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="text-center"
-            >
-              <div className="text-4xl font-bold text-primary mb-2">99.9%</div>
-              <div className="text-muted-foreground">Uptime SLA</div>
-            </motion.div>
-          </div>
-        </section>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <div className="container mx-auto px-4 py-16">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <Badge variant="outline" className="mb-4">
+            <Zap className="h-3 w-3 mr-1" />
+            Powerful Features
+          </Badge>
+          <h1 className="text-4xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            Everything You Need
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            DBooster provides comprehensive database optimization tools that scale from 
+            individual developers to enterprise teams.
+          </p>
+        </motion.div>
 
-        {/* Main Features */}
-        <section>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Core Features</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Comprehensive tools designed to optimize every aspect of your database performance
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="h-full hover:shadow-lg transition-shadow border-2 hover:border-primary/20">
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="p-3 bg-gradient-to-br from-muted to-muted/50 rounded-xl">
-                        {feature.icon}
-                      </div>
-                      <Badge variant="secondary">{feature.badge}</Badge>
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {features.map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <CardHeader>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                      {feature.icon}
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">
-                      {feature.description}
-                    </p>
-                    <ul className="space-y-2">
-                      {feature.benefits.map((benefit, benefitIndex) => (
-                        <li key={benefitIndex} className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                          <span>{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* Database Integrations */}
-        <section className="bg-muted/30 p-12 rounded-2xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Universal Database Support</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Works seamlessly with all major database systems and cloud providers
-            </p>
-          </div>
-          
-          <div className="flex flex-wrap justify-center gap-4">
-            {integrations.map((integration, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                viewport={{ once: true }}
-              >
-                <Badge variant="outline" className="px-4 py-2 text-sm">
-                  {integration}
-                </Badge>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+                  </div>
+                  <p className="text-muted-foreground">
+                    {feature.description}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {feature.benefits.map((benefit, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
 
         {/* CTA Section */}
-        <section className="text-center bg-gradient-to-r from-primary/5 to-blue-500/5 p-12 rounded-2xl">
-          <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Database Performance?</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="text-center bg-gradient-to-r from-primary/10 to-blue-600/10 rounded-2xl p-12"
+        >
+          <Globe className="h-12 w-12 mx-auto mb-6 text-primary" />
+          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of developers who've improved their database performance with DBooster's AI-powered optimization.
+            Join thousands of developers who trust DBooster to optimize their database performance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="px-8">
+            <Button asChild size="lg" className="text-lg px-8">
               <Link to="/demo">
-                Try Interactive Demo
+                Try Demo
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="px-8">
-              <Link to="/pricing">View Pricing Plans</Link>
+            <Button asChild variant="outline" size="lg" className="text-lg px-8">
+              <Link to="/pricing">View Pricing</Link>
             </Button>
           </div>
-        </section>
+        </motion.div>
       </div>
-    </StandardPageLayout>
+    </div>
   );
 }

@@ -1,41 +1,55 @@
 
-import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
-import { Card, CardContent } from '@/components/ui/enhanced-card-system';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Construction, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ArrowLeft, Construction } from 'lucide-react';
 
 interface PagePlaceholderProps {
   title: string;
   description: string;
-  comingSoon?: boolean;
+  icon?: React.ReactNode;
+  showBackButton?: boolean;
 }
 
-export function PagePlaceholder({ title, description, comingSoon = true }: PagePlaceholderProps) {
+export function PagePlaceholder({ 
+  title, 
+  description, 
+  icon = <Construction className="h-8 w-8 text-muted-foreground" />,
+  showBackButton = true 
+}: PagePlaceholderProps) {
   return (
-    <StandardPageLayout
-      title={title}
-      subtitle={comingSoon ? "Coming Soon" : "Under Development"}
-      description={description}
-      centered
-    >
-      <Card variant="elevated" className="max-w-2xl mx-auto">
-        <CardContent className="p-12 text-center">
-          <Construction className="h-16 w-16 mx-auto mb-6 text-muted-foreground" />
-          <h3 className="text-xl font-semibold mb-4">
-            {comingSoon ? "Coming Soon!" : "Under Development"}
-          </h3>
-          <p className="text-muted-foreground mb-8">
-            We're working hard to bring you this feature. Stay tuned for updates!
-          </p>
-          <Button asChild variant="outline">
-            <Link to="/">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Link>
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
+      <Card className="w-full max-w-lg text-center shadow-xl">
+        <CardHeader className="space-y-6 pb-8">
+          <div className="w-24 h-24 mx-auto bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-full flex items-center justify-center border-2 border-primary/20">
+            {icon}
+          </div>
+          <div className="space-y-4">
+            <CardTitle className="text-2xl font-bold text-foreground">{title}</CardTitle>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              {description}
+            </p>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-6 pb-8">
+          {showBackButton && (
+            <div className="flex justify-center">
+              <Button asChild variant="outline" size="lg" className="flex items-center gap-2">
+                <Link to="/">
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Home
+                </Link>
+              </Button>
+            </div>
+          )}
+          
+          <div className="space-y-2 text-sm text-muted-foreground pt-4">
+            <p>This page is under development and will be available soon.</p>
+          </div>
         </CardContent>
       </Card>
-    </StandardPageLayout>
+    </div>
   );
 }
