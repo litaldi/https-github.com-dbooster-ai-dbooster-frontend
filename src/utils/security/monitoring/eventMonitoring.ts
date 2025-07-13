@@ -35,7 +35,7 @@ export class EventMonitoring {
         const { securityService } = await import('@/services/securityService');
         const validation = await securityService.validateFormData(formObject, `form_${form.action || 'unknown'}`);
         
-        if (!validation.isValid) {
+        if (!validation.valid) {
           event.preventDefault();
           productionLogger.error('Form submission blocked due to security validation failure', {
             formAction: form.action,
@@ -88,10 +88,10 @@ export class EventMonitoring {
           const { securityService } = await import('@/services/securityService');
           const validation = await securityService.validateUserInput(target.value, `input_${target.name || 'unknown'}`);
           
-          if (!validation.valid && validation.threatTypes?.length) {
+          if (!validation.valid && validation.threats?.length) {
             productionLogger.warn('Potentially malicious input detected', {
               inputName: target.name,
-              threatTypes: validation.threatTypes,
+              threats: validation.threats,
               riskLevel: validation.riskLevel
             }, 'SecurityMonitor');
           }

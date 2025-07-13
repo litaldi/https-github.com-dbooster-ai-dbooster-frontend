@@ -92,6 +92,7 @@ export class ValidationService {
     valid: boolean;
     sanitized: string;
     threats: string[];
+    threatTypes?: string[];
     riskLevel: 'low' | 'medium' | 'high' | 'critical';
   }> {
     const result = await this.validate('user_input', input, context);
@@ -99,11 +100,13 @@ export class ValidationService {
       valid: result.isValid,
       sanitized: result.sanitizedValue || input,
       threats: result.errors,
+      threatTypes: result.errors, // Map errors to threatTypes for compatibility
       riskLevel: result.riskLevel
     };
   }
 
   async validateFormData(formData: Record<string, any>, context: string): Promise<{
+    isValid: boolean;
     valid: boolean;
     errors: Record<string, string[]>;
     sanitized: Record<string, any>;
@@ -125,7 +128,12 @@ export class ValidationService {
       }
     }
 
-    return { valid, errors, sanitized };
+    return { 
+      isValid: valid,
+      valid, 
+      errors, 
+      sanitized 
+    };
   }
 
   sanitizeInput(input: string, context: string = 'general'): string {
@@ -138,7 +146,7 @@ export class ValidationService {
         sanitized = sanitized.replace(/[<>]/g, '');
         break;
       case 'sql':
-        sanitized = sanitized.replace(/[';--]/g, '');
+        sanitized = sanitized.replace(/[';-]/g, '');
         break;
       case 'general':
       default:
