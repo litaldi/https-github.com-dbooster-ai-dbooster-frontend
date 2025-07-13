@@ -1,19 +1,31 @@
 
-import React, { useState, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, BarChart3, Shield, Settings, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Activity, 
+  BarChart3, 
+  Bell, 
+  Brain, 
+  Eye, 
+  Search, 
+  Settings, 
+  TrendingUp,
+  Database,
+  Zap,
+  Shield
+} from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { MetricsGrid } from './MetricsGrid';
 import { RealTimeChart } from './RealTimeChart';
+import { SystemHealthOverview } from './SystemHealthOverview';
+import { QuickActions } from './QuickActions';
 import { DashboardSearch } from './DashboardSearch';
 import { NotificationCenter } from './NotificationCenter';
 import { QuickSetupWizard } from './QuickSetupWizard';
-import { DashboardHeader } from './DashboardHeader';
-import { MetricsGrid } from './MetricsGrid';
-import { SystemHealthOverview } from './SystemHealthOverview';
-import { QuickActions } from './QuickActions';
 import { AnalyticsTabContent, SecurityTabContent, SettingsTabContent } from './DashboardTabContent';
 
 interface DashboardMetrics {
@@ -31,130 +43,157 @@ interface DashboardMetrics {
 
 export function EnhancedRealTimeDashboard() {
   const { user, isDemo } = useAuth();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
-  const [refreshing, setRefreshing] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Simulated real-time data fetching
-  const { data: metrics, isLoading } = useQuery({
-    queryKey: ['dashboard-metrics'],
-    queryFn: async (): Promise<DashboardMetrics> => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      return {
-        totalQueries: Math.floor(Math.random() * 1000) + 15000,
-        optimizedQueries: Math.floor(Math.random() * 800) + 12000,
-        avgImprovement: Math.floor(Math.random() * 20) + 65,
-        monthlySavings: Math.floor(Math.random() * 5000) + 25000,
-        activeConnections: Math.floor(Math.random() * 50) + 120,
-        uptime: 99.95 + Math.random() * 0.04,
-        securityScore: 98 + Math.random() * 2,
-        responseTime: Math.floor(Math.random() * 50) + 120,
-        criticalIssues: Math.floor(Math.random() * 3),
-        pendingOptimizations: Math.floor(Math.random() * 15) + 5
-      };
-    },
-    refetchInterval: 30000, // Refresh every 30 seconds
-    staleTime: 25000
-  });
+  // Mock metrics data
+  const metrics: DashboardMetrics = {
+    totalQueries: 12847,
+    optimizedQueries: 9634,
+    avgImprovement: 42.7,
+    monthlySavings: 3240,
+    activeConnections: 156,
+    uptime: 99.94,
+    securityScore: 94.2,
+    responseTime: 127,
+    criticalIssues: 0,
+    pendingOptimizations: 23
+  };
 
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
-    setTimeout(() => setRefreshing(false), 1000);
-  }, [queryClient]);
+  const handleRefreshData = async () => {
+    setIsLoading(true);
+    // Simulate data refresh
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsLoading(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-      <div className="container mx-auto px-6 py-8 space-y-8">
-        {/* Enhanced Header */}
-        <DashboardHeader
-          user={user}
-          isDemo={isDemo}
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          onShowSearch={() => setShowSearch(true)}
-          onShowNotifications={() => setShowNotifications(true)}
-        />
+    <div className="space-y-8 min-h-screen">
+      {/* Enhanced Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+      >
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">Real-Time Dashboard</h1>
+            {isDemo && (
+              <Badge variant="secondary" className="animate-pulse">
+                <Eye className="h-3 w-3 mr-1" />
+                Demo Mode
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground text-lg">
+            {isDemo 
+              ? 'Explore enterprise-grade features with interactive demos'
+              : 'AI-powered database optimization insights and real-time monitoring'
+            }
+          </p>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              <span>{metrics.avgImprovement}% avg improvement</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Database className="h-4 w-4 text-blue-600" />
+              <span>{metrics.activeConnections} active connections</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Shield className="h-4 w-4 text-purple-600" />
+              <span>{metrics.securityScore}% security score</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowSearch(true)}>
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowNotifications(true)}>
+              <Bell className="h-4 w-4 mr-2" />
+              Notifications
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleRefreshData}>
+              <Activity className="h-4 w-4 mr-2" />
+              {isLoading ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </div>
+          <Button size="lg" className="bg-gradient-to-r from-primary to-blue-600">
+            <Brain className="h-4 w-4 mr-2" />
+            AI Studio
+          </Button>
+        </div>
+      </motion.div>
 
-        {/* Real-Time Metrics Grid */}
-        <MetricsGrid metrics={metrics} isLoading={isLoading} />
+      {/* Metrics Grid */}
+      <MetricsGrid metrics={metrics} isLoading={isLoading} />
 
-        {/* Enhanced Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-2 bg-muted/30 backdrop-blur-sm">
-            <TabsTrigger value="overview" className="flex flex-col gap-1 py-3">
-              <Activity className="h-4 w-4" />
-              <span className="text-xs">Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex flex-col gap-1 py-3">
-              <BarChart3 className="h-4 w-4" />
-              <span className="text-xs">Analytics</span>
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex flex-col gap-1 py-3">
-              <Shield className="h-4 w-4" />
-              <span className="text-xs">Security</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex flex-col gap-1 py-3">
-              <Settings className="h-4 w-4" />
-              <span className="text-xs">Settings</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* System Health Overview */}
+      <SystemHealthOverview metrics={metrics} />
 
-          <TabsContent value="overview" className="space-y-8">
-            {/* System Health Overview */}
-            <SystemHealthOverview metrics={metrics} />
+      {/* Main Content Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+          <TabsTrigger value="overview" className="flex flex-col gap-1 min-h-[44px]">
+            <Activity className="h-4 w-4" />
+            <span className="text-xs">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex flex-col gap-1 min-h-[44px]">
+            <BarChart3 className="h-4 w-4" />
+            <span className="text-xs">Analytics</span>
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex flex-col gap-1 min-h-[44px]">
+            <Shield className="h-4 w-4" />
+            <span className="text-xs">Security</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex flex-col gap-1 min-h-[44px]">
+            <Settings className="h-4 w-4" />
+            <span className="text-xs">Settings</span>
+          </TabsTrigger>
+        </TabsList>
 
-            {/* Real-Time Performance Chart */}
-            <Card className="shadow-lg">
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  Performance Trends
+                  <TrendingUp className="h-5 w-5" />
+                  Real-Time Performance
                 </CardTitle>
-                <CardDescription>
-                  Real-time query performance and optimization metrics
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <RealTimeChart />
               </CardContent>
             </Card>
+          </div>
+          
+          <QuickActions onShowWizard={() => setShowWizard(true)} />
+        </TabsContent>
 
-            {/* Quick Actions & Setup */}
-            <QuickActions onShowWizard={() => setShowWizard(true)} />
-          </TabsContent>
+        <TabsContent value="analytics">
+          <AnalyticsTabContent />
+        </TabsContent>
 
-          <TabsContent value="analytics">
-            <AnalyticsTabContent />
-          </TabsContent>
+        <TabsContent value="security">
+          <SecurityTabContent />
+        </TabsContent>
 
-          <TabsContent value="security">
-            <SecurityTabContent />
-          </TabsContent>
+        <TabsContent value="settings">
+          <SettingsTabContent />
+        </TabsContent>
+      </Tabs>
 
-          <TabsContent value="settings">
-            <SettingsTabContent />
-          </TabsContent>
-        </Tabs>
-
-        {/* Modal Components */}
-        <AnimatePresence>
-          {showSearch && (
-            <DashboardSearch onClose={() => setShowSearch(false)} />
-          )}
-          {showNotifications && (
-            <NotificationCenter onClose={() => setShowNotifications(false)} />
-          )}
-          {showWizard && (
-            <QuickSetupWizard onClose={() => setShowWizard(false)} />
-          )}
-        </AnimatePresence>
-      </div>
+      {/* Modals */}
+      {showSearch && <DashboardSearch onClose={() => setShowSearch(false)} />}
+      {showNotifications && <NotificationCenter onClose={() => setShowNotifications(false)} />}
+      {showWizard && <QuickSetupWizard onClose={() => setShowWizard(false)} />}
     </div>
   );
 }
