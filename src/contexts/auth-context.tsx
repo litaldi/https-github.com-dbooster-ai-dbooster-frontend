@@ -90,20 +90,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginDemo = async () => {
     try {
-      // Demo login logic - set demo user state
+      // Demo login logic - set demo user state with proper User type
       const demoUser = {
         id: 'demo-user-id',
         email: 'demo@dbooster.dev',
         user_metadata: {
           full_name: 'Demo User',
           name: 'Demo User'
-        }
+        },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+        role: 'authenticated',
+        updated_at: new Date().toISOString(),
+        email_confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        confirmation_sent_at: new Date().toISOString()
       } as User;
 
       const demoSession = {
         user: demoUser,
         access_token: 'demo-token',
-        refresh_token: 'demo-refresh'
+        refresh_token: 'demo-refresh',
+        expires_at: Date.now() / 1000 + 3600,
+        expires_in: 3600,
+        token_type: 'bearer'
       } as Session;
 
       setUser(demoUser);

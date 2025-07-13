@@ -88,6 +88,67 @@ export class ValidationService {
     return overallResult;
   }
 
+  async validateUserInput(input: string, context: string = 'general'): Promise<{
+    valid: boolean;
+    sanitized: string;
+    threats: string[];
+    riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  }> {
+    const result = await this.validate('user_input', input, context);
+    return {
+      valid: result.isValid,
+      sanitized: result.sanitizedValue || input,
+      threats: result.errors,
+      riskLevel: result.riskLevel
+    };
+  }
+
+  async validateFormData(formData: Record<string, any>, context: string): Promise<{
+    valid: boolean;
+    errors: Record<string, string[]>;
+    sanitized: Record<string, any>;
+  }> {
+    const errors: Record<string, string[]> = {};
+    const sanitized: Record<string, any> = {};
+    let valid = true;
+
+    for (const [key, value] of Object.entries(formData)) {
+      if (typeof value === 'string') {
+        const result = await this.validate('form_field', value, `${context}.${key}`);
+        if (!result.isValid) {
+          errors[key] = result.errors;
+          valid = false;
+        }
+        sanitized[key] = result.sanitizedValue || value;
+      } else {
+        sanitized[key] = value;
+      }
+    }
+
+    return { valid, errors, sanitized };
+  }
+
+  sanitizeInput(input: string, context: string = 'general'): string {
+    // Basic sanitization
+    let sanitized = input.trim();
+    
+    // Remove potentially harmful characters based on context
+    switch (context) {
+      case 'html':
+        sanitized = sanitized.replace(/[<>]/g, '');
+        break;
+      case 'sql':
+        sanitized = sanitized.replace(/[';--]/g, '');
+        break;
+      case 'general':
+      default:
+        sanitized = sanitized.replace(/[<>'"]/g, '');
+        break;
+    }
+    
+    return sanitized;
+  }
+
   private getRiskLevelPriority(level: ValidationResult['riskLevel']): number {
     const priorities = { low: 1, medium: 2, high: 3, critical: 4 };
     return priorities[level] || 1;
