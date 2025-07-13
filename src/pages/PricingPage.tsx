@@ -1,208 +1,270 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 import { 
-  Check, 
+  CheckCircle2, 
   X, 
+  ArrowRight, 
   Zap, 
-  Crown, 
-  Building, 
-  Users,
-  ArrowRight,
-  Star
+  Users, 
+  Building,
+  Star,
+  Shield
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const plans = [
   {
-    name: 'Starter',
-    price: 'Free',
-    description: 'Perfect for individual developers and small projects',
-    icon: <Zap className="h-6 w-6" />,
+    name: "Developer",
+    price: "$29",
+    period: "/month",
+    description: "Perfect for individual developers and small projects",
+    icon: <Zap className="h-8 w-8 text-blue-600" />,
     features: [
-      'Up to 3 databases',
-      'Basic query optimization',
-      'Performance monitoring',
-      'Email support',
-      '1GB data processing/month'
+      "Up to 5 databases",
+      "Basic query optimization",
+      "Real-time monitoring",
+      "Email support",
+      "Standard integrations",
+      "Community access"
     ],
-    limitations: [
-      'Advanced AI features',
-      'Team collaboration',
-      'Custom integrations'
+    notIncluded: [
+      "Advanced AI features",
+      "Custom optimization rules",
+      "Priority support",
+      "Team collaboration"
     ],
-    cta: 'Get Started Free',
+    cta: "Start Free Trial",
     popular: false
   },
   {
-    name: 'Professional',
-    price: '$29',
-    period: '/month',
-    description: 'Ideal for growing teams and production applications',
-    icon: <Crown className="h-6 w-6" />,
+    name: "Team",
+    price: "$99",
+    period: "/month",
+    description: "Ideal for growing teams and collaborative development",
+    icon: <Users className="h-8 w-8 text-green-600" />,
     features: [
-      'Unlimited databases',
-      'Advanced AI optimization',
-      'Real-time monitoring',
-      'Team collaboration (5 users)',
-      'Priority support',
-      '50GB data processing/month',
-      'Custom alerts',
-      'Performance analytics'
+      "Up to 25 databases",
+      "Advanced AI optimization",
+      "Team collaboration tools",
+      "Custom dashboards",
+      "Priority email support",
+      "Advanced integrations",
+      "Query sharing & reviews",
+      "Performance benchmarking"
     ],
-    limitations: [
-      'Enterprise SSO',
-      'Dedicated support'
+    notIncluded: [
+      "Dedicated support manager",
+      "Custom AI training",
+      "SLA guarantees"
     ],
-    cta: 'Start 14-Day Trial',
-    popular: true
+    cta: "Start Free Trial",
+    popular: true,
+    badge: "Most Popular"
   },
   {
-    name: 'Enterprise',
-    price: 'Custom',
-    description: 'For large organizations with complex requirements',
-    icon: <Building className="h-6 w-6" />,
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    description: "For large organizations requiring enterprise-grade features",
+    icon: <Building className="h-8 w-8 text-purple-600" />,
     features: [
-      'Everything in Professional',
-      'Unlimited team members',
-      'Enterprise SSO',
-      'Dedicated account manager',
-      '24/7 phone support',
-      'Unlimited data processing',
-      'Custom integrations',
-      'SLA guarantees',
-      'On-premise deployment'
+      "Unlimited databases",
+      "Custom AI model training",
+      "Dedicated support manager",
+      "99.9% SLA guarantee",
+      "On-premise deployment",
+      "Advanced security & compliance",
+      "Custom integrations",
+      "White-label options",
+      "24/7 phone support"
     ],
-    limitations: [],
-    cta: 'Contact Sales',
+    notIncluded: [],
+    cta: "Contact Sales",
     popular: false
+  }
+];
+
+const faqs = [
+  {
+    question: "Is there a free trial?",
+    answer: "Yes! We offer a 14-day free trial for all plans with full access to features. No credit card required."
+  },
+  {
+    question: "Can I change plans anytime?",
+    answer: "Absolutely. You can upgrade or downgrade your plan at any time. Changes take effect immediately."
+  },
+  {
+    question: "What databases do you support?",
+    answer: "We support PostgreSQL, MySQL, MongoDB, SQL Server, Oracle, and most other popular database systems."
+  },
+  {
+    question: "Is my data secure?",
+    answer: "Yes. We use bank-grade encryption, are SOC2 Type II compliant, and only require read-only access to your database."
   }
 ];
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-      <div className="container mx-auto px-4 py-16">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <Badge variant="outline" className="mb-4">
-            <Star className="h-3 w-3 mr-1" />
-            Pricing Plans
-          </Badge>
-          <h1 className="text-4xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Choose the perfect plan for your needs. Start free and scale as you grow.
-          </p>
-        </motion.div>
-
+    <StandardPageLayout
+      title="Simple, Transparent Pricing"
+      subtitle="Choose Your Plan"
+      description="Start with a free trial, then choose the plan that scales with your needs. All plans include core optimization features."
+    >
+      <div className="space-y-20">
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="relative"
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-gradient-to-r from-primary to-blue-600 text-white">
-                    Most Popular
-                  </Badge>
-                </div>
-              )}
-              <Card className={`h-full shadow-lg hover:shadow-xl transition-all duration-300 ${
-                plan.popular ? 'ring-2 ring-primary border-primary scale-105' : ''
-              }`}>
-                <CardHeader className="text-center pb-8">
-                  <div className="flex justify-center mb-4">
-                    <div className={`p-3 rounded-lg ${
-                      plan.popular 
-                        ? 'bg-gradient-to-r from-primary to-blue-600 text-white' 
-                        : 'bg-primary/10 text-primary'
-                    }`}>
+        <section>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {plans.map((plan, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className={`h-full relative ${plan.popular ? 'border-2 border-primary shadow-xl scale-105' : 'border hover:border-primary/20'} transition-all duration-300`}>
+                  {plan.badge && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-primary text-primary-foreground px-4 py-1">
+                        <Star className="h-3 w-3 mr-1" />
+                        {plan.badge}
+                      </Badge>
+                    </div>
+                  )}
+                  
+                  <CardHeader className="text-center pb-8">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-muted to-muted/50 rounded-xl flex items-center justify-center">
                       {plan.icon}
                     </div>
-                  </div>
-                  <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    {plan.period && <span className="text-muted-foreground text-lg">{plan.period}</span>}
-                  </div>
-                  <p className="text-muted-foreground">{plan.description}</p>
-                </CardHeader>
-                
-                <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    {plan.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </div>
-                    ))}
-                    {plan.limitations.map((limitation, idx) => (
-                      <div key={idx} className="flex items-center gap-3 opacity-60">
-                        <X className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm text-muted-foreground">{limitation}</span>
-                      </div>
-                    ))}
-                  </div>
+                    <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
+                    <p className="text-muted-foreground mb-4">{plan.description}</p>
+                    <div className="text-center">
+                      <span className="text-4xl font-bold">{plan.price}</span>
+                      <span className="text-muted-foreground">{plan.period}</span>
+                    </div>
+                  </CardHeader>
                   
-                  <Button 
-                    asChild 
-                    className={`w-full ${
-                      plan.popular 
-                        ? 'bg-gradient-to-r from-primary to-blue-600 hover:shadow-lg' 
-                        : ''
-                    }`}
-                    variant={plan.popular ? 'default' : 'outline'}
-                  >
-                    <Link to={plan.name === 'Enterprise' ? '/contact' : '/login'}>
-                      {plan.cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-3">
+                      {plan.features.map((feature, featureIndex) => (
+                        <div key={featureIndex} className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm">{feature}</span>
+                        </div>
+                      ))}
+                      {plan.notIncluded.map((feature, featureIndex) => (
+                        <div key={featureIndex} className="flex items-center gap-2">
+                          <X className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-sm text-muted-foreground">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Button 
+                      asChild 
+                      className={`w-full ${plan.popular ? 'bg-primary text-primary-foreground' : ''}`}
+                      variant={plan.popular ? 'default' : 'outline'}
+                      size="lg"
+                    >
+                      <Link to={plan.name === 'Enterprise' ? '/contact' : '/demo'}>
+                        {plan.cta}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Enterprise Features */}
+        <section className="bg-muted/30 p-12 rounded-2xl">
+          <div className="text-center mb-12">
+            <Shield className="h-16 w-16 mx-auto mb-6 text-primary" />
+            <h2 className="text-3xl font-bold mb-4">Enterprise-Grade Security</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              All plans include enterprise-level security features to protect your data and ensure compliance.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <h3 className="font-semibold mb-2">SOC2 Type II Certified</h3>
+              <p className="text-sm text-muted-foreground">Independently audited security controls</p>
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold mb-2">End-to-End Encryption</h3>
+              <p className="text-sm text-muted-foreground">All data encrypted in transit and at rest</p>
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold mb-2">Read-Only Access</h3>
+              <p className="text-sm text-muted-foreground">Never requires write access to your database</p>
+            </div>
+          </div>
+        </section>
 
         {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-center bg-gradient-to-r from-primary/10 to-blue-600/10 rounded-2xl p-12"
-        >
-          <Users className="h-12 w-12 mx-auto mb-6 text-primary" />
-          <h2 className="text-3xl font-bold mb-4">Questions About Pricing?</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Our team is here to help you choose the right plan for your needs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg px-8">
-              <Link to="/contact">
-                Contact Sales
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8">
-              <Link to="/faq">View FAQ</Link>
-            </Button>
+        <section>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+            <p className="text-xl text-muted-foreground">
+              Everything you need to know about our pricing and plans
+            </p>
           </div>
-        </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {faqs.map((faq, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">{faq.question}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{faq.answer}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="bg-gradient-to-r from-primary/5 to-blue-500/5 p-12 rounded-2xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl font-bold mb-4">Ready to Optimize Your Database?</h2>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Start your free 14-day trial today. No credit card required, cancel anytime.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild size="lg" className="px-8">
+                <Link to="/demo">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="px-8">
+                <Link to="/contact">Contact Sales</Link>
+              </Button>
+            </div>
+          </motion.div>
+        </section>
       </div>
-    </div>
+    </StandardPageLayout>
   );
 }

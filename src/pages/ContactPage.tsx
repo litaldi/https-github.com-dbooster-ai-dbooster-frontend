@@ -1,44 +1,56 @@
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { motion } from 'framer-motion';
 import { 
   Mail, 
   Phone, 
   MapPin, 
   Clock, 
-  Send,
+  Send, 
+  CheckCircle2,
   MessageSquare,
-  HelpCircle,
-  Building
+  Users,
+  Headphones
 } from 'lucide-react';
 
 const contactMethods = [
   {
-    icon: <Mail className="h-6 w-6" />,
-    title: 'Email Us',
-    description: 'Get in touch via email',
-    contact: 'hello@dbooster.ai',
-    action: 'mailto:hello@dbooster.ai'
+    icon: <Mail className="h-6 w-6 text-blue-600" />,
+    title: "Email Support",
+    description: "Get help via email",
+    contact: "support@dbooster.ai",
+    action: "mailto:support@dbooster.ai",
+    availability: "24/7 response within 4 hours"
   },
   {
-    icon: <Phone className="h-6 w-6" />,
-    title: 'Call Us',
-    description: 'Speak with our team',
-    contact: '+1 (555) 123-4567',
-    action: 'tel:+15551234567'
+    icon: <Phone className="h-6 w-6 text-green-600" />,
+    title: "Phone Support",
+    description: "Speak with our team",
+    contact: "+972-54-000-0000",
+    action: "tel:+972540000000",
+    availability: "Sunday-Thursday, 9AM-6PM IST"
   },
   {
-    icon: <MessageSquare className="h-6 w-6" />,
-    title: 'Live Chat',
-    description: 'Chat with support',
-    contact: 'Available 24/7',
-    action: '#'
+    icon: <MessageSquare className="h-6 w-6 text-purple-600" />,
+    title: "Live Chat",
+    description: "Instant help when you need it",
+    contact: "Available in dashboard",
+    action: "/app",
+    availability: "24/7 for premium customers"
+  },
+  {
+    icon: <Users className="h-6 w-6 text-orange-600" />,
+    title: "Sales Team",
+    description: "Enterprise solutions",
+    contact: "sales@dbooster.ai",
+    action: "mailto:sales@dbooster.ai",
+    availability: "Custom demos available"
   }
 ];
 
@@ -47,207 +59,269 @@ export default function ContactPage() {
     name: '',
     email: '',
     company: '',
+    subject: '',
     message: ''
   });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    // Simulate form submission
+    setIsSubmitted(true);
+    // Reset form after 3 seconds
+    setTimeout(() => {
+      setIsSubmitted(false);
+      setFormData({
+        name: '',
+        email: '',
+        company: '',
+        subject: '',
+        message: ''
+      });
+    }, 3000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-      <div className="container mx-auto px-4 py-16">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <Badge variant="outline" className="mb-4">
-            <MessageSquare className="h-3 w-3 mr-1" />
-            Contact Us
-          </Badge>
-          <h1 className="text-4xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-            Let's Talk
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Have questions about DBooster? Want to discuss enterprise solutions? 
-            We'd love to hear from you.
-          </p>
-        </motion.div>
+    <StandardPageLayout
+      title="Contact Us"
+      subtitle="We're Here to Help"
+      description="Get in touch with our team for support, sales inquiries, or general questions. We're committed to providing excellent service."
+    >
+      <div className="space-y-16">
+        {/* Contact Methods */}
+        <section>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Multiple Ways to Reach Us</h2>
+            <p className="text-xl text-muted-foreground">
+              Choose the method that works best for you
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {contactMethods.map((method, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className="h-full hover:shadow-lg transition-shadow text-center">
+                  <CardHeader>
+                    <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-muted to-muted/50 rounded-xl flex items-center justify-center">
+                      {method.icon}
+                    </div>
+                    <CardTitle className="text-lg">{method.title}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{method.description}</p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="font-medium">{method.contact}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{method.availability}</p>
+                    </div>
+                    <Button asChild variant="outline" size="sm" className="w-full">
+                      <a href={method.action}>Contact Now</a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Contact Form and Info */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Form */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ duration: 0.6 }}
           >
-            <Card className="shadow-lg">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <Send className="h-6 w-6 text-primary" />
-                  Send us a Message
-                </CardTitle>
+                <CardTitle className="text-2xl">Send Us a Message</CardTitle>
+                <p className="text-muted-foreground">
+                  Fill out the form below and we'll get back to you within 24 hours.
+                </p>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name *</Label>
+                {isSubmitted ? (
+                  <div className="text-center py-8">
+                    <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-green-500" />
+                    <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
+                    <p className="text-muted-foreground">
+                      Thank you for contacting us. We'll respond within 24 hours.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="name">Name *</Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          required
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email *</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          required
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="company">Company</Label>
                       <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        placeholder="Your full name"
+                        id="company"
+                        name="company"
+                        value={formData.company}
+                        onChange={handleInputChange}
+                        className="mt-1"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
+                    
+                    <div>
+                      <Label htmlFor="subject">Subject *</Label>
                       <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
+                        id="subject"
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleInputChange}
                         required
-                        placeholder="your@email.com"
+                        className="mt-1"
                       />
                     </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company</Label>
-                    <Input
-                      id="company"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleChange}
-                      placeholder="Your company name"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      rows={5}
-                      placeholder="Tell us how we can help you..."
-                    />
-                  </div>
-                  
-                  <Button type="submit" size="lg" className="w-full">
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Message
-                  </Button>
-                </form>
+                    
+                    <div>
+                      <Label htmlFor="message">Message *</Label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        required
+                        rows={5}
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <Button type="submit" className="w-full" size="lg">
+                      <Send className="mr-2 h-4 w-4" />
+                      Send Message
+                    </Button>
+                  </form>
+                )}
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Contact Info */}
+          {/* Company Info */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
             className="space-y-8"
           >
-            {/* Contact Methods */}
-            <div className="space-y-6">
-              {contactMethods.map((method, index) => (
-                <motion.div
-                  key={method.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
-                >
-                  <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/10 rounded-lg text-primary">
-                          {method.icon}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{method.title}</h3>
-                          <p className="text-muted-foreground text-sm mb-2">{method.description}</p>
-                          <a 
-                            href={method.action}
-                            className="text-primary hover:underline font-medium"
-                          >
-                            {method.contact}
-                          </a>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Office Info */}
-            <Card className="shadow-lg">
+            {/* Office Location */}
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building className="h-5 w-5 text-primary" />
-                  Our Office
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="font-medium">San Francisco, CA</p>
-                    <p className="text-muted-foreground text-sm">
-                      123 Innovation Drive<br />
-                      San Francisco, CA 94107
-                    </p>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-6 w-6 text-primary" />
+                  <CardTitle>Our Office</CardTitle>
                 </div>
-                
-                <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="font-medium">Business Hours</p>
-                    <p className="text-muted-foreground text-sm">
-                      Monday - Friday: 9:00 AM - 6:00 PM PST<br />
-                      Weekend: Emergency support only
-                    </p>
-                  </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="font-medium">DBooster Technologies Ltd.</p>
+                  <p className="text-muted-foreground">Tel Aviv, Israel</p>
+                  <p className="text-sm text-muted-foreground">
+                    Located in the heart of Israel's tech ecosystem
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* FAQ Link */}
-            <Card className="shadow-lg bg-gradient-to-r from-primary/10 to-blue-600/10">
-              <CardContent className="p-6 text-center">
-                <HelpCircle className="h-12 w-12 mx-auto mb-4 text-primary" />
-                <h3 className="font-semibold text-lg mb-2">Frequently Asked Questions</h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  Find quick answers to common questions about DBooster.
-                </p>
-                <Button variant="outline" asChild>
-                  <a href="/faq">View FAQ</a>
-                </Button>
+            {/* Business Hours */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Clock className="h-6 w-6 text-primary" />
+                  <CardTitle>Business Hours</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Sunday - Thursday</span>
+                    <span className="text-muted-foreground">9:00 AM - 6:00 PM IST</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Friday</span>
+                    <span className="text-muted-foreground">9:00 AM - 2:00 PM IST</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Saturday</span>
+                    <span className="text-muted-foreground">Closed</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Email support available 24/7 with responses within 4 hours
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Support Levels */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Headphones className="h-6 w-6 text-primary" />
+                  <CardTitle>Support Levels</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium">Community Support</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Documentation, guides, and community forums
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Email Support</h4>
+                    <p className="text-sm text-muted-foreground">
+                      All customers, 4-hour response time
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Priority Support</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Team & Enterprise customers, 1-hour response
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
-        </div>
+        </section>
       </div>
-    </div>
+    </StandardPageLayout>
   );
 }
