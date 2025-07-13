@@ -1,7 +1,38 @@
 
 import { useEffect } from 'react';
 
+interface KeyboardShortcut {
+  key: string;
+  ctrl?: boolean;
+  alt?: boolean;
+  shift?: boolean;
+  description: string;
+}
+
 export function useKeyboardShortcuts() {
+  const shortcuts: KeyboardShortcut[] = [
+    {
+      key: 'k',
+      ctrl: true,
+      description: 'Open search'
+    },
+    {
+      key: '/',
+      ctrl: true, 
+      description: 'Show keyboard shortcuts'
+    },
+    {
+      key: 'n',
+      ctrl: true,
+      description: 'New query'
+    },
+    {
+      key: 's',
+      ctrl: true,
+      description: 'Save current work'
+    }
+  ];
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle shortcuts when no input elements are focused
@@ -30,4 +61,6 @@ export function useKeyboardShortcuts() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  return { shortcuts };
 }
