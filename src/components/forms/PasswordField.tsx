@@ -8,17 +8,31 @@ import { Eye, EyeOff, Lock } from 'lucide-react';
 import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
 
 interface PasswordFieldProps {
+  id?: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  error?: string;
+  required?: boolean;
+  autoComplete?: string;
+  variant?: string;
+  showStrength?: boolean;
   showStrengthIndicator?: boolean;
   className?: string;
 }
 
 export function PasswordField({ 
+  id,
+  label,
   value, 
   onChange, 
   placeholder = "Enter password",
+  error,
+  required = false,
+  autoComplete,
+  variant,
+  showStrength = false,
   showStrengthIndicator = true,
   className = ""
 }: PasswordFieldProps) {
@@ -34,7 +48,7 @@ export function PasswordField({
   const handlePasswordChange = async (newPassword: string) => {
     onChange(newPassword);
     
-    if (showStrengthIndicator && newPassword.length > 0) {
+    if ((showStrength || showStrengthIndicator) && newPassword.length > 0) {
       const strength = await checkPasswordStrength(newPassword);
       setStrengthData(strength);
     } else {
@@ -53,13 +67,23 @@ export function PasswordField({
 
   return (
     <div className="space-y-2">
+      {label && (
+        <label htmlFor={id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      
       <div className="relative">
         <Input
+          id={id}
           type={showPassword ? 'text' : 'password'}
           value={value}
           onChange={(e) => handlePasswordChange(e.target.value)}
           placeholder={placeholder}
-          className={`pr-10 ${className}`}
+          autoComplete={autoComplete}
+          required={required}
+          className={`pr-10 ${error ? 'border-destructive' : ''} ${className}`}
         />
         <Button
           type="button"
@@ -76,7 +100,11 @@ export function PasswordField({
         </Button>
       </div>
 
-      {showStrengthIndicator && value.length > 0 && strengthData && (
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
+
+      {(showStrength || showStrengthIndicator) && value.length > 0 && strengthData && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Password Strength</span>
