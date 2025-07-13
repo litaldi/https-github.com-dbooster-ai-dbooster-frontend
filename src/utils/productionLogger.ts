@@ -59,6 +59,17 @@ class ProductionLogger {
     }
     this.info(message, sanitizedData, context);
   }
+
+  secureDebug(message: string, data?: any, context?: string) {
+    const sanitizedData = data ? { ...data } : undefined;
+    if (sanitizedData && sanitizedData.password) {
+      sanitizedData.password = '[REDACTED]';
+    }
+    if (sanitizedData && sanitizedData.token) {
+      sanitizedData.token = '[REDACTED]';
+    }
+    this.debug(message, sanitizedData, context);
+  }
 }
 
 export const productionLogger = new ProductionLogger();
