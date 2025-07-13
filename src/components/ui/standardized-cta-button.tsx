@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
 interface StandardizedCTAButtonProps extends Omit<ButtonProps, 'onClick'> {
-  variant?: 'primary' | 'demo';
+  ctaType?: 'primary' | 'demo';
   text?: string;
   showIcon?: boolean;
   customDestination?: string;
@@ -14,12 +14,13 @@ interface StandardizedCTAButtonProps extends Omit<ButtonProps, 'onClick'> {
 }
 
 export function StandardizedCTAButton({ 
-  variant = 'primary',
+  ctaType = 'primary',
   text,
   showIcon = true,
   customDestination,
   onCustomClick,
   className,
+  variant,
   ...props 
 }: StandardizedCTAButtonProps) {
   const { user, loginDemo } = useAuth();
@@ -28,7 +29,7 @@ export function StandardizedCTAButton({
   const getButtonText = () => {
     if (text) return text;
     
-    if (variant === 'demo') {
+    if (ctaType === 'demo') {
       return 'Try Demo';
     }
     
@@ -37,6 +38,12 @@ export function StandardizedCTAButton({
     }
     
     return 'Start for Free';
+  };
+
+  const getButtonVariant = () => {
+    if (variant) return variant;
+    if (ctaType === 'demo') return 'outline';
+    return 'default';
   };
 
   const handleClick = async () => {
@@ -51,7 +58,7 @@ export function StandardizedCTAButton({
     }
 
     try {
-      if (variant === 'demo') {
+      if (ctaType === 'demo') {
         navigate('/demo');
         return;
       }
@@ -72,6 +79,7 @@ export function StandardizedCTAButton({
   return (
     <Button 
       onClick={handleClick}
+      variant={getButtonVariant()}
       className={className}
       {...props}
     >
