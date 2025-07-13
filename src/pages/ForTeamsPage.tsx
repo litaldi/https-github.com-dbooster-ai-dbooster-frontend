@@ -2,128 +2,78 @@
 import React from 'react';
 import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { 
   Users, 
-  Shield, 
+  GitBranch, 
   BarChart3, 
-  MessageSquare, 
-  GitBranch,
-  Clock,
-  Target,
+  Shield, 
   ArrowRight,
   CheckCircle2,
-  Zap,
-  Settings,
-  AlertCircle
+  MessageSquare,
+  Target,
+  Clock,
+  TrendingUp
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const teamFeatures = [
   {
-    icon: <Users className="h-8 w-8 text-blue-600" />,
     title: "Team Collaboration",
-    description: "Centralized database optimization with role-based access control and team workspaces for seamless collaboration.",
-    benefits: [
-      "Shared query optimization workspace",
-      "Role-based permissions and access",
-      "Team performance dashboards",
-      "Collaborative query reviews"
-    ]
+    description: "Shared workspaces, query libraries, and collaborative optimization reviews for your entire development team.",
+    icon: <Users className="h-8 w-8 text-blue-600" />,
+    features: ["Shared query libraries", "Team workspaces", "Collaborative reviews", "Knowledge sharing"]
   },
   {
+    title: "Performance Dashboards",
+    description: "Team-wide visibility into database performance with customizable dashboards and alerts.",
     icon: <BarChart3 className="h-8 w-8 text-green-600" />,
-    title: "Unified Analytics",
-    description: "Comprehensive performance insights across all team databases with centralized reporting and monitoring.",
-    benefits: [
-      "Cross-project performance tracking",
-      "Team productivity metrics",
-      "Consolidated reporting dashboard",
-      "Custom KPI monitoring"
-    ]
+    features: ["Team dashboards", "Custom metrics", "Performance alerts", "Historical tracking"]
   },
   {
-    icon: <Shield className="h-8 w-8 text-purple-600" />,
-    title: "Enterprise Security",
-    description: "Advanced security features including SSO, audit logs, and compliance controls for enterprise teams.",
-    benefits: [
-      "Single Sign-On (SSO) integration",
-      "Comprehensive audit logging",
-      "SOC2 Type II compliance",
-      "Data encryption at rest and transit"
-    ]
-  },
-  {
+    title: "Code Review Integration",
+    description: "Automated performance reviews in your GitHub, GitLab, or Bitbucket pull request workflow.",
     icon: <GitBranch className="h-8 w-8 text-orange-600" />,
-    title: "Workflow Integration",
-    description: "Seamless integration with your existing development workflow, CI/CD pipelines, and project management tools.",
-    benefits: [
-      "GitHub/GitLab integration",
-      "Slack/Teams notifications",
-      "Jira/Asana project linking",
-      "Custom webhook support"
-    ]
+    features: ["PR automation", "Performance reviews", "Regression detection", "Quality gates"]
+  },
+  {
+    title: "Access Control",
+    description: "Role-based permissions and team management features for enterprise security requirements.",
+    icon: <Shield className="h-8 w-8 text-purple-600" />,
+    features: ["Role-based access", "Team permissions", "Audit logging", "SSO integration"]
   }
 ];
 
 const teamBenefits = [
-  {
-    title: "Faster Development Cycles",
-    description: "Reduce time spent on database performance issues",
-    metric: "40% faster",
-    icon: <Clock className="h-8 w-8 text-blue-600" />
-  },
-  {
-    title: "Improved Code Quality",
-    description: "Catch performance issues before production",
-    metric: "85% reduction",
-    icon: <Target className="h-8 w-8 text-green-600" />
-  },
-  {
-    title: "Better Team Coordination",
-    description: "Shared insights and collaborative optimization",
-    metric: "60% improvement",
-    icon: <MessageSquare className="h-8 w-8 text-purple-600" />
-  }
+  "Improve team productivity by 40%",
+  "Reduce database costs across all projects",
+  "Standardize optimization practices",
+  "Share knowledge and best practices",
+  "Prevent performance regressions",
+  "Scale team expertise efficiently"
 ];
 
-const workflow = [
-  {
-    step: "1",
-    title: "Team Setup",
-    description: "Create team workspace and invite members with appropriate roles"
-  },
-  {
-    step: "2", 
-    title: "Database Integration",
-    description: "Connect team databases with centralized monitoring setup"
-  },
-  {
-    step: "3",
-    title: "Collaboration",
-    description: "Share insights, review optimizations, and track team performance"
-  },
-  {
-    step: "4",
-    title: "Scale & Optimize",
-    description: "Continuous improvement with team-wide performance analytics"
-  }
+const teamStats = [
+  { metric: "40%", label: "Productivity Boost", icon: <TrendingUp className="h-6 w-6" /> },
+  { metric: "65%", label: "Faster Reviews", icon: <Clock className="h-6 w-6" /> },
+  { metric: "50%", label: "Knowledge Sharing", icon: <MessageSquare className="h-6 w-6" /> },
+  { metric: "85%", label: "Team Satisfaction", icon: <Target className="h-6 w-6" /> }
 ];
 
 export default function ForTeamsPage() {
   return (
     <StandardPageLayout
-      title="Optimize Together"
-      subtitle="Database Performance for Development Teams"
-      description="Empower your entire development team with collaborative database optimization tools and centralized performance insights."
+      title="DBooster for Teams - Optimize Together, Achieve More"
+      subtitle="Scale Team Performance"
+      description="Empower your development team with collaborative database optimization tools. Share knowledge, standardize practices, and achieve better performance together."
     >
       <div className="space-y-20">
-        {/* Team Benefits Overview */}
+        {/* Team Stats */}
         <section className="text-center">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {teamBenefits.map((benefit, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            {teamStats.map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -131,16 +81,11 @@ export default function ForTeamsPage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="text-center"
               >
-                <Card>
-                  <CardContent className="p-8">
-                    <div className="flex justify-center mb-4">
-                      {benefit.icon}
-                    </div>
-                    <div className="text-3xl font-bold text-primary mb-2">{benefit.metric}</div>
-                    <h3 className="text-lg font-semibold mb-2">{benefit.title}</h3>
-                    <p className="text-muted-foreground text-sm">{benefit.description}</p>
-                  </CardContent>
-                </Card>
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-xl flex items-center justify-center">
+                  {stat.icon}
+                </div>
+                <div className="text-3xl font-bold text-primary mb-2">{stat.metric}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
               </motion.div>
             ))}
           </div>
@@ -151,7 +96,7 @@ export default function ForTeamsPage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Built for Team Success</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Everything your development team needs to collaborate effectively on database optimization
+              Collaborative features that help teams share knowledge, standardize practices, and optimize database performance together.
             </p>
           </div>
           
@@ -164,7 +109,7 @@ export default function ForTeamsPage() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full hover:shadow-lg transition-shadow border-2 hover:border-primary/20">
+                <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
                   <CardHeader>
                     <div className="flex items-center gap-4 mb-4">
                       <div className="p-3 bg-gradient-to-br from-muted to-muted/50 rounded-xl">
@@ -172,16 +117,16 @@ export default function ForTeamsPage() {
                       </div>
                       <CardTitle className="text-xl">{feature.title}</CardTitle>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                    <p className="text-muted-foreground leading-relaxed mb-6">
                       {feature.description}
                     </p>
-                    <ul className="space-y-2">
-                      {feature.benefits.map((benefit, benefitIndex) => (
-                        <li key={benefitIndex} className="flex items-center gap-2 text-sm">
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3">
+                      {feature.features.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-sm">
                           <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                          <span>{benefit}</span>
+                          <span>{item}</span>
                         </li>
                       ))}
                     </ul>
@@ -192,138 +137,144 @@ export default function ForTeamsPage() {
           </div>
         </section>
 
-        {/* Team Workflow */}
+        {/* Benefits Section */}
+        <section className="bg-gradient-to-r from-primary/5 to-blue-500/5 p-12 rounded-2xl">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Transform Your Team's Efficiency</h2>
+              <p className="text-xl text-muted-foreground">
+                See how teams across the industry are improving their database optimization workflows.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {teamBenefits.map((benefit, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="flex items-center gap-3 p-4 bg-background rounded-lg border"
+                >
+                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <span className="font-medium">{benefit}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Workflow Integration */}
         <section className="bg-muted/30 p-12 rounded-2xl">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-8">Seamless Workflow Integration</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  step: "1",
+                  title: "Connect & Analyze",
+                  description: "Team members connect their databases and DBooster automatically analyzes all queries."
+                },
+                {
+                  step: "2", 
+                  title: "Review & Collaborate",
+                  description: "Teams review optimization suggestions together and share insights through collaborative workspaces."
+                },
+                {
+                  step: "3",
+                  title: "Deploy & Monitor", 
+                  description: "Optimizations are deployed with team approval and performance is monitored continuously."
+                }
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                  className="text-center"
+                >
+                  <div className="w-12 h-12 mx-auto mb-4 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg">
+                    {item.step}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Team Success Stories */}
+        <section>
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Team Optimization Workflow</h2>
+            <h2 className="text-3xl font-bold mb-4">Teams Love DBooster</h2>
             <p className="text-xl text-muted-foreground">
-              Simple steps to get your entire team optimizing database performance together
+              Real results from development teams using DBooster for collaborative optimization.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {workflow.map((item, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                company: "TechCorp",
+                result: "50% faster development cycles",
+                description: "Reduced time spent on database performance issues by implementing team-wide optimization practices."
+              },
+              {
+                company: "StartupXYZ",
+                result: "60% cost reduction",
+                description: "Team collaboration on optimization strategies led to significant infrastructure savings."
+              },
+              {
+                company: "Enterprise Inc",
+                result: "90% fewer performance bugs",
+                description: "Code review integration caught performance issues before they reached production."
+              }
+            ].map((story, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="text-center"
               >
-                <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-2xl font-bold text-primary-foreground mx-auto">
-                    {item.step}
-                  </div>
-                  {index < workflow.length - 1 && (
-                    <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-primary/20"></div>
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-                <p className="text-muted-foreground text-sm">{item.description}</p>
+                <Card className="h-full">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-2xl font-bold text-primary mb-2">{story.result}</div>
+                    <div className="font-semibold mb-3">{story.company}</div>
+                    <p className="text-muted-foreground text-sm">{story.description}</p>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* Team Sizes & Pricing */}
-        <section>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Perfect for Teams of Any Size</h2>
-            <p className="text-xl text-muted-foreground">
-              From small startups to large enterprises, we have the right plan for your team
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center">
-              <CardHeader>
-                <Badge variant="outline" className="w-fit mx-auto mb-4">Small Teams</Badge>
-                <CardTitle>2-10 Developers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-left space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    Team workspace for up to 10 users
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    Shared optimization dashboard
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    Basic collaboration features
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center border-primary">
-              <CardHeader>
-                <Badge className="w-fit mx-auto mb-4">Most Popular</Badge>
-                <CardTitle>10-50 Developers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-left space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    Advanced team collaboration
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    Role-based access control
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    Integration with dev tools
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <Badge variant="outline" className="w-fit mx-auto mb-4">Enterprise</Badge>
-                <CardTitle>50+ Developers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-left space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    Unlimited team members
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    SSO and advanced security
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    Dedicated success manager
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
         {/* CTA Section */}
-        <section className="text-center bg-gradient-to-r from-primary/5 to-blue-500/5 p-12 rounded-2xl">
-          <h2 className="text-3xl font-bold mb-4">Ready to Optimize as a Team?</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Start your team's database optimization journey today with our collaborative platform designed for development teams.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="px-8">
-              <Link to="/login">
+        <section className="bg-gradient-to-r from-primary to-blue-600 text-primary-foreground p-12 rounded-2xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Team?</h2>
+            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+              Start optimizing together and see how collaborative database optimization can improve your team's productivity.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" variant="secondary" className="px-8">
                 Start Team Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="px-8">
-              <Link to="/contact">Contact Sales</Link>
-            </Button>
-          </div>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="px-8 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+                <Link to="/contact">Schedule Team Demo</Link>
+              </Button>
+            </div>
+          </motion.div>
         </section>
       </div>
     </StandardPageLayout>

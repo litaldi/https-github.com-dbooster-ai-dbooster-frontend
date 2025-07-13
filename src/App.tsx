@@ -27,6 +27,7 @@ import ForTeamsPage from '@/pages/ForTeamsPage';
 import ForEnterprisesPage from '@/pages/ForEnterprisesPage';
 import UseCasesPage from '@/pages/UseCasesPage';
 import LearnPage from '@/pages/LearnPage';
+import DocumentationPage from '@/pages/DocumentationPage';
 import BlogPage from '@/pages/BlogPage';
 import FAQPage from '@/pages/FAQPage';
 import SupportPage from '@/pages/SupportPage';
@@ -114,6 +115,7 @@ function App() {
                   
                   {/* Resources Routes */}
                   <Route path="learn" element={<LearnPage />} />
+                  <Route path="documentation" element={<DocumentationPage />} />
                   <Route path="blog" element={<BlogPage />} />
                   <Route path="faq" element={<FAQPage />} />
                   <Route path="support" element={<SupportPage />} />
