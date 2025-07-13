@@ -1,3 +1,4 @@
+
 interface SecurityHeadersConfig {
   contentSecurityPolicy?: boolean;
   strictTransportSecurity?: boolean;
@@ -5,6 +6,12 @@ interface SecurityHeadersConfig {
   xContentTypeOptions?: boolean;
   referrerPolicy?: boolean;
   permissionsPolicy?: boolean;
+}
+
+interface UrlValidationResult {
+  isValid: boolean;
+  sanitizedUrl?: string;
+  reason?: string;
 }
 
 export class EnhancedSecurityHeaders {
@@ -36,6 +43,54 @@ export class EnhancedSecurityHeaders {
   validateSecurityHeaders(): boolean {
     // Placeholder for header validation logic
     return true;
+  }
+
+  validateSecureUrl(url: string): UrlValidationResult {
+    try {
+      const urlObj = new URL(url);
+      
+      // Check for dangerous protocols
+      const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
+      if (dangerousProtocols.some(protocol => url.toLowerCase().startsWith(protocol))) {
+        return {
+          isValid: false,
+          reason: 'Dangerous protocol detected'
+        };
+      }
+
+      // Check for localhost in production
+      if (import.meta.env.PROD && (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1')) {
+        return {
+          isValid: false,
+          reason: 'Localhost URLs not allowed in production'
+        };
+      }
+
+      // Validate HTTPS in production
+      if (import.meta.env.PROD && urlObj.protocol !== 'https:') {
+        return {
+          isValid: false,
+          reason: 'HTTPS required in production'
+        };
+      }
+
+      return {
+        isValid: true,
+        sanitizedUrl: url
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        reason: 'Invalid URL format'
+      };
+    }
+  }
+
+  getNonce(): string {
+    // Generate a cryptographically secure random nonce
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 }
 

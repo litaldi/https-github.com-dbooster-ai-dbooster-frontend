@@ -31,7 +31,8 @@ export class RateLimitService {
   async checkRateLimit(identifier: string, actionType: string = 'default'): Promise<{
     allowed: boolean;
     retryAfter?: number;
-    remaining?: number;
+    remaining: number;
+    resetTime: number;
   }> {
     const config = this.configs[actionType] || this.configs.default;
     const key = `${identifier}:${actionType}`;
@@ -43,7 +44,9 @@ export class RateLimitService {
     if (record?.blockedUntil && now < record.blockedUntil) {
       return {
         allowed: false,
-        retryAfter: Math.ceil((record.blockedUntil - now) / 1000)
+        retryAfter: Math.ceil((record.blockedUntil - now) / 1000),
+        remaining: 0,
+        resetTime: record.blockedUntil
       };
     }
     
@@ -57,6 +60,8 @@ export class RateLimitService {
       record.attempts++;
     }
     
+    const resetTime = record.windowStart + config.windowMs;
+    
     // Check if limit exceeded
     if (record.attempts > config.maxAttempts) {
       if (config.blockDurationMs) {
@@ -67,7 +72,9 @@ export class RateLimitService {
       
       return {
         allowed: false,
-        retryAfter: config.blockDurationMs ? Math.ceil(config.blockDurationMs / 1000) : undefined
+        retryAfter: config.blockDurationMs ? Math.ceil(config.blockDurationMs / 1000) : undefined,
+        remaining: 0,
+        resetTime: record.blockedUntil || resetTime
       };
     }
     
@@ -75,7 +82,8 @@ export class RateLimitService {
     
     return {
       allowed: true,
-      remaining: config.maxAttempts - record.attempts
+      remaining: config.maxAttempts - record.attempts,
+      resetTime
     };
   }
 
@@ -106,6 +114,26 @@ export class RateLimitService {
       resetTime,
       blocked
     };
+  }
+
+  async cleanupExpiredEntries(): Promise<void> {
+    const now = Date.now();
+    const keysToDelete: string[] = [];
+
+    for (const [key, record] of this.limits.entries()) {
+      // Remove entries that are no longer blocked and outside their window
+      const [, actionType] = key.split(':');
+      const config = this.configs[actionType] || this.configs.default;
+      
+      const windowExpired = (now - record.windowStart) >= config.windowMs;
+      const notBlocked = !record.blockedUntil || now >= record.blockedUntil;
+      
+      if (windowExpired && notBlocked) {
+        keysToDelete.push(key);
+      }
+    }
+
+    keysToDelete.forEach(key => this.limits.delete(key));
   }
 }
 
