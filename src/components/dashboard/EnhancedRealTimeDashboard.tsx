@@ -73,7 +73,7 @@ export function EnhancedRealTimeDashboard() {
       <div className="container mx-auto px-6 py-8 space-y-8">
         {/* Enhanced Header */}
         <DashboardHeader
-          user={user}
+          user={user || undefined}
           isDemo={isDemo}
           refreshing={refreshing}
           onRefresh={handleRefresh}
