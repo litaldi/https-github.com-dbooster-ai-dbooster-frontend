@@ -43,9 +43,45 @@ export function useConsolidatedSecurity() {
     }
   }, []);
 
+  const checkPasswordStrength = useCallback(async (password: string) => {
+    const feedback: string[] = [];
+    let score = 0;
+
+    // Length check
+    if (password.length >= 8) score += 1;
+    else feedback.push('Password must be at least 8 characters long');
+
+    if (password.length >= 12) score += 1;
+
+    // Character variety checks
+    if (/[a-z]/.test(password)) score += 1;
+    else feedback.push('Include lowercase letters');
+
+    if (/[A-Z]/.test(password)) score += 1;
+    else feedback.push('Include uppercase letters');
+
+    if (/[0-9]/.test(password)) score += 1;
+    else feedback.push('Include numbers');
+
+    if (/[^a-zA-Z0-9]/.test(password)) score += 1;
+    else feedback.push('Include special characters');
+
+    // Common password checks
+    const commonPasswords = ['password', '123456', 'qwerty', 'admin'];
+    if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
+      feedback.push('Avoid common passwords');
+      score = Math.max(0, score - 2);
+    }
+
+    const isValid = score >= 4 && feedback.length === 0;
+
+    return { isValid, score, feedback };
+  }, []);
+
   return {
     validateSession,
     checkSecurityCompliance,
+    checkPasswordStrength,
     isLoading
   };
 }
