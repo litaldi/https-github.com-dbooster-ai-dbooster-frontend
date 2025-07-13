@@ -1,25 +1,24 @@
 
 import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { 
   GripVertical, 
-  BarChart3, 
-  Activity, 
-  Database, 
+  Settings, 
+  Eye, 
+  EyeOff,
+  BarChart3,
+  Database,
   Shield,
-  Settings,
-  Eye,
-  EyeOff
+  Activity
 } from 'lucide-react';
 
 interface Widget {
   id: string;
   title: string;
-  description: string;
+  type: 'chart' | 'metric' | 'status' | 'list';
   icon: React.ComponentType<any>;
   isVisible: boolean;
   order: number;
@@ -27,159 +26,178 @@ interface Widget {
 
 export const defaultWidgets: Widget[] = [
   {
-    id: 'performance',
-    title: 'Performance Metrics',
-    description: 'Real-time database performance indicators',
+    id: 'performance-chart',
+    title: 'Performance Chart',
+    type: 'chart',
     icon: BarChart3,
     isVisible: true,
-    order: 1,
+    order: 1
   },
   {
-    id: 'activity',
-    title: 'System Activity',
-    description: 'Current system activity and load',
-    icon: Activity,
-    isVisible: true,
-    order: 2,
-  },
-  {
-    id: 'database',
-    title: 'Database Status',
-    description: 'Connection and health monitoring',
+    id: 'query-metrics',
+    title: 'Query Metrics',
+    type: 'metric',
     icon: Database,
     isVisible: true,
-    order: 3,
+    order: 2
   },
   {
-    id: 'security',
-    title: 'Security Monitor',
-    description: 'Security events and threat detection',
+    id: 'security-status',
+    title: 'Security Status',
+    type: 'status',
     icon: Shield,
-    isVisible: false,
-    order: 4,
+    isVisible: true,
+    order: 3
   },
+  {
+    id: 'system-health',
+    title: 'System Health',
+    type: 'status',
+    icon: Activity,
+    isVisible: false,
+    order: 4
+  }
 ];
 
 interface ModularWidgetSystemProps {
-  initialWidgets?: Widget[];
-  onWidgetReorder?: (widgets: Widget[]) => void;
-  onWidgetVisibilityToggle?: (widgetId: string, isVisible: boolean) => void;
+  initialWidgets: Widget[];
+  onWidgetReorder: (widgets: Widget[]) => void;
+  onWidgetVisibilityToggle: (widgetId: string, isVisible: boolean) => void;
 }
 
 export function ModularWidgetSystem({
-  initialWidgets = defaultWidgets,
+  initialWidgets,
   onWidgetReorder,
-  onWidgetVisibilityToggle,
+  onWidgetVisibilityToggle
 }: ModularWidgetSystemProps) {
   const [widgets, setWidgets] = useState(initialWidgets);
+  const [isConfigMode, setIsConfigMode] = useState(false);
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-
-    const items = Array.from(widgets);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    const updatedWidgets = items.map((item, index) => ({
-      ...item,
-      order: index + 1,
-    }));
-
-    setWidgets(updatedWidgets);
-    onWidgetReorder?.(updatedWidgets);
-  };
-
-  const toggleWidgetVisibility = (widgetId: string) => {
+  const handleVisibilityToggle = (widgetId: string) => {
     const updatedWidgets = widgets.map(widget =>
       widget.id === widgetId
         ? { ...widget, isVisible: !widget.isVisible }
         : widget
     );
     setWidgets(updatedWidgets);
-    
-    const widget = updatedWidgets.find(w => w.id === widgetId);
-    if (widget) {
-      onWidgetVisibilityToggle?.(widgetId, widget.isVisible);
-    }
+    onWidgetVisibilityToggle(widgetId, !widgets.find(w => w.id === widgetId)?.isVisible);
   };
+
+  const visibleWidgets = widgets.filter(widget => widget.isVisible);
 
   return (
     <div className="space-y-6">
+      {/* Widget Configuration Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Widget Configuration</h2>
+          <h2 className="text-2xl font-bold">Dashboard Widgets</h2>
           <p className="text-muted-foreground">
-            Customize your dashboard layout by reordering and toggling widgets
+            Customize your dashboard layout and visibility
           </p>
         </div>
-        <Badge variant="outline">
-          {widgets.filter(w => w.isVisible).length} of {widgets.length} visible
-        </Badge>
+        <Button
+          variant={isConfigMode ? 'default' : 'outline'}
+          onClick={() => setIsConfigMode(!isConfigMode)}
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          {isConfigMode ? 'Done' : 'Configure'}
+        </Button>
       </div>
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="widgets">
-          {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="space-y-4"
-            >
-              {widgets.map((widget, index) => (
-                <Draggable key={widget.id} draggableId={widget.id} index={index}>
-                  {(provided, snapshot) => (
-                    <Card
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`transition-shadow ${
-                        snapshot.isDragging ? 'shadow-lg' : ''
-                      }`}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div
-                              {...provided.dragHandleProps}
-                              className="cursor-grab hover:cursor-grabbing"
-                            >
-                              <GripVertical className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <widget.icon className="h-5 w-5 text-primary" />
-                            <div>
-                              <CardTitle className="text-lg">{widget.title}</CardTitle>
-                              <p className="text-sm text-muted-foreground">
-                                {widget.description}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleWidgetVisibility(widget.id)}
-                            >
-                              {widget.isVisible ? (
-                                <Eye className="h-4 w-4" />
-                              ) : (
-                                <EyeOff className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Switch
-                              checked={widget.isVisible}
-                              onCheckedChange={() => toggleWidgetVisibility(widget.id)}
-                            />
-                          </div>
+      {/* Configuration Panel */}
+      {isConfigMode && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Widget Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {widgets.map((widget) => {
+                const Icon = widget.icon;
+                return (
+                  <div
+                    key={widget.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
+                      <Icon className="h-4 w-4" />
+                      <div>
+                        <div className="font-medium">{widget.title}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Type: {widget.type}
                         </div>
-                      </CardHeader>
-                    </Card>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={widget.isVisible ? 'default' : 'secondary'}>
+                        {widget.isVisible ? 'Visible' : 'Hidden'}
+                      </Badge>
+                      <Switch
+                        checked={widget.isVisible}
+                        onCheckedChange={() => handleVisibilityToggle(widget.id)}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Widget Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {visibleWidgets
+          .sort((a, b) => a.order - b.order)
+          .map((widget) => {
+            const Icon = widget.icon;
+            return (
+              <Card key={widget.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Icon className="h-4 w-4" />
+                    {widget.title}
+                  </CardTitle>
+                  {isConfigMode && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleVisibilityToggle(widget.id)}
+                    >
+                      {widget.isVisible ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Icon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Widget content would appear here</p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+      </div>
+
+      {visibleWidgets.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Settings className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No Widgets Visible</h3>
+            <p className="text-muted-foreground mb-4">
+              All widgets are currently hidden. Enable some widgets to see your dashboard.
+            </p>
+            <Button onClick={() => setIsConfigMode(true)}>
+              Configure Widgets
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

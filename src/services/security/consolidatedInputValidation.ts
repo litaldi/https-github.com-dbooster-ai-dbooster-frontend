@@ -1,103 +1,47 @@
 
-import DOMPurify from 'dompurify';
-import { productionLogger } from '@/utils/productionLogger';
-
-export interface ValidationResult {
+interface ValidationResult {
   isValid: boolean;
-  sanitizedValue?: string;
   errors: string[];
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  sanitizedValue: string;
 }
 
-export class ConsolidatedInputValidation {
-  private static instance: ConsolidatedInputValidation;
-
-  static getInstance(): ConsolidatedInputValidation {
-    if (!ConsolidatedInputValidation.instance) {
-      ConsolidatedInputValidation.instance = new ConsolidatedInputValidation();
-    }
-    return ConsolidatedInputValidation.instance;
-  }
-
-  validateAndSanitize(input: string, context: string = 'general'): ValidationResult {
+export const consolidatedInputValidation = {
+  validateAndSanitize: (value: string, context: string = 'general'): ValidationResult => {
     const errors: string[] = [];
-    let riskLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
-
-    // Basic input validation
-    if (!input || typeof input !== 'string') {
-      errors.push('Invalid input type');
-      return {
-        isValid: false,
-        errors,
-        riskLevel: 'medium'
-      };
-    }
-
-    // Length validation
-    if (input.length > 10000) {
-      errors.push('Input too long');
-      riskLevel = 'medium';
-    }
-
-    // Detect potential XSS
-    if (/<script|javascript:|on\w+=/i.test(input)) {
-      errors.push('Potential XSS detected');
-      riskLevel = 'critical';
-    }
-
-    // Detect potential SQL injection
-    if (/(union|select|insert|update|delete|drop)\s+/i.test(input)) {
-      errors.push('Potential SQL injection detected');
-      riskLevel = 'critical';
+    let sanitizedValue = value.trim();
+    
+    // Basic validation
+    if (!sanitizedValue) {
+      errors.push('Value cannot be empty');
+      return { isValid: false, errors, sanitizedValue };
     }
 
     // Context-specific validation
     switch (context) {
       case 'email':
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedValue)) {
           errors.push('Invalid email format');
-          riskLevel = 'medium';
         }
         break;
-      case 'url':
-        try {
-          new URL(input);
-        } catch {
-          errors.push('Invalid URL format');
-          riskLevel = 'medium';
+      case 'password':
+        if (sanitizedValue.length < 8) {
+          errors.push('Password must be at least 8 characters long');
         }
         break;
-      case 'filename':
-        if (/[<>:"/\\|?*]/.test(input)) {
-          errors.push('Invalid filename characters');
-          riskLevel = 'medium';
+      case 'name':
+        if (sanitizedValue.length < 2) {
+          errors.push('Name must be at least 2 characters long');
         }
         break;
     }
 
-    // Sanitize the input
-    const sanitizedValue = DOMPurify.sanitize(input, {
-      ALLOWED_TAGS: [],
-      ALLOWED_ATTR: []
-    });
-
-    const isValid = errors.length === 0;
-
-    if (!isValid) {
-      productionLogger.warn('Input validation failed', {
-        context,
-        errors,
-        riskLevel
-      }, 'InputValidation');
-    }
+    // Basic sanitization - remove potentially harmful characters
+    sanitizedValue = sanitizedValue.replace(/[<>]/g, '');
 
     return {
-      isValid,
-      sanitizedValue,
+      isValid: errors.length === 0,
       errors,
-      riskLevel
+      sanitizedValue
     };
   }
-}
-
-export const consolidatedInputValidation = ConsolidatedInputValidation.getInstance();
+};

@@ -1,118 +1,93 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { 
   TrendingUp, 
   TrendingDown, 
   Database, 
-  Activity, 
-  Shield,
+  Zap, 
   CheckCircle,
-  X,
-  Info,
-  AlertTriangle
+  AlertCircle,
+  Info
 } from 'lucide-react';
 
-interface MetricData {
+interface MetricCardProps {
   title: string;
   value: string | number;
-  change: number;
+  change: string;
+  changeType: 'positive' | 'negative' | 'neutral';
   icon: React.ComponentType<any>;
-  color: 'green' | 'red' | 'blue' | 'purple';
+  onClick?: () => void;
 }
 
-export const sampleMetrics: MetricData[] = [
-  {
-    title: 'Query Performance',
-    value: '127ms',
-    change: -12.5,
-    icon: TrendingUp,
-    color: 'green',
-  },
-  {
-    title: 'Active Connections',
-    value: 156,
-    change: 8.2,
-    icon: Database,
-    color: 'blue',
-  },
-  {
-    title: 'System Load',
-    value: '23.5%',
-    change: -5.3,
-    icon: Activity,
-    color: 'purple',
-  },
-  {
-    title: 'Security Score',
-    value: '94.2%',
-    change: 2.1,
-    icon: Shield,
-    color: 'green',
-  },
-];
-
-interface AnimatedMetricCardProps extends MetricData {}
-
-export function AnimatedMetricCard({ title, value, change, icon: Icon, color }: AnimatedMetricCardProps) {
+export function AnimatedMetricCard({ 
+  title, 
+  value, 
+  change, 
+  changeType, 
+  icon: Icon,
+  onClick 
+}: MetricCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  
-  const colorClasses = {
-    green: 'text-green-600 bg-green-50 border-green-200',
-    red: 'text-red-600 bg-red-50 border-red-200',
-    blue: 'text-blue-600 bg-blue-50 border-blue-200',
-    purple: 'text-purple-600 bg-purple-50 border-purple-200',
-  };
 
-  const isPositive = change > 0;
-  const ChangeIcon = isPositive ? TrendingUp : TrendingDown;
+  const getChangeColor = (type: 'positive' | 'negative' | 'neutral') => {
+    switch (type) {
+      case 'positive':
+        return 'text-green-600 bg-green-50';
+      case 'negative':
+        return 'text-red-600 bg-red-50';
+      default:
+        return 'text-muted-foreground bg-muted/50';
+    }
+  };
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ scale: 1.02, y: -2 }}
+      transition={{ duration: 0.2 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >
-      <Card className={`cursor-pointer transition-all duration-200 ${colorClasses[color]}`}>
+      <Card 
+        className={`cursor-pointer transition-shadow duration-200 ${
+          isHovered ? 'shadow-lg' : 'shadow-sm'
+        }`}
+        onClick={onClick}
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{title}</CardTitle>
-          <Icon className="h-4 w-4" />
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            {title}
+          </CardTitle>
+          <motion.div
+            animate={{ rotate: isHovered ? 10 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Icon className="h-4 w-4 text-muted-foreground" />
+          </motion.div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{value}</div>
-          <div className="flex items-center space-x-2 text-xs">
-            <div className={`flex items-center ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-              <ChangeIcon className="h-3 w-3 mr-1" />
-              <span>{Math.abs(change)}%</span>
-            </div>
-            <span className="text-muted-foreground">from last period</span>
+          <div className="text-2xl font-bold mb-2">{value}</div>
+          <div className="flex items-center text-sm">
+            <Badge className={`text-xs ${getChangeColor(changeType)}`}>
+              {changeType === 'positive' ? (
+                <TrendingUp className="h-3 w-3 mr-1" />
+              ) : changeType === 'negative' ? (
+                <TrendingDown className="h-3 w-3 mr-1" />
+              ) : null}
+              {change}
+            </Badge>
+            <span className="text-muted-foreground ml-2">vs last month</span>
           </div>
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-2 pt-2 border-t"
-              >
-                <p className="text-xs text-muted-foreground">
-                  Click for detailed analytics
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </CardContent>
       </Card>
     </motion.div>
   );
 }
 
-interface EnhancedLoadingStateProps {
+interface LoadingStateProps {
   isLoading: boolean;
   progress?: number;
   message?: string;
@@ -124,7 +99,7 @@ export function EnhancedLoadingState({
   progress = 0, 
   message = 'Loading...', 
   children 
-}: EnhancedLoadingStateProps) {
+}: LoadingStateProps) {
   if (!isLoading) {
     return <>{children}</>;
   }
@@ -133,18 +108,29 @@ export function EnhancedLoadingState({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-4 p-8 text-center"
+      exit={{ opacity: 0 }}
+      className="space-y-4"
     >
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-      <div className="space-y-2">
-        <p className="text-lg font-medium">{message}</p>
-        {progress > 0 && (
-          <div className="max-w-sm mx-auto">
-            <Progress value={progress} className="h-2" />
-            <p className="text-sm text-muted-foreground mt-1">{progress}% complete</p>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center space-y-4">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="mx-auto w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
+            />
+            <div>
+              <div className="font-medium">{message}</div>
+              {progress > 0 && (
+                <div className="mt-2 space-y-2">
+                  <Progress value={progress} className="h-2" />
+                  <div className="text-sm text-muted-foreground">{progress}% complete</div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
@@ -156,44 +142,89 @@ interface FeedbackAnimationProps {
   onDismiss: () => void;
 }
 
-export function FeedbackAnimation({ type, message, isVisible, onDismiss }: FeedbackAnimationProps) {
-  const icons = {
-    success: CheckCircle,
-    error: AlertTriangle,
-    info: Info,
+export function FeedbackAnimation({ 
+  type, 
+  message, 
+  isVisible, 
+  onDismiss 
+}: FeedbackAnimationProps) {
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(onDismiss, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onDismiss]);
+
+  const getIcon = () => {
+    switch (type) {
+      case 'success':
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case 'error':
+        return <AlertCircle className="h-5 w-5 text-red-600" />;
+      case 'info':
+        return <Info className="h-5 w-5 text-blue-600" />;
+    }
   };
 
-  const colors = {
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error: 'bg-red-50 border-red-200 text-red-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
+  const getColorClasses = () => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-50 border-green-200 text-green-800';
+      case 'error':
+        return 'bg-red-50 border-red-200 text-red-800';
+      case 'info':
+        return 'bg-blue-50 border-blue-200 text-blue-800';
+    }
   };
-
-  const Icon = icons[type];
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          initial={{ opacity: 0, y: -50, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 50, scale: 0.9 }}
-          className="fixed bottom-4 right-4 z-50"
+          exit={{ opacity: 0, y: -50, scale: 0.9 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="fixed top-4 right-4 z-50"
         >
-          <div className={`flex items-center gap-3 p-4 rounded-lg border ${colors[type]} shadow-lg`}>
-            <Icon className="h-5 w-5" />
+          <div className={`flex items-center space-x-2 px-4 py-3 rounded-lg border shadow-lg ${getColorClasses()}`}>
+            {getIcon()}
             <span className="font-medium">{message}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDismiss}
-              className="ml-2 h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
+
+// Sample metrics data for demonstration
+export const sampleMetrics: MetricCardProps[] = [
+  {
+    title: 'Total Queries',
+    value: '12,847',
+    change: '+12.3%',
+    changeType: 'positive',
+    icon: Database
+  },
+  {
+    title: 'Optimized',
+    value: '75%',
+    change: '+8.1%',
+    changeType: 'positive',
+    icon: Zap
+  },
+  {
+    title: 'Performance',
+    value: '94.2%',
+    change: '+2.1%',
+    changeType: 'positive',
+    icon: TrendingUp
+  },
+  {
+    title: 'Response Time',
+    value: '127ms',
+    change: '-12.8%',
+    changeType: 'positive',
+    icon: Zap
+  }
+];
