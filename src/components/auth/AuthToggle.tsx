@@ -2,10 +2,11 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { UserPlus, LogIn } from 'lucide-react';
+import type { AuthMode } from '@/types/auth';
 
 interface AuthToggleProps {
-  authMode: 'login' | 'signup';
-  onModeChange: (mode: 'login' | 'signup') => void;
+  authMode: AuthMode;
+  onModeChange: (mode: AuthMode) => void;
 }
 
 export function AuthToggle({ authMode, onModeChange }: AuthToggleProps) {
