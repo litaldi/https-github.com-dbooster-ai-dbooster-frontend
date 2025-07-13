@@ -26,7 +26,7 @@ export function SecurityDashboard() {
       // Map the response to match our expected structure
       setEnhancedStats({
         totalEvents: summary.totalEvents || 0,
-        threatsDetected: summary.threatsBlocked || summary.threatsDetected || 0,
+        threatsDetected: summary.threatsDetected || 0,
         blockedIPs: summary.blockedIPs || 0,
         recentHighRiskEvents: summary.recentHighRiskEvents || []
       });
