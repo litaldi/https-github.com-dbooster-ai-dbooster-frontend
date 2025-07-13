@@ -1,68 +1,109 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Shield, Server, AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
+
+interface DashboardMetrics {
+  totalQueries: number;
+  optimizedQueries: number;
+  avgImprovement: number;
+  monthlySavings: number;
+  activeConnections: number;
+  uptime: number;
+  securityScore: number;
+  responseTime: number;
+  criticalIssues: number;
+  pendingOptimizations: number;
+}
 
 interface SystemHealthOverviewProps {
-  metrics: any;
+  metrics?: DashboardMetrics;
 }
 
 export function SystemHealthOverview({ metrics }: SystemHealthOverviewProps) {
-  const healthItems = [
-    {
-      name: 'Database Performance',
-      status: 'healthy',
-      value: metrics?.uptime || 99.5,
-      icon: CheckCircle,
-      color: 'text-green-600'
-    },
-    {
-      name: 'Security Status',
-      status: 'healthy',
-      value: metrics?.securityScore || 98,
-      icon: CheckCircle,
-      color: 'text-green-600'
-    },
-    {
-      name: 'Active Connections',
-      status: 'warning',
-      value: 85,
-      icon: AlertTriangle,
-      color: 'text-yellow-600'
-    },
-    {
-      name: 'Response Time',
-      status: 'healthy',
-      value: 95,
-      icon: CheckCircle,
-      color: 'text-green-600'
-    }
-  ];
-
   return (
-    <Card className="shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          System Health Overview
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {healthItems.map((item) => (
-          <div key={item.name} className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <item.icon className={`h-4 w-4 ${item.color}`} />
-              <span className="font-medium">{item.name}</span>
+    <div className="grid gap-6 md:grid-cols-3">
+      <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-green-800 flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Security Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-3xl font-bold text-green-900">
+                {metrics?.securityScore?.toFixed(1) || 0}%
+              </div>
+              <p className="text-sm text-green-700">Security Score</p>
             </div>
-            <div className="flex items-center gap-3">
-              <Progress value={item.value} className="w-20" />
-              <span className="text-sm text-muted-foreground">
-                {item.value}%
+            <CheckCircle className="h-10 w-10 text-green-600" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-blue-800 flex items-center gap-2">
+            <Server className="h-5 w-5" />
+            System Health
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-sm text-blue-700">Uptime</span>
+              <span className="font-semibold text-blue-900">
+                {metrics?.uptime?.toFixed(2) || 0}%
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-blue-700">Response Time</span>
+              <span className="font-semibold text-blue-900">
+                {metrics?.responseTime || 0}ms
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-blue-700">Connections</span>
+              <span className="font-semibold text-blue-900">
+                {metrics?.activeConnections || 0}
               </span>
             </div>
           </div>
-        ))}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-orange-800 flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            Action Items
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-orange-700">Critical Issues</span>
+              <Badge variant={metrics?.criticalIssues === 0 ? "secondary" : "destructive"}>
+                {metrics?.criticalIssues || 0}
+              </Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-orange-700">Pending Tasks</span>
+              <Badge variant="secondary">
+                {metrics?.pendingOptimizations || 0}
+              </Badge>
+            </div>
+            <Button size="sm" className="w-full mt-3">
+              <ChevronRight className="h-4 w-4 mr-2" />
+              View Details
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

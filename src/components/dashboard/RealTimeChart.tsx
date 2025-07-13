@@ -1,58 +1,79 @@
 
-import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { ResponsiveContainer } from 'recharts';
+import { ChartControls } from './chart/ChartControls';
+import { MetricIndicators } from './chart/MetricIndicators';
+import { AreaChartView } from './chart/AreaChartView';
+import { LineChartView } from './chart/LineChartView';
 
-const generateMockData = () => {
-  const data = [];
-  const now = new Date();
-  
-  for (let i = 23; i >= 0; i--) {
-    const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-    data.push({
-      time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      queries: Math.floor(Math.random() * 100) + 50,
-      optimized: Math.floor(Math.random() * 80) + 30,
-      performance: Math.floor(Math.random() * 20) + 70
-    });
-  }
-  
-  return data;
-};
+interface ChartDataPoint {
+  time: string;
+  queries: number;
+  responseTime: number;
+  optimization: number;
+  errors: number;
+}
 
 export function RealTimeChart() {
-  const data = generateMockData();
+  const [data, setData] = useState<ChartDataPoint[]>([]);
+  const [chartType, setChartType] = useState<'line' | 'area'>('area');
+
+  useEffect(() => {
+    // Initialize with some data
+    const initialData: ChartDataPoint[] = Array.from({ length: 20 }, (_, i) => ({
+      time: new Date(Date.now() - (19 - i) * 60000).toLocaleTimeString('en-US', { 
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      queries: Math.floor(Math.random() * 100) + 50,
+      responseTime: Math.floor(Math.random() * 200) + 100,
+      optimization: Math.floor(Math.random() * 50) + 60,
+      errors: Math.floor(Math.random() * 5)
+    }));
+    setData(initialData);
+
+    // Simulate real-time updates
+    const interval = setInterval(() => {
+      setData(prevData => {
+        const newData = [...prevData.slice(1)];
+        newData.push({
+          time: new Date().toLocaleTimeString('en-US', { 
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          queries: Math.floor(Math.random() * 100) + 50,
+          responseTime: Math.floor(Math.random() * 200) + 100,
+          optimization: Math.floor(Math.random() * 50) + 60,
+          errors: Math.floor(Math.random() * 5)
+        });
+        return newData;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const latestData = data[data.length - 1];
+  const previousData = data[data.length - 2];
 
   return (
-    <div className="h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" />
-          <YAxis />
-          <Tooltip />
-          <Line 
-            type="monotone" 
-            dataKey="queries" 
-            stroke="#3b82f6" 
-            strokeWidth={2}
-            name="Total Queries"
-          />
-          <Line 
-            type="monotone" 
-            dataKey="optimized" 
-            stroke="#10b981" 
-            strokeWidth={2}
-            name="Optimized"
-          />
-          <Line 
-            type="monotone" 
-            dataKey="performance" 
-            stroke="#f59e0b" 
-            strokeWidth={2}
-            name="Performance %"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <MetricIndicators latestData={latestData} previousData={previousData} />
+        <ChartControls chartType={chartType} onChartTypeChange={setChartType} />
+      </div>
+
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          {chartType === 'area' ? (
+            <AreaChartView data={data} />
+          ) : (
+            <LineChartView data={data} />
+          )}
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
