@@ -23,7 +23,13 @@ export function SecurityDashboard() {
     try {
       setLoadingEnhanced(true);
       const summary = await securityService.getEnhancedSecuritySummary();
-      setEnhancedStats(summary);
+      // Map the response to match our expected structure
+      setEnhancedStats({
+        totalEvents: summary.totalEvents || 0,
+        threatsDetected: summary.threatsBlocked || summary.threatsDetected || 0,
+        blockedIPs: summary.blockedIPs || 0,
+        recentHighRiskEvents: summary.recentHighRiskEvents || []
+      });
     } catch (error) {
       console.error('Failed to load enhanced security stats:', error);
     } finally {
