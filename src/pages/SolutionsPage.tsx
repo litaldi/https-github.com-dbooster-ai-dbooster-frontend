@@ -6,98 +6,106 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { 
-  Code2, 
+  Code, 
   Users, 
-  Building2, 
+  Building, 
+  Target, 
   ArrowRight,
   CheckCircle2,
   Zap,
-  Target,
-  TrendingUp
+  BarChart3,
+  Shield,
+  Clock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const solutions = [
+const solutionCategories = [
   {
     title: "For Developers",
-    description: "Optimize queries and improve database performance in your development workflow.",
-    icon: <Code2 className="h-8 w-8 text-blue-600" />,
+    description: "Individual developers looking to optimize their database queries and improve application performance.",
+    icon: <Code className="h-8 w-8 text-blue-600" />,
+    href: "/for-developers",
     features: [
-      "IDE integrations and extensions",
-      "Real-time query optimization",
-      "Local development tools",
-      "Performance debugging"
+      "Personal query optimization workspace",
+      "AI-powered query suggestions",
+      "Performance monitoring tools",
+      "Integration with popular IDEs"
     ],
-    link: "/for-developers",
-    badge: "Popular",
-    stats: "10,000+ developers"
+    badge: "Most Popular"
   },
   {
     title: "For Teams",
-    description: "Collaborate on database optimization with team-friendly features and workflows.",
+    description: "Development teams collaborating on database optimization and performance improvements.",
     icon: <Users className="h-8 w-8 text-green-600" />,
+    href: "/for-teams",
     features: [
-      "Team collaboration tools",
-      "Shared optimization rules",
-      "Performance monitoring",
+      "Team collaboration features",
+      "Shared query libraries",
+      "Performance dashboards",
       "Code review integration"
-    ],
-    link: "/for-teams",
-    badge: "Growing Fast",
-    stats: "2,500+ teams"
+    ]
   },
   {
     title: "For Enterprises",
-    description: "Enterprise-grade database optimization with advanced security and compliance.",
-    icon: <Building2 className="h-8 w-8 text-purple-600" />,
+    description: "Large organizations requiring enterprise-grade security, compliance, and scale.",
+    icon: <Building className="h-8 w-8 text-purple-600" />,
+    href: "/for-enterprises", 
     features: [
       "Enterprise security & compliance",
-      "Dedicated support manager",
       "Custom AI model training",
-      "On-premise deployment"
+      "Dedicated support",
+      "Multi-region deployment"
     ],
-    link: "/for-enterprises",
-    badge: "Enterprise",
-    stats: "500+ organizations"
+    badge: "Enterprise"
+  },
+  {
+    title: "Use Cases",
+    description: "Real-world scenarios and success stories across different industries and applications.",
+    icon: <Target className="h-8 w-8 text-orange-600" />,
+    href: "/use-cases",
+    features: [
+      "Industry-specific examples",
+      "Performance benchmarks", 
+      "Implementation guides",
+      "ROI case studies"
+    ]
   }
 ];
 
 const benefits = [
   {
-    title: "75% Performance Boost",
-    description: "Average query performance improvement across all customers",
-    icon: <TrendingUp className="h-6 w-6 text-green-600" />
+    icon: <Zap className="h-6 w-6 text-yellow-500" />,
+    title: "75% Performance Improvement",
+    description: "Average query performance boost across all customer implementations"
   },
   {
-    title: "60% Cost Reduction",
-    description: "Infrastructure cost savings through optimized resource usage",
-    icon: <Target className="h-6 w-6 text-blue-600" />
+    icon: <BarChart3 className="h-6 w-6 text-blue-500" />,
+    title: "Real-time Analytics", 
+    description: "Monitor and optimize database performance with live insights"
   },
   {
-    title: "5 Min Setup",
-    description: "Quick integration with existing database infrastructure",
-    icon: <Zap className="h-6 w-6 text-orange-600" />
+    icon: <Shield className="h-6 w-6 text-green-500" />,
+    title: "Enterprise Security",
+    description: "SOC2 Type II compliant with advanced security controls"
+  },
+  {
+    icon: <Clock className="h-6 w-6 text-purple-500" />,
+    title: "Instant Results",
+    description: "See optimization recommendations within minutes of connection"
   }
 ];
 
 export default function SolutionsPage() {
   return (
     <StandardPageLayout
-      title="Database Optimization Solutions"
-      subtitle="Tailored for Every Team"
-      description="Discover how DBooster's AI-powered database optimization platform adapts to your specific needs, whether you're a developer, team, or enterprise."
+      title="Solutions for Every Scale"
+      subtitle="Optimize Your Database Performance"
+      description="From individual developers to enterprise teams, DBooster provides tailored solutions for database optimization at any scale."
     >
       <div className="space-y-20">
-        {/* Benefits Overview */}
-        <section className="bg-gradient-to-r from-primary/5 to-blue-500/5 p-12 rounded-2xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Proven Results Across All Solutions</h2>
-            <p className="text-xl text-muted-foreground">
-              Consistent performance improvements regardless of your team size or industry
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Key Benefits */}
+        <section className="text-center">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             {benefits.map((benefit, index) => (
               <motion.div
                 key={index}
@@ -109,24 +117,24 @@ export default function SolutionsPage() {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-muted to-muted/50 rounded-xl flex items-center justify-center">
                   {benefit.icon}
                 </div>
-                <h3 className="text-2xl font-bold mb-2">{benefit.title}</h3>
-                <p className="text-muted-foreground">{benefit.description}</p>
+                <h3 className="text-lg font-semibold mb-2">{benefit.title}</h3>
+                <p className="text-sm text-muted-foreground">{benefit.description}</p>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* Solutions Grid */}
+        {/* Solution Categories */}
         <section>
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Choose Your Solution</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Whether you're building alone or managing enterprise infrastructure, we have the right solution for your database optimization needs.
+              Whether you're working solo or managing enterprise infrastructure, we have the right solution for your needs.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {solutions.map((solution, index) => (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {solutionCategories.map((solution, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
@@ -134,42 +142,40 @@ export default function SolutionsPage() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20 relative">
-                  {solution.badge && (
-                    <div className="absolute -top-3 left-6">
-                      <Badge className="bg-primary text-primary-foreground">
-                        {solution.badge}
-                      </Badge>
+                <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20 group">
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-muted to-muted/50 rounded-xl group-hover:scale-105 transition-transform">
+                          {solution.icon}
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">{solution.title}</CardTitle>
+                          {solution.badge && (
+                            <Badge variant="secondary" className="mt-2">
+                              {solution.badge}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  
-                  <CardHeader className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-muted to-muted/50 rounded-xl flex items-center justify-center">
-                      {solution.icon}
-                    </div>
-                    <CardTitle className="text-xl mb-2">{solution.title}</CardTitle>
                     <p className="text-muted-foreground leading-relaxed">
                       {solution.description}
                     </p>
-                    <div className="text-sm text-primary font-medium mt-2">
-                      {solution.stats}
-                    </div>
                   </CardHeader>
-                  
-                  <CardContent className="space-y-6">
-                    <ul className="space-y-3">
-                      {solution.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-sm">
+                  <CardContent>
+                    <ul className="space-y-3 mb-6">
+                      {solution.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-center gap-2 text-sm">
                           <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
                           <span>{feature}</span>
                         </li>
                       ))}
                     </ul>
-                    
-                    <Button asChild className="w-full">
-                      <Link to={solution.link}>
+                    <Button asChild className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      <Link to={solution.href}>
                         Learn More
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     </Button>
                   </CardContent>
@@ -187,14 +193,14 @@ export default function SolutionsPage() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold mb-4">Ready to Optimize Your Database?</h2>
+            <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join thousands of developers and organizations who trust DBooster to optimize their database performance.
+              Join thousands of developers and organizations optimizing their database performance with DBooster.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="px-8">
                 <Link to="/demo">
-                  Try Demo Now
+                  Try Demo
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>

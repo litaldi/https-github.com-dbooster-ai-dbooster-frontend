@@ -1,222 +1,195 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { 
-  MessageCircle, 
   Mail, 
   Phone, 
-  Clock, 
-  CheckCircle2,
-  Search,
-  BookOpen,
-  FileText,
-  Users,
-  AlertCircle,
+  MapPin, 
+  MessageSquare, 
+  Book, 
+  Video, 
+  Users, 
+  Clock,
+  ArrowRight,
   ExternalLink,
-  Activity,
-  Send,
-  Loader2,
-  Star,
-  ThumbsUp,
-  ChevronDown
+  HelpCircle,
+  FileText,
+  Search,
+  Activity
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 const supportChannels = [
   {
-    title: "Live Chat",
-    description: "Get instant help from our support team during business hours",
-    icon: <MessageCircle className="h-8 w-8 text-blue-600" />,
-    availability: "Mon-Fri, 9AM-6PM IST",
-    responseTime: "< 5 minutes",
-    action: "Start Chat",
-    status: "online"
-  },
-  {
     title: "Email Support",
-    description: "Send us detailed questions and we'll get back to you promptly",
-    icon: <Mail className="h-8 w-8 text-green-600" />,
-    availability: "24/7",
-    responseTime: "< 4 hours",
-    action: "Send Email",
-    status: "available"
+    description: "Get help via email with detailed responses",
+    icon: <Mail className="h-8 w-8 text-blue-600" />,
+    contact: "support@dbooster.ai",
+    availability: "24/7 - Response within 4 hours",
+    action: "mailto:support@dbooster.ai"
   },
   {
-    title: "Phone Support",
-    description: "Talk directly with our technical experts for urgent issues",
-    icon: <Phone className="h-8 w-8 text-purple-600" />,
-    availability: "Enterprise customers only",
-    responseTime: "Immediate",
-    action: "Schedule Call",
-    status: "premium"
+    title: "Phone Support", 
+    description: "Speak directly with our support team",
+    icon: <Phone className="h-8 w-8 text-green-600" />,
+    contact: "+972-54-000-0000",
+    availability: "Sun-Thu: 9AM-6PM IST",
+    action: "tel:+972540000000"
+  },
+  {
+    title: "Live Chat",
+    description: "Instant help through our chat system",
+    icon: <MessageSquare className="h-8 w-8 text-purple-600" />,
+    contact: "Available in dashboard",
+    availability: "24/7 for premium users",
+    action: "/app"
+  },
+  {
+    title: "Community Forum",
+    description: "Connect with other DBooster users",
+    icon: <Users className="h-8 w-8 text-orange-600" />,
+    contact: "community.dbooster.ai",
+    availability: "Always available",
+    action: "https://community.dbooster.ai"
   }
 ];
 
-const quickHelp = [
+const resourceTypes = [
   {
-    title: "Getting Started Guide",
-    description: "Step-by-step instructions to set up your first optimization",
-    icon: <BookOpen className="h-6 w-6" />,
-    category: "Setup",
-    readTime: "5 min read"
+    title: "Documentation",
+    description: "Comprehensive guides and API references",
+    icon: <Book className="h-6 w-6 text-blue-500" />,
+    items: [
+      "Getting Started Guide",
+      "API Documentation", 
+      "Integration Tutorials",
+      "Troubleshooting Guide"
+    ]
   },
   {
-    title: "Troubleshooting Common Issues",
-    description: "Solutions for the most frequently encountered problems",
-    icon: <AlertCircle className="h-6 w-6" />,
-    category: "Troubleshooting",
-    readTime: "8 min read"
+    title: "Video Tutorials",
+    description: "Step-by-step video walkthroughs",
+    icon: <Video className="h-6 w-6 text-red-500" />,
+    items: [
+      "Platform Overview",
+      "Database Connection Setup",
+      "Reading Optimization Reports",
+      "Advanced Configuration"
+    ]
   },
   {
-    title: "API Documentation",
-    description: "Complete reference for integrating with DBooster's API",
-    icon: <FileText className="h-6 w-6" />,
-    category: "Development",
-    readTime: "15 min read"
+    title: "Knowledge Base",
+    description: "Searchable articles and FAQs",
+    icon: <Search className="h-6 w-6 text-green-500" />,
+    items: [
+      "Common Questions",
+      "Error Code Reference",
+      "Performance Optimization Tips",
+      "Security Best Practices"
+    ]
   },
   {
-    title: "Best Practices",
-    description: "Tips and recommendations for optimal database performance",
-    icon: <CheckCircle2 className="h-6 w-6" />,
-    category: "Optimization",
-    readTime: "12 min read"
+    title: "Release Notes",
+    description: "Latest updates and changes",
+    icon: <FileText className="h-6 w-6 text-purple-500" />,
+    items: [
+      "Feature Announcements",
+      "Bug Fixes",
+      "Breaking Changes",
+      "Migration Guides"
+    ]
   }
 ];
 
-const faqCategories = [
+const supportPlans = [
   {
-    title: "Getting Started",
-    questions: [
-      {
-        q: "How do I connect my database?",
-        a: "Navigate to the DB Import page and follow our secure connection wizard. We support PostgreSQL, MySQL, and MongoDB with enterprise-grade security."
-      },
-      {
-        q: "What databases are supported?",
-        a: "We currently support PostgreSQL, MySQL, MongoDB, and Redis. More database types are being added regularly based on user feedback."
-      }
-    ]
+    name: "Community",
+    description: "Self-service support for individual developers",
+    features: [
+      "Documentation access",
+      "Community forum",
+      "Email support (48h response)",
+      "Knowledge base"
+    ],
+    availability: "Business hours"
   },
   {
-    title: "Optimization",
-    questions: [
-      {
-        q: "How do I approve query optimizations?",
-        a: "Visit the Approvals page to review pending optimizations. Each suggestion includes a detailed before/after comparison with performance metrics."
-      },
-      {
-        q: "Can I test queries before applying them?",
-        a: "Absolutely! Use our Sandbox environment to safely test all optimizations before applying them to your production database."
-      }
-    ]
+    name: "Professional",
+    description: "Priority support for teams and businesses",
+    features: [
+      "Everything in Community",
+      "Priority email support (4h response)",
+      "Live chat support",
+      "Video call support"
+    ],
+    availability: "Extended hours",
+    badge: "Most Popular"
+  },
+  {
+    name: "Enterprise",
+    description: "Dedicated support for enterprise customers",
+    features: [
+      "Everything in Professional", 
+      "Dedicated support manager",
+      "Phone support (1h response)",
+      "Custom SLA agreements"
+    ],
+    availability: "24/7"
   }
 ];
 
 export default function SupportPage() {
-  const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-    priority: 'normal'
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      enhancedToast.success({
-        title: "Message sent successfully!",
-        description: "We'll get back to you within 24 hours.",
-      });
-      
-      setContactForm({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-        priority: 'normal'
-      });
-    } catch (error) {
-      enhancedToast.error({
-        title: "Failed to send message",
-        description: "Please try again or contact us directly.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const filteredHelp = quickHelp.filter(item =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <StandardPageLayout
       title="Support Center"
       subtitle="We're Here to Help"
-      description="Get the support you need to optimize your database performance. Access documentation, contact our team, or find answers to common questions."
+      description="Get the support you need to optimize your database performance. Multiple channels, comprehensive resources, and expert guidance."
     >
       <div className="space-y-20">
-        {/* Enhanced Search Section */}
-        <section className="bg-gradient-to-r from-primary/5 to-blue-500/5 p-12 rounded-2xl border border-border/50">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-2xl mx-auto text-center"
-          >
-            <h2 className="text-3xl font-bold mb-6">How can we help you today?</h2>
-            <div className="relative mb-8">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Search documentation, guides, and FAQs..."
-                className="pl-12 h-12 text-lg"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Search support documentation"
-              />
+        {/* Contact Information Header */}
+        <section className="bg-muted/30 p-8 rounded-2xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-4">Contact Information</h2>
+            <p className="text-muted-foreground">Multiple ways to reach our support team</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="text-center">
+              <Mail className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <h3 className="font-semibold mb-1">Email</h3>
+              <p className="text-sm text-muted-foreground mb-2">support@dbooster.ai</p>
+              <p className="text-xs text-muted-foreground">Response within 4 hours</p>
             </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {["Database connection", "Query optimization", "API integration", "Troubleshooting"].map((topic, index) => (
-                <Badge 
-                  key={index} 
-                  variant="outline" 
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={() => setSearchQuery(topic)}
-                >
-                  {topic}
-                </Badge>
-              ))}
+            
+            <div className="text-center">
+              <Phone className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <h3 className="font-semibold mb-1">Phone</h3>
+              <p className="text-sm text-muted-foreground mb-2">+972-54-000-0000</p>
+              <p className="text-xs text-muted-foreground">Sun-Thu: 9AM-6PM IST</p>
             </div>
-          </motion.div>
+            
+            <div className="text-center">
+              <MapPin className="h-8 w-8 mx-auto mb-3 text-primary" />
+              <h3 className="font-semibold mb-1">Office</h3>
+              <p className="text-sm text-muted-foreground mb-2">Tel Aviv, Israel</p>
+              <p className="text-xs text-muted-foreground">Headquarters</p>
+            </div>
+          </div>
         </section>
 
-        {/* Enhanced Support Channels */}
+        {/* Support Channels */}
         <section>
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Contact Our Support Team</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Choose the best way to reach us based on your needs and urgency level.
+            <h2 className="text-3xl font-bold mb-4">Get Help Your Way</h2>
+            <p className="text-xl text-muted-foreground">
+              Choose the support channel that works best for you
             </p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {supportChannels.map((channel, index) => (
               <motion.div
                 key={index}
@@ -225,38 +198,85 @@ export default function SupportPage() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full hover:shadow-lg transition-all duration-300 text-center group relative overflow-hidden">
-                  {channel.status === 'online' && (
-                    <div className="absolute top-4 right-4">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-green-600 font-medium">Online</span>
-                      </div>
-                    </div>
-                  )}
-                  
+                <Card className="h-full hover:shadow-lg transition-shadow">
                   <CardHeader>
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-muted to-muted/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      {channel.icon}
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-muted to-muted/50 rounded-xl flex items-center justify-center">
+                        {channel.icon}
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">{channel.title}</CardTitle>
+                        <p className="text-muted-foreground">{channel.description}</p>
+                      </div>
                     </div>
-                    <CardTitle className="text-xl">{channel.title}</CardTitle>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {channel.description}
-                    </p>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>{channel.availability}</span>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="font-medium">{channel.contact}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">{channel.availability}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-center gap-2">
-                        <Activity className="h-4 w-4" />
-                        <span>Response: {channel.responseTime}</span>
-                      </div>
+                      <Button asChild className="w-full">
+                        <a href={channel.action} target={channel.action.startsWith('http') ? '_blank' : undefined}>
+                          Get Support
+                          {channel.action.startsWith('http') ? (
+                            <ExternalLink className="ml-2 h-4 w-4" />
+                          ) : (
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          )}
+                        </a>
+                      </Button>
                     </div>
-                    <Button className="w-full group-hover:scale-105 transition-transform">
-                      {channel.action}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Self-Service Resources */}
+        <section>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Self-Service Resources</h2>
+            <p className="text-xl text-muted-foreground">
+              Find answers quickly with our comprehensive documentation and guides
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {resourceTypes.map((resource, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <Card className="h-full">
+                  <CardHeader>
+                    <div className="flex items-center gap-3 mb-2">
+                      {resource.icon}
+                      <CardTitle className="text-lg">{resource.title}</CardTitle>
+                    </div>
+                    <p className="text-muted-foreground">{resource.description}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {resource.items.map((item, itemIndex) => (
+                        <li key={itemIndex} className="flex items-center gap-2 text-sm">
+                          <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button asChild variant="outline" className="w-full mt-4">
+                      <Link to="/learn">
+                        Browse {resource.title}
+                        <ExternalLink className="ml-2 h-4 w-4" />
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -265,244 +285,133 @@ export default function SupportPage() {
           </div>
         </section>
 
-        {/* Enhanced FAQ Section */}
+        {/* Support Plans */}
         <section className="bg-muted/30 p-12 rounded-2xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Support Plans</h2>
             <p className="text-xl text-muted-foreground">
-              Quick answers to common questions about DBooster.
+              Different levels of support to match your needs
             </p>
           </div>
           
-          <div className="max-w-4xl mx-auto space-y-8">
-            {faqCategories.map((category, categoryIndex) => (
-              <div key={categoryIndex}>
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <Star className="h-5 w-5 text-primary" />
-                  {category.title}
-                </h3>
-                <div className="space-y-4">
-                  {category.questions.map((faq, faqIndex) => {
-                    const faqId = `${categoryIndex}-${faqIndex}`;
-                    const isExpanded = expandedFaq === faqId;
-                    
-                    return (
-                      <Card key={faqIndex} className="hover:shadow-md transition-shadow">
-                        <CardHeader 
-                          className="cursor-pointer"
-                          onClick={() => setExpandedFaq(isExpanded ? null : faqId)}
-                        >
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-medium text-left">{faq.q}</h4>
-                            <motion.div
-                              animate={{ rotate: isExpanded ? 180 : 0 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              <ChevronDown className="h-4 w-4" />
-                            </motion.div>
-                          </div>
-                        </CardHeader>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <CardContent className="pt-0">
-                              <p className="text-muted-foreground leading-relaxed">{faq.a}</p>
-                            </CardContent>
-                          </motion.div>
-                        )}
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Enhanced Quick Help Resources */}
-        <section>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Quick Help Resources</h2>
-            <p className="text-xl text-muted-foreground">
-              Find answers instantly with our comprehensive documentation and guides.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredHelp.map((item, index) => (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {supportPlans.map((plan, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group">
-                  <CardHeader>
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        {item.icon}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline" className="text-xs">
-                            {item.category}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{item.readTime}</span>
-                        </div>
-                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                          {item.title}
-                        </CardTitle>
-                        <p className="text-muted-foreground text-sm mt-1">{item.description}</p>
-                      </div>
-                      <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <Card className={`h-full relative ${plan.badge ? 'border-2 border-primary' : ''}`}>
+                  {plan.badge && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-primary text-primary-foreground">
+                        {plan.badge}
+                      </Badge>
                     </div>
+                  )}
+                  
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    <p className="text-muted-foreground">{plan.description}</p>
                   </CardHeader>
+                  
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground mb-2">
+                          <Clock className="h-4 w-4" />
+                          {plan.availability}
+                        </div>
+                      </div>
+                      
+                      <ul className="space-y-2">
+                        {plan.features.map((feature, featureIndex) => (
+                          <li key={featureIndex} className="flex items-center gap-2 text-sm">
+                            <ArrowRight className="h-3 w-3 text-green-500" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* Enhanced Contact Form */}
+        {/* FAQ Quick Links */}
         <section>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Send Us a Message</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Quick Help</h2>
             <p className="text-xl text-muted-foreground">
-              Can't find what you're looking for? Send us a detailed message and we'll help you out.
+              Common questions and helpful resources
             </p>
           </div>
           
-          <div className="max-w-2xl mx-auto">
-            <Card className="shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5" />
-                  Contact Support
-                </CardTitle>
+                <HelpCircle className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <CardTitle className="text-lg">FAQ</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2" htmlFor="name">
-                        Name *
-                      </label>
-                      <Input
-                        id="name"
-                        value={contactForm.name}
-                        onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
-                        placeholder="Your full name"
-                        required
-                        aria-describedby="name-help"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2" htmlFor="email">
-                        Email *
-                      </label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={contactForm.email}
-                        onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
-                        placeholder="your@email.com"
-                        required
-                        aria-describedby="email-help"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2" htmlFor="subject">
-                      Subject *
-                    </label>
-                    <Input
-                      id="subject"
-                      value={contactForm.subject}
-                      onChange={(e) => setContactForm({...contactForm, subject: e.target.value})}
-                      placeholder="Brief description of your issue"
-                      required
-                      aria-describedby="subject-help"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2" htmlFor="message">
-                      Message *
-                    </label>
-                    <Textarea
-                      id="message"
-                      value={contactForm.message}
-                      onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
-                      placeholder="Please describe your issue in detail..."
-                      rows={6}
-                      required
-                      aria-describedby="message-help"
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isSubmitting}
-                    aria-describedby="submit-help"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="mr-2 h-4 w-4" />
-                        Send Message
-                      </>
-                    )}
-                  </Button>
-                </form>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Frequently asked questions
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/faq">View FAQ</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <Book className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <CardTitle className="text-lg">Docs</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Complete documentation
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/learn">Browse Docs</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <Activity className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <CardTitle className="text-lg">Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  System status & uptime
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/status">Check Status</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <MessageSquare className="h-8 w-8 mx-auto mb-2 text-primary" />
+                <CardTitle className="text-lg">Contact</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Get in touch directly
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/contact">Contact Us</Link>
+                </Button>
               </CardContent>
             </Card>
           </div>
-        </section>
-
-        {/* Enhanced Additional Resources */}
-        <section className="bg-gradient-to-r from-primary/5 to-blue-500/5 p-12 rounded-2xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold mb-4">More Ways to Get Help</h2>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Explore additional resources and connect with our community for support and best practices.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="px-8 group">
-                <Link to="/documentation">
-                  <BookOpen className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                  Documentation
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="px-8 group">
-                <Link to="/faq">
-                  <Users className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                  Community FAQ
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="px-8 group">
-                <Link to="/status">
-                  <Activity className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                  System Status
-                </Link>
-              </Button>
-            </div>
-          </motion.div>
         </section>
       </div>
     </StandardPageLayout>

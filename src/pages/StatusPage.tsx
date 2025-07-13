@@ -1,205 +1,189 @@
 
-import React from 'react';
 import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { 
   CheckCircle2, 
-  AlertTriangle, 
-  XCircle, 
-  Clock,
+  AlertCircle, 
+  Clock, 
   Activity,
   Database,
-  Cloud,
+  Globe,
   Shield,
-  Zap,
-  Calendar
+  Zap
 } from 'lucide-react';
 
 const systemStatus = [
   {
     name: "API Services",
     status: "operational",
-    uptime: "99.98%",
-    icon: <Zap className="h-6 w-6" />,
-    description: "Core API endpoints and optimization services"
-  },
-  {
-    name: "Database Connections",
-    status: "operational", 
-    uptime: "99.95%",
-    icon: <Database className="h-6 w-6" />,
-    description: "Database connectivity and query analysis"
-  },
-  {
-    name: "Cloud Infrastructure",
-    status: "operational",
     uptime: "99.99%",
-    icon: <Cloud className="h-6 w-6" />,
-    description: "AWS, GCP, and Azure cloud services"
+    icon: <Zap className="h-5 w-5" />
   },
   {
-    name: "Security Services",
-    status: "operational",
-    uptime: "100%",
-    icon: <Shield className="h-6 w-6" />,
-    description: "Authentication and security monitoring"
-  },
-  {
-    name: "Monitoring & Alerts",
+    name: "Database Optimization Engine", 
     status: "operational",
     uptime: "99.97%",
-    icon: <Activity className="h-6 w-6" />,
-    description: "Performance monitoring and alert systems"
+    icon: <Database className="h-5 w-5" />
+  },
+  {
+    name: "Web Dashboard",
+    status: "operational", 
+    uptime: "99.98%",
+    icon: <Globe className="h-5 w-5" />
+  },
+  {
+    name: "Authentication Services",
+    status: "operational",
+    uptime: "99.99%",
+    icon: <Shield className="h-5 w-5" />
   }
 ];
 
 const incidents = [
   {
-    date: "January 15, 2025",
-    title: "Brief API Latency Increase",
+    date: "Dec 15, 2024",
+    title: "Brief API Slowdown",
     status: "resolved",
-    duration: "23 minutes",
-    description: "Temporary increase in API response times due to high traffic volume. Resolved by scaling infrastructure.",
-    impact: "Low"
+    duration: "12 minutes",
+    description: "Temporary performance degradation resolved by scaling infrastructure."
   },
   {
-    date: "January 8, 2025",
+    date: "Dec 8, 2024",
     title: "Scheduled Maintenance",
     status: "completed",
     duration: "2 hours",
-    description: "Planned infrastructure upgrades and security patches. All services remained available with brief interruptions.",
-    impact: "Minimal"
+    description: "Planned database optimization engine updates completed successfully."
   },
   {
-    date: "December 28, 2024",
-    title: "Database Connection Issues",
-    status: "resolved",
+    date: "Nov 28, 2024",
+    title: "Dashboard Load Issues",
+    status: "resolved", 
     duration: "45 minutes",
-    description: "Some users experienced connection timeouts to PostgreSQL databases. Fixed connection pooling configuration.",
-    impact: "Medium"
+    description: "High traffic caused dashboard loading delays, resolved with CDN optimization."
   }
 ];
 
-const upcomingMaintenance = [
-  {
-    date: "January 20, 2025",
-    time: "02:00 - 04:00 UTC",
-    title: "Infrastructure Security Updates",
-    description: "Applying security patches to core infrastructure. Brief service interruptions expected.",
-    impact: "Low"
-  }
+const metrics = [
+  { label: "Overall Uptime", value: "99.98%", period: "Last 30 days" },
+  { label: "Average Response Time", value: "145ms", period: "API endpoints" },
+  { label: "Active Monitoring", value: "24/7", period: "All systems" },
+  { label: "Incident Response", value: "<5min", period: "Detection to action" }
 ];
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'operational': return 'text-green-600';
+    case 'degraded': return 'text-yellow-600';  
+    case 'outage': return 'text-red-600';
+    case 'resolved': return 'text-green-600';
+    case 'completed': return 'text-blue-600';
+    default: return 'text-gray-600';
+  }
+};
 
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'operational':
-      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    case 'degraded':
-      return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-    case 'outage':
-      return <XCircle className="h-5 w-5 text-red-500" />;
-    default:
-      return <Clock className="h-5 w-5 text-gray-500" />;
-  }
-};
-
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'operational':
-      return <Badge className="bg-green-100 text-green-800 border-green-200">Operational</Badge>;
-    case 'degraded':
-      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Degraded</Badge>;
-    case 'outage':
-      return <Badge className="bg-red-100 text-red-800 border-red-200">Outage</Badge>;
     case 'resolved':
-      return <Badge className="bg-green-100 text-green-800 border-green-200">Resolved</Badge>;
     case 'completed':
-      return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Completed</Badge>;
+      return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+    case 'degraded':
+      return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+    case 'outage':
+      return <AlertCircle className="h-4 w-4 text-red-600" />;
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return <Clock className="h-4 w-4 text-gray-600" />;
   }
 };
 
 export default function StatusPage() {
-  const allOperational = systemStatus.every(service => service.status === 'operational');
-
   return (
     <StandardPageLayout
       title="System Status"
-      subtitle="Real-Time Service Health"
-      description="Monitor the current status of DBooster's services and infrastructure in real-time."
+      subtitle="Real-time Service Monitoring"
+      description="Monitor the operational status of all DBooster services and infrastructure in real-time."
     >
       <div className="space-y-16">
         {/* Overall Status */}
-        <section className={`p-8 rounded-2xl text-center ${
-          allOperational 
-            ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200' 
-            : 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200'
-        }`}>
+        <section className="text-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8"
           >
-            <div className="w-20 h-20 mx-auto mb-6 bg-white rounded-full flex items-center justify-center shadow-sm">
-              {allOperational ? (
-                <CheckCircle2 className="h-10 w-10 text-green-500" />
-              ) : (
-                <AlertTriangle className="h-10 w-10 text-yellow-500" />
-              )}
+            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-6 py-3 mb-4">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <span className="font-medium text-green-800">All Systems Operational</span>
             </div>
-            <h2 className="text-3xl font-bold mb-2">
-              {allOperational ? 'All Systems Operational' : 'Some Systems Degraded'}
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              {allOperational 
-                ? 'All DBooster services are running normally' 
-                : 'Some services are experiencing issues. Check individual components below.'}
+            <p className="text-muted-foreground">
+              Last updated: {new Date().toLocaleString()} UTC
             </p>
           </motion.div>
+
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {metrics.map((metric, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card>
+                  <CardHeader className="text-center pb-2">
+                    <CardTitle className="text-2xl font-bold text-primary">
+                      {metric.value}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center pt-0">
+                    <p className="font-medium text-sm">{metric.label}</p>
+                    <p className="text-xs text-muted-foreground">{metric.period}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         </section>
 
-        {/* System Components */}
+        {/* Service Status */}
         <section>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">System Components</h2>
-            <p className="text-xl text-muted-foreground">
-              Current status of all DBooster services and infrastructure
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-4">Service Status</h2>
+            <p className="text-muted-foreground">
+              Current operational status of all DBooster services
             </p>
           </div>
-          
+
           <div className="space-y-4">
             {systemStatus.map((service, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center">
-                          {service.icon}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">{service.name}</h3>
-                          <p className="text-muted-foreground text-sm">{service.description}</p>
-                        </div>
+                <Card>
+                  <CardContent className="flex items-center justify-between p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                        {service.icon}
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <div className="text-sm text-muted-foreground">Uptime</div>
-                          <div className="font-medium">{service.uptime}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
+                      <div>
+                        <h3 className="font-semibold">{service.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
                           {getStatusIcon(service.status)}
-                          {getStatusBadge(service.status)}
+                          <span className={`text-sm font-medium capitalize ${getStatusColor(service.status)}`}>
+                            {service.status}
+                          </span>
                         </div>
                       </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold">{service.uptime}</div>
+                      <div className="text-sm text-muted-foreground">30-day uptime</div>
                     </div>
                   </CardContent>
                 </Card>
@@ -210,18 +194,18 @@ export default function StatusPage() {
 
         {/* Recent Incidents */}
         <section>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Recent Incidents</h2>
-            <p className="text-xl text-muted-foreground">
-              History of recent service incidents and their resolution
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-4">Recent Incidents</h2>
+            <p className="text-muted-foreground">
+              Past incidents and their resolutions
             </p>
           </div>
-          
-          <div className="space-y-6">
+
+          <div className="space-y-4">
             {incidents.map((incident, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
@@ -229,25 +213,22 @@ export default function StatusPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg mb-2">{incident.title}</CardTitle>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {incident.date}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            Duration: {incident.duration}
+                      <div className="flex items-center gap-3">
+                        {getStatusIcon(incident.status)}
+                        <div>
+                          <CardTitle className="text-lg">{incident.title}</CardTitle>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                            <span>{incident.date}</span>
+                            <span>Duration: {incident.duration}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={incident.impact === 'Low' ? 'outline' : incident.impact === 'Medium' ? 'secondary' : 'destructive'}>
-                          {incident.impact} Impact
-                        </Badge>
-                        {getStatusBadge(incident.status)}
-                      </div>
+                      <Badge 
+                        variant={incident.status === 'resolved' || incident.status === 'completed' ? 'secondary' : 'destructive'}
+                        className="capitalize"
+                      >
+                        {incident.status}
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -259,62 +240,30 @@ export default function StatusPage() {
           </div>
         </section>
 
-        {/* Upcoming Maintenance */}
-        <section className="bg-muted/30 p-12 rounded-2xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Scheduled Maintenance</h2>
-            <p className="text-xl text-muted-foreground">
-              Planned maintenance windows and system updates
+        {/* Subscribe to Updates */}
+        <section className="bg-muted/30 p-8 rounded-2xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <Activity className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <h2 className="text-2xl font-bold mb-4">Stay Informed</h2>
+            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Subscribe to status updates and be the first to know about any service interruptions or maintenance windows.
             </p>
-          </div>
-          
-          {upcomingMaintenance.length > 0 ? (
-            <div className="space-y-4">
-              {upcomingMaintenance.map((maintenance, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg mb-2">{maintenance.title}</CardTitle>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {maintenance.date}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {maintenance.time}
-                            </div>
-                          </div>
-                        </div>
-                        <Badge variant="outline">
-                          {maintenance.impact} Impact
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground">{maintenance.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <button className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                Subscribe
+              </button>
             </div>
-          ) : (
-            <div className="text-center">
-              <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-green-500" />
-              <h3 className="text-xl font-semibold mb-2">No Scheduled Maintenance</h3>
-              <p className="text-muted-foreground">
-                There are currently no planned maintenance windows scheduled.
-              </p>
-            </div>
-          )}
+          </motion.div>
         </section>
       </div>
     </StandardPageLayout>
