@@ -1,10 +1,16 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card as BaseCard, CardContent as BaseCardContent, CardHeader as BaseCardHeader, CardTitle as BaseCardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, TrendingUp, Users, Zap } from 'lucide-react';
+
+// Re-export base card components
+export const Card = BaseCard;
+export const CardContent = BaseCardContent;
+export const CardHeader = BaseCardHeader;
+export const CardTitle = BaseCardTitle;
 
 interface EnhancedCardProps {
   title: string;
@@ -16,7 +22,7 @@ interface EnhancedCardProps {
     label: string;
     onClick: () => void;
   };
-  variant?: 'default' | 'gradient' | 'minimal';
+  variant?: 'default' | 'gradient' | 'minimal' | 'elevated';
   className?: string;
 }
 
@@ -34,7 +40,8 @@ export function EnhancedCard({
   const variantClasses = {
     default: "",
     gradient: "bg-gradient-to-br from-primary/5 to-blue-600/5 border-primary/20",
-    minimal: "border-none shadow-none hover:shadow-md"
+    minimal: "border-none shadow-none hover:shadow-md",
+    elevated: "shadow-xl border-2 border-primary/10 bg-background/95 backdrop-blur-sm"
   };
 
   return (

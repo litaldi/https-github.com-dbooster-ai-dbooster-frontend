@@ -1,38 +1,84 @@
 
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+interface KeyboardShortcut {
+  key: string;
+  ctrl?: boolean;
+  alt?: boolean;
+  shift?: boolean;
+  description: string;
+  action: () => void;
+}
+
+const shortcuts: KeyboardShortcut[] = [
+  {
+    key: '/',
+    ctrl: true,
+    description: 'Show keyboard shortcuts',
+    action: () => {
+      // This will be handled by the KeyboardShortcutsHelper component
+    }
+  },
+  {
+    key: 'k',
+    ctrl: true,
+    description: 'Search',
+    action: () => {
+      console.log('Search triggered');
+    }
+  },
+  {
+    key: 'n',
+    ctrl: true,
+    description: 'New query',
+    action: () => {
+      console.log('New query triggered');
+    }
+  },
+  {
+    key: 's',
+    ctrl: true,
+    description: 'Save',
+    action: () => {
+      console.log('Save triggered');
+    }
+  },
+  {
+    key: 'd',
+    ctrl: true,
+    description: 'Dashboard',
+    action: () => {
+      window.location.href = '/app';
+    }
+  }
+];
 
 export function useKeyboardShortcuts() {
-  const navigate = useNavigate();
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Only trigger if Ctrl/Cmd is held
-      if (!(event.ctrlKey || event.metaKey)) return;
-
-      switch (event.key) {
-        case '1':
+      for (const shortcut of shortcuts) {
+        const ctrlMatch = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
+        const altMatch = shortcut.alt ? event.altKey : !event.altKey;
+        const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey;
+        
+        if (
+          event.key.toLowerCase() === shortcut.key.toLowerCase() &&
+          ctrlMatch &&
+          altMatch &&
+          shiftMatch
+        ) {
           event.preventDefault();
-          navigate('/app');
+          shortcut.action();
           break;
-        case '2':
-          event.preventDefault();
-          navigate('/app/analytics');
-          break;
-        case '3':
-          event.preventDefault();
-          navigate('/app/queries');
-          break;
-        case 'h':
-          event.preventDefault();
-          navigate('/');
-          break;
-        default:
-          break;
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  }, []);
+
+  return {
+    shortcuts
+  };
 }

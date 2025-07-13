@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 interface AnimationProps {
   children: React.ReactNode;
@@ -54,6 +55,19 @@ export function ScaleIn({ children, className = '', delay = 0 }: AnimationProps)
   );
 }
 
+export function HoverScale({ children, className = '', scale = 1.05 }: AnimationProps & { scale?: number }) {
+  return (
+    <motion.div
+      whileHover={{ scale }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function StaggerContainer({ children, className = '', staggerDelay = 0.1 }: AnimationProps & { staggerDelay?: number }) {
   return (
     <motion.div 
@@ -85,5 +99,26 @@ export function StaggerItem({ children, className = '' }: AnimationProps) {
     >
       {children}
     </motion.div>
+  );
+}
+
+export function PageTransition({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{
+          duration: 0.3,
+          ease: [0.22, 1, 0.36, 1]
+        }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   );
 }
