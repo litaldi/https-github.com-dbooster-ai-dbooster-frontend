@@ -1,13 +1,11 @@
 
-import React from 'react';
 import { motion } from 'framer-motion';
+import { ReactNode } from 'react';
 
-export interface StaggerProps {
-  children: React.ReactNode;
+interface StaggerProps {
+  children: ReactNode;
   className?: string;
   delay?: number;
-  staggerDelay?: number;
-  duration?: number;
 }
 
 const containerVariants = {
@@ -16,114 +14,67 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.1,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { 
-    opacity: 0, 
-    y: 20,
-    scale: 0.95 
-  },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
     transition: {
-      duration: 0.4,
+      duration: 0.5,
     },
   },
 };
 
-const fastItemVariants = {
-  hidden: { opacity: 0, x: -10 },
+const fastContainerVariants = {
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    x: 0,
-    transition: { 
-      duration: 0.2, 
+    transition: {
+      staggerChildren: 0.05,
     },
   },
 };
 
-export function StaggerContainer({ 
-  children, 
-  className, 
-  staggerDelay = 0.1,
-  delay = 0 
-}: StaggerProps) {
-  const customVariants = {
-    ...containerVariants,
-    visible: {
-      ...containerVariants.visible,
-      transition: {
-        staggerChildren: staggerDelay,
-        delayChildren: delay,
-      },
-    },
-  };
+export const StaggerContainer = ({ children, className = '' }: StaggerProps) => (
+  <motion.div
+    variants={containerVariants}
+    initial="hidden"
+    animate="visible"
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
 
-  return (
-    <motion.div
-      variants={customVariants}
-      initial="hidden"
-      animate="visible"
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
+export const StaggerItem = ({ children, className = '' }: StaggerProps) => (
+  <motion.div
+    variants={itemVariants}
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
 
-export function StaggerItem({ children, className, duration = 0.4 }: StaggerProps) {
-  const customVariants = {
-    ...itemVariants,
-    visible: {
-      ...itemVariants.visible,
-      transition: {
-        duration,
-      },
-    },
-  };
+export const FastStaggerContainer = ({ children, className = '' }: StaggerProps) => (
+  <motion.div
+    variants={fastContainerVariants}
+    initial="hidden"
+    animate="visible"
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
 
-  return (
-    <motion.div variants={customVariants} className={className}>
-      {children}
-    </motion.div>
-  );
-}
-
-export function FastStaggerContainer({ children, className }: StaggerProps) {
-  return (
-    <motion.div
-      variants={{
-        hidden: { opacity: 0 },
-        visible: {
-          opacity: 1,
-          transition: {
-            staggerChildren: 0.05,
-          },
-        },
-      }}
-      initial="hidden"
-      animate="visible"
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-export function FastStaggerItem({ children, className }: StaggerProps) {
-  return (
-    <motion.div variants={fastItemVariants} className={className}>
-      {children}
-    </motion.div>
-  );
-}
-
-// Legacy aliases for backward compatibility
-export const StaggerChildren = StaggerContainer;
-export const StaggerChild = StaggerItem;
+export const FastStaggerItem = ({ children, className = '' }: StaggerProps) => (
+  <motion.div
+    variants={itemVariants}
+    className={className}
+  >
+    {children}
+  </motion.div>
+);

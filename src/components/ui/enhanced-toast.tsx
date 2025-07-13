@@ -1,5 +1,5 @@
 
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ToastOptions {
   title: string;
@@ -8,39 +8,42 @@ interface ToastOptions {
 }
 
 export const enhancedToast = {
-  success: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast({
-      title,
+  success: ({ title, description, duration = 4000 }: ToastOptions) => {
+    toast.success(title, {
       description,
       duration,
-      variant: 'default',
     });
   },
-  
-  error: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast({
-      title,
+
+  error: ({ title, description, duration = 6000 }: ToastOptions) => {
+    toast.error(title, {
       description,
       duration,
-      variant: 'destructive',
     });
   },
-  
-  info: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast({
-      title,
+
+  info: ({ title, description, duration = 4000 }: ToastOptions) => {
+    toast.info(title, {
       description,
       duration,
-      variant: 'default',
     });
   },
-  
+
   warning: ({ title, description, duration = 5000 }: ToastOptions) => {
-    toast({
-      title,
+    toast.warning(title, {
       description,
       duration,
-      variant: 'destructive',
     });
+  },
+
+  promise: <T,>(
+    promise: Promise<T>,
+    options: {
+      loading: string;
+      success: string | ((data: T) => string);
+      error: string | ((error: any) => string);
+    }
+  ) => {
+    return toast.promise(promise, options);
   }
 };

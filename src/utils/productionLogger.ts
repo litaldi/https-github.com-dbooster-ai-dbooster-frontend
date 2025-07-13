@@ -1,82 +1,63 @@
 
-interface LogLevel {
-  ERROR: 'error';
-  WARN: 'warn';
-  INFO: 'info';
-  DEBUG: 'debug';
+type LogLevel = 'info' | 'warn' | 'error' | 'debug';
+
+interface LogEntry {
+  level: LogLevel;
+  message: string;
+  data?: any;
+  context?: string;
+  timestamp: string;
 }
 
-const LOG_LEVELS: LogLevel = {
-  ERROR: 'error',
-  WARN: 'warn',
-  INFO: 'info',
-  DEBUG: 'debug'
-};
-
 class ProductionLogger {
-  private isDevelopment = process.env.NODE_ENV === 'development';
+  private isDevelopment = import.meta.env.DEV;
 
-  error(message: string, error?: any, context?: string) {
-    this.log(LOG_LEVELS.ERROR, message, error, context);
+  private formatLog(level: LogLevel, message: string, data?: any, context?: string): LogEntry {
+    return {
+      level,
+      message,
+      data,
+      context,
+      timestamp: new Date().toISOString()
+    };
   }
 
-  warn(message: string, data?: any, context?: string) {
-    this.log(LOG_LEVELS.WARN, message, data, context);
+  private log(entry: LogEntry) {
+    if (this.isDevelopment) {
+      const prefix = `[${entry.level.toUpperCase()}]${entry.context ? ` [${entry.context}]` : ''}`;
+      console.log(`${prefix} ${entry.message}`, entry.data || '');
+    }
   }
 
   info(message: string, data?: any, context?: string) {
-    this.log(LOG_LEVELS.INFO, message, data, context);
+    const entry = this.formatLog('info', message, data, context);
+    this.log(entry);
+  }
+
+  warn(message: string, data?: any, context?: string) {
+    const entry = this.formatLog('warn', message, data, context);
+    this.log(entry);
+  }
+
+  error(message: string, error?: any, context?: string) {
+    const entry = this.formatLog('error', message, error, context);
+    this.log(entry);
   }
 
   debug(message: string, data?: any, context?: string) {
-    if (this.isDevelopment) {
-      this.log(LOG_LEVELS.DEBUG, message, data, context);
-    }
+    const entry = this.formatLog('debug', message, data, context);
+    this.log(entry);
   }
 
   secureInfo(message: string, data?: any, context?: string) {
-    // Same as info but with additional security considerations
-    this.log(LOG_LEVELS.INFO, message, this.sanitizeData(data), context);
-  }
-
-  secureDebug(message: string, data?: any, context?: string) {
-    if (this.isDevelopment) {
-      this.log(LOG_LEVELS.DEBUG, message, this.sanitizeData(data), context);
+    const sanitizedData = data ? { ...data } : undefined;
+    if (sanitizedData && sanitizedData.password) {
+      sanitizedData.password = '[REDACTED]';
     }
-  }
-
-  private sanitizeData(data?: any): any {
-    if (!data) return data;
-    
-    // Remove sensitive information from logged data
-    const sanitized = { ...data };
-    const sensitiveKeys = ['password', 'token', 'secret', 'key', 'credential'];
-    
-    Object.keys(sanitized).forEach(key => {
-      if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
-        sanitized[key] = '[REDACTED]';
-      }
-    });
-    
-    return sanitized;
-  }
-
-  private log(level: string, message: string, data?: any, context?: string) {
-    const timestamp = new Date().toISOString();
-    const logEntry = {
-      timestamp,
-      level,
-      message,
-      context,
-      data
-    };
-
-    if (this.isDevelopment) {
-      console.log(`[${level.toUpperCase()}] ${context ? `[${context}] ` : ''}${message}`, data || '');
-    } else {
-      // In production, you might want to send logs to a service
-      console.log(JSON.stringify(logEntry));
+    if (sanitizedData && sanitizedData.token) {
+      sanitizedData.token = '[REDACTED]';
     }
+    this.info(message, sanitizedData, context);
   }
 }
 

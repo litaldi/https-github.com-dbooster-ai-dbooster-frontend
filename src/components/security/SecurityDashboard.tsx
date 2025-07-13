@@ -32,6 +32,13 @@ export function SecurityDashboard() {
       });
     } catch (error) {
       console.error('Failed to load enhanced security stats:', error);
+      // Set default values on error
+      setEnhancedStats({
+        totalEvents: 0,
+        threatsDetected: 0,
+        blockedIPs: 0,
+        recentHighRiskEvents: []
+      });
     } finally {
       setLoadingEnhanced(false);
     }
