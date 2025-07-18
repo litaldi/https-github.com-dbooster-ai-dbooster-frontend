@@ -1,7 +1,8 @@
-
 /**
  * Test utilities for security testing and mocking
  */
+
+import { vi } from 'vitest';
 
 export const mockSecurityData = {
   auditReport: {

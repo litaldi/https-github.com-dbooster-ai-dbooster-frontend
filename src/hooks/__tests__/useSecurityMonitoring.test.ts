@@ -42,14 +42,23 @@ vi.mock('@/utils/productionLogger', () => ({
 
 describe('useSecurityMonitoring', () => {
   const mockAuditReport = {
+    id: 'audit-123',
+    timestamp: new Date(),
+    riskLevel: 'medium' as const,
     totalEvents: 100,
-    threatsDetected: 5,
-    suspiciousPatterns: ['pattern1', 'pattern2']
+    suspiciousPatterns: [
+      { pattern: 'pattern1', occurrences: 5, riskLevel: 'medium' },
+      { pattern: 'pattern2', occurrences: 3, riskLevel: 'low' }
+    ],
+    recommendations: ['Recommendation 1', 'Recommendation 2'],
+    summary: 'Security audit completed successfully'
   };
 
   const mockMetrics = {
     averageResponseTime: 150,
-    requestsPerMinute: 50
+    requestsPerMinute: 50,
+    validationLatency: 25,
+    memoryUsage: 0.65
   };
 
   const mockPatternHistory = [
