@@ -71,15 +71,15 @@ export default function QueriesPage() {
                   </p>
                   <div className="grid grid-cols-1 gap-2">
                     <div className="p-3 bg-muted rounded-lg">
-                      <p className="font-medium text-sm">"Show me all users from last month"</p>
-                      <p className="text-xs text-muted-foreground">Generates: SELECT * FROM users WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 MONTH)</p>
+                      <p className="font-medium text-sm">&quot;Show me all users from last month&quot;</p>
+                      <p className="text-xs text-muted-foreground">Generates: SELECT * FROM users WHERE created_at &gt; DATE_SUB(NOW(), INTERVAL 1 MONTH)</p>
                     </div>
                     <div className="p-3 bg-muted rounded-lg">
-                      <p className="font-medium text-sm">"Create a new products table"</p>
+                      <p className="font-medium text-sm">&quot;Create a new products table&quot;</p>
                       <p className="text-xs text-muted-foreground">Generates: CREATE TABLE products schema</p>
                     </div>
                     <div className="p-3 bg-muted rounded-lg">
-                      <p className="font-medium text-sm">"Go to dashboard"</p>
+                      <p className="font-medium text-sm">&quot;Go to dashboard&quot;</p>
                       <p className="text-xs text-muted-foreground">Navigation command</p>
                     </div>
                   </div>
