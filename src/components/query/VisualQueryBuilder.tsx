@@ -1,184 +1,359 @@
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EnhancedButton } from '@/components/ui/enhanced-button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Database, 
-  Zap, 
-  Wand2, 
-  Play, 
-  Code, 
-  Lightbulb,
-  TrendingUp,
-  CheckCircle,
-  AlertTriangle
-} from 'lucide-react';
-import { FadeIn } from '@/components/ui/animations';
+import { Plus, Trash2, Database, Filter, ArrowUpDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface QueryCondition {
+  column: string;
+  operator: string;
+  value: string;
+  connector: 'AND' | 'OR';
+}
+
+interface QueryJoin {
+  table: string;
+  type: 'INNER' | 'LEFT' | 'RIGHT' | 'FULL';
+  on: string;
+}
+
+interface VisualQuery {
+  select: string[];
+  from: string;
+  joins: QueryJoin[];
+  where: QueryCondition[];
+  orderBy: string[];
+  limit?: number;
+}
 
 export function VisualQueryBuilder() {
-  const [naturalLanguage, setNaturalLanguage] = useState('');
-  const [generatedQuery, setGeneratedQuery] = useState('');
-  const [optimization, setOptimization] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [query, setQuery] = useState<VisualQuery>({
+    select: ['*'],
+    from: '',
+    joins: [],
+    where: [],
+    orderBy: []
+  });
 
-  const handleGenerateQuery = async () => {
-    if (!naturalLanguage.trim()) return;
-    
-    setIsAnalyzing(true);
-    
-    // Simulate AI query generation
-    setTimeout(() => {
-      const sampleQuery = `SELECT u.name, u.email, COUNT(o.id) as order_count
-FROM users u
-LEFT JOIN orders o ON u.id = o.user_id
-WHERE u.created_at >= '2024-01-01'
-GROUP BY u.id, u.name, u.email
-ORDER BY order_count DESC
-LIMIT 100;`;
-      
-      const sampleOptimization = `✨ AI Optimization Suggestions:
-      
-• Add index on users.created_at for 73% faster filtering
-• Consider partitioning orders table by date for large datasets
-• Use EXISTS instead of LEFT JOIN for better performance on large tables
-• Estimated performance improvement: 2.3x faster execution`;
+  const [generatedSQL, setGeneratedSQL] = useState('');
 
-      setGeneratedQuery(sampleQuery);
-      setOptimization(sampleOptimization);
-      setIsAnalyzing(false);
-    }, 2000);
+  const generateSQL = () => {
+    let sql = 'SELECT ';
+    sql += query.select.join(', ');
+    
+    if (query.from) {
+      sql += `\nFROM ${query.from}`;
+    }
+    
+    query.joins.forEach(join => {
+      sql += `\n${join.type} JOIN ${join.table} ON ${join.on}`;
+    });
+    
+    if (query.where.length > 0) {
+      sql += '\nWHERE ';
+      query.where.forEach((condition, index) => {
+        if (index > 0) {
+          sql += ` ${condition.connector} `;
+        }
+        sql += `${condition.column} ${condition.operator} '${condition.value}'`;
+      });
+    }
+    
+    if (query.orderBy.length > 0) {
+      sql += `\nORDER BY ${query.orderBy.join(', ')}`;
+    }
+    
+    if (query.limit) {
+      sql += `\nLIMIT ${query.limit}`;
+    }
+    
+    setGeneratedSQL(sql);
   };
 
-  const exampleQueries = [
-    "Find all customers who made orders in the last month",
-    "Show top 10 products by revenue this quarter",
-    "Get users with high activity but no recent purchases",
-    "Find duplicate records in the customers table"
-  ];
+  const addCondition = () => {
+    setQuery(prev => ({
+      ...prev,
+      where: [...prev.where, { column: '', operator: '=', value: '', connector: 'AND' }]
+    }));
+  };
+
+  const addJoin = () => {
+    setQuery(prev => ({
+      ...prev,
+      joins: [...prev.joins, { table: '', type: 'INNER', on: '' }]
+    }));
+  };
+
+  const removeCondition = (index: number) => {
+    setQuery(prev => ({
+      ...prev,
+      where: prev.where.filter((_, i) => i !== index)
+    }));
+  };
+
+  const removeJoin = (index: number) => {
+    setQuery(prev => ({
+      ...prev,
+      joins: prev.joins.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateCondition = (index: number, field: keyof QueryCondition, value: string) => {
+    setQuery(prev => ({
+      ...prev,
+      where: prev.where.map((condition, i) => 
+        i === index ? { ...condition, [field]: value } : condition
+      )
+    }));
+  };
+
+  const updateJoin = (index: number, field: keyof QueryJoin, value: string) => {
+    setQuery(prev => ({
+      ...prev,
+      joins: prev.joins.map((join, i) => 
+        i === index ? { ...join, [field]: value } : join
+      )
+    }));
+  };
 
   return (
     <div className="space-y-6">
-      <FadeIn>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wand2 className="h-5 w-5 text-primary" />
-              Natural Language to SQL
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Describe what you want in plain English, and our AI will generate optimized SQL
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5 text-primary" />
+            Visual Query Builder
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* SELECT */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Select Columns</label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="column1, column2, *"
+                value={query.select.join(', ')}
+                onChange={(e) => setQuery(prev => ({
+                  ...prev,
+                  select: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                }))}
+              />
+            </div>
+          </div>
+
+          {/* FROM */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">From Table</label>
+            <Input
+              placeholder="table_name"
+              value={query.from}
+              onChange={(e) => setQuery(prev => ({ ...prev, from: e.target.value }))}
+            />
+          </div>
+
+          {/* JOINS */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Joins</label>
+              <Button size="sm" variant="outline" onClick={addJoin}>
+                <Plus className="h-3 w-3 mr-1" />
+                Add Join
+              </Button>
+            </div>
+            <AnimatePresence>
+              {query.joins.map((join, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex gap-2 items-center p-3 border rounded-lg"
+                >
+                  <Select
+                    value={join.type}
+                    onValueChange={(value) => updateJoin(index, 'type', value)}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="INNER">INNER</SelectItem>
+                      <SelectItem value="LEFT">LEFT</SelectItem>
+                      <SelectItem value="RIGHT">RIGHT</SelectItem>
+                      <SelectItem value="FULL">FULL</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Input
+                    placeholder="table_name"
+                    value={join.table}
+                    onChange={(e) => updateJoin(index, 'table', e.target.value)}
+                    className="flex-1"
+                  />
+                  
+                  <span className="text-sm text-muted-foreground">ON</span>
+                  
+                  <Input
+                    placeholder="table1.id = table2.foreign_id"
+                    value={join.on}
+                    onChange={(e) => updateJoin(index, 'on', e.target.value)}
+                    className="flex-1"
+                  />
+                  
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeJoin(index)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* WHERE */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Where Conditions
+              </label>
+              <Button size="sm" variant="outline" onClick={addCondition}>
+                <Plus className="h-3 w-3 mr-1" />
+                Add Condition
+              </Button>
+            </div>
+            <AnimatePresence>
+              {query.where.map((condition, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex gap-2 items-center p-3 border rounded-lg"
+                >
+                  {index > 0 && (
+                    <Select
+                      value={condition.connector}
+                      onValueChange={(value) => updateCondition(index, 'connector', value)}
+                    >
+                      <SelectTrigger className="w-16">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AND">AND</SelectItem>
+                        <SelectItem value="OR">OR</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  
+                  <Input
+                    placeholder="column"
+                    value={condition.column}
+                    onChange={(e) => updateCondition(index, 'column', e.target.value)}
+                  />
+                  
+                  <Select
+                    value={condition.operator}
+                    onValueChange={(value) => updateCondition(index, 'operator', value)}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="=">=</SelectItem>
+                      <SelectItem value="!=">!=</SelectItem>
+                      <SelectItem value="<">&lt;</SelectItem>
+                      <SelectItem value=">">&gt;</SelectItem>
+                      <SelectItem value="<=">≤</SelectItem>
+                      <SelectItem value=">=">≥</SelectItem>
+                      <SelectItem value="LIKE">LIKE</SelectItem>
+                      <SelectItem value="IN">IN</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Input
+                    placeholder="value"
+                    value={condition.value}
+                    onChange={(e) => updateCondition(index, 'value', e.target.value)}
+                  />
+                  
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeCondition(index)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* ORDER BY & LIMIT */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="natural-query">Describe your query</Label>
-              <Textarea
-                id="natural-query"
-                placeholder="Example: Show me all users who signed up in the last 30 days with their order counts..."
-                value={naturalLanguage}
-                onChange={(e) => setNaturalLanguage(e.target.value)}
-                rows={3}
-                className="resize-none"
+              <label className="text-sm font-medium flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4" />
+                Order By
+              </label>
+              <Input
+                placeholder="column1 ASC, column2 DESC"
+                value={query.orderBy.join(', ')}
+                onChange={(e) => setQuery(prev => ({
+                  ...prev,
+                  orderBy: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                }))}
               />
             </div>
             
-            <div className="flex gap-2 flex-wrap">
-              {exampleQueries.map((example, index) => (
-                <Badge 
-                  key={index}
-                  variant="outline" 
-                  className="cursor-pointer hover:bg-primary/10 transition-colors"
-                  onClick={() => setNaturalLanguage(example)}
-                >
-                  {example}
-                </Badge>
-              ))}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Limit</label>
+              <Input
+                type="number"
+                placeholder="100"
+                value={query.limit || ''}
+                onChange={(e) => setQuery(prev => ({
+                  ...prev,
+                  limit: e.target.value ? parseInt(e.target.value) : undefined
+                }))}
+              />
             </div>
+          </div>
 
-            <EnhancedButton 
-              onClick={handleGenerateQuery}
-              disabled={!naturalLanguage.trim() || isAnalyzing}
-              loading={isAnalyzing}
-              loadingText="Generating optimized SQL..."
-              className="w-full"
-            >
-              <Zap className="h-4 w-4 mr-2" />
-              Generate Optimized SQL
-            </EnhancedButton>
+          <Button onClick={generateSQL} className="w-full">
+            Generate SQL Query
+          </Button>
+        </CardContent>
+      </Card>
+
+      {generatedSQL && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Generated SQL</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-muted p-4 rounded-lg text-sm font-mono whitespace-pre-wrap">
+              {generatedSQL}
+            </pre>
+            <div className="flex gap-2 mt-4">
+              <Button size="sm" variant="outline">
+                Copy Query
+              </Button>
+              <Button size="sm" variant="outline">
+                Execute Query
+              </Button>
+              <Button size="sm" variant="outline">
+                Save Query
+              </Button>
+            </div>
           </CardContent>
         </Card>
-      </FadeIn>
-
-      {generatedQuery && (
-        <FadeIn delay={0.2}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5 text-blue-600" />
-                Generated SQL Query
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Optimized
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                <pre className="text-sm overflow-x-auto">
-                  <code>{generatedQuery}</code>
-                </pre>
-              </div>
-              
-              <div className="flex gap-2">
-                <EnhancedButton size="sm" variant="outline">
-                  <Play className="h-4 w-4 mr-2" />
-                  Execute Query
-                </EnhancedButton>
-                <EnhancedButton size="sm" variant="outline">
-                  <Database className="h-4 w-4 mr-2" />
-                  Explain Plan
-                </EnhancedButton>
-                <EnhancedButton size="sm" variant="outline">
-                  Save to Library
-                </EnhancedButton>
-              </div>
-            </CardContent>
-          </Card>
-        </FadeIn>
-      )}
-
-      {optimization && (
-        <FadeIn delay={0.4}>
-          <Card className="border-amber-200 bg-amber-50/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-800">
-                <Lightbulb className="h-5 w-5" />
-                AI Performance Recommendations
-                <Badge variant="secondary" className="bg-amber-100 text-amber-700">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  73% Faster
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-white p-4 rounded-lg border border-amber-200">
-                <pre className="text-sm text-amber-900 whitespace-pre-wrap font-sans">
-                  {optimization}
-                </pre>
-              </div>
-              
-              <div className="flex items-center gap-2 mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-green-800">
-                  These optimizations can improve query performance by up to 2.3x
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </FadeIn>
       )}
     </div>
   );

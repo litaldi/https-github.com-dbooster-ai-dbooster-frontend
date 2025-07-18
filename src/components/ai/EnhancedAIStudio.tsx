@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Brain, Sparkles, Wand2, Zap } from 'lucide-react';
+import { Brain, Sparkles, Wand2, Zap, Database, BarChart3 } from 'lucide-react';
 import { QueryAutoComplete } from './QueryAutoComplete';
 import { QueryPatternLearning } from './QueryPatternLearning';
 import { QueryRiskAssessment } from './QueryRiskAssessment';
 import { NaturalLanguageQueryBuilder } from './NaturalLanguageQueryBuilder';
+import { AISchemaDesigner } from './AISchemaDesigner';
+import { IntelligentIndexAdvisor } from './IntelligentIndexAdvisor';
 
 export function EnhancedAIStudio() {
   const [currentQuery, setCurrentQuery] = useState('');
@@ -27,13 +29,13 @@ export function EnhancedAIStudio() {
         <div>
           <h1 className="text-3xl font-bold">AI Studio</h1>
           <p className="text-muted-foreground">
-            Advanced AI-powered workspace for intelligent query development and optimization
+            Advanced AI-powered workspace for intelligent query development and database optimization
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <Wand2 className="h-4 w-4" />
             Smart Editor
@@ -46,8 +48,16 @@ export function EnhancedAIStudio() {
             <Brain className="h-4 w-4" />
             Pattern Learning
           </TabsTrigger>
-          <TabsTrigger value="analysis" className="flex items-center gap-2">
+          <TabsTrigger value="schema" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Schema Design
+          </TabsTrigger>
+          <TabsTrigger value="indexes" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
+            Index Advisor
+          </TabsTrigger>
+          <TabsTrigger value="analysis" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
             AI Analysis
           </TabsTrigger>
         </TabsList>
@@ -104,17 +114,25 @@ export function EnhancedAIStudio() {
           <QueryPatternLearning onApplyPattern={handleApplySuggestion} />
         </TabsContent>
 
+        <TabsContent value="schema">
+          <AISchemaDesigner />
+        </TabsContent>
+
+        <TabsContent value="indexes">
+          <IntelligentIndexAdvisor />
+        </TabsContent>
+
         <TabsContent value="analysis" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
+                <BarChart3 className="h-5 w-5 text-primary" />
                 Advanced Query Analysis
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">
-                <Zap className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <BarChart3 className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p className="font-medium">Advanced Analysis Coming Soon</p>
                 <p className="text-sm">
                   Deep performance analysis, cost optimization, and intelligent recommendations
