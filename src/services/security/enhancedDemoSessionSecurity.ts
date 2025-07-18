@@ -1,4 +1,3 @@
-
 import { productionLogger } from '@/utils/productionLogger';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -155,7 +154,7 @@ class EnhancedDemoSessionSecurity {
     // Add WebGL fingerprint if available
     try {
       const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
       if (gl) {
         const renderer = gl.getParameter(gl.RENDERER);
         const vendor = gl.getParameter(gl.VENDOR);
