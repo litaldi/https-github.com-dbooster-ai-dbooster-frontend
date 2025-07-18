@@ -39,6 +39,16 @@ export class RateLimitService {
     return enhancedRateLimiting.getTimeUntilReset(action, identifier);
   }
 
+  async cleanupExpiredEntries(): Promise<void> {
+    try {
+      enhancedRateLimiting.cleanup();
+      productionLogger.info('Rate limit cleanup completed successfully');
+    } catch (error) {
+      productionLogger.error('Failed to cleanup expired rate limit entries', error, 'RateLimitService');
+      throw error;
+    }
+  }
+
   getStats(): any {
     return enhancedRateLimiting.getStats();
   }
