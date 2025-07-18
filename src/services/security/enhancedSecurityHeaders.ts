@@ -1,21 +1,23 @@
 
-interface SecurityHeadersConfig {
-  contentSecurityPolicy?: boolean;
-  strictTransportSecurity?: boolean;
-  xFrameOptions?: boolean;
-  xContentTypeOptions?: boolean;
-  referrerPolicy?: boolean;
-  permissionsPolicy?: boolean;
+interface SecurityHeaderConfig {
+  contentSecurityPolicy?: {
+    directives: Record<string, string[]>;
+    reportOnly?: boolean;
+  };
+  strictTransportSecurity?: {
+    maxAge: number;
+    includeSubDomains?: boolean;
+    preload?: boolean;
+  };
+  frameOptions?: 'DENY' | 'SAMEORIGIN' | string;
+  contentTypeOptions?: 'nosniff';
+  referrerPolicy?: string;
+  permissionsPolicy?: Record<string, string[]>;
 }
 
-interface UrlValidationResult {
-  isValid: boolean;
-  sanitizedUrl?: string;
-  reason?: string;
-}
-
-export class EnhancedSecurityHeaders {
+class EnhancedSecurityHeaders {
   private static instance: EnhancedSecurityHeaders;
+  private config: SecurityHeaderConfig;
 
   static getInstance(): EnhancedSecurityHeaders {
     if (!EnhancedSecurityHeaders.instance) {
@@ -24,73 +26,173 @@ export class EnhancedSecurityHeaders {
     return EnhancedSecurityHeaders.instance;
   }
 
-  applyStrictSecurityHeaders(config: SecurityHeadersConfig = {}): void {
-    const defaultConfig = {
-      contentSecurityPolicy: true,
-      strictTransportSecurity: true,
-      xFrameOptions: true,
-      xContentTypeOptions: true,
-      referrerPolicy: true,
-      permissionsPolicy: true,
-      ...config
+  constructor() {
+    this.config = {
+      contentSecurityPolicy: {
+        directives: {
+          'default-src': ["'self'"],
+          'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://api.ipify.org'],
+          'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          'font-src': ["'self'", 'https://fonts.gstatic.com'],
+          'img-src': ["'self'", 'data:', 'https:'],
+          'connect-src': ["'self'", 'https://api.pwnedpasswords.com', 'https://api.ipify.org', 'wss:', 'https:'],
+          'frame-ancestors': ["'none'"],
+          'base-uri': ["'self'"],
+          'form-action': ["'self'"]
+        }
+      },
+      strictTransportSecurity: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true
+      },
+      frameOptions: 'DENY',
+      contentTypeOptions: 'nosniff',
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      permissionsPolicy: {
+        'camera': [],
+        'microphone': [],
+        'geolocation': [],
+        'payment': [],
+        'usb': [],
+        'magnetometer': []
+      }
     };
-
-    // Note: In a client-side React app, these headers would typically be set by the server
-    // This is a placeholder implementation for the security service architecture
-    console.log('Security headers configuration applied:', defaultConfig);
   }
 
-  validateSecurityHeaders(): boolean {
-    // Placeholder for header validation logic
-    return true;
+  applyStrictSecurityHeaders(): void {
+    this.applyContentSecurityPolicy();
+    this.applySecurityHeaders();
+    this.setupSecurityEventListeners();
   }
 
-  validateSecureUrl(url: string): UrlValidationResult {
-    try {
-      const urlObj = new URL(url);
-      
-      // Check for dangerous protocols
-      const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
-      if (dangerousProtocols.some(protocol => url.toLowerCase().startsWith(protocol))) {
-        return {
-          isValid: false,
-          reason: 'Dangerous protocol detected'
-        };
-      }
+  private applyContentSecurityPolicy(): void {
+    if (!this.config.contentSecurityPolicy) return;
 
-      // Check for localhost in production
-      if (import.meta.env.PROD && (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1')) {
-        return {
-          isValid: false,
-          reason: 'Localhost URLs not allowed in production'
-        };
-      }
+    const directives = this.config.contentSecurityPolicy.directives;
+    const cspString = Object.entries(directives)
+      .map(([directive, sources]) => `${directive} ${sources.join(' ')}`)
+      .join('; ');
 
-      // Validate HTTPS in production
-      if (import.meta.env.PROD && urlObj.protocol !== 'https:') {
-        return {
-          isValid: false,
-          reason: 'HTTPS required in production'
-        };
-      }
+    const metaElement = document.createElement('meta');
+    metaElement.httpEquiv = 'Content-Security-Policy';
+    metaElement.content = cspString;
+    
+    // Remove existing CSP meta tag if present
+    const existingCSP = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+    if (existingCSP) {
+      existingCSP.remove();
+    }
+    
+    document.head.appendChild(metaElement);
+  }
 
-      return {
-        isValid: true,
-        sanitizedUrl: url
-      };
-    } catch (error) {
-      return {
-        isValid: false,
-        reason: 'Invalid URL format'
-      };
+  private applySecurityHeaders(): void {
+    // These headers are typically set by the server, but we can add meta equivalents where possible
+    
+    // Referrer Policy
+    if (this.config.referrerPolicy) {
+      let referrerMeta = document.querySelector('meta[name="referrer"]') as HTMLMetaElement;
+      if (!referrerMeta) {
+        referrerMeta = document.createElement('meta');
+        referrerMeta.name = 'referrer';
+        document.head.appendChild(referrerMeta);
+      }
+      referrerMeta.content = this.config.referrerPolicy;
+    }
+
+    // Permissions Policy (Feature Policy)
+    if (this.config.permissionsPolicy) {
+      const permissionsString = Object.entries(this.config.permissionsPolicy)
+        .map(([feature, allowlist]) => {
+          const sources = allowlist.length > 0 ? allowlist.join(' ') : '()';
+          return `${feature}=${sources}`;
+        })
+        .join(', ');
+
+      let permissionsMeta = document.querySelector('meta[http-equiv="Permissions-Policy"]') as HTMLMetaElement;
+      if (!permissionsMeta) {
+        permissionsMeta = document.createElement('meta');
+        permissionsMeta.httpEquiv = 'Permissions-Policy';
+        document.head.appendChild(permissionsMeta);
+      }
+      permissionsMeta.content = permissionsString;
     }
   }
 
-  getNonce(): string {
-    // Generate a cryptographically secure random nonce
-    const array = new Uint8Array(16);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  private setupSecurityEventListeners(): void {
+    // CSP Violation Reporting
+    document.addEventListener('securitypolicyviolation', (event) => {
+      console.error('CSP Violation:', {
+        blockedURI: event.blockedURI,
+        documentURI: event.documentURI,
+        effectiveDirective: event.effectiveDirective,
+        originalPolicy: event.originalPolicy,
+        referrer: event.referrer,
+        sample: event.sample,
+        statusCode: event.statusCode,
+        violatedDirective: event.violatedDirective
+      });
+
+      // Report to security monitoring
+      import('@/services/security/realTimeSecurityMonitor').then(({ realTimeSecurityMonitor }) => {
+        realTimeSecurityMonitor.logSecurityEvent({
+          type: 'security_violation',
+          severity: 'high',
+          message: 'Content Security Policy violation detected',
+          metadata: {
+            blockedURI: event.blockedURI,
+            effectiveDirective: event.effectiveDirective,
+            violatedDirective: event.violatedDirective
+          }
+        });
+      });
+    });
+
+    // Detect potential XSS attempts
+    window.addEventListener('error', (event) => {
+      if (event.error && event.error.toString().includes('script')) {
+        import('@/services/security/realTimeSecurityMonitor').then(({ realTimeSecurityMonitor }) => {
+          realTimeSecurityMonitor.logSecurityEvent({
+            type: 'security_violation',
+            severity: 'medium',
+            message: 'Potential XSS attempt detected',
+            metadata: {
+              error: event.error.toString(),
+              filename: event.filename,
+              lineno: event.lineno,
+              colno: event.colno
+            }
+          });
+        });
+      }
+    });
+  }
+
+  updateCSPDirective(directive: string, sources: string[]): void {
+    if (this.config.contentSecurityPolicy) {
+      this.config.contentSecurityPolicy.directives[directive] = sources;
+      this.applyContentSecurityPolicy();
+    }
+  }
+
+  addCSPSource(directive: string, source: string): void {
+    if (this.config.contentSecurityPolicy?.directives[directive]) {
+      if (!this.config.contentSecurityPolicy.directives[directive].includes(source)) {
+        this.config.contentSecurityPolicy.directives[directive].push(source);
+        this.applyContentSecurityPolicy();
+      }
+    }
+  }
+
+  getSecurityHeadersStatus(): Record<string, boolean> {
+    return {
+      cspApplied: !!document.querySelector('meta[http-equiv="Content-Security-Policy"]'),
+      referrerPolicyApplied: !!document.querySelector('meta[name="referrer"]'),
+      permissionsPolicyApplied: !!document.querySelector('meta[http-equiv="Permissions-Policy"]'),
+      httpsEnforced: location.protocol === 'https:',
+      secureContext: window.isSecureContext
+    };
   }
 }
 

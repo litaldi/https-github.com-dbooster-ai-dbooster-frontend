@@ -1,4 +1,3 @@
-
 import { enhancedPasswordValidator, PasswordValidationResult } from './enhancedPasswordValidation';
 import { sessionSecurityService } from './sessionSecurityService';
 import { realTimeSecurityMonitor } from './realTimeSecurityMonitor';
@@ -44,18 +43,58 @@ export class ConsolidatedAuthenticationSecurity {
     try {
       this.authStats.totalAttempts++;
       
-      // Validate password strength
+      // Get client IP for threat detection
+      const clientIP = await this.getClientIP();
+      
+      // Enhanced threat detection
+      const threatCheck = await import('./threatDetectionEnhanced').then(({ enhancedThreatDetection }) =>
+        enhancedThreatDetection.detectThreats(email + password, {
+          inputType: 'login_credentials',
+          userAgent: navigator.userAgent,
+          ipAddress: clientIP
+        })
+      );
+
+      if (threatCheck.blocked) {
+        this.authStats.failedAttempts++;
+        this.updateFailureRate();
+        
+        realTimeSecurityMonitor.logSecurityEvent({
+          type: 'security_violation',
+          severity: 'critical',
+          message: 'Login blocked due to security threat',
+          metadata: { email, threats: threatCheck.threatTypes, ipAddress: clientIP }
+        });
+        
+        return {
+          success: false,
+          error: 'Login blocked due to security policy violation'
+        };
+      }
+
+      // Enhanced password validation with breach check
       const passwordValidation = await this.validatePasswordWithBreachCheck(password, { email });
       
       if (!passwordValidation.isValid) {
         this.authStats.failedAttempts++;
         this.updateFailureRate();
         
+        // Record failed attempt for IP tracking
+        if (clientIP) {
+          const { enhancedThreatDetection } = await import('./threatDetectionEnhanced');
+          enhancedThreatDetection.recordFailedAttempt(clientIP, 'weak_password');
+        }
+        
         realTimeSecurityMonitor.logSecurityEvent({
           type: 'login_failure',
           severity: 'medium',
-          message: 'Login failed: weak or breached password',
-          metadata: { email, reason: 'password_validation_failed' }
+          message: 'Login failed: password validation failed',
+          metadata: { 
+            email, 
+            reason: 'password_validation_failed',
+            feedback: passwordValidation.feedback,
+            ipAddress: clientIP
+          }
         });
         
         return {
@@ -74,11 +113,17 @@ export class ConsolidatedAuthenticationSecurity {
         this.authStats.failedAttempts++;
         this.updateFailureRate();
         
+        // Record failed attempt
+        if (clientIP) {
+          const { enhancedThreatDetection } = await import('./threatDetectionEnhanced');
+          enhancedThreatDetection.recordFailedAttempt(clientIP, 'invalid_credentials');
+        }
+        
         realTimeSecurityMonitor.logSecurityEvent({
           type: 'login_failure',
           severity: 'medium',
           message: 'Login failed: invalid credentials',
-          metadata: { email, error: error.message }
+          metadata: { email, error: error.message, ipAddress: clientIP }
         });
         
         return {
@@ -87,14 +132,25 @@ export class ConsolidatedAuthenticationSecurity {
         };
       }
 
+      // Create secure session
+      if (data.user) {
+        const { secureSessionManager } = await import('./secureSessionManager');
+        await secureSessionManager.createSecureSession(data.user.id, false);
+      }
+
       this.authStats.successfulAttempts++;
       this.updateFailureRate();
       
       realTimeSecurityMonitor.logSecurityEvent({
-        type: 'login_failure', // Using available type
+        type: 'login_failure', // Using available type for now
         severity: 'low',
         message: 'Successful login',
-        metadata: { email, userId: data.user?.id }
+        metadata: { 
+          email, 
+          userId: data.user?.id,
+          ipAddress: clientIP,
+          sessionToken: data.session?.access_token?.substring(0, 10) + '...'
+        }
       });
 
       return {
@@ -118,8 +174,32 @@ export class ConsolidatedAuthenticationSecurity {
     try {
       this.authStats.totalAttempts++;
       
-      // Validate password strength with breach check
-      const passwordValidation = await this.validatePasswordWithBreachCheck(password, { email, name: userData.fullName });
+      const clientIP = await this.getClientIP();
+      
+      // Enhanced threat detection for signup
+      const threatCheck = await import('./threatDetectionEnhanced').then(({ enhancedThreatDetection }) =>
+        enhancedThreatDetection.detectThreats(email + password + userData.fullName, {
+          inputType: 'signup_data',
+          userAgent: navigator.userAgent,
+          ipAddress: clientIP
+        })
+      );
+
+      if (threatCheck.blocked) {
+        this.authStats.failedAttempts++;
+        this.updateFailureRate();
+        
+        return {
+          success: false,
+          error: 'Signup blocked due to security policy violation'
+        };
+      }
+
+      // Enhanced password validation with breach check
+      const passwordValidation = await this.validatePasswordWithBreachCheck(password, { 
+        email, 
+        name: userData.fullName 
+      });
       
       if (!passwordValidation.isValid) {
         this.authStats.failedAttempts++;
@@ -159,7 +239,7 @@ export class ConsolidatedAuthenticationSecurity {
           type: 'login_failure',
           severity: 'medium',
           message: 'Signup failed',
-          metadata: { email, error: error.message }
+          metadata: { email, error: error.message, ipAddress: clientIP }
         });
         
         return {
@@ -172,10 +252,10 @@ export class ConsolidatedAuthenticationSecurity {
       this.updateFailureRate();
       
       realTimeSecurityMonitor.logSecurityEvent({
-        type: 'login_failure', // Using available type  
+        type: 'login_failure', // Using available type
         severity: 'low',
         message: 'Successful signup',
-        metadata: { email, userId: data.user?.id }
+        metadata: { email, userId: data.user?.id, ipAddress: clientIP }
       });
 
       return {
@@ -230,49 +310,48 @@ export class ConsolidatedAuthenticationSecurity {
 
   async createSecureDemoSession(): Promise<any> {
     try {
-      const session = await sessionSecurityService.createSecureDemoSession();
+      const { secureSessionManager } = await import('./secureSessionManager');
+      const session = await secureSessionManager.createSecureSession('demo-user', true);
       this.authStats.activeDemoSessions++;
       
       realTimeSecurityMonitor.logSecurityEvent({
         type: 'login_failure', // Using available type
         severity: 'low',
-        message: 'Demo session created',
+        message: 'Secure demo session created',
         metadata: {
           sessionId: session.id,
-          securityScore: session.metadata.securityScore
+          securityScore: session.securityScore
         }
       });
 
       return session;
     } catch (error) {
-      productionLogger.error('Demo session creation failed', error, 'ConsolidatedAuthenticationSecurity');
+      productionLogger.error('Secure demo session creation failed', error, 'ConsolidatedAuthenticationSecurity');
       throw error;
     }
   }
 
   async validateSessionSecurity(sessionId: string): Promise<boolean> {
     try {
-      const isValid = await sessionSecurityService.validateSession(sessionId);
-      const isAnomalous = await sessionSecurityService.detectAnomalousActivity(sessionId);
-
-      if (isAnomalous) {
-        realTimeSecurityMonitor.logSecurityEvent({
-          type: 'suspicious_activity',
-          severity: 'medium',
-          message: 'Anomalous session activity detected',
-          metadata: { sessionId }
-        });
-        
-        await sessionSecurityService.cleanupSession(sessionId);
-        return false;
-      }
-
-      return isValid;
+      const { secureSessionManager } = await import('./secureSessionManager');
+      return await secureSessionManager.validateSession(sessionId);
     } catch (error) {
       productionLogger.error('Session security validation failed', error, 'ConsolidatedAuthenticationSecurity');
       return false;
     }
   }
+
+  private async getClientIP(): Promise<string> {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  
 }
 
 export const consolidatedAuthenticationSecurity = ConsolidatedAuthenticationSecurity.getInstance();

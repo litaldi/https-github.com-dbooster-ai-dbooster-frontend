@@ -1,4 +1,4 @@
-import { breachDetectionService } from './breachDetectionService';
+
 import { productionLogger } from '@/utils/productionLogger';
 
 export interface PasswordValidationResult {
@@ -7,46 +7,23 @@ export interface PasswordValidationResult {
   feedback: string[];
   breachInfo?: {
     isBreached: boolean;
-    breachCount: number;
+    breachCount?: number;
   };
 }
 
-const COMMON_PASSWORDS = [
-  'password', '123456', '123456789', 'qwerty', 'abc123', 'password123',
-  'admin', 'letmein', 'welcome', 'monkey', '1234567890', 'dragon',
-  'master', 'hello', 'freedom', 'whatever', 'qazwsx', 'trustno1'
-];
-
-const KEYBOARD_PATTERNS = [
-  'qwerty', 'asdf', 'zxcv', '1234', 'abcd', 'qwertyuiop',
-  'asdfghjkl', 'zxcvbnm', '1234567890'
-];
-
-function containsCommonPassword(password: string): boolean {
-  const lowerPassword = password.toLowerCase();
-  return COMMON_PASSWORDS.some(common => lowerPassword.includes(common));
+export interface PasswordValidationOptions {
+  email?: string;
+  name?: string;
+  requireSpecialChars?: boolean;
+  minLength?: number;
+  maxLength?: number;
 }
 
-function containsKeyboardPattern(password: string): boolean {
-  const lowerPassword = password.toLowerCase();
-  return KEYBOARD_PATTERNS.some(pattern => lowerPassword.includes(pattern));
-}
-
-function calculateEntropy(password: string): number {
-  const charSets = [
-    /[a-z]/.test(password) ? 26 : 0,
-    /[A-Z]/.test(password) ? 26 : 0,
-    /\d/.test(password) ? 10 : 0,
-    /[!@#$%^&*(),.?":{}|<>]/.test(password) ? 32 : 0
-  ];
-  
-  const charSetSize = charSets.reduce((sum, size) => sum + size, 0);
-  return password.length * Math.log2(charSetSize);
-}
-
-export class EnhancedPasswordValidator {
+class EnhancedPasswordValidator {
   private static instance: EnhancedPasswordValidator;
-  private passwordHistory: Set<string> = new Set();
+  private readonly MIN_PASSWORD_LENGTH = 12;
+  private readonly MAX_PASSWORD_LENGTH = 128;
+  private readonly BREACH_CHECK_CACHE = new Map<string, boolean>();
 
   static getInstance(): EnhancedPasswordValidator {
     if (!EnhancedPasswordValidator.instance) {
@@ -55,109 +32,95 @@ export class EnhancedPasswordValidator {
     return EnhancedPasswordValidator.instance;
   }
 
-  async validatePassword(password: string, userInfo?: { email?: string; name?: string }): Promise<PasswordValidationResult> {
+  async validatePassword(
+    password: string, 
+    options: PasswordValidationOptions = {}
+  ): Promise<PasswordValidationResult> {
     const feedback: string[] = [];
     let score = 0;
+    let isValid = true;
 
-    // Basic validation
-    if (password.length < 8) {
-      feedback.push('Password must be at least 8 characters long');
-    } else if (password.length < 12) {
-      feedback.push('Consider using a longer password for better security');
-      score += 10;
+    const minLength = options.minLength || this.MIN_PASSWORD_LENGTH;
+    const maxLength = options.maxLength || this.MAX_PASSWORD_LENGTH;
+
+    // Length validation
+    if (password.length < minLength) {
+      feedback.push(`Password must be at least ${minLength} characters long`);
+      isValid = false;
     } else {
       score += 20;
     }
 
-    // Character variety
-    if (!/[a-z]/.test(password)) {
-      feedback.push('Password should contain lowercase letters');
-    } else score += 15;
-
-    if (!/[A-Z]/.test(password)) {
-      feedback.push('Password should contain uppercase letters');
-    } else score += 15;
-
-    if (!/\d/.test(password)) {
-      feedback.push('Password should contain numbers');
-    } else score += 15;
-
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      feedback.push('Password should contain special characters');
-    } else score += 15;
-
-    // Check for common patterns
-    if (/(.)\1{2,}/.test(password)) {
-      feedback.push('Avoid repeating characters');
-      score -= 10;
+    if (password.length > maxLength) {
+      feedback.push(`Password must not exceed ${maxLength} characters`);
+      isValid = false;
     }
 
-    if (/123|abc|qwerty/i.test(password)) {
-      feedback.push('Avoid common sequences');
-      score -= 15;
+    // Character variety validation
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+    if (!hasUppercase) {
+      feedback.push('Password must contain at least one uppercase letter');
+      isValid = false;
+    } else {
+      score += 15;
     }
 
-    // Check common passwords
-    if (containsCommonPassword(password)) {
-      feedback.push('Avoid common passwords');
+    if (!hasLowercase) {
+      feedback.push('Password must contain at least one lowercase letter');
+      isValid = false;
+    } else {
+      score += 15;
+    }
+
+    if (!hasNumbers) {
+      feedback.push('Password must contain at least one number');
+      isValid = false;
+    } else {
+      score += 15;
+    }
+
+    if (options.requireSpecialChars !== false && !hasSpecialChars) {
+      feedback.push('Password must contain at least one special character');
+      isValid = false;
+    } else if (hasSpecialChars) {
+      score += 20;
+    }
+
+    // Common patterns validation
+    if (this.hasCommonPatterns(password)) {
+      feedback.push('Password contains common patterns and is too predictable');
       score -= 20;
-    }
-
-    // Check keyboard patterns
-    if (containsKeyboardPattern(password)) {
-      feedback.push('Avoid keyboard patterns');
-      score -= 15;
-    }
-
-    // Entropy check
-    const entropy = calculateEntropy(password);
-    if (entropy < 40) {
-      feedback.push('Password complexity is too low');
-      score -= 10;
-    } else if (entropy > 60) {
+    } else {
       score += 10;
     }
 
-    // Check against user info
-    if (userInfo) {
-      if (userInfo.email && password.toLowerCase().includes(userInfo.email.split('@')[0].toLowerCase())) {
-        feedback.push('Password should not contain your email');
-        score -= 20;
-      }
-      if (userInfo.name && password.toLowerCase().includes(userInfo.name.toLowerCase())) {
-        feedback.push('Password should not contain your name');
-        score -= 20;
-      }
+    // Personal information validation
+    if (options.email && this.containsPersonalInfo(password, options.email)) {
+      feedback.push('Password should not contain your email address');
+      score -= 15;
     }
 
-    // Check password history
-    if (this.passwordHistory.has(password)) {
-      feedback.push('Please choose a password you haven\'t used recently');
-      score -= 25;
+    if (options.name && this.containsPersonalInfo(password, options.name)) {
+      feedback.push('Password should not contain your name');
+      score -= 15;
     }
 
-    // Check against breach database
-    let breachInfo;
-    try {
-      breachInfo = await breachDetectionService.checkPasswordBreach(password);
-      if (breachInfo.isBreached) {
-        feedback.push(`This password has been found in ${breachInfo.breachCount} data breaches. Please choose a different password.`);
-        score -= 30;
-      } else {
-        score += 10;
-      }
-    } catch (error) {
-      productionLogger.warn('Could not check password against breach database', error);
-      feedback.push('Unable to verify password against known breaches');
+    // Breach check
+    const breachInfo = await this.checkPasswordBreach(password);
+    if (breachInfo.isBreached) {
+      feedback.push('This password has been found in data breaches and should not be used');
+      isValid = false;
+      score -= 50;
+    } else {
+      score += 5;
     }
 
+    // Ensure score is between 0 and 100
     score = Math.max(0, Math.min(100, score));
-
-    const isValid = score >= 60 && feedback.filter(f => f.includes('must') || f.includes('should')).length === 0;
-
-    if (isValid) {
-      this.addToHistory(password);
-    }
 
     return {
       isValid,
@@ -167,17 +130,80 @@ export class EnhancedPasswordValidator {
     };
   }
 
-  private addToHistory(password: string): void {
-    this.passwordHistory.add(password);
-    // Keep only last 5 passwords
-    if (this.passwordHistory.size > 5) {
-      const first = this.passwordHistory.values().next().value;
-      this.passwordHistory.delete(first);
-    }
+  private hasCommonPatterns(password: string): boolean {
+    const commonPatterns = [
+      /123456/,
+      /password/i,
+      /qwerty/i,
+      /abc123/i,
+      /admin/i,
+      /letmein/i,
+      /welcome/i,
+      /monkey/i,
+      /dragon/i,
+      /(.)\1{2,}/, // Repeated characters
+      /012345/,
+      /987654/
+    ];
+
+    return commonPatterns.some(pattern => pattern.test(password));
   }
 
-  clearHistory(): void {
-    this.passwordHistory.clear();
+  private containsPersonalInfo(password: string, info: string): boolean {
+    const lowerPassword = password.toLowerCase();
+    const lowerInfo = info.toLowerCase();
+    
+    // Check if password contains significant parts of personal info
+    if (lowerInfo.length >= 3) {
+      return lowerPassword.includes(lowerInfo) || lowerInfo.includes(lowerPassword);
+    }
+    
+    return false;
+  }
+
+  private async checkPasswordBreach(password: string): Promise<{ isBreached: boolean; breachCount?: number }> {
+    try {
+      // Create SHA-1 hash of password
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+
+      // Check cache first
+      if (this.BREACH_CHECK_CACHE.has(hashHex)) {
+        return { isBreached: this.BREACH_CHECK_CACHE.get(hashHex)! };
+      }
+
+      // Use HaveIBeenPwned API with k-anonymity
+      const prefix = hashHex.substring(0, 5);
+      const suffix = hashHex.substring(5);
+
+      const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+      
+      if (!response.ok) {
+        productionLogger.warn('Breach check service unavailable', {}, 'EnhancedPasswordValidator');
+        return { isBreached: false };
+      }
+
+      const hashList = await response.text();
+      const lines = hashList.split('\n');
+      
+      for (const line of lines) {
+        const [hashSuffix, count] = line.split(':');
+        if (hashSuffix.trim() === suffix) {
+          const breachCount = parseInt(count.trim(), 10);
+          this.BREACH_CHECK_CACHE.set(hashHex, true);
+          return { isBreached: true, breachCount };
+        }
+      }
+
+      this.BREACH_CHECK_CACHE.set(hashHex, false);
+      return { isBreached: false };
+    } catch (error) {
+      productionLogger.error('Password breach check failed', error, 'EnhancedPasswordValidator');
+      return { isBreached: false };
+    }
   }
 }
 

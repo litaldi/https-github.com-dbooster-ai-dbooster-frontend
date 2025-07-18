@@ -1,28 +1,14 @@
 
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-import { unifiedSecurityService } from '@/services/security/unifiedSecurityService';
-import { productionConsole } from '@/utils/productionConsoleCleanup';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
 
-// Initialize security systems
-if (import.meta.env.PROD) {
-  // Initialize unified security service
-  unifiedSecurityService.initializeSecurityHeaders();
-  
-  // Clean up console logging in production
-  productionConsole.initializeConsoleCleanup();
-}
+// Initialize enhanced security systems
+import './utils/security/securityInitializer';
 
-// Development-only security validation
-if (import.meta.env.DEV) {
-  // Enable development console
-  productionConsole.enableDevConsole();
-}
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
     <App />
-  </StrictMode>,
-);
+  </React.StrictMode>,
+)
