@@ -1,234 +1,86 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { securityAuditService } from '@/services/security/monitoring/securityAuditService';
-import { threatPatternUpdater } from '@/services/security/monitoring/threatPatternUpdater';
-import { securityPerformanceMonitor } from '@/services/security/monitoring/performanceMonitor';
+import { useState, useEffect } from 'react';
+import { securityMonitoringService, type SecurityAlert } from '@/services/security/securityMonitoringService';
 import { productionLogger } from '@/utils/productionLogger';
 
-interface SecurityMonitoringState {
-  isMonitoring: boolean;
-  lastAuditReport: any;
-  performanceMetrics: any;
-  patternUpdateHistory: any[];
-  alerts: any[];
-  error: string | null;
-}
-
-interface MonitoringConfig {
-  refreshInterval?: number;
-  enablePerformanceMonitoring?: boolean;
-  enablePatternUpdates?: boolean;
-}
-
-export function useSecurityMonitoring(config: MonitoringConfig = {}) {
-  const {
-    refreshInterval = 5 * 60 * 1000, // 5 minutes
-    enablePerformanceMonitoring = true,
-    enablePatternUpdates = true
-  } = config;
-
-  const [state, setState] = useState<SecurityMonitoringState>({
-    isMonitoring: false,
-    lastAuditReport: null,
-    performanceMetrics: null,
-    patternUpdateHistory: [],
-    alerts: [],
-    error: null
+export function useSecurityMonitoring() {
+  const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
+  const [metrics, setMetrics] = useState({
+    totalEscalationAttempts: 0,
+    recentEscalationAttempts: 0,
+    securityScore: 100,
+    criticalAlerts: 0
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(false);
-  const refreshIntervalRef = useRef<NodeJS.Timeout>();
-  const abortControllerRef = useRef<AbortController>();
-
-  const updateState = useCallback((updates: Partial<SecurityMonitoringState>) => {
-    setState(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  const startMonitoring = useCallback(async () => {
-    if (state.isMonitoring) {
-      return;
-    }
-
+  const loadSecurityData = async () => {
     try {
-      setLoading(true);
-      updateState({ error: null });
-      
-      // Create abort controller for cleanup
-      abortControllerRef.current = new AbortController();
-
-      productionLogger.secureInfo('Starting comprehensive security monitoring');
-
-      // Start monitoring services with error handling
-      const startupPromises = [];
-      
-      startupPromises.push(securityAuditService.startContinuousMonitoring());
-      
-      if (enablePatternUpdates) {
-        startupPromises.push(threatPatternUpdater.startAutomaticUpdates());
-      }
-      
-      if (enablePerformanceMonitoring) {
-        startupPromises.push(
-          Promise.resolve(securityPerformanceMonitor.startMonitoring())
-        );
-      }
-
-      await Promise.allSettled(startupPromises);
-      
-      updateState({ isMonitoring: true });
-      
-      // Initial data load
-      await refreshMonitoringData();
-
-    } catch (error) {
-      const errorMessage = 'Failed to start security monitoring';
-      updateState({ error: errorMessage });
-      productionLogger.error(errorMessage, error, 'useSecurityMonitoring');
-    } finally {
-      setLoading(false);
-    }
-  }, [state.isMonitoring, enablePatternUpdates, enablePerformanceMonitoring]);
-
-  const stopMonitoring = useCallback(() => {
-    productionLogger.secureInfo('Stopping security monitoring');
-    
-    // Cancel ongoing operations
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Clear refresh interval
-    if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current);
-    }
-    
-    // Stop monitoring services
-    securityAuditService.stopMonitoring();
-    
-    if (enablePatternUpdates) {
-      threatPatternUpdater.stopAutomaticUpdates();
-    }
-    
-    if (enablePerformanceMonitoring) {
-      securityPerformanceMonitor.stopMonitoring();
-    }
-
-    updateState({ isMonitoring: false, error: null });
-  }, [enablePatternUpdates, enablePerformanceMonitoring]);
-
-  const refreshMonitoringData = useCallback(async () => {
-    if (!state.isMonitoring) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      updateState({ error: null });
-
-      // Use Promise.allSettled to handle partial failures gracefully
-      const [auditResult, performanceResult, patternResult] = await Promise.allSettled([
-        securityAuditService.getLatestAuditReport(),
-        enablePerformanceMonitoring ? securityPerformanceMonitor.getMetrics() : null,
-        enablePatternUpdates ? threatPatternUpdater.getPatternUpdateHistory() : []
+      setError(null);
+      const [alertsData, metricsData] = await Promise.all([
+        securityMonitoringService.getSecurityAlerts(20),
+        securityMonitoringService.getSecurityMetrics()
       ]);
 
-      const updates: Partial<SecurityMonitoringState> = {};
-
-      if (auditResult.status === 'fulfilled') {
-        updates.lastAuditReport = auditResult.value;
-        updates.alerts = auditResult.value?.suspiciousPatterns || [];
-      }
-
-      if (performanceResult.status === 'fulfilled' && performanceResult.value) {
-        updates.performanceMetrics = performanceResult.value;
-      }
-
-      if (patternResult.status === 'fulfilled') {
-        updates.patternUpdateHistory = patternResult.value;
-      }
-
-      updateState(updates);
-
-    } catch (error) {
-      const errorMessage = 'Failed to refresh monitoring data';
-      updateState({ error: errorMessage });
-      productionLogger.error(errorMessage, error, 'useSecurityMonitoring');
+      setAlerts(alertsData);
+      setMetrics(metricsData);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load security data';
+      setError(errorMessage);
+      productionLogger.error('Security monitoring hook error', err, 'useSecurityMonitoring');
     } finally {
       setLoading(false);
     }
-  }, [state.isMonitoring, enablePerformanceMonitoring, enablePatternUpdates]);
+  };
 
-  const performManualAudit = useCallback(async () => {
+  const secureRoleAssignment = async (
+    targetUserId: string,
+    newRole: string,
+    reason?: string
+  ) => {
     try {
-      setLoading(true);
-      updateState({ error: null });
+      const result = await securityMonitoringService.secureRoleAssignment(
+        targetUserId,
+        newRole,
+        reason
+      );
       
-      const report = await securityAuditService.performSecurityAudit();
-      updateState({ lastAuditReport: report });
+      // Refresh security data after role assignment
+      await loadSecurityData();
       
-      return report;
-    } catch (error) {
-      const errorMessage = 'Manual audit failed';
-      updateState({ error: errorMessage });
-      productionLogger.error(errorMessage, error, 'useSecurityMonitoring');
-      throw error;
-    } finally {
-      setLoading(false);
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Role assignment failed';
+      productionLogger.error('Secure role assignment failed', err, 'useSecurityMonitoring');
+      throw new Error(errorMessage);
     }
+  };
+
+  const checkAdminBootstrapNeeded = async () => {
+    try {
+      return await securityMonitoringService.checkAdminBootstrapNeeded();
+    } catch (err) {
+      productionLogger.error('Failed to check admin bootstrap status', err, 'useSecurityMonitoring');
+      return false;
+    }
+  };
+
+  const refreshData = async () => {
+    setLoading(true);
+    await loadSecurityData();
+  };
+
+  useEffect(() => {
+    loadSecurityData();
   }, []);
 
-  const checkForPatternUpdates = useCallback(async () => {
-    if (!enablePatternUpdates) {
-      return;
-    }
-
-    try {
-      updateState({ error: null });
-      
-      await threatPatternUpdater.checkForPatternUpdates();
-      const history = await threatPatternUpdater.getPatternUpdateHistory();
-      updateState({ patternUpdateHistory: history });
-    } catch (error) {
-      const errorMessage = 'Pattern update check failed';
-      updateState({ error: errorMessage });
-      productionLogger.error(errorMessage, error, 'useSecurityMonitoring');
-    }
-  }, [enablePatternUpdates]);
-
-  // Auto-refresh data periodically
-  useEffect(() => {
-    if (state.isMonitoring && refreshInterval > 0) {
-      refreshIntervalRef.current = setInterval(() => {
-        refreshMonitoringData();
-      }, refreshInterval);
-    }
-
-    return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-      }
-    };
-  }, [state.isMonitoring, refreshInterval, refreshMonitoringData]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopMonitoring();
-    };
-  }, [stopMonitoring]);
-
   return {
-    ...state,
+    alerts,
+    metrics,
     loading,
-    startMonitoring,
-    stopMonitoring,
-    refreshMonitoringData,
-    performManualAudit,
-    checkForPatternUpdates,
-    config: {
-      refreshInterval,
-      enablePerformanceMonitoring,
-      enablePatternUpdates
-    }
+    error,
+    refreshData,
+    secureRoleAssignment,
+    checkAdminBootstrapNeeded
   };
 }
