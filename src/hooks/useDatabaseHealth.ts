@@ -4,24 +4,33 @@ import { DatabaseHealthInsight, nextGenAIService } from '@/services/ai/nextGenAI
 
 export function useDatabaseHealth(databaseId?: string) {
   const [insights, setInsights] = useState<DatabaseHealthInsight[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [healthScore, setHealthScore] = useState(85);
+  const [lastCheck, setLastCheck] = useState<Date | null>(null);
 
-  const generateHealthInsights = async () => {
+  const generateInsights = async () => {
     if (!databaseId) return;
     
-    setIsLoading(true);
+    setIsAnalyzing(true);
     setError(null);
     
     try {
       await nextGenAIService.initialize();
       const healthInsights = await nextGenAIService.generateDatabaseHealthInsights(databaseId);
       setInsights(healthInsights);
+      setLastCheck(new Date());
+      
+      // Calculate health score based on insights
+      const criticalCount = healthInsights.filter(i => i.priority === 'critical').length;
+      const highCount = healthInsights.filter(i => i.priority === 'high').length;
+      const newScore = Math.max(60, 100 - (criticalCount * 15) - (highCount * 10));
+      setHealthScore(newScore);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate health insights');
       console.error('Health insights generation failed:', err);
     } finally {
-      setIsLoading(false);
+      setIsAnalyzing(false);
     }
   };
 
@@ -34,15 +43,17 @@ export function useDatabaseHealth(databaseId?: string) {
 
   useEffect(() => {
     if (databaseId) {
-      generateHealthInsights();
+      generateInsights();
     }
   }, [databaseId]);
 
   return {
     insights,
-    isLoading,
+    isAnalyzing,
     error,
-    generateHealthInsights,
+    healthScore,
+    lastCheck,
+    generateInsights,
     applyRecommendation
   };
 }

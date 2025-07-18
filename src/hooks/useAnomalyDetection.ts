@@ -27,9 +27,11 @@ interface AnomalyDetectionResult {
 }
 
 export function useAnomalyDetection() {
-  const [isDetecting, setIsDetecting] = useState(false);
-  const [result, setResult] = useState<AnomalyDetectionResult | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [anomalyData, setAnomalyData] = useState<AnomalyDetectionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [autoScanEnabled, setAutoScanEnabled] = useState(false);
+  const [lastScan, setLastScan] = useState<Date | null>(null);
 
   // Generate mock metric data for demonstration
   const generateMockMetrics = (): MetricData[] => {
@@ -50,27 +52,42 @@ export function useAnomalyDetection() {
     return metrics.reverse(); // Chronological order
   };
 
-  const detectAnomalies = async () => {
-    setIsDetecting(true);
+  const scanForAnomalies = async () => {
+    setIsScanning(true);
     setError(null);
     
     try {
       await nextGenAIService.initialize();
       const metrics = generateMockMetrics();
       const detectionResult = await nextGenAIService.detectAnomalies(metrics);
-      setResult(detectionResult);
+      setAnomalyData(detectionResult);
+      setLastScan(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Detection failed');
       console.error('Anomaly detection failed:', err);
     } finally {
-      setIsDetecting(false);
+      setIsScanning(false);
     }
   };
 
+  // Auto-scan functionality
+  useEffect(() => {
+    if (autoScanEnabled) {
+      const interval = setInterval(() => {
+        scanForAnomalies();
+      }, 5 * 60 * 1000); // Every 5 minutes
+
+      return () => clearInterval(interval);
+    }
+  }, [autoScanEnabled]);
+
   return {
-    isDetecting,
-    result,
+    isScanning,
+    anomalyData,
     error,
-    detectAnomalies
+    autoScanEnabled,
+    setAutoScanEnabled,
+    lastScan,
+    scanForAnomalies
   };
 }

@@ -14,7 +14,7 @@ export function DatabaseHealthAssistant() {
     healthScore,
     lastCheck,
     generateInsights
-  } = useDatabaseHealth();
+  } = useDatabaseHealth('demo-db');
 
   const getHealthScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
