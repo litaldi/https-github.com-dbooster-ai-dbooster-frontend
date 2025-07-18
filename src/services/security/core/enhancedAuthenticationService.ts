@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import { enhancedRoleManager } from '../enhancedRoleManager';
@@ -11,6 +10,14 @@ interface RoleAssignmentResponse {
   requires_approval?: boolean;
   request_id?: string;
   message: string;
+}
+
+// Type guard for RoleAssignmentResponse
+function isRoleAssignmentResponse(data: any): data is RoleAssignmentResponse {
+  return data && 
+         typeof data === 'object' && 
+         typeof data.success === 'boolean' && 
+         typeof data.message === 'string';
 }
 
 export class EnhancedAuthenticationService {
@@ -145,24 +152,27 @@ export class EnhancedAuthenticationService {
         throw new Error(error.message);
       }
 
-      // Type guard and handle the response safely
-      const response = data as RoleAssignmentResponse;
+      // Safe type handling with type guard
+      if (!isRoleAssignmentResponse(data)) {
+        productionLogger.error('Invalid response format from role assignment', { data }, 'EnhancedAuthenticationService');
+        return false;
+      }
       
-      if (response && !response.success && response.requires_approval) {
+      if (!data.success && data.requires_approval) {
         productionLogger.secureInfo('Role assignment requires approval', {
-          request_id: response.request_id,
+          request_id: data.request_id,
           target_user_id: targetUserId,
           new_role: newRole
         });
         
         // This would trigger a notification to administrators
-        if (response.request_id) {
-          await this.notifyAdminsOfRoleRequest(response.request_id, targetUserId, newRole);
+        if (data.request_id) {
+          await this.notifyAdminsOfRoleRequest(data.request_id, targetUserId, newRole);
         }
         return false; // Not immediately assigned, requires approval
       }
 
-      return response?.success || false;
+      return data.success;
     } catch (error) {
       productionLogger.error('Role assignment failed', error, 'EnhancedAuthenticationService');
       throw error;

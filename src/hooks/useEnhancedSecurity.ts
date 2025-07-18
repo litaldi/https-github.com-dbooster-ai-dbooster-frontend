@@ -1,8 +1,10 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { enhancedAuthenticationService } from '@/services/security/core/enhancedAuthenticationService';
 import { securityDashboardEnhanced } from '@/services/security/securityDashboardEnhanced';
 import { productionLogger } from '@/utils/productionLogger';
+
+// Import the AppRole type from enhancedRoleManager
+type AppRole = 'admin' | 'moderator' | 'user';
 
 export function useEnhancedSecurity() {
   const [securityMetrics, setSecurityMetrics] = useState(null);
@@ -48,7 +50,7 @@ export function useEnhancedSecurity() {
     }
   }, [currentSessionId]);
 
-  const assignRole = useCallback(async (targetUserId: string, newRole: string, reason?: string) => {
+  const assignRole = useCallback(async (targetUserId: string, newRole: AppRole, reason?: string) => {
     try {
       await enhancedAuthenticationService.assignUserRole(targetUserId, newRole, reason);
       await refreshSecurityData(); // Refresh to show updated metrics

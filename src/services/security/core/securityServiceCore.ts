@@ -5,6 +5,9 @@ import { MonitoringService } from './monitoringService';
 import { ApiSecurityService } from './apiSecurityService';
 import { enhancedAuthenticationService } from './enhancedAuthenticationService';
 
+// Import the AppRole type
+type AppRole = 'admin' | 'moderator' | 'user';
+
 export class SecurityServiceCore {
   private static instance: SecurityServiceCore;
   private validationService: ValidationService;
@@ -50,7 +53,7 @@ export class SecurityServiceCore {
     return enhancedAuthenticationService.detectSuspiciousActivity(userId);
   }
 
-  async assignUserRole(targetUserId: string, newRole: string, reason?: string): Promise<boolean> {
+  async assignUserRole(targetUserId: string, newRole: AppRole, reason?: string): Promise<boolean> {
     return enhancedAuthenticationService.assignUserRole(targetUserId, newRole, reason);
   }
 
