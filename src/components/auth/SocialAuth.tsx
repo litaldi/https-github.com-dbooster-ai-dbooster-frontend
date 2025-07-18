@@ -1,25 +1,38 @@
-
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Github, Chrome } from 'lucide-react';
+import { Github, Mail } from 'lucide-react';
 
 export function SocialAuth() {
-  const handleGoogleAuth = () => {
+  const handleGoogleAuth = async () => {
+    // Placeholder for Google auth implementation
     console.log('Google auth clicked');
   };
 
-  const handleGithubAuth = () => {
+  const handleGithubAuth = async () => {
+    // Placeholder for GitHub auth implementation
     console.log('GitHub auth clicked');
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <Button variant="outline" onClick={handleGoogleAuth} className="w-full">
-        <Chrome className="h-4 w-4 mr-2" />
-        Google
+    <div className="space-y-3">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={handleGoogleAuth}
+      >
+        <Mail className="h-4 w-4 mr-2" />
+        Continue with Google
       </Button>
-      <Button variant="outline" onClick={handleGithubAuth} className="w-full">
+      
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={handleGithubAuth}
+      >
         <Github className="h-4 w-4 mr-2" />
-        GitHub
+        Continue with GitHub
       </Button>
     </div>
   );

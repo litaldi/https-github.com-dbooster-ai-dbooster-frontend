@@ -32,7 +32,7 @@ export function LoginCard({ authMode, onAuthModeChange, onSubmit, isLoading }: L
   const config = cardConfig[authMode] || cardConfig.login;
 
   return (
-    <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
+    <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm animate-scale-in">
       <CardHeader className="text-center space-y-1 pb-4">
         <CardTitle className="text-2xl font-bold">
           {config.title}

@@ -2,6 +2,7 @@
 import React from 'react';
 import { OptimizedDashboardLayout } from '@/components/dashboard/OptimizedDashboardLayout';
 import { useAuth } from '@/contexts/auth-context';
+import { cleanLogger } from '@/utils/cleanLogger';
 import { Navigate } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -9,11 +10,11 @@ export default function Dashboard() {
 
   React.useEffect(() => {
     if (user) {
-      console.log('Dashboard accessed', { 
+      cleanLogger.info('Dashboard accessed', { 
         userId: user?.id,
         isDemo,
         timestamp: new Date().toISOString()
-      });
+      }, 'Dashboard');
     }
   }, [user?.id, isDemo]);
 
