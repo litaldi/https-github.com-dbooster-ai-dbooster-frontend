@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Brain, Sparkles, Wand2, Zap, Database, BarChart3, Eye, Activity, TrendingUp, DollarSign, GitBranch } from 'lucide-react';
+import { Brain, Sparkles, Wand2, Zap, Database, BarChart3, Eye, Activity, TrendingUp, DollarSign, GitBranch, Shield, HardDrive, AlertTriangle } from 'lucide-react';
 import { QueryAutoComplete } from './QueryAutoComplete';
 import { QueryPatternLearning } from './QueryPatternLearning';
 import { QueryRiskAssessment } from './QueryRiskAssessment';
@@ -21,6 +21,10 @@ import { DatabaseChatAssistant } from './DatabaseChatAssistant';
 import { PerformanceBottleneckAnalyzer } from './PerformanceBottleneckAnalyzer';
 import { QueryCostPredictor } from './QueryCostPredictor';
 import { DatabaseMigrationAssistant } from './DatabaseMigrationAssistant';
+import { DatabaseBackupAdvisor } from './DatabaseBackupAdvisor';
+import { DataQualityMonitor } from './DataQualityMonitor';
+import { CapacityPlanningAssistant } from './CapacityPlanningAssistant';
+import { SecurityThreatDetector } from './SecurityThreatDetector';
 
 export function EnhancedAIStudio() {
   const [currentQuery, setCurrentQuery] = useState('');
@@ -45,7 +49,7 @@ export function EnhancedAIStudio() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-15">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-19">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <Wand2 className="h-4 w-4" />
             Smart Editor
@@ -105,6 +109,22 @@ export function EnhancedAIStudio() {
           <TabsTrigger value="migration" className="flex items-center gap-2">
             <GitBranch className="h-4 w-4" />
             Migration Assistant
+          </TabsTrigger>
+          <TabsTrigger value="backup" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Backup Advisor
+          </TabsTrigger>
+          <TabsTrigger value="quality" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Data Quality
+          </TabsTrigger>
+          <TabsTrigger value="capacity" className="flex items-center gap-2">
+            <HardDrive className="h-4 w-4" />
+            Capacity Planning
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Security Threats
           </TabsTrigger>
         </TabsList>
 
@@ -206,6 +226,22 @@ export function EnhancedAIStudio() {
 
         <TabsContent value="migration">
           <DatabaseMigrationAssistant />
+        </TabsContent>
+
+        <TabsContent value="backup">
+          <DatabaseBackupAdvisor />
+        </TabsContent>
+
+        <TabsContent value="quality">
+          <DataQualityMonitor />
+        </TabsContent>
+
+        <TabsContent value="capacity">
+          <CapacityPlanningAssistant />
+        </TabsContent>
+
+        <TabsContent value="security">
+          <SecurityThreatDetector />
         </TabsContent>
       </Tabs>
     </div>
