@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { DemoDashboardSection } from '@/components/demo/DemoDashboardSection';
 
 const demoFeatures = [
   {
@@ -94,6 +94,9 @@ export default function DemoPage() {
             </div>
           </motion.div>
         </section>
+
+        {/* Interactive Demo Dashboard */}
+        <DemoDashboardSection />
 
         {/* Demo Features */}
         <section>
