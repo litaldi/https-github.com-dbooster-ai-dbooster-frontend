@@ -1,44 +1,33 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { 
   AlertTriangle, 
-  CheckCircle, 
-  TrendingUp,
-  Database,
-  Shield,
-  Wrench,
-  Zap,
-  Bot
+  Shield, 
+  TrendingUp, 
+  Settings, 
+  CheckCircle,
+  ExternalLink,
+  Clock
 } from 'lucide-react';
-import { StaggerContainer, StaggerItem } from '@/components/ui/animations';
-import type { DatabaseHealthInsight } from '@/services/ai/nextGenAIService';
+import { motion } from 'framer-motion';
+import { DatabaseHealthInsight } from '@/services/ai/nextGenAIService';
 
 interface HealthInsightsListProps {
   insights: DatabaseHealthInsight[];
+  onApplyRecommendation?: (insight: DatabaseHealthInsight) => void;
 }
 
-export const HealthInsightsList: React.FC<HealthInsightsListProps> = React.memo(({ insights }) => {
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'critical': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      case 'high': return <AlertTriangle className="h-4 w-4 text-orange-600" />;
-      case 'medium': return <TrendingUp className="h-4 w-4 text-yellow-600" />;
-      case 'low': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      default: return <CheckCircle className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
+export function HealthInsightsList({ insights, onApplyRecommendation }: HealthInsightsListProps) {
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'performance': return <Zap className="h-4 w-4" />;
+      case 'performance': return <TrendingUp className="h-4 w-4" />;
       case 'security': return <Shield className="h-4 w-4" />;
-      case 'optimization': return <TrendingUp className="h-4 w-4" />;
-      case 'maintenance': return <Wrench className="h-4 w-4" />;
-      default: return <Database className="h-4 w-4" />;
+      case 'optimization': return <Settings className="h-4 w-4" />;
+      case 'maintenance': return <Clock className="h-4 w-4" />;
+      default: return <AlertTriangle className="h-4 w-4" />;
     }
   };
 
@@ -52,14 +41,24 @@ export const HealthInsightsList: React.FC<HealthInsightsListProps> = React.memo(
     }
   };
 
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'performance': return 'text-blue-600 bg-blue-50';
+      case 'security': return 'text-red-600 bg-red-50';
+      case 'optimization': return 'text-green-600 bg-green-50';
+      case 'maintenance': return 'text-purple-600 bg-purple-50';
+      default: return 'text-gray-600 bg-gray-50';
+    }
+  };
+
   if (insights.length === 0) {
     return (
       <Card>
-        <CardContent className="text-center py-8">
-          <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2 text-green-600">All Clear!</h3>
-          <p className="text-muted-foreground">
-            No health issues detected in your database system
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
+          <h3 className="text-lg font-medium mb-2">All Systems Healthy</h3>
+          <p className="text-muted-foreground text-center">
+            No critical issues detected. Your database is performing optimally.
           </p>
         </CardContent>
       </Card>
@@ -67,66 +66,81 @@ export const HealthInsightsList: React.FC<HealthInsightsListProps> = React.memo(
   }
 
   return (
-    <StaggerContainer>
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">AI Health Insights</h3>
-        
-        {insights.map((insight, index) => (
-          <StaggerItem key={index} delay={index * 0.1}>
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className="p-2 rounded-lg bg-gray-50">
-                      {getCategoryIcon(insight.category)}
-                    </div>
-                    <div className="space-y-2 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{insight.title}</h4>
-                        <Badge variant={getPriorityColor(insight.priority) as any}>
-                          {getPriorityIcon(insight.priority)}
-                          {insight.priority}
+    <div className="space-y-4">
+      {insights.map((insight, index) => (
+        <motion.div
+          key={insight.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+        >
+          <Card className="border-l-4" 
+                style={{ 
+                  borderLeftColor: insight.priority === 'critical' ? '#ef4444' : 
+                                  insight.priority === 'high' ? '#f97316' : 
+                                  insight.priority === 'medium' ? '#eab308' : '#22c55e' 
+                }}>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${getCategoryColor(insight.category)}`}>
+                    {getCategoryIcon(insight.category)}
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">{insight.title}</CardTitle>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant={getPriorityColor(insight.priority)}>
+                        {insight.priority.toUpperCase()}
+                      </Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {insight.category}
+                      </Badge>
+                      {insight.automatable && (
+                        <Badge variant="secondary" className="text-xs">
+                          Auto-fixable
                         </Badge>
-                        {insight.automatable && (
-                          <Badge variant="outline" className="text-xs">
-                            <Bot className="h-3 w-3 mr-1" />
-                            Auto-fixable
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {insight.description}
-                      </p>
-                      <Alert className="mt-2">
-                        <CheckCircle className="h-4 w-4" />
-                        <AlertDescription>
-                          <strong>Recommendation:</strong> {insight.recommendation}
-                          <br />
-                          <strong>Impact:</strong> {insight.estimatedImpact}
-                        </AlertDescription>
-                      </Alert>
+                      )}
                     </div>
                   </div>
                 </div>
-                
-                <div className="flex gap-2 mt-4">
-                  {insight.automatable && (
-                    <Button size="sm" className="flex-1">
-                      <Zap className="mr-2 h-3 w-3" />
-                      Auto-Fix
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">{insight.description}</p>
+              
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  Recommendation
+                </h4>
+                <p className="text-sm">{insight.recommendation}</p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-medium">Expected Impact:</span> {insight.estimatedImpact}
+                </div>
+                <div className="flex gap-2">
+                  {insight.automatable && onApplyRecommendation && (
+                    <Button 
+                      size="sm" 
+                      onClick={() => onApplyRecommendation(insight)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Settings className="h-3 w-3 mr-1" />
+                      Auto-Apply
                     </Button>
                   )}
                   <Button size="sm" variant="outline">
+                    <ExternalLink className="h-3 w-3 mr-1" />
                     Learn More
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </StaggerItem>
-        ))}
-      </div>
-    </StaggerContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
+    </div>
   );
-});
-
-HealthInsightsList.displayName = 'HealthInsightsList';
+}

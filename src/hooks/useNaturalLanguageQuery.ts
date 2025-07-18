@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { nextGenAIService } from '@/services/ai/nextGenAIService';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
 
 interface ConversionResult {
   sql: string;
@@ -14,50 +13,40 @@ export function useNaturalLanguageQuery() {
   const [naturalLanguage, setNaturalLanguage] = useState('');
   const [isConverting, setIsConverting] = useState(false);
   const [result, setResult] = useState<ConversionResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleConvert = async () => {
-    if (!naturalLanguage.trim()) {
-      enhancedToast.warning({
-        title: "No Request Provided",
-        description: "Please describe what you want to query.",
-      });
-      return;
-    }
+    if (!naturalLanguage.trim()) return;
 
     setIsConverting(true);
-    setResult(null);
+    setError(null);
 
     try {
+      await nextGenAIService.initialize();
+      
       const conversionResult = await nextGenAIService.convertNaturalLanguageToSQL({
         naturalLanguage,
         context: {
-          schema: 'demo_schema',
+          schema: 'users(id, name, email, created_at), orders(id, user_id, total, created_at)',
           recentQueries: []
         }
       });
 
       setResult(conversionResult);
-
-      enhancedToast.success({
-        title: "Query Generated Successfully",
-        description: `SQL generated with ${Math.round(conversionResult.confidence * 100)}% confidence`,
-      });
-    } catch (error) {
-      enhancedToast.error({
-        title: "Conversion Failed",
-        description: "Unable to convert natural language to SQL. Please try again.",
-      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Conversion failed');
+      console.error('Natural language conversion failed:', err);
     } finally {
       setIsConverting(false);
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    enhancedToast.success({
-      title: "Copied to Clipboard",
-      description: "SQL query has been copied to your clipboard.",
-    });
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+    }
   };
 
   return {
@@ -65,6 +54,7 @@ export function useNaturalLanguageQuery() {
     setNaturalLanguage,
     isConverting,
     result,
+    error,
     handleConvert,
     copyToClipboard
   };

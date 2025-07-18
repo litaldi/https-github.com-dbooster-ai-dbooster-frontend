@@ -1,9 +1,16 @@
 
 import { useState, useEffect } from 'react';
 import { nextGenAIService } from '@/services/ai/nextGenAIService';
-import { enhancedToast } from '@/components/ui/enhanced-toast';
 
-interface AnomalyData {
+interface MetricData {
+  timestamp: Date;
+  executionTime: number;
+  cpuUsage: number;
+  memoryUsage: number;
+  activeConnections: number;
+}
+
+interface AnomalyDetectionResult {
   anomalies: Array<{
     type: 'performance' | 'security' | 'resource';
     severity: 'critical' | 'warning' | 'info';
@@ -20,66 +27,50 @@ interface AnomalyData {
 }
 
 export function useAnomalyDetection() {
-  const [anomalyData, setAnomalyData] = useState<AnomalyData | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [autoScanEnabled, setAutoScanEnabled] = useState(true);
-  const [lastScan, setLastScan] = useState<Date | null>(null);
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [result, setResult] = useState<AnomalyDetectionResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (autoScanEnabled) {
-      scanForAnomalies();
-      
-      const interval = setInterval(scanForAnomalies, 5 * 60 * 1000);
-      return () => clearInterval(interval);
+  // Generate mock metric data for demonstration
+  const generateMockMetrics = (): MetricData[] => {
+    const metrics: MetricData[] = [];
+    const now = new Date();
+    
+    for (let i = 0; i < 50; i++) {
+      const timestamp = new Date(now.getTime() - (i * 60000)); // Every minute for 50 minutes
+      metrics.push({
+        timestamp,
+        executionTime: 100 + Math.random() * 200 + (i > 40 ? Math.random() * 500 : 0), // Anomaly in recent data
+        cpuUsage: 30 + Math.random() * 40,
+        memoryUsage: 50 + Math.random() * 30,
+        activeConnections: 10 + Math.random() * 20
+      });
     }
-  }, [autoScanEnabled]);
+    
+    return metrics.reverse(); // Chronological order
+  };
 
-  const scanForAnomalies = async () => {
-    setIsScanning(true);
+  const detectAnomalies = async () => {
+    setIsDetecting(true);
+    setError(null);
     
     try {
-      const mockMetrics = Array.from({ length: 100 }, (_, i) => ({
-        timestamp: new Date(Date.now() - i * 60000),
-        executionTime: Math.random() * 1000 + 100,
-        cpuUsage: Math.random() * 80 + 20,
-        memoryUsage: Math.random() * 70 + 30,
-        activeConnections: Math.floor(Math.random() * 100) + 10
-      }));
-
-      const result = await nextGenAIService.detectAnomalies(mockMetrics);
-      setAnomalyData(result);
-      setLastScan(new Date());
-
-      if (result.anomalies.length > 0) {
-        const criticalCount = result.anomalies.filter(a => a.severity === 'critical').length;
-        if (criticalCount > 0) {
-          enhancedToast.error({
-            title: "Critical Anomalies Detected",
-            description: `${criticalCount} critical anomalies found in your database`,
-          });
-        } else {
-          enhancedToast.warning({
-            title: "Anomalies Detected",
-            description: `${result.anomalies.length} anomalies detected`,
-          });
-        }
-      }
-    } catch (error) {
-      enhancedToast.error({
-        title: "Anomaly Detection Failed",
-        description: "Unable to scan for anomalies. Please try again.",
-      });
+      await nextGenAIService.initialize();
+      const metrics = generateMockMetrics();
+      const detectionResult = await nextGenAIService.detectAnomalies(metrics);
+      setResult(detectionResult);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Detection failed');
+      console.error('Anomaly detection failed:', err);
     } finally {
-      setIsScanning(false);
+      setIsDetecting(false);
     }
   };
 
   return {
-    anomalyData,
-    isScanning,
-    autoScanEnabled,
-    setAutoScanEnabled,
-    lastScan,
-    scanForAnomalies
+    isDetecting,
+    result,
+    error,
+    detectAnomalies
   };
 }

@@ -4,13 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Brain, Sparkles, Wand2, Zap, Database, BarChart3 } from 'lucide-react';
+import { Brain, Sparkles, Wand2, Zap, Database, BarChart3, Eye, Activity, TrendingUp } from 'lucide-react';
 import { QueryAutoComplete } from './QueryAutoComplete';
 import { QueryPatternLearning } from './QueryPatternLearning';
 import { QueryRiskAssessment } from './QueryRiskAssessment';
 import { NaturalLanguageQueryBuilder } from './NaturalLanguageQueryBuilder';
 import { AISchemaDesigner } from './AISchemaDesigner';
 import { IntelligentIndexAdvisor } from './IntelligentIndexAdvisor';
+import { PredictiveQueryOptimizer } from './PredictiveQueryOptimizer';
+import { AnomalyDetectionDashboard } from './AnomalyDetectionDashboard';
+import { DatabaseHealthDashboard } from './DatabaseHealthDashboard';
 
 export function EnhancedAIStudio() {
   const [currentQuery, setCurrentQuery] = useState('');
@@ -35,7 +38,7 @@ export function EnhancedAIStudio() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <Wand2 className="h-4 w-4" />
             Smart Editor
@@ -43,6 +46,10 @@ export function EnhancedAIStudio() {
           <TabsTrigger value="natural" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             Natural Language
+          </TabsTrigger>
+          <TabsTrigger value="optimizer" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Predictive Optimizer
           </TabsTrigger>
           <TabsTrigger value="patterns" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
@@ -56,9 +63,13 @@ export function EnhancedAIStudio() {
             <Zap className="h-4 w-4" />
             Index Advisor
           </TabsTrigger>
-          <TabsTrigger value="analysis" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            AI Analysis
+          <TabsTrigger value="anomalies" className="flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Anomaly Detection
+          </TabsTrigger>
+          <TabsTrigger value="health" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Health Monitor
           </TabsTrigger>
         </TabsList>
 
@@ -110,6 +121,10 @@ export function EnhancedAIStudio() {
           <NaturalLanguageQueryBuilder />
         </TabsContent>
 
+        <TabsContent value="optimizer">
+          <PredictiveQueryOptimizer />
+        </TabsContent>
+
         <TabsContent value="patterns">
           <QueryPatternLearning onApplyPattern={handleApplySuggestion} />
         </TabsContent>
@@ -122,24 +137,12 @@ export function EnhancedAIStudio() {
           <IntelligentIndexAdvisor />
         </TabsContent>
 
-        <TabsContent value="analysis" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                Advanced Query Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <BarChart3 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">Advanced Analysis Coming Soon</p>
-                <p className="text-sm">
-                  Deep performance analysis, cost optimization, and intelligent recommendations
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="anomalies">
+          <AnomalyDetectionDashboard />
+        </TabsContent>
+
+        <TabsContent value="health">
+          <DatabaseHealthDashboard />
         </TabsContent>
       </Tabs>
     </div>
