@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AuthFormFields } from '@/components/auth/AuthFormFields';
-import { validateEmail, validateName, passwordValidator } from '@/utils/validation';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import { useEnhancedPasswordValidation } from '@/hooks/useEnhancedPasswordValidation';
+import { validateEmail, validateName } from '@/utils/validation';
 import type { AuthMode } from '@/types/auth';
 
 interface AuthFormData {
@@ -45,6 +46,15 @@ export function EnhancedAuthForm({
   
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Enhanced password validation for signup
+  const { validationResult, isValidating } = useEnhancedPasswordValidation(
+    formData.password,
+    authMode === 'signup' ? {
+      email: formData.email,
+      name: formData.firstName || formData.lastName ? `${formData.firstName} ${formData.lastName}`.trim() : undefined
+    } : {}
+  );
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
@@ -61,12 +71,12 @@ export function EnhancedAuthForm({
     const emailError = validateEmail(formData.email);
     if (emailError) newErrors.email = emailError;
 
-    // Password validation
-    const passwordError = passwordValidator(formData.password);
-    if (passwordError) newErrors.password = passwordError;
-
-    // Signup-specific validation
+    // Password validation for signup
     if (authMode === 'signup') {
+      if (validationResult && !validationResult.isValid) {
+        newErrors.password = 'Please create a stronger password';
+      }
+
       if (formData.firstName) {
         const firstNameError = validateName(formData.firstName);
         if (firstNameError) newErrors.firstName = firstNameError;
@@ -84,6 +94,11 @@ export function EnhancedAuthForm({
       if (!formData.acceptedTerms) {
         newErrors.acceptedTerms = 'You must accept the terms and conditions';
       }
+    } else {
+      // Basic password validation for login
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      }
     }
 
     setErrors(newErrors);
@@ -92,6 +107,9 @@ export function EnhancedAuthForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Wait for password validation to complete if in progress
+    if (isValidating) return;
     
     if (!validateForm()) return;
     
@@ -112,6 +130,14 @@ export function EnhancedAuthForm({
           authMode={authMode}
           isLoading={isLoading}
         />
+
+        {/* Enhanced Password Strength Indicator for Signup */}
+        {authMode === 'signup' && formData.password && (
+          <PasswordStrengthIndicator
+            password={formData.password}
+            validationResult={validationResult}
+          />
+        )}
 
         {authMode === 'login' && (
           <div className="flex items-center space-x-2">
@@ -145,7 +171,7 @@ export function EnhancedAuthForm({
         <Button 
           type="submit" 
           className="w-full" 
-          disabled={isLoading}
+          disabled={isLoading || (authMode === 'signup' && isValidating)}
         >
           {isLoading 
             ? 'Loading...' 

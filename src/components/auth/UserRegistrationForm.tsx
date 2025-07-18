@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { useAuth } from '@/contexts/auth-context';
+import { useEnhancedPasswordValidation } from '@/hooks/useEnhancedPasswordValidation';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
-import { validateEmail, validateName, passwordValidator } from '@/utils/validation';
+import { validateEmail, validateName } from '@/utils/validation';
 import { UserPlus, Mail, User, Lock } from 'lucide-react';
 
 interface UserRegistrationFormProps {
@@ -28,6 +30,15 @@ export function UserRegistrationForm({ onSuccess, onSwitchToLogin }: UserRegistr
   const [isLoading, setIsLoading] = useState(false);
   
   const { signUp } = useAuth();
+
+  // Enhanced password validation
+  const { validationResult, isValidating } = useEnhancedPasswordValidation(
+    formData.password,
+    {
+      email: formData.email,
+      name: `${formData.firstName} ${formData.lastName}`.trim()
+    }
+  );
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -52,9 +63,10 @@ export function UserRegistrationForm({ onSuccess, onSwitchToLogin }: UserRegistr
     const emailError = validateEmail(formData.email);
     if (emailError) newErrors.email = emailError;
 
-    // Password validation
-    const passwordError = passwordValidator(formData.password);
-    if (passwordError) newErrors.password = passwordError;
+    // Enhanced password validation
+    if (validationResult && !validationResult.isValid) {
+      newErrors.password = 'Please create a stronger password';
+    }
 
     // Confirm password validation
     if (formData.password !== formData.confirmPassword) {
@@ -72,6 +84,9 @@ export function UserRegistrationForm({ onSuccess, onSwitchToLogin }: UserRegistr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Wait for password validation to complete
+    if (isValidating) return;
     
     if (!validateForm()) return;
     
@@ -198,6 +213,14 @@ export function UserRegistrationForm({ onSuccess, onSwitchToLogin }: UserRegistr
             )}
           </div>
 
+          {/* Enhanced Password Strength Indicator */}
+          {formData.password && (
+            <PasswordStrengthIndicator
+              password={formData.password}
+              validationResult={validationResult}
+            />
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="confirmPassword" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
@@ -242,7 +265,7 @@ export function UserRegistrationForm({ onSuccess, onSwitchToLogin }: UserRegistr
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={isLoading}
+            disabled={isLoading || isValidating || (validationResult && !validationResult.isValid)}
           >
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>

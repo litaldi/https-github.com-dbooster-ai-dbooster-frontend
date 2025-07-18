@@ -5,6 +5,7 @@ import { consolidatedAuthenticationSecurity } from '@/services/security/consolid
 import { enhancedRoleManager } from '@/services/security/enhancedRoleManager';
 import { enhancedClientSecurity } from '@/services/security/enhancedClientSecurity';
 import { enhancedDemoSecurity } from '@/services/security/enhancedDemoSecurity';
+import { enhancedSessionSecurity } from '@/services/security/enhancedSessionSecurity';
 import { productionLogger } from '@/utils/productionLogger';
 
 export function useConsolidatedSecurity() {
@@ -41,7 +42,26 @@ export function useConsolidatedSecurity() {
         return true;
       }
 
-      // For real sessions, use consolidated authentication security
+      // Enhanced session security validation
+      const sessionValidation = await enhancedSessionSecurity.validateSession(
+        session.access_token,
+        user.id
+      );
+
+      if (!sessionValidation.isValid) {
+        productionLogger.warn('Session validation failed', {
+          reason: sessionValidation.reason,
+          shouldReauthenticate: sessionValidation.shouldReauthenticate,
+          securityScore: sessionValidation.securityScore
+        }, 'useConsolidatedSecurity');
+
+        if (sessionValidation.shouldReauthenticate) {
+          // Session needs reauthentication - this could trigger logout
+          return false;
+        }
+      }
+
+      // Legacy consolidated authentication security check
       const isValid = await consolidatedAuthenticationSecurity.validateSessionSecurity(session.access_token);
       
       if (isValid) {
@@ -56,7 +76,7 @@ export function useConsolidatedSecurity() {
         }
       }
 
-      return isValid;
+      return isValid && sessionValidation.isValid;
     } catch (error) {
       productionLogger.error('Session validation failed', error, 'useConsolidatedSecurity');
       return false;
@@ -89,28 +109,47 @@ export function useConsolidatedSecurity() {
 
   const getSecurityStatus = useCallback(async () => {
     try {
-      const [clientMetrics, userRole] = await Promise.all([
+      const [clientMetrics, userRole, sessionValid] = await Promise.all([
         enhancedClientSecurity.getSecurityMetrics(),
-        getUserRole()
+        getUserRole(),
+        validateSession()
       ]);
+
+      // Get session security metrics if available
+      let sessionMetrics = null;
+      if (session) {
+        sessionMetrics = enhancedSessionSecurity.getSessionMetrics(session.access_token);
+      }
 
       return {
         clientSecurity: clientMetrics,
         userRole,
-        sessionValid: await validateSession(),
+        sessionValid,
+        sessionMetrics,
         isDemo
       };
     } catch (error) {
       productionLogger.error('Failed to get security status', error, 'useConsolidatedSecurity');
       return null;
     }
-  }, [getUserRole, validateSession, isDemo]);
+  }, [getUserRole, validateSession, isDemo, session]);
+
+  const invalidateSession = useCallback(async () => {
+    if (session) {
+      try {
+        await enhancedSessionSecurity.invalidateSession(session.access_token);
+      } catch (error) {
+        productionLogger.error('Failed to invalidate session', error, 'useConsolidatedSecurity');
+      }
+    }
+  }, [session]);
 
   return {
     validateSession,
     getUserRole,
     hasPermission,
     getSecurityStatus,
+    invalidateSession,
     isLoading
   };
 }
