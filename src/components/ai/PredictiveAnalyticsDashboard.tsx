@@ -141,7 +141,7 @@ export function PredictiveAnalyticsDashboard() {
     switch (type) {
       case 'performance': return BarChart3;
       case 'usage': return PieChart;
-      case security: return AlertTriangle;
+      case 'security': return AlertTriangle;
       case 'growth': return LineChart;
       default: return Activity;
     }

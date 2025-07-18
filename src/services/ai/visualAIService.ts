@@ -306,7 +306,7 @@ class VisualAIService {
   async captureScreenshot(): Promise<string> {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { mediaSource: 'screen' }
+        video: true
       });
       
       const video = document.createElement('video');
