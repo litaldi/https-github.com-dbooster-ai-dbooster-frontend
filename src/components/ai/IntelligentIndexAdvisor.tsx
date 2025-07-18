@@ -4,216 +4,232 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Zap, TrendingUp, AlertTriangle, CheckCircle, Database } from 'lucide-react';
+import { Zap, TrendingUp, Database, RefreshCw, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface IndexRecommendation {
   table: string;
   columns: string[];
-  type: 'btree' | 'hash' | 'gin' | 'gist';
+  type: string;
   impact: 'high' | 'medium' | 'low';
-  reasoning: string;
   estimatedImprovement: string;
-  queryPatterns: string[];
+  reasoning: string;
+  sqlCommand: string;
 }
 
 export function IntelligentIndexAdvisor() {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [recommendations, setRecommendations] = useState<IndexRecommendation[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [appliedIndexes, setAppliedIndexes] = useState<Set<string>>(new Set());
 
   const analyzeIndexes = async () => {
     setIsAnalyzing(true);
     
-    // Simulate AI analysis
+    // Simulate index analysis
     setTimeout(() => {
       const mockRecommendations: IndexRecommendation[] = [
         {
           table: 'users',
-          columns: ['email'],
+          columns: ['email', 'status'],
           type: 'btree',
           impact: 'high',
-          reasoning: 'Email lookups are frequent in authentication queries',
-          estimatedImprovement: '85% faster login queries',
-          queryPatterns: ['WHERE email = ?', 'JOIN ON users.email']
+          estimatedImprovement: '75% faster login queries',
+          reasoning: 'Frequent WHERE clauses on email and status combination',
+          sqlCommand: 'CREATE INDEX idx_users_email_status ON users(email, status);'
         },
         {
           table: 'orders',
           columns: ['user_id', 'created_at'],
           type: 'btree',
           impact: 'high',
-          reasoning: 'Composite index for user order history queries',
-          estimatedImprovement: '70% faster user dashboard',
-          queryPatterns: ['WHERE user_id = ? ORDER BY created_at', 'WHERE user_id = ? AND created_at > ?']
+          estimatedImprovement: '60% faster user order history',
+          reasoning: 'Common pattern for fetching user orders ordered by date',
+          sqlCommand: 'CREATE INDEX idx_orders_user_date ON orders(user_id, created_at DESC);'
         },
         {
           table: 'products',
           columns: ['category_id', 'price'],
           type: 'btree',
           impact: 'medium',
-          reasoning: 'Frequently used in product filtering and sorting',
-          estimatedImprovement: '45% faster product searches',
-          queryPatterns: ['WHERE category_id = ? ORDER BY price', 'WHERE category_id = ? AND price BETWEEN ? AND ?']
+          estimatedImprovement: '40% faster category browsing',
+          reasoning: 'Products are often filtered by category and sorted by price',
+          sqlCommand: 'CREATE INDEX idx_products_category_price ON products(category_id, price);'
         },
         {
-          table: 'order_items',
-          columns: ['product_id'],
-          type: 'btree',
+          table: 'search_logs',
+          columns: ['search_term'],
+          type: 'gin',
           impact: 'medium',
-          reasoning: 'Join performance optimization for product analytics',
-          estimatedImprovement: '40% faster analytics queries',
-          queryPatterns: ['JOIN order_items ON product_id', 'WHERE product_id IN (...)']
+          estimatedImprovement: '50% faster text search',
+          reasoning: 'GIN index optimal for full-text search operations',
+          sqlCommand: 'CREATE INDEX idx_search_logs_term_gin ON search_logs USING gin(to_tsvector(\'english\', search_term));'
         }
       ];
-      
       setRecommendations(mockRecommendations);
       setIsAnalyzing(false);
     }, 2000);
   };
 
+  const applyIndex = (recommendation: IndexRecommendation) => {
+    // Simulate applying the index
+    const key = `${recommendation.table}_${recommendation.columns.join('_')}`;
+    setAppliedIndexes(prev => new Set([...prev, key]));
+  };
+
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'high': return 'destructive';
+      case 'medium': return 'default';
+      case 'low': return 'secondary';
+      default: return 'outline';
     }
   };
 
   const getImpactIcon = (impact: string) => {
     switch (impact) {
-      case 'high': return AlertTriangle;
-      case 'medium': return TrendingUp;
-      case 'low': return CheckCircle;
-      default: return CheckCircle;
+      case 'high': return <TrendingUp className="h-4 w-4 text-red-600" />;
+      case 'medium': return <TrendingUp className="h-4 w-4 text-yellow-600" />;
+      case 'low': return <TrendingUp className="h-4 w-4 text-green-600" />;
+      default: return <TrendingUp className="h-4 w-4" />;
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
-          Intelligent Index Advisor
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-primary" />
+            Intelligent Index Advisor
+          </CardTitle>
+          <Button 
+            onClick={analyzeIndexes} 
+            disabled={isAnalyzing}
+            variant="outline"
+          >
+            {isAnalyzing ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Database className="h-4 w-4 mr-2" />
+                Analyze Database
+              </>
+            )}
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Alert>
-          <Database className="h-4 w-4" />
-          <AlertDescription>
-            AI analyzes your query patterns to recommend optimal indexes for better performance.
-          </AlertDescription>
-        </Alert>
-
-        <Button 
-          onClick={analyzeIndexes} 
-          disabled={isAnalyzing}
-          className="w-full"
-        >
-          {isAnalyzing ? (
-            <>
-              <Zap className="h-4 w-4 mr-2 animate-pulse" />
-              Analyzing Query Patterns...
-            </>
-          ) : (
-            <>
-              <Zap className="h-4 w-4 mr-2" />
-              Analyze & Recommend Indexes
-            </>
-          )}
-        </Button>
+      <CardContent>
+        {isAnalyzing && (
+          <div className="flex items-center gap-2 text-muted-foreground mb-4">
+            <Database className="h-4 w-4 animate-pulse" />
+            <span>Analyzing query patterns and table statistics...</span>
+          </div>
+        )}
 
         <AnimatePresence>
           {recommendations.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium">Index Recommendations</h4>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                  {recommendations.length} recommendations
-                </Badge>
+              <div className="text-sm text-muted-foreground mb-4">
+                Found {recommendations.length} optimization opportunities
               </div>
 
-              <div className="space-y-3">
-                {recommendations.map((rec, index) => {
-                  const ImpactIcon = getImpactIcon(rec.impact);
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="border rounded-lg p-4 bg-card"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <ImpactIcon className="h-4 w-4 text-primary" />
-                            <span className="font-medium">
-                              {rec.table}.({rec.columns.join(', ')})
-                            </span>
-                            <Badge className={`text-xs ${getImpactColor(rec.impact)}`}>
-                              {rec.impact} impact
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{rec.reasoning}</p>
+              {recommendations.map((rec, index) => {
+                const key = `${rec.table}_${rec.columns.join('_')}`;
+                const isApplied = appliedIndexes.has(key);
+
+                return (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={`border rounded-lg p-4 ${isApplied ? 'bg-green-50 border-green-200' : ''}`}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Database className="h-4 w-4" />
+                          <span className="font-semibold">{rec.table}</span>
+                          <Badge variant="outline" className="font-mono text-xs">
+                            {rec.columns.join(', ')}
+                          </Badge>
+                          <Badge variant="outline">{rec.type}</Badge>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          {rec.type.toUpperCase()}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getImpactColor(rec.impact) as any}>
+                            {getImpactIcon(rec.impact)}
+                            {rec.impact} impact
+                          </Badge>
+                          {isApplied && (
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                          )}
+                        </div>
                       </div>
 
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-3 w-3 text-green-600" />
-                          <span className="text-sm font-medium text-green-700">
-                            {rec.estimatedImprovement}
+                        <div>
+                          <span className="text-sm font-medium text-green-600">
+                            Expected improvement: {rec.estimatedImprovement}
                           </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          {rec.reasoning}
+                        </p>
+                      </div>
 
-                        <div className="space-y-1">
-                          <span className="text-xs font-medium text-muted-foreground">
-                            Optimizes query patterns:
-                          </span>
-                          <div className="space-y-1">
-                            {rec.queryPatterns.map((pattern, patternIndex) => (
-                              <div
-                                key={patternIndex}
-                                className="text-xs font-mono bg-muted/50 p-1 rounded"
-                              >
-                                {pattern}
-                              </div>
-                            ))}
+                      <Alert>
+                        <AlertDescription>
+                          <div className="space-y-2">
+                            <div className="font-mono text-xs bg-muted p-2 rounded">
+                              {rec.sqlCommand}
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        </AlertDescription>
+                      </Alert>
 
-                      <div className="flex gap-2 mt-3">
-                        <Button size="sm" variant="outline">
-                          Generate SQL
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          Apply Index
+                      <div className="flex justify-end">
+                        <Button 
+                          size="sm" 
+                          onClick={() => applyIndex(rec)}
+                          disabled={isApplied}
+                          variant={isApplied ? "outline" : "default"}
+                        >
+                          {isApplied ? (
+                            <>
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Applied
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="h-4 w-4 mr-2" />
+                              Apply Index
+                            </>
+                          )}
                         </Button>
                       </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline">
-                  Apply All High Impact
-                </Button>
-                <Button size="sm" variant="outline">
-                  Export Recommendations
-                </Button>
-              </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           )}
         </AnimatePresence>
+
+        {!isAnalyzing && recommendations.length === 0 && (
+          <div className="text-center py-8">
+            <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              Click "Analyze Database" to get intelligent index recommendations
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -6,19 +6,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-interface RiskAssessment {
+interface RiskFactor {
+  type: 'security' | 'performance' | 'data-integrity';
   level: 'low' | 'medium' | 'high' | 'critical';
-  score: number;
-  issues: RiskIssue[];
-  recommendations: string[];
-  estimatedImpact: string;
-}
-
-interface RiskIssue {
-  type: 'performance' | 'security' | 'data-integrity' | 'resource-usage';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  solution: string;
+  message: string;
+  suggestion: string;
 }
 
 interface QueryRiskAssessmentProps {
@@ -26,189 +18,175 @@ interface QueryRiskAssessmentProps {
 }
 
 export function QueryRiskAssessment({ query }: QueryRiskAssessmentProps) {
-  const [assessment, setAssessment] = useState<RiskAssessment | null>(null);
+  const [riskFactors, setRiskFactors] = useState<RiskFactor[]>([]);
+  const [overallRisk, setOverallRisk] = useState<'low' | 'medium' | 'high' | 'critical'>('low');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
-    if (query.trim().length > 10) {
-      analyzeQueryRisk(query);
+    if (query.trim()) {
+      analyzeRisk();
     } else {
-      setAssessment(null);
+      setRiskFactors([]);
+      setOverallRisk('low');
     }
   }, [query]);
 
-  const analyzeQueryRisk = async (queryText: string) => {
+  const analyzeRisk = async () => {
     setIsAnalyzing(true);
     
     // Simulate risk analysis
     setTimeout(() => {
-      const issues: RiskIssue[] = [];
+      const factors: RiskFactor[] = [];
       
-      // Check for common risk patterns
-      if (queryText.toLowerCase().includes('select *')) {
-        issues.push({
-          type: 'performance',
-          severity: 'medium',
-          description: 'SELECT * can impact performance and increase memory usage',
-          solution: 'Specify only the columns you need'
+      // Check for SQL injection risks
+      if (query.includes("'") && !query.includes("$")) {
+        factors.push({
+          type: 'security',
+          level: 'high',
+          message: 'Potential SQL injection vulnerability detected',
+          suggestion: 'Use parameterized queries instead of string concatenation'
         });
       }
       
-      if (queryText.toLowerCase().includes('delete') && !queryText.toLowerCase().includes('where')) {
-        issues.push({
+      // Check for performance risks
+      if (query.toLowerCase().includes('select *')) {
+        factors.push({
+          type: 'performance',
+          level: 'medium',
+          message: 'SELECT * can impact performance',
+          suggestion: 'Specify only the columns you need'
+        });
+      }
+      
+      // Check for missing WHERE clause on potentially large tables
+      if (query.toLowerCase().includes('delete') && !query.toLowerCase().includes('where')) {
+        factors.push({
           type: 'data-integrity',
-          severity: 'critical',
-          description: 'DELETE without WHERE clause will remove all data',
-          solution: 'Add a WHERE clause to limit the scope'
+          level: 'critical',
+          message: 'DELETE without WHERE clause detected',
+          suggestion: 'Always use WHERE clause to prevent accidental data loss'
         });
       }
       
-      if (queryText.toLowerCase().includes('like') && queryText.includes('%')) {
-        issues.push({
-          type: 'performance',
-          severity: 'medium',
-          description: 'LIKE with leading wildcard prevents index usage',
-          solution: 'Consider full-text search or restructure the query'
-        });
+      // Determine overall risk
+      if (factors.some(f => f.level === 'critical')) {
+        setOverallRisk('critical');
+      } else if (factors.some(f => f.level === 'high')) {
+        setOverallRisk('high');
+      } else if (factors.some(f => f.level === 'medium')) {
+        setOverallRisk('medium');
+      } else {
+        setOverallRisk('low');
       }
       
-      // Calculate risk level
-      const maxSeverity = issues.reduce((max, issue) => {
-        const severityScore = { low: 1, medium: 2, high: 3, critical: 4 };
-        return Math.max(max, severityScore[issue.severity]);
-      }, 0);
-      
-      const level = maxSeverity >= 4 ? 'critical' : 
-                   maxSeverity >= 3 ? 'high' : 
-                   maxSeverity >= 2 ? 'medium' : 'low';
-      
-      const mockAssessment: RiskAssessment = {
-        level,
-        score: Math.max(0, 100 - (maxSeverity * 20)),
-        issues,
-        recommendations: [
-          'Add specific column names instead of SELECT *',
-          'Include appropriate WHERE clauses',
-          'Consider adding LIMIT for large result sets',
-          'Test query performance on production-sized datasets'
-        ],
-        estimatedImpact: issues.length > 0 ? 'Potential performance impact' : 'Minimal impact expected'
-      };
-      
-      setAssessment(mockAssessment);
+      setRiskFactors(factors);
       setIsAnalyzing(false);
-    }, 1000);
-  };
-
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'low': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'critical': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
+    }, 800);
   };
 
   const getRiskIcon = (level: string) => {
     switch (level) {
-      case 'low': return CheckCircle;
-      case 'medium': return AlertTriangle;
-      case 'high': return AlertTriangle;
-      case 'critical': return XCircle;
-      default: return Shield;
+      case 'critical': return <XCircle className="h-4 w-4 text-red-600" />;
+      case 'high': return <AlertTriangle className="h-4 w-4 text-orange-600" />;
+      case 'medium': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+      case 'low': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      default: return <Shield className="h-4 w-4" />;
     }
   };
 
-  const getIssueIcon = (type: string) => {
-    switch (type) {
-      case 'security': return Shield;
-      case 'performance': return AlertTriangle;
-      case 'data-integrity': return XCircle;
-      default: return AlertTriangle;
+  const getRiskColor = (level: string) => {
+    switch (level) {
+      case 'critical': return 'destructive';
+      case 'high': return 'destructive';
+      case 'medium': return 'default';
+      case 'low': return 'secondary';
+      default: return 'outline';
     }
   };
 
-  if (!assessment && !isAnalyzing) return null;
+  const getOverallRiskColor = (risk: string) => {
+    switch (risk) {
+      case 'critical': return 'text-red-600 bg-red-50 border-red-200';
+      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200';
+      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'low': return 'text-green-600 bg-green-50 border-green-200';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+    }
+  };
+
+  if (!query.trim()) {
+    return null;
+  }
 
   return (
-    <Card className="mt-4">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Shield className="h-4 w-4 text-primary" />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5 text-primary" />
           Query Risk Assessment
-          {isAnalyzing && (
-            <motion.div
-              className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            />
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {assessment && (
+        {isAnalyzing ? (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Shield className="h-4 w-4 animate-pulse" />
+            <span>Analyzing query for potential risks...</span>
+          </div>
+        ) : (
           <>
-            <div className="flex items-center justify-between">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`p-4 rounded-lg border-2 ${getOverallRiskColor(overallRisk)}`}
+            >
               <div className="flex items-center gap-2">
-                {React.createElement(getRiskIcon(assessment.level), {
-                  className: `h-5 w-5 ${assessment.level === 'low' ? 'text-green-600' : 
-                             assessment.level === 'medium' ? 'text-yellow-600' :
-                             assessment.level === 'high' ? 'text-orange-600' : 'text-red-600'}`
-                })}
-                <span className="font-medium capitalize">{assessment.level} Risk</span>
+                {getRiskIcon(overallRisk)}
+                <span className="font-semibold capitalize">
+                  Overall Risk: {overallRisk}
+                </span>
               </div>
-              <Badge className={getRiskColor(assessment.level)}>
-                Score: {assessment.score}/100
-              </Badge>
-            </div>
-            
-            <p className="text-sm text-muted-foreground">{assessment.estimatedImpact}</p>
-            
-            {assessment.issues.length > 0 && (
+            </motion.div>
+
+            {riskFactors.length > 0 ? (
               <div className="space-y-3">
-                <h4 className="text-sm font-medium">Identified Issues:</h4>
-                {assessment.issues.map((issue, index) => {
-                  const IssueIcon = getIssueIcon(issue.type);
-                  return (
-                    <Alert key={index} className="p-3">
-                      <IssueIcon className="h-4 w-4" />
-                      <AlertDescription className="ml-2">
-                        <div className="space-y-1">
+                {riskFactors.map((factor, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Alert className="border-l-4 border-l-orange-500">
+                      <div className="flex items-start gap-3">
+                        {getRiskIcon(factor.level)}
+                        <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{issue.description}</span>
-                            <Badge variant="outline" className={`text-xs ${
-                              issue.severity === 'critical' ? 'border-red-200 text-red-700' :
-                              issue.severity === 'high' ? 'border-orange-200 text-orange-700' :
-                              issue.severity === 'medium' ? 'border-yellow-200 text-yellow-700' :
-                              'border-green-200 text-green-700'
-                            }`}>
-                              {issue.severity}
+                            <Badge variant={getRiskColor(factor.level) as any}>
+                              {factor.level} {factor.type}
                             </Badge>
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            <strong>Solution:</strong> {issue.solution}
-                          </p>
+                          <AlertDescription>
+                            <div className="space-y-1">
+                              <p><strong>Issue:</strong> {factor.message}</p>
+                              <p><strong>Recommendation:</strong> {factor.suggestion}</p>
+                            </div>
+                          </AlertDescription>
                         </div>
-                      </AlertDescription>
+                      </div>
                     </Alert>
-                  );
-                })}
+                  </motion.div>
+                ))}
               </div>
-            )}
-            
-            {assessment.recommendations.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Recommendations:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  {assessment.recommendations.map((rec, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="text-primary">•</span>
-                      {rec}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-4"
+              >
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                <p className="text-green-600 font-medium">No significant risks detected</p>
+                <p className="text-sm text-muted-foreground">Your query appears to be safe</p>
+              </motion.div>
             )}
           </>
         )}

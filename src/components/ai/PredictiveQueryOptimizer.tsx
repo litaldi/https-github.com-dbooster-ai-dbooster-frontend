@@ -4,37 +4,78 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Brain, TrendingUp, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { TrendingUp, Zap, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { nextGenAIService, AIOptimizationResult } from '@/services/ai/nextGenAIService';
+import { nextGenAIService } from '@/services/ai/nextGenAIService';
+
+interface OptimizationResult {
+  optimizedQuery: string;
+  performancePrediction: {
+    executionTime: number;
+    resourceUsage: number;
+    scalabilityScore: number;
+    bottlenecks: string[];
+  };
+  indexRecommendations: Array<{
+    table: string;
+    columns: string[];
+    type: string;
+    impact: 'high' | 'medium' | 'low';
+    estimatedImprovement: string;
+  }>;
+  riskAssessment: {
+    level: 'low' | 'medium' | 'high';
+    factors: string[];
+  };
+  confidenceScore: number;
+}
 
 export function PredictiveQueryOptimizer() {
   const [query, setQuery] = useState('');
+  const [result, setResult] = useState<OptimizationResult | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [optimization, setOptimization] = useState<AIOptimizationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleOptimize = async () => {
     if (!query.trim()) return;
 
     setIsOptimizing(true);
+    setError(null);
+
     try {
       await nextGenAIService.initialize();
-      const result = await nextGenAIService.optimizeQueryWithPrediction(query);
-      setOptimization(result);
-    } catch (error) {
-      console.error('Optimization failed:', error);
+      const optimization = await nextGenAIService.optimizeQueryWithPrediction(query);
+      setResult(optimization);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Optimization failed');
+      console.error('Query optimization failed:', err);
     } finally {
       setIsOptimizing(false);
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
   const getRiskColor = (level: string) => {
     switch (level) {
-      case 'low': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'high': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'low': return 'text-green-600 bg-green-50 border-green-200';
+      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'high': return 'text-red-600 bg-red-50 border-red-200';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+    }
+  };
+
+  const getImpactColor = (impact: string) => {
+    switch (impact) {
+      case 'high': return 'destructive';
+      case 'medium': return 'default';
+      case 'low': return 'secondary';
+      default: return 'outline';
     }
   };
 
@@ -42,7 +83,7 @@ export function PredictiveQueryOptimizer() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Brain className="h-5 w-5 text-purple-600" />
+          <TrendingUp className="h-5 w-5 text-primary" />
           Predictive Query Optimizer
         </CardTitle>
       </CardHeader>
@@ -50,144 +91,151 @@ export function PredictiveQueryOptimizer() {
         <div className="space-y-2">
           <label className="text-sm font-medium">SQL Query to Optimize</label>
           <Textarea
-            placeholder="Enter your SQL query for AI-powered optimization and performance prediction..."
+            placeholder="Paste your SQL query here for AI-powered optimization and performance prediction..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            rows={4}
+            rows={6}
             className="font-mono text-sm"
           />
         </div>
-
-        <Button 
-          onClick={handleOptimize} 
-          disabled={isOptimizing || !query.trim()}
-          className="w-full"
-        >
+        
+        <Button onClick={handleOptimize} disabled={isOptimizing || !query.trim()}>
           {isOptimizing ? (
             <>
-              <Brain className="h-4 w-4 mr-2 animate-pulse" />
-              Analyzing & Optimizing...
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              Optimizing & Predicting...
             </>
           ) : (
             <>
               <Zap className="h-4 w-4 mr-2" />
-              Optimize with AI Prediction
+              Optimize Query
             </>
           )}
         </Button>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
+
         <AnimatePresence>
-          {optimization && (
+          {result && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              {/* Optimized Query */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">Optimized Query</h4>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    {Math.round(optimization.confidenceScore * 100)}% confidence
-                  </Badge>
-                </div>
-                <div className="bg-muted p-4 rounded-lg">
-                  <pre className="text-sm font-mono whitespace-pre-wrap">
-                    {optimization.optimizedQuery}
-                  </pre>
-                </div>
+              {/* Performance Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <Clock className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                      <p className="text-sm text-muted-foreground">Estimated Time</p>
+                      <p className="text-2xl font-bold">{result.performancePrediction.executionTime}ms</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <TrendingUp className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                      <p className="text-sm text-muted-foreground">Resource Usage</p>
+                      <p className="text-2xl font-bold">{result.performancePrediction.resourceUsage}%</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <Zap className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                      <p className="text-sm text-muted-foreground">Scalability</p>
+                      <p className={`text-2xl font-bold ${getScoreColor(result.performancePrediction.scalabilityScore)}`}>
+                        {result.performancePrediction.scalabilityScore}/100
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                      <p className="text-sm text-muted-foreground">Confidence</p>
+                      <p className={`text-2xl font-bold ${getScoreColor(result.confidenceScore * 100)}`}>
+                        {Math.round(result.confidenceScore * 100)}%
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
-              {/* Performance Prediction */}
-              <div className="space-y-4">
-                <h4 className="font-medium flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Performance Prediction
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {optimization.performancePrediction.executionTime}ms
-                    </div>
-                    <div className="text-sm text-blue-600">Execution Time</div>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {optimization.performancePrediction.resourceUsage}%
-                    </div>
-                    <div className="text-sm text-green-600">Resource Usage</div>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {optimization.performancePrediction.scalabilityScore}/100
-                    </div>
-                    <div className="text-sm text-purple-600">Scalability Score</div>
-                  </div>
+              {/* Risk Assessment */}
+              <div className={`p-4 rounded-lg border-2 ${getRiskColor(result.riskAssessment.level)}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  <span className="font-semibold capitalize">
+                    Risk Level: {result.riskAssessment.level}
+                  </span>
                 </div>
-
-                {optimization.performancePrediction.bottlenecks.length > 0 && (
-                  <div className="space-y-2">
-                    <h5 className="text-sm font-medium">Potential Bottlenecks</h5>
-                    <div className="space-y-1">
-                      {optimization.performancePrediction.bottlenecks.map((bottleneck, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm">
-                          <AlertTriangle className="h-3 w-3 text-amber-500" />
-                          <span>{bottleneck}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                {result.riskAssessment.factors.length > 0 && (
+                  <ul className="text-sm space-y-1">
+                    {result.riskAssessment.factors.map((factor, index) => (
+                      <li key={index}>• {factor}</li>
+                    ))}
+                  </ul>
                 )}
               </div>
 
-              {/* Index Recommendations */}
-              {optimization.indexRecommendations.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="font-medium">Index Recommendations</h4>
+              {/* Optimized Query */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Optimized Query</h3>
+                <div className="bg-muted p-4 rounded-lg">
+                  <pre className="text-sm font-mono whitespace-pre-wrap">{result.optimizedQuery}</pre>
+                </div>
+              </div>
+
+              {/* Bottlenecks */}
+              {result.performancePrediction.bottlenecks.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Identified Bottlenecks</h3>
                   <div className="space-y-2">
-                    {optimization.indexRecommendations.map((rec, index) => (
-                      <div key={index} className="border rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium">{rec.table}</span>
-                          <Badge variant={rec.impact === 'high' ? 'default' : 'secondary'}>
-                            {rec.impact} impact
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground mb-1">
-                          Columns: {rec.columns.join(', ')} ({rec.type})
-                        </div>
-                        <div className="text-sm text-green-600">
-                          {rec.estimatedImprovement}
-                        </div>
-                      </div>
+                    {result.performancePrediction.bottlenecks.map((bottleneck, index) => (
+                      <Alert key={index}>
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>{bottleneck}</AlertDescription>
+                      </Alert>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Risk Assessment */}
-              <div className="space-y-3">
-                <h4 className="font-medium flex items-center gap-2">
-                  <AlertTriangle className={`h-4 w-4 ${getRiskColor(optimization.riskAssessment.level)}`} />
-                  Risk Assessment
-                </h4>
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant={optimization.riskAssessment.level === 'low' ? 'secondary' : 'destructive'}>
-                      {optimization.riskAssessment.level.toUpperCase()} RISK
-                    </Badge>
-                  </div>
-                  <div className="space-y-1">
-                    {optimization.riskAssessment.factors.map((factor, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-3 w-3 text-green-500" />
-                        <span>{factor}</span>
+              {/* Index Recommendations */}
+              {result.indexRecommendations.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Index Recommendations</h3>
+                  <div className="space-y-3">
+                    {result.indexRecommendations.map((rec, index) => (
+                      <div key={index} className="border rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{rec.table}</span>
+                            <Badge variant="outline">{rec.columns.join(', ')}</Badge>
+                            <Badge variant="outline">{rec.type}</Badge>
+                          </div>
+                          <Badge variant={getImpactColor(rec.impact) as any}>
+                            {rec.impact} impact
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-green-600">{rec.estimatedImprovement}</p>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

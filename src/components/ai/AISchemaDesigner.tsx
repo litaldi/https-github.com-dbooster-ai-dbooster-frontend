@@ -2,13 +2,26 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Database, Plus, Trash2, Edit, Link } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Database, Table, RefreshCw, FileText, Link } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { nextGenAIService } from '@/services/ai/nextGenAIService';
 
-interface TableField {
+interface SchemaDesign {
+  tables: TableDesign[];
+  relationships: string[];
+  recommendations: string[];
+}
+
+interface TableDesign {
+  name: string;
+  fields: FieldDefinition[];
+  indexes: IndexDefinition[];
+}
+
+interface FieldDefinition {
   name: string;
   type: string;
   nullable: boolean;
@@ -16,71 +29,48 @@ interface TableField {
   foreignKey?: string;
 }
 
-interface TableDesign {
+interface IndexDefinition {
   name: string;
-  fields: TableField[];
-  relationships: string[];
+  columns: string[];
+  type: 'btree' | 'hash' | 'gin' | 'gist';
+  unique: boolean;
 }
 
 export function AISchemaDesigner() {
-  const [requirement, setRequirement] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [schema, setSchema] = useState<TableDesign[]>([]);
+  const [requirements, setRequirements] = useState('');
+  const [domain, setDomain] = useState('');
+  const [design, setDesign] = useState<SchemaDesign | null>(null);
+  const [isDesigning, setIsDesigning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const generateSchema = async () => {
-    if (!requirement.trim()) return;
+  const handleGenerateSchema = async () => {
+    if (!requirements.trim()) return;
 
-    setIsGenerating(true);
-    
-    // Simulate AI schema generation
-    setTimeout(() => {
-      const mockSchema: TableDesign[] = [
-        {
-          name: 'users',
-          fields: [
-            { name: 'id', type: 'UUID', nullable: false, primaryKey: true },
-            { name: 'email', type: 'VARCHAR(255)', nullable: false, primaryKey: false },
-            { name: 'first_name', type: 'VARCHAR(100)', nullable: false, primaryKey: false },
-            { name: 'last_name', type: 'VARCHAR(100)', nullable: false, primaryKey: false },
-            { name: 'created_at', type: 'TIMESTAMP', nullable: false, primaryKey: false },
-            { name: 'updated_at', type: 'TIMESTAMP', nullable: false, primaryKey: false }
-          ],
-          relationships: ['Has many orders', 'Has many reviews']
-        },
-        {
-          name: 'products',
-          fields: [
-            { name: 'id', type: 'UUID', nullable: false, primaryKey: true },
-            { name: 'name', type: 'VARCHAR(255)', nullable: false, primaryKey: false },
-            { name: 'description', type: 'TEXT', nullable: true, primaryKey: false },
-            { name: 'price', type: 'DECIMAL(10,2)', nullable: false, primaryKey: false },
-            { name: 'category_id', type: 'UUID', nullable: false, primaryKey: false, foreignKey: 'categories.id' },
-            { name: 'created_at', type: 'TIMESTAMP', nullable: false, primaryKey: false }
-          ],
-          relationships: ['Belongs to category', 'Has many order_items', 'Has many reviews']
-        },
-        {
-          name: 'orders',
-          fields: [
-            { name: 'id', type: 'UUID', nullable: false, primaryKey: true },
-            { name: 'user_id', type: 'UUID', nullable: false, primaryKey: false, foreignKey: 'users.id' },
-            { name: 'total_amount', type: 'DECIMAL(10,2)', nullable: false, primaryKey: false },
-            { name: 'status', type: 'VARCHAR(50)', nullable: false, primaryKey: false },
-            { name: 'created_at', type: 'TIMESTAMP', nullable: false, primaryKey: false }
-          ],
-          relationships: ['Belongs to user', 'Has many order_items']
-        }
-      ];
-      
-      setSchema(mockSchema);
-      setIsGenerating(false);
-    }, 2000);
+    setIsDesigning(true);
+    setError(null);
+
+    try {
+      await nextGenAIService.initialize();
+      const schemaDesign = await nextGenAIService.generateSchemaDesign({
+        requirements,
+        domain: domain || undefined
+      });
+      setDesign(schemaDesign);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Schema generation failed');
+      console.error('Schema generation failed:', err);
+    } finally {
+      setIsDesigning(false);
+    }
   };
 
-  const getFieldIcon = (field: TableField) => {
-    if (field.primaryKey) return '🔑';
-    if (field.foreignKey) return '🔗';
-    return '📝';
+  const getFieldTypeColor = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes('varchar') || lowerType.includes('text')) return 'bg-blue-100 text-blue-800';
+    if (lowerType.includes('int') || lowerType.includes('number')) return 'bg-green-100 text-green-800';
+    if (lowerType.includes('date') || lowerType.includes('time')) return 'bg-purple-100 text-purple-800';
+    if (lowerType.includes('bool')) return 'bg-orange-100 text-orange-800';
+    return 'bg-gray-100 text-gray-800';
   };
 
   return (
@@ -92,25 +82,32 @@ export function AISchemaDesigner() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Describe your application requirements</label>
-          <Textarea
-            placeholder="Example: I need a database for an e-commerce platform with users, products, orders, and reviews"
-            value={requirement}
-            onChange={(e) => setRequirement(e.target.value)}
-            rows={3}
-          />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Project Requirements</label>
+            <Textarea
+              placeholder="Describe your project: e.g., 'I need a database for an e-commerce platform with users, products, orders, and reviews'"
+              value={requirements}
+              onChange={(e) => setRequirements(e.target.value)}
+              rows={4}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Domain (Optional)</label>
+            <Textarea
+              placeholder="e.g., e-commerce, social media, healthcare, education"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              rows={4}
+            />
+          </div>
         </div>
-
-        <Button 
-          onClick={generateSchema} 
-          disabled={isGenerating || !requirement.trim()}
-          className="w-full"
-        >
-          {isGenerating ? (
+        
+        <Button onClick={handleGenerateSchema} disabled={isDesigning || !requirements.trim()}>
+          {isDesigning ? (
             <>
-              <Database className="h-4 w-4 mr-2 animate-pulse" />
-              Generating Schema...
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              Designing Schema...
             </>
           ) : (
             <>
@@ -120,107 +117,115 @@ export function AISchemaDesigner() {
           )}
         </Button>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
+
         <AnimatePresence>
-          {schema.length > 0 && (
+          {design && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
+              className="space-y-6"
             >
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium">Generated Database Schema</h4>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                  {schema.length} tables
-                </Badge>
-              </div>
-
-              <div className="grid gap-4">
-                {schema.map((table, tableIndex) => (
-                  <motion.div
-                    key={table.name}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: tableIndex * 0.1 }}
-                    className="border rounded-lg p-4 bg-card"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h5 className="font-medium flex items-center gap-2">
-                        <Database className="h-4 w-4" />
-                        {table.name}
-                      </h5>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="ghost">
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h6 className="text-sm font-medium text-muted-foreground">Fields</h6>
-                      <div className="space-y-1">
-                        {table.fields.map((field, fieldIndex) => (
-                          <div
-                            key={fieldIndex}
-                            className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>{getFieldIcon(field)}</span>
-                              <span className="font-mono">{field.name}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {field.type}
-                              </Badge>
-                              {field.nullable && (
-                                <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
-                                  nullable
+              {/* Tables */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Table className="h-5 w-5" />
+                  Database Tables
+                </h3>
+                <ScrollArea className="h-96">
+                  <div className="space-y-4">
+                    {design.tables.map((table, index) => (
+                      <motion.div
+                        key={table.name}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="border rounded-lg p-4"
+                      >
+                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <Table className="h-4 w-4" />
+                          {table.name}
+                        </h4>
+                        
+                        <div className="space-y-2">
+                          <h5 className="text-sm font-medium">Fields:</h5>
+                          <div className="space-y-1">
+                            {table.fields.map((field, fieldIndex) => (
+                              <div key={fieldIndex} className="flex items-center gap-2 text-sm">
+                                <span className="font-mono">{field.name}</span>
+                                <Badge className={getFieldTypeColor(field.type)}>
+                                  {field.type}
                                 </Badge>
-                              )}
-                            </div>
-                            {field.foreignKey && (
-                              <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700">
-                                FK: {field.foreignKey}
-                              </Badge>
-                            )}
+                                {field.primaryKey && <Badge variant="outline">PK</Badge>}
+                                {field.foreignKey && <Badge variant="outline">FK → {field.foreignKey}</Badge>}
+                                {!field.nullable && <Badge variant="secondary">NOT NULL</Badge>}
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {table.relationships.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        <h6 className="text-sm font-medium text-muted-foreground">Relationships</h6>
-                        <div className="flex flex-wrap gap-1">
-                          {table.relationships.map((rel, relIndex) => (
-                            <Badge
-                              key={relIndex}
-                              variant="outline"
-                              className="text-xs bg-green-50 text-green-700"
-                            >
-                              <Link className="h-3 w-3 mr-1" />
-                              {rel}
-                            </Badge>
-                          ))}
                         </div>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
+
+                        {table.indexes.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <h5 className="text-sm font-medium">Indexes:</h5>
+                            <div className="space-y-1">
+                              {table.indexes.map((index, indexIndex) => (
+                                <div key={indexIndex} className="flex items-center gap-2 text-sm">
+                                  <span className="font-mono">{index.name}</span>
+                                  <Badge variant="outline">{index.type}</Badge>
+                                  {index.unique && <Badge variant="secondary">UNIQUE</Badge>}
+                                  <span className="text-muted-foreground">
+                                    ({index.columns.join(', ')})
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </ScrollArea>
               </div>
 
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline">
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add Table
-                </Button>
-                <Button size="sm" variant="outline">
-                  Generate SQL
-                </Button>
-                <Button size="sm" variant="outline">
-                  Export Schema
-                </Button>
-              </div>
+              {/* Relationships */}
+              {design.relationships.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Link className="h-5 w-5" />
+                    Relationships
+                  </h3>
+                  <ul className="space-y-1">
+                    {design.relationships.map((rel, index) => (
+                      <li key={index} className="text-sm flex items-center gap-2">
+                        <Link className="h-3 w-3" />
+                        {rel}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Recommendations */}
+              {design.recommendations.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Recommendations
+                  </h3>
+                  <ul className="space-y-1">
+                    {design.recommendations.map((rec, index) => (
+                      <li key={index} className="text-sm flex items-start gap-2">
+                        <span className="text-primary">•</span>
+                        {rec}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
