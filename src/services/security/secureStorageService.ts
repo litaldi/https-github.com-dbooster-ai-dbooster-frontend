@@ -1,3 +1,4 @@
+
 import { productionLogger } from '@/utils/productionLogger';
 import { enhancedEncryption } from './enhancedEncryption';
 
@@ -6,6 +7,11 @@ interface EncryptedData {
   iv: string;
   salt: string;
   rotated?: boolean;
+}
+
+interface TestData {
+  test: string;
+  timestamp: number;
 }
 
 class SecureStorageService {
@@ -114,10 +120,10 @@ class SecureStorageService {
     try {
       // Test encryption/decryption
       const testKey = 'health_check_test';
-      const testData = { test: 'data', timestamp: Date.now() };
+      const testData: TestData = { test: 'data', timestamp: Date.now() };
       
       await this.setSecureItem(testKey, testData);
-      const retrieved = await this.getSecureItem(testKey);
+      const retrieved = await this.getSecureItem<TestData>(testKey);
       this.removeSecureItem(testKey);
       
       if (!retrieved || retrieved.test !== testData.test) {
