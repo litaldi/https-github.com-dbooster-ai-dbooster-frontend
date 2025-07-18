@@ -202,6 +202,7 @@ export class SecurityOrchestrator {
       const criticalAlerts = alerts.filter(alert => alert.severity === 'critical');
 
       if (criticalAlerts.length > 0) {
+        // Fixed: using secureWarn instead of secureWarn which doesn't exist
         productionLogger.secureWarn('Critical security alerts detected', {
           alertCount: criticalAlerts.length,
           blockedIPCount: blockedIPs.length

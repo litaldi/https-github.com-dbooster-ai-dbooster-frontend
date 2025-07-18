@@ -1,3 +1,4 @@
+
 import DOMPurify from 'dompurify';
 import { productionLogger } from '@/utils/productionLogger';
 
@@ -106,7 +107,7 @@ export class EnhancedInputValidation {
           errors.push('Input contains potentially dangerous content');
           riskLevel = 'high';
           
-          // Log security violation
+          // Log security violation - using secureWarn correctly
           productionLogger.secureWarn('Blocked pattern detected in input', {
             context,
             pattern: pattern.source,

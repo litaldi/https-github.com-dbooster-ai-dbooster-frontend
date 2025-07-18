@@ -4,6 +4,15 @@ import { productionLogger } from '@/utils/productionLogger';
 import { enhancedRoleManager } from '../enhancedRoleManager';
 import { advancedThreatDetection } from '../advancedThreatDetection';
 
+type AppRole = 'admin' | 'moderator' | 'user';
+
+interface RoleAssignmentResponse {
+  success: boolean;
+  requires_approval?: boolean;
+  request_id?: string;
+  message: string;
+}
+
 export class EnhancedAuthenticationService {
   private static instance: EnhancedAuthenticationService;
 
@@ -103,7 +112,7 @@ export class EnhancedAuthenticationService {
         }
       });
 
-      if (error || !data.valid) {
+      if (error || !data?.valid) {
         if (data?.reason) {
           await this.logSecurityEvent('session_validation_failed', {
             session_id: sessionId,
@@ -120,7 +129,7 @@ export class EnhancedAuthenticationService {
     }
   }
 
-  async assignUserRole(targetUserId: string, newRole: string, reason?: string): Promise<boolean> {
+  async assignUserRole(targetUserId: string, newRole: AppRole, reason?: string): Promise<boolean> {
     try {
       const ipAddress = await this.getUserIP();
       
@@ -136,20 +145,24 @@ export class EnhancedAuthenticationService {
         throw new Error(error.message);
       }
 
-      // Handle approval workflow response
-      if (data && !data.success && data.requires_approval) {
+      // Type guard and handle the response safely
+      const response = data as RoleAssignmentResponse;
+      
+      if (response && !response.success && response.requires_approval) {
         productionLogger.secureInfo('Role assignment requires approval', {
-          request_id: data.request_id,
+          request_id: response.request_id,
           target_user_id: targetUserId,
           new_role: newRole
         });
         
         // This would trigger a notification to administrators
-        await this.notifyAdminsOfRoleRequest(data.request_id, targetUserId, newRole);
+        if (response.request_id) {
+          await this.notifyAdminsOfRoleRequest(response.request_id, targetUserId, newRole);
+        }
         return false; // Not immediately assigned, requires approval
       }
 
-      return data?.success || false;
+      return response?.success || false;
     } catch (error) {
       productionLogger.error('Role assignment failed', error, 'EnhancedAuthenticationService');
       throw error;
