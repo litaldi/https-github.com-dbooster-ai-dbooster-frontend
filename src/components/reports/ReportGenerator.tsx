@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -92,11 +91,7 @@ export function ReportGenerator() {
       
       enhancedToast.success({
         title: 'Report Generated',
-        description: `${config.name} has been generated successfully`,
-        action: {
-          label: 'Download',
-          onClick: () => console.log('Downloading report...')
-        }
+        description: `${config.name} has been generated successfully`
       });
     } catch (error) {
       enhancedToast.error({
