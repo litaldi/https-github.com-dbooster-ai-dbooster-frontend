@@ -1,17 +1,33 @@
 
+import { useState } from 'react';
+
 export function useConsolidatedSecurity() {
-  const validateSession = async () => {
-    // Mock validation - always return true for now
-    return true;
+  const [isLoading, setIsLoading] = useState(false);
+
+  const validateSession = async (): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      // Mock session validation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return true;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const invalidateSession = async () => {
-    // Mock invalidation
-    return;
+  const invalidateSession = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      // Mock session invalidation
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return {
     validateSession,
     invalidateSession,
+    isLoading
   };
 }
