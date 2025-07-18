@@ -9,8 +9,8 @@ import { AuthProvider } from "@/contexts/auth-context";
 
 // Layout Components
 import { StandardPageLayout } from "@/components/layout/StandardPageLayout";
-import Navigation from "@/components/navigation/Navigation";
-import Footer from "@/components/navigation/Footer";
+import { SmartHeader } from "@/components/navigation/SmartHeader";
+import { Footer } from "@/components/navigation/Footer";
 
 // Pages
 import Index from "./pages/Index";
@@ -39,11 +39,11 @@ import ContactPage from "./pages/ContactPage";
 import PartnersPage from "./pages/PartnersPage";
 import PressPage from "./pages/PressPage";
 import CareersPage from "./pages/CareersPage";
-import TermsPage from "./pages/TermsPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import CookiesPage from "./pages/CookiesPage";
-import SecurityPage from "./pages/SecurityPage";
-import AccessibilityPage from "./pages/AccessibilityPage";
+import TermsPage from "./pages/legal/TermsPage";
+import PrivacyPage from "./pages/legal/PrivacyPage";
+import CookiesPage from "./pages/legal/CookiesPage";
+import SecurityPage from "./pages/legal/SecurityPage";
+import AccessibilityPage from "./pages/legal/AccessibilityPage";
 import LoginPage from "./pages/LoginPage";
 
 const queryClient = new QueryClient();
@@ -56,7 +56,6 @@ function App() {
           <BrowserRouter>
             <AuthProvider>
               <div className="min-h-screen flex flex-col">
-                <Navigation />
                 <main className="flex-1">
                   <Routes>
                     <Route path="/" element={<Index />} />
