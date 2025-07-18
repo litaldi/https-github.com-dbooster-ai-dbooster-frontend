@@ -1,159 +1,220 @@
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { performanceHelpers, testUtils } from '../testUtils';
+import { describe, it, expect } from 'vitest';
+import { 
+  mockSecurityData, 
+  createMockSecurityService, 
+  createMockThreatDetection,
+  securityTestHelpers 
+} from '../testUtils';
 
-describe('testUtils', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  describe('performanceHelpers', () => {
-    describe('measureRenderTime', () => {
-      it('should measure render time', async () => {
-        const mockRenderFunction = vi.fn();
-        const startTime = performance.now();
-        
-        const renderTime = await performanceHelpers.measureRenderTime(mockRenderFunction);
-        
-        expect(mockRenderFunction).toHaveBeenCalled();
-        expect(renderTime).toBeGreaterThanOrEqual(0);
-        expect(renderTime).toBeLessThan(1000); // Should be very fast
-      });
-
-      it('should handle async render functions', async () => {
-        const asyncRenderFunction = vi.fn().mockImplementation(async () => {
-          await new Promise(resolve => setTimeout(resolve, 10));
-        });
-        
-        const renderTime = await performanceHelpers.measureRenderTime(asyncRenderFunction);
-        
-        expect(asyncRenderFunction).toHaveBeenCalled();
-        expect(renderTime).toBeGreaterThan(0);
-      });
+describe('Test Utils', () => {
+  describe('Mock Security Data', () => {
+    it('should provide valid audit report structure', () => {
+      const { auditReport } = mockSecurityData;
+      
+      expect(auditReport).toHaveProperty('totalEvents');
+      expect(auditReport).toHaveProperty('threatsDetected');
+      expect(auditReport).toHaveProperty('blockedIPs');
+      expect(auditReport).toHaveProperty('suspiciousPatterns');
+      expect(auditReport).toHaveProperty('recentHighRiskEvents');
+      
+      expect(typeof auditReport.totalEvents).toBe('number');
+      expect(Array.isArray(auditReport.suspiciousPatterns)).toBe(true);
+      expect(Array.isArray(auditReport.recentHighRiskEvents)).toBe(true);
     });
 
-    describe('createMockPerformanceEntry', () => {
-      it('should create a valid performance entry', () => {
-        const entry = performanceHelpers.createMockPerformanceEntry('test-measure', 100);
-        
-        expect(entry.name).toBe('test-measure');
-        expect(entry.duration).toBe(100);
-        expect(entry.entryType).toBe('measure');
-        expect(entry.startTime).toBe(0);
-        expect(typeof entry.toJSON).toBe('function');
-      });
+    it('should provide valid performance metrics structure', () => {
+      const { performanceMetrics } = mockSecurityData;
+      
+      expect(performanceMetrics).toHaveProperty('averageResponseTime');
+      expect(performanceMetrics).toHaveProperty('requestsPerMinute');
+      expect(performanceMetrics).toHaveProperty('validationLatency');
+      expect(performanceMetrics).toHaveProperty('memoryUsage');
+      
+      expect(typeof performanceMetrics.averageResponseTime).toBe('number');
+      expect(typeof performanceMetrics.memoryUsage).toBe('number');
+      expect(performanceMetrics.memoryUsage).toBeGreaterThan(0);
+      expect(performanceMetrics.memoryUsage).toBeLessThanOrEqual(1);
+    });
 
-      it('should return proper JSON representation', () => {
-        const entry = performanceHelpers.createMockPerformanceEntry('test', 50);
-        const json = entry.toJSON();
-        
-        expect(json).toEqual({
-          name: 'test',
-          duration: 50
-        });
+    it('should provide valid pattern update history', () => {
+      const { patternUpdateHistory } = mockSecurityData;
+      
+      expect(Array.isArray(patternUpdateHistory)).toBe(true);
+      expect(patternUpdateHistory.length).toBeGreaterThan(0);
+      
+      patternUpdateHistory.forEach(update => {
+        expect(update).toHaveProperty('timestamp');
+        expect(update).toHaveProperty('patterns');
+        expect(update).toHaveProperty('updateSource');
+        expect(Array.isArray(update.patterns)).toBe(true);
       });
     });
   });
 
-  describe('testUtils', () => {
-    describe('simulateTyping', () => {
-      it('should simulate typing with delays', async () => {
-        // Create a mock input element
-        const mockElement = document.createElement('input');
-        document.body.appendChild(mockElement);
-        
-        const text = 'hello';
-        await testUtils.simulateTyping(mockElement, text, 1); // 1ms delay for fast test
-        
-        expect(mockElement.value).toBe(text);
-        
-        document.body.removeChild(mockElement);
-      }, 10000); // Increase timeout for this test
+  describe('Mock Security Service', () => {
+    it('should create a mock security service with correct methods', () => {
+      const mockService = createMockSecurityService();
+      
+      expect(mockService).toHaveProperty('validateUserInput');
+      expect(mockService).toHaveProperty('validateFormData');
+      expect(mockService).toHaveProperty('checkRateLimit');
+      expect(mockService).toHaveProperty('logSecurityEvent');
+      expect(mockService).toHaveProperty('getSecurityDashboard');
+      expect(mockService).toHaveProperty('detectSuspiciousActivity');
+      
+      expect(typeof mockService.validateUserInput).toBe('function');
+      expect(typeof mockService.checkRateLimit).toBe('function');
     });
 
-    describe('createMockUser', () => {
-      it('should create a user with default values', () => {
-        const user = testUtils.createMockUser();
-        
-        expect(user).toEqual({
-          id: 'user-1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          avatar: 'https://example.com/avatar.jpg',
-          role: 'user',
-          createdAt: expect.any(String)
-        });
-      });
-
-      it('should allow overriding default values', () => {
-        const customUser = testUtils.createMockUser({
-          name: 'Jane Smith',
-          role: 'admin'
-        });
-        
-        expect(customUser.name).toBe('Jane Smith');
-        expect(customUser.role).toBe('admin');
-        expect(customUser.email).toBe('john@example.com'); // Default value
-      });
-    });
-
-    describe('createMockRepository', () => {
-      it('should create a repository with default values', () => {
-        const repo = testUtils.createMockRepository();
-        
-        expect(repo).toEqual({
-          id: 'repo-1',
-          name: 'example-repo',
-          description: 'An example repository',
-          url: 'https://github.com/example/repo',
-          stars: 100,
-          language: 'TypeScript',
-          isPrivate: false,
-          createdAt: expect.any(String)
-        });
-      });
-
-      it('should allow overriding default values', () => {
-        const customRepo = testUtils.createMockRepository({
-          name: 'my-custom-repo',
-          language: 'JavaScript',
-          isPrivate: true
-        });
-        
-        expect(customRepo.name).toBe('my-custom-repo');
-        expect(customRepo.language).toBe('JavaScript');
-        expect(customRepo.isPrivate).toBe(true);
-        expect(customRepo.stars).toBe(100); // Default value
-      });
+    it('should return appropriate mock responses', async () => {
+      const mockService = createMockSecurityService();
+      
+      const validationResult = await mockService.validateUserInput('test input');
+      expect(validationResult).toHaveProperty('valid', true);
+      expect(validationResult).toHaveProperty('sanitized');
+      expect(validationResult).toHaveProperty('threats');
+      
+      const rateLimitResult = await mockService.checkRateLimit('test-id', 'test-action');
+      expect(rateLimitResult).toHaveProperty('allowed', true);
     });
   });
 
-  describe('DOM manipulation utilities', () => {
-    describe('waitForElementToBeRemoved', () => {
-      it('should wait for element removal', async () => {
-        const element = document.createElement('div');
-        document.body.appendChild(element);
+  describe('Mock Threat Detection', () => {
+    it('should create a mock threat detection service', () => {
+      const mockThreatDetection = createMockThreatDetection();
+      
+      expect(mockThreatDetection).toHaveProperty('detectThreats');
+      expect(mockThreatDetection).toHaveProperty('analyzeBehaviorPatterns');
+      expect(mockThreatDetection).toHaveProperty('updateThreatPatterns');
+    });
+
+    it('should return appropriate threat detection responses', async () => {
+      const mockThreatDetection = createMockThreatDetection();
+      
+      const threatResult = await mockThreatDetection.detectThreats('test input');
+      expect(threatResult).toHaveProperty('isThreat', false);
+      expect(threatResult).toHaveProperty('confidence');
+      expect(typeof threatResult.confidence).toBe('number');
+    });
+  });
+
+  describe('Security Test Helpers', () => {
+    describe('createSecurityContext', () => {
+      it('should create default security context', () => {
+        const context = securityTestHelpers.createSecurityContext();
         
-        // Remove element after a short delay
-        setTimeout(() => {
-          document.body.removeChild(element);
-        }, 50);
-        
-        await testUtils.waitForElementToBeRemoved(element);
-        
-        expect(document.body.contains(element)).toBe(false);
+        expect(context).toEqual({
+          isInitialized: true,
+          isProcessing: false,
+          error: null
+        });
       });
 
-      it('should resolve immediately if element is already removed', async () => {
-        const element = document.createElement('div');
-        // Don't append to DOM
+      it('should accept overrides', () => {
+        const context = securityTestHelpers.createSecurityContext({
+          isProcessing: true,
+          error: 'Test error'
+        });
         
-        const startTime = Date.now();
-        await testUtils.waitForElementToBeRemoved(element);
-        const endTime = Date.now();
+        expect(context.isInitialized).toBe(true);
+        expect(context.isProcessing).toBe(true);
+        expect(context.error).toBe('Test error');
+      });
+    });
+
+    describe('generateSecurityEvent', () => {
+      it('should generate valid security event', () => {
+        const event = securityTestHelpers.generateSecurityEvent();
         
-        // Should resolve quickly since element was never in DOM
-        expect(endTime - startTime).toBeLessThan(100);
+        expect(event).toHaveProperty('id');
+        expect(event).toHaveProperty('event_type', 'test_event');
+        expect(event).toHaveProperty('user_id', 'test_user');
+        expect(event).toHaveProperty('ip_address', '127.0.0.1');
+        expect(event).toHaveProperty('created_at');
+        expect(event).toHaveProperty('event_data');
+        
+        expect(typeof event.id).toBe('string');
+        expect(event.id.length).toBeGreaterThan(5);
+      });
+
+      it('should accept overrides', () => {
+        const event = securityTestHelpers.generateSecurityEvent({
+          event_type: 'custom_event',
+          user_id: 'custom_user'
+        });
+        
+        expect(event.event_type).toBe('custom_event');
+        expect(event.user_id).toBe('custom_user');
+        expect(event.ip_address).toBe('127.0.0.1'); // default maintained
+      });
+    });
+
+    describe('createValidationResult', () => {
+      it('should create valid validation result by default', () => {
+        const result = securityTestHelpers.createValidationResult();
+        
+        expect(result.isValid).toBe(true);
+        expect(result.errors).toEqual([]);
+        expect(result.riskLevel).toBe('low');
+      });
+
+      it('should create invalid validation result when specified', () => {
+        const result = securityTestHelpers.createValidationResult(false);
+        
+        expect(result.isValid).toBe(false);
+        expect(result.errors).toContain('Test validation error');
+        expect(result.riskLevel).toBe('medium');
+      });
+
+      it('should accept custom overrides', () => {
+        const result = securityTestHelpers.createValidationResult(true, {
+          riskLevel: 'high',
+          warnings: ['Custom warning']
+        });
+        
+        expect(result.isValid).toBe(true);
+        expect(result.riskLevel).toBe('high');
+        expect(result.warnings).toContain('Custom warning');
+      });
+    });
+
+    describe('createMockSession', () => {
+      it('should create valid mock session', () => {
+        const session = securityTestHelpers.createMockSession();
+        
+        expect(session).toHaveProperty('session_id');
+        expect(session).toHaveProperty('user_id');
+        expect(session).toHaveProperty('ip_address');
+        expect(session).toHaveProperty('security_score');
+        expect(session).toHaveProperty('expires_at');
+        expect(session).toHaveProperty('status', 'active');
+        
+        expect(typeof session.security_score).toBe('number');
+        expect(session.security_score).toBeGreaterThan(0);
+        expect(session.security_score).toBeLessThanOrEqual(100);
+      });
+
+      it('should accept overrides', () => {
+        const session = securityTestHelpers.createMockSession({
+          status: 'expired',
+          security_score: 50
+        });
+        
+        expect(session.status).toBe('expired');
+        expect(session.security_score).toBe(50);
+      });
+    });
+
+    describe('waitForAsync', () => {
+      it('should return a promise that resolves', async () => {
+        const start = Date.now();
+        await securityTestHelpers.waitForAsync();
+        const end = Date.now();
+        
+        // Should complete quickly but not synchronously
+        expect(end - start).toBeGreaterThanOrEqual(0);
+        expect(end - start).toBeLessThan(100);
       });
     });
   });

@@ -1,48 +1,27 @@
 
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
 import { useSecurityMonitoring } from '../useSecurityMonitoring';
-import { productionLogger } from '@/utils/productionLogger';
+import { securityAuditService } from '@/services/security/monitoring/securityAuditService';
+import { threatPatternUpdater } from '@/services/security/monitoring/threatPatternUpdater';
+import { securityPerformanceMonitor } from '@/services/security/monitoring/performanceMonitor';
 
-// Mock all the services
+// Mock dependencies
 vi.mock('@/services/security/monitoring/securityAuditService', () => ({
   securityAuditService: {
-    startContinuousMonitoring: vi.fn().mockResolvedValue(undefined),
+    startContinuousMonitoring: vi.fn(),
     stopMonitoring: vi.fn(),
-    getLatestAuditReport: vi.fn().mockResolvedValue({
-      id: '1',
-      timestamp: new Date(),
-      riskLevel: 'low',
-      totalEvents: 10,
-      suspiciousPatterns: [],
-      recommendations: ['Update security policies'],
-      summary: 'All systems normal'
-    }),
-    performSecurityAudit: vi.fn().mockResolvedValue({
-      id: '2',
-      timestamp: new Date(),
-      riskLevel: 'medium',
-      totalEvents: 15,
-      suspiciousPatterns: [{ pattern: 'test', occurrences: 1, riskLevel: 'low' }],
-      recommendations: ['Review recent activities'],
-      summary: 'Minor issues detected'
-    })
+    getLatestAuditReport: vi.fn(),
+    performSecurityAudit: vi.fn()
   }
 }));
 
 vi.mock('@/services/security/monitoring/threatPatternUpdater', () => ({
   threatPatternUpdater: {
-    startAutomaticUpdates: vi.fn().mockResolvedValue(undefined),
+    startAutomaticUpdates: vi.fn(),
     stopAutomaticUpdates: vi.fn(),
-    checkForPatternUpdates: vi.fn().mockResolvedValue(undefined),
-    getPatternUpdateHistory: vi.fn().mockResolvedValue([
-      {
-        version: '1.0.0',
-        date: new Date().toISOString(),
-        patternsAdded: 5,
-        description: 'Initial patterns'
-      }
-    ])
+    getPatternUpdateHistory: vi.fn(),
+    checkForPatternUpdates: vi.fn()
   }
 }));
 
@@ -50,12 +29,7 @@ vi.mock('@/services/security/monitoring/performanceMonitor', () => ({
   securityPerformanceMonitor: {
     startMonitoring: vi.fn(),
     stopMonitoring: vi.fn(),
-    getMetrics: vi.fn().mockReturnValue({
-      averageResponseTime: 150,
-      totalRequests: 1000,
-      errorRate: 0.02,
-      threatsDetected: 5
-    })
+    getMetrics: vi.fn()
   }
 }));
 
@@ -67,226 +41,309 @@ vi.mock('@/utils/productionLogger', () => ({
 }));
 
 describe('useSecurityMonitoring', () => {
+  const mockAuditReport = {
+    totalEvents: 100,
+    threatsDetected: 5,
+    suspiciousPatterns: ['pattern1', 'pattern2']
+  };
+
+  const mockMetrics = {
+    averageResponseTime: 150,
+    requestsPerMinute: 50
+  };
+
+  const mockPatternHistory = [
+    { timestamp: Date.now(), patterns: ['sql_injection', 'xss'] }
+  ];
+
   beforeEach(() => {
     vi.clearAllMocks();
-    // Clear any existing timers
-    vi.clearAllTimers();
     vi.useFakeTimers();
+    
+    vi.mocked(securityAuditService.startContinuousMonitoring).mockResolvedValue();
+    vi.mocked(securityAuditService.getLatestAuditReport).mockResolvedValue(mockAuditReport);
+    vi.mocked(securityAuditService.performSecurityAudit).mockResolvedValue(mockAuditReport);
+    
+    vi.mocked(threatPatternUpdater.startAutomaticUpdates).mockResolvedValue();
+    vi.mocked(threatPatternUpdater.getPatternUpdateHistory).mockResolvedValue(mockPatternHistory);
+    vi.mocked(threatPatternUpdater.checkForPatternUpdates).mockResolvedValue();
+    
+    vi.mocked(securityPerformanceMonitor.getMetrics).mockReturnValue(mockMetrics);
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
     vi.useRealTimers();
     vi.resetAllMocks();
   });
 
-  describe('Initial State', () => {
-    it('should have correct initial state', () => {
+  describe('Initialization and Configuration', () => {
+    it('should initialize with default configuration', () => {
       const { result } = renderHook(() => useSecurityMonitoring());
-
+      
       expect(result.current.isMonitoring).toBe(false);
-      expect(result.current.lastAuditReport).toBeNull();
-      expect(result.current.performanceMetrics).toBeNull();
-      expect(result.current.patternUpdateHistory).toEqual([]);
-      expect(result.current.alerts).toEqual([]);
       expect(result.current.loading).toBe(false);
+      expect(result.current.config).toEqual({
+        refreshInterval: 5 * 60 * 1000,
+        enablePerformanceMonitoring: true,
+        enablePatternUpdates: true
+      });
+    });
+
+    it('should accept custom configuration', () => {
+      const config = {
+        refreshInterval: 60000,
+        enablePerformanceMonitoring: false,
+        enablePatternUpdates: false
+      };
+
+      const { result } = renderHook(() => useSecurityMonitoring(config));
+      
+      expect(result.current.config).toEqual(config);
     });
   });
 
-  describe('Start Monitoring', () => {
+  describe('Monitoring Lifecycle', () => {
     it('should start monitoring successfully', async () => {
       const { result } = renderHook(() => useSecurityMonitoring());
-
+      
       await act(async () => {
         await result.current.startMonitoring();
       });
 
       expect(result.current.isMonitoring).toBe(true);
-      expect(result.current.loading).toBe(false);
-      expect(productionLogger.secureInfo).toHaveBeenCalledWith('Starting comprehensive security monitoring');
+      expect(result.current.error).toBeNull();
+      expect(securityAuditService.startContinuousMonitoring).toHaveBeenCalled();
+      expect(threatPatternUpdater.startAutomaticUpdates).toHaveBeenCalled();
+      expect(securityPerformanceMonitor.startMonitoring).toHaveBeenCalled();
     });
 
-    it('should handle monitoring start errors', async () => {
-      const { securityAuditService } = await import('@/services/security/monitoring/securityAuditService');
-      vi.mocked(securityAuditService.startContinuousMonitoring).mockRejectedValueOnce(new Error('Start failed'));
-
-      const { result } = renderHook(() => useSecurityMonitoring());
-
-      await act(async () => {
-        await result.current.startMonitoring();
-      });
-
-      expect(result.current.isMonitoring).toBe(false);
-      expect(productionLogger.error).toHaveBeenCalledWith(
-        'Failed to start security monitoring',
-        expect.any(Error),
-        'useSecurityMonitoring'
+    it('should handle selective service enablement', async () => {
+      const { result } = renderHook(() => 
+        useSecurityMonitoring({ 
+          enablePerformanceMonitoring: false,
+          enablePatternUpdates: false 
+        })
       );
-    });
-  });
-
-  describe('Stop Monitoring', () => {
-    it('should stop monitoring', async () => {
-      const { result } = renderHook(() => useSecurityMonitoring());
-
-      // Start monitoring first
+      
       await act(async () => {
         await result.current.startMonitoring();
       });
 
-      expect(result.current.isMonitoring).toBe(true);
+      expect(securityAuditService.startContinuousMonitoring).toHaveBeenCalled();
+      expect(threatPatternUpdater.startAutomaticUpdates).not.toHaveBeenCalled();
+      expect(securityPerformanceMonitor.startMonitoring).not.toHaveBeenCalled();
+    });
 
-      // Stop monitoring
+    it('should stop monitoring and cleanup resources', async () => {
+      const { result } = renderHook(() => useSecurityMonitoring());
+      
+      await act(async () => {
+        await result.current.startMonitoring();
+      });
+
       act(() => {
         result.current.stopMonitoring();
       });
 
       expect(result.current.isMonitoring).toBe(false);
-      expect(productionLogger.secureInfo).toHaveBeenCalledWith('Stopping security monitoring');
+      expect(securityAuditService.stopMonitoring).toHaveBeenCalled();
+      expect(threatPatternUpdater.stopAutomaticUpdates).toHaveBeenCalled();
+      expect(securityPerformanceMonitor.stopMonitoring).toHaveBeenCalled();
+    });
+
+    it('should not start monitoring if already monitoring', async () => {
+      const { result } = renderHook(() => useSecurityMonitoring());
+      
+      await act(async () => {
+        await result.current.startMonitoring();
+      });
+
+      vi.clearAllMocks();
+
+      await act(async () => {
+        await result.current.startMonitoring();
+      });
+
+      expect(securityAuditService.startContinuousMonitoring).not.toHaveBeenCalled();
     });
   });
 
-  describe('Refresh Monitoring Data', () => {
+  describe('Data Refresh', () => {
     it('should refresh monitoring data successfully', async () => {
       const { result } = renderHook(() => useSecurityMonitoring());
-
+      
       await act(async () => {
-        await result.current.refreshMonitoringData();
+        await result.current.startMonitoring();
       });
 
-      expect(result.current.lastAuditReport).toBeDefined();
-      expect(result.current.performanceMetrics).toBeDefined();
-      expect(result.current.patternUpdateHistory).toHaveLength(1);
-      expect(result.current.loading).toBe(false);
+      expect(result.current.lastAuditReport).toEqual(mockAuditReport);
+      expect(result.current.performanceMetrics).toEqual(mockMetrics);
+      expect(result.current.patternUpdateHistory).toEqual(mockPatternHistory);
+      expect(result.current.alerts).toEqual(mockAuditReport.suspiciousPatterns);
     });
 
-    it('should handle refresh errors', async () => {
-      const { securityAuditService } = await import('@/services/security/monitoring/securityAuditService');
-      vi.mocked(securityAuditService.getLatestAuditReport).mockRejectedValueOnce(new Error('Refresh failed'));
+    it('should handle partial service failures gracefully', async () => {
+      vi.mocked(securityAuditService.getLatestAuditReport).mockRejectedValue(
+        new Error('Audit service failed')
+      );
 
       const { result } = renderHook(() => useSecurityMonitoring());
-
+      
       await act(async () => {
-        await result.current.refreshMonitoringData();
+        await result.current.startMonitoring();
       });
 
-      expect(productionLogger.error).toHaveBeenCalledWith(
-        'Failed to refresh monitoring data',
-        expect.any(Error),
-        'useSecurityMonitoring'
+      // Should still have metrics and pattern history
+      expect(result.current.performanceMetrics).toEqual(mockMetrics);
+      expect(result.current.patternUpdateHistory).toEqual(mockPatternHistory);
+      expect(result.current.lastAuditReport).toBeNull();
+    });
+
+    it('should auto-refresh data at specified intervals', async () => {
+      const { result } = renderHook(() => 
+        useSecurityMonitoring({ refreshInterval: 1000 })
       );
+      
+      await act(async () => {
+        await result.current.startMonitoring();
+      });
+
+      vi.clearAllMocks();
+
+      // Fast-forward time to trigger refresh
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await vi.runAllTimersAsync();
+      });
+
+      expect(securityAuditService.getLatestAuditReport).toHaveBeenCalled();
+    });
+
+    it('should not auto-refresh when monitoring is stopped', async () => {
+      const { result } = renderHook(() => 
+        useSecurityMonitoring({ refreshInterval: 1000 })
+      );
+      
+      await act(async () => {
+        await result.current.startMonitoring();
+      });
+
+      act(() => {
+        result.current.stopMonitoring();
+      });
+
+      vi.clearAllMocks();
+
+      // Fast-forward time
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await vi.runAllTimersAsync();
+      });
+
+      expect(securityAuditService.getLatestAuditReport).not.toHaveBeenCalled();
     });
   });
 
-  describe('Manual Audit', () => {
+  describe('Manual Operations', () => {
     it('should perform manual audit successfully', async () => {
       const { result } = renderHook(() => useSecurityMonitoring());
-
+      
       let auditResult;
       await act(async () => {
         auditResult = await result.current.performManualAudit();
       });
 
-      expect(auditResult).toBeDefined();
-      expect(result.current.lastAuditReport).toBeDefined();
-      expect(result.current.loading).toBe(false);
+      expect(auditResult).toEqual(mockAuditReport);
+      expect(result.current.lastAuditReport).toEqual(mockAuditReport);
+      expect(securityAuditService.performSecurityAudit).toHaveBeenCalled();
     });
 
     it('should handle manual audit errors', async () => {
-      const { securityAuditService } = await import('@/services/security/monitoring/securityAuditService');
-      vi.mocked(securityAuditService.performSecurityAudit).mockRejectedValueOnce(new Error('Audit failed'));
+      const auditError = new Error('Manual audit failed');
+      vi.mocked(securityAuditService.performSecurityAudit).mockRejectedValue(auditError);
 
       const { result } = renderHook(() => useSecurityMonitoring());
+      
+      await expect(
+        act(async () => {
+          await result.current.performManualAudit();
+        })
+      ).rejects.toThrow('Manual audit failed');
 
-      await act(async () => {
-        await expect(result.current.performManualAudit()).rejects.toThrow('Audit failed');
-      });
-
-      expect(productionLogger.error).toHaveBeenCalledWith(
-        'Manual audit failed',
-        expect.any(Error),
-        'useSecurityMonitoring'
-      );
+      expect(result.current.error).toBe('Manual audit failed');
     });
-  });
 
-  describe('Pattern Updates', () => {
     it('should check for pattern updates', async () => {
       const { result } = renderHook(() => useSecurityMonitoring());
-
+      
       await act(async () => {
         await result.current.checkForPatternUpdates();
       });
 
-      expect(result.current.patternUpdateHistory).toHaveLength(1);
+      expect(threatPatternUpdater.checkForPatternUpdates).toHaveBeenCalled();
+      expect(threatPatternUpdater.getPatternUpdateHistory).toHaveBeenCalled();
+      expect(result.current.patternUpdateHistory).toEqual(mockPatternHistory);
     });
 
-    it('should handle pattern update errors', async () => {
-      const { threatPatternUpdater } = await import('@/services/security/monitoring/threatPatternUpdater');
-      vi.mocked(threatPatternUpdater.checkForPatternUpdates).mockRejectedValueOnce(new Error('Update failed'));
-
-      const { result } = renderHook(() => useSecurityMonitoring());
-
+    it('should skip pattern updates when disabled', async () => {
+      const { result } = renderHook(() => 
+        useSecurityMonitoring({ enablePatternUpdates: false })
+      );
+      
       await act(async () => {
         await result.current.checkForPatternUpdates();
       });
 
-      expect(productionLogger.error).toHaveBeenCalledWith(
-        'Pattern update check failed',
-        expect.any(Error),
-        'useSecurityMonitoring'
-      );
+      expect(threatPatternUpdater.checkForPatternUpdates).not.toHaveBeenCalled();
     });
   });
 
-  describe('Auto-refresh', () => {
-    it('should auto-refresh data when monitoring is active', async () => {
-      const { result } = renderHook(() => useSecurityMonitoring());
+  describe('Error Handling', () => {
+    it('should handle startup errors gracefully', async () => {
+      const startupError = new Error('Startup failed');
+      vi.mocked(securityAuditService.startContinuousMonitoring).mockRejectedValue(startupError);
 
-      // Start monitoring
+      const { result } = renderHook(() => useSecurityMonitoring());
+      
       await act(async () => {
         await result.current.startMonitoring();
       });
 
-      // Clear mock calls from initial start
-      vi.clearAllMocks();
-
-      // Fast-forward 5 minutes
-      act(() => {
-        vi.advanceTimersByTime(5 * 60 * 1000);
-      });
-
-      // Wait for async operations
-      await act(async () => {
-        await Promise.resolve();
-      });
-
-      const { securityAuditService } = await import('@/services/security/monitoring/securityAuditService');
-      expect(securityAuditService.getLatestAuditReport).toHaveBeenCalled();
+      expect(result.current.error).toBe('Failed to start security monitoring');
+      expect(result.current.isMonitoring).toBe(false);
     });
 
-    it('should not auto-refresh when monitoring is stopped', async () => {
+    it('should handle refresh errors gracefully', async () => {
       const { result } = renderHook(() => useSecurityMonitoring());
-
-      // Start and then stop monitoring
+      
       await act(async () => {
         await result.current.startMonitoring();
       });
 
-      act(() => {
-        result.current.stopMonitoring();
+      // Cause an error in refresh
+      vi.mocked(securityAuditService.getLatestAuditReport).mockRejectedValue(
+        new Error('Refresh failed')
+      );
+
+      await act(async () => {
+        await result.current.refreshMonitoringData();
       });
 
-      // Clear mock calls
-      vi.clearAllMocks();
+      expect(result.current.error).toBe('Failed to refresh monitoring data');
+    });
+  });
 
-      // Fast-forward 5 minutes
+  describe('Cleanup', () => {
+    it('should cleanup on unmount', () => {
+      const { result, unmount } = renderHook(() => useSecurityMonitoring());
+      
       act(() => {
-        vi.advanceTimersByTime(5 * 60 * 1000);
+        result.current.startMonitoring();
       });
 
-      const { securityAuditService } = await import('@/services/security/monitoring/securityAuditService');
-      expect(securityAuditService.getLatestAuditReport).not.toHaveBeenCalled();
+      unmount();
+
+      expect(securityAuditService.stopMonitoring).toHaveBeenCalled();
     });
   });
 });

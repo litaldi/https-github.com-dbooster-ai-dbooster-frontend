@@ -19,7 +19,9 @@ export default defineConfig({
         '**/*.test.{ts,tsx}',
         '**/*.spec.{ts,tsx}',
         'src/main.tsx',
-        'src/vite-env.d.ts'
+        'src/vite-env.d.ts',
+        '**/types/**',
+        '**/mocks/**'
       ],
       thresholds: {
         global: {
@@ -28,15 +30,40 @@ export default defineConfig({
           lines: 80,
           statements: 80
         }
-      }
+      },
+      include: ['src/**/*.{ts,tsx}'],
+      all: true
     },
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules/', 'dist/'],
-    testTimeout: 10000
+    exclude: [
+      'node_modules/', 
+      'dist/',
+      '.next/',
+      'coverage/',
+      'supabase/',
+      'public/'
+    ],
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    teardownTimeout: 5000,
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: false
+      }
+    },
+    logHeapUsage: true,
+    sequence: {
+      shuffle: false,
+      concurrent: false
+    }
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
     }
+  },
+  esbuild: {
+    target: 'node14'
   }
 });
