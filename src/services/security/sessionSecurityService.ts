@@ -1,6 +1,5 @@
 
 import { productionLogger } from '@/utils/productionLogger';
-import { secureStorageService } from './secureStorageService';
 
 interface SessionMetadata {
   deviceFingerprint: string;
@@ -53,7 +52,13 @@ class SessionSecurityService {
     };
 
     this.activeSessions.set(sessionId, metadata);
-    await secureStorageService.setSecureItem(`demo_session_${sessionId}`, session, this.DEMO_SESSION_TIMEOUT);
+    
+    // Store in localStorage as fallback since secureStorageService might not be available
+    try {
+      localStorage.setItem(`demo_session_${sessionId}`, JSON.stringify(session));
+    } catch (error) {
+      productionLogger.warn('Failed to store session in localStorage', error, 'SessionSecurityService');
+    }
 
     productionLogger.secureInfo('Demo session created', {
       sessionId,
@@ -66,22 +71,37 @@ class SessionSecurityService {
 
   async validateSession(sessionId: string): Promise<boolean> {
     try {
-      const session = await secureStorageService.getSecureItem<DemoSession>(`demo_session_${sessionId}`);
-      if (!session) return false;
-
-      // Check expiration
-      if (Date.now() > session.expiresAt) {
-        await this.cleanupSession(sessionId);
-        return false;
-      }
-
-      // Update last activity
+      // Try to get from memory first
       const metadata = this.activeSessions.get(sessionId);
       if (metadata) {
+        // Check expiration
+        if (Date.now() - metadata.lastActivity > this.SESSION_TIMEOUT) {
+          this.activeSessions.delete(sessionId);
+          return false;
+        }
+        
+        // Update last activity
         metadata.lastActivity = Date.now();
+        return true;
       }
 
-      return true;
+      // Try to get from localStorage
+      const storedSession = localStorage.getItem(`demo_session_${sessionId}`);
+      if (storedSession) {
+        const session: DemoSession = JSON.parse(storedSession);
+        
+        // Check expiration
+        if (Date.now() > session.expiresAt) {
+          await this.cleanupSession(sessionId);
+          return false;
+        }
+
+        // Restore to memory
+        this.activeSessions.set(sessionId, session.metadata);
+        return true;
+      }
+
+      return false;
     } catch (error) {
       productionLogger.error('Session validation failed', error, 'SessionSecurityService');
       return false;
@@ -116,7 +136,11 @@ class SessionSecurityService {
 
   async cleanupSession(sessionId: string): Promise<void> {
     this.activeSessions.delete(sessionId);
-    secureStorageService.removeSecureItem(`demo_session_${sessionId}`);
+    try {
+      localStorage.removeItem(`demo_session_${sessionId}`);
+    } catch (error) {
+      productionLogger.warn('Failed to remove session from localStorage', error, 'SessionSecurityService');
+    }
     productionLogger.info('Session cleaned up', { sessionId });
   }
 
@@ -145,11 +169,16 @@ class SessionSecurityService {
     ];
 
     const fingerprint = components.join('|');
-    const encoder = new TextEncoder();
-    const data = encoder.encode(fingerprint);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    // Simple hash since we can't rely on crypto.subtle being available
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+      const char = fingerprint.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    
+    return hash.toString(36);
   }
 
   private async getUserIP(): Promise<string> {

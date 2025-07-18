@@ -4,7 +4,6 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
-import { enhancedDemoSecurity } from '@/services/security/enhancedDemoSecurity';
 import { enhancedRateLimiting } from '@/services/security/enhancedRateLimiting';
 
 interface AuthContextType {
@@ -117,10 +116,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       if (isDemo) {
-        // Revoke demo session
-        if (user?.id) {
-          await enhancedDemoSecurity.revokeDemoSession(user.id);
-        }
+        // Simple demo cleanup
+        setIsDemo(false);
+        setUser(null);
+        setSession(null);
       } else {
         const { error } = await supabase.auth.signOut();
         if (error) {
@@ -129,7 +128,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
-      setIsDemo(false);
       setGithubAccessToken(null);
     } catch (error) {
       productionLogger.error('Sign out failed', error, 'AuthContext');
@@ -143,14 +141,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsDemo(true);
       
-      // Create secure demo session with enhanced security
-      const demoSession = await enhancedDemoSecurity.createSecureDemoSession();
+      // Create a simple demo session without complex security
+      const demoSessionId = crypto.randomUUID();
+      const demoToken = Array.from(crypto.getRandomValues(new Uint8Array(32)), 
+        byte => byte.toString(16).padStart(2, '0')).join('');
       
-      // Create a properly typed demo user object with secure token
+      // Create a properly typed demo user object
       const demoUser: User = {
-        id: demoSession.id,
-        email: 'demo@example.com',
-        user_metadata: { full_name: 'Demo User' },
+        id: demoSessionId,
+        email: 'demo@dbooster.com',
+        user_metadata: { 
+          full_name: 'Demo User',
+          name: 'Demo User'
+        },
         app_metadata: {},
         aud: 'authenticated',
         created_at: new Date().toISOString(),
@@ -163,10 +166,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Create demo session object
       const demoSessionObj: Session = {
-        access_token: demoSession.token,
+        access_token: demoToken,
         refresh_token: 'demo-refresh-token',
         expires_in: 3600,
-        expires_at: Math.floor(demoSession.expiresAt / 1000),
+        expires_at: Math.floor((Date.now() + 3600000) / 1000),
         token_type: 'bearer',
         user: demoUser
       };
@@ -175,10 +178,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(demoSessionObj);
       setLoading(false);
 
-      productionLogger.info('Enhanced secure demo session created', {
-        sessionId: demoSession.id.substring(0, 8),
-        capabilities: demoSession.capabilities,
-        securityScore: demoSession.securityScore
+      productionLogger.info('Simple demo session created', {
+        sessionId: demoSessionId.substring(0, 8)
       });
     } catch (error) {
       productionLogger.error('Demo login failed', error, 'AuthContext');

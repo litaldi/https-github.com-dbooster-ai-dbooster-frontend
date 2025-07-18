@@ -21,10 +21,11 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
+import { toast } from 'sonner';
 
 export function DemoDashboardSection() {
   const [activeTab, setActiveTab] = useState('metrics');
-  const [isLiveDemo, setIsLiveDemo] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
   const navigate = useNavigate();
   const { loginDemo } = useAuth();
 
@@ -82,10 +83,15 @@ export function DemoDashboardSection() {
 
   const handleStartLiveDemo = async () => {
     try {
+      setIsLaunching(true);
       await loginDemo();
+      toast.success('Demo session started!');
       navigate('/app/dashboard-alt');
     } catch (error) {
       console.error('Demo start error:', error);
+      toast.error('Failed to start demo session. Please try again.');
+    } finally {
+      setIsLaunching(false);
     }
   };
 
@@ -138,9 +144,13 @@ export function DemoDashboardSection() {
                 dashboard.dbooster.com
               </span>
             </div>
-            <Button onClick={handleStartLiveDemo} className="h-8 text-xs">
+            <Button 
+              onClick={handleStartLiveDemo} 
+              disabled={isLaunching}
+              className="h-8 text-xs"
+            >
               <Play className="h-3 w-3 mr-1" />
-              Launch Live Demo
+              {isLaunching ? 'Starting...' : 'Launch Live Demo'}
             </Button>
           </div>
 
@@ -271,10 +281,11 @@ export function DemoDashboardSection() {
           >
             <Button 
               onClick={handleStartLiveDemo}
+              disabled={isLaunching}
               size="lg"
               className="h-12 px-8 text-base font-semibold shadow-lg hover:shadow-xl"
             >
-              Launch Full Interactive Demo
+              {isLaunching ? 'Starting Demo...' : 'Launch Full Interactive Demo'}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
