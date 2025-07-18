@@ -1,6 +1,6 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { SecurityService } from '../../securityService';
+import { SecurityService } from '../../../securityService';
 import { productionLogger } from '@/utils/productionLogger';
 
 // Mock external dependencies
