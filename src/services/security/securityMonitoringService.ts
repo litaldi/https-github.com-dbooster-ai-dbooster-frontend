@@ -5,7 +5,7 @@ import { productionLogger } from '@/utils/productionLogger';
 export interface PrivilegeEscalationAttempt {
   id: string;
   user_id: string;
-  attempted_role: string;
+  attempted_role: 'admin' | 'moderator' | 'user';
   method: string;
   blocked: boolean;
   ip_address?: string;
@@ -35,7 +35,7 @@ class SecurityMonitoringService {
 
   async logPrivilegeEscalationAttempt(
     userId: string,
-    attemptedRole: string,
+    attemptedRole: 'admin' | 'moderator' | 'user',
     method: string,
     ipAddress?: string,
     userAgent?: string
@@ -79,7 +79,17 @@ class SecurityMonitoringService {
         throw error;
       }
 
-      return data || [];
+      // Transform the data to match our interface
+      return (data || []).map(item => ({
+        id: item.id,
+        user_id: item.user_id,
+        attempted_role: item.attempted_role as 'admin' | 'moderator' | 'user',
+        method: item.method || '',
+        blocked: item.blocked || true,
+        ip_address: item.ip_address ? String(item.ip_address) : undefined,
+        user_agent: item.user_agent || undefined,
+        created_at: item.created_at
+      }));
     } catch (error) {
       productionLogger.error('Failed to fetch privilege escalation attempts', error, 'SecurityMonitoringService');
       return [];
@@ -103,7 +113,7 @@ class SecurityMonitoringService {
 
   async secureRoleAssignment(
     targetUserId: string,
-    newRole: string,
+    newRole: 'admin' | 'moderator' | 'user',
     reason?: string
   ): Promise<{ success: boolean; message: string; requiresApproval?: boolean }> {
     try {
@@ -122,7 +132,16 @@ class SecurityMonitoringService {
         throw error;
       }
 
-      return data;
+      // Handle the JSON response from the database function
+      if (typeof data === 'object' && data !== null) {
+        return data as { success: boolean; message: string; requiresApproval?: boolean };
+      }
+
+      // Fallback for unexpected response format
+      return {
+        success: false,
+        message: 'Unexpected response format from role assignment function'
+      };
     } catch (error) {
       productionLogger.error('Secure role assignment failed', error, 'SecurityMonitoringService');
       

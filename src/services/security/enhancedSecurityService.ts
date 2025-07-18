@@ -91,12 +91,12 @@ class EnhancedSecurityService {
         return { allowed: false, reason: 'User not authenticated' };
       }
 
-      // Validate input for the action
-      const inputValidation = await consolidatedInputValidation.validateInput(action, 'security_action');
+      // Validate input for the action using the correct method
+      const inputValidation = consolidatedInputValidation.validateAndSanitize(action, 'general');
       if (!inputValidation.isValid) {
         await securityMonitoringService.logPrivilegeEscalationAttempt(
           userId,
-          'unknown',
+          'user',
           'invalid_action_input',
           context.ipAddress,
           context.userAgent
@@ -109,7 +109,7 @@ class EnhancedSecurityService {
       if (isSuspicious) {
         await securityMonitoringService.logPrivilegeEscalationAttempt(
           userId,
-          'unknown',
+          'user',
           'suspicious_pattern',
           context.ipAddress,
           context.userAgent
