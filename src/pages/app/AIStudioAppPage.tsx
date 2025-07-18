@@ -1,11 +1,6 @@
 
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { EnhancedAIStudio } from '@/components/ai/EnhancedAIStudio';
 
 export default function AIStudioAppPage() {
-  return (
-    <PagePlaceholder
-      title="AI Studio"
-      description="Interactive AI-powered workspace for advanced query optimization and analysis."
-    />
-  );
+  return <EnhancedAIStudio />;
 }
