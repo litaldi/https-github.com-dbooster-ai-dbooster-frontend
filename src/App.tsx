@@ -1,4 +1,3 @@
-
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -41,6 +40,7 @@ import PressPage from '@/pages/PressPage';
 import CareersPage from '@/pages/CareersPage';
 import LoginPage from '@/pages/LoginPage';
 import SearchPage from '@/pages/SearchPage';
+import TestingPage from '@/pages/TestingPage';
 
 // Legal Pages
 import TermsPage from '@/pages/legal/TermsPage';
@@ -140,6 +140,9 @@ function App() {
                   {/* Auth & Search */}
                   <Route path="login" element={<LoginPage />} />
                   <Route path="search" element={<SearchPage />} />
+                  
+                  {/* Testing Page */}
+                  <Route path="testing" element={<TestingPage />} />
                 </Route>
 
                 {/* Protected Dashboard Routes */}
@@ -158,6 +161,7 @@ function App() {
                   <Route path="monitoring" element={<MonitoringPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="account" element={<AccountPage />} />
+                  <Route path="testing" element={<TestingPage />} />
                   <Route path="security" element={
                     <Suspense fallback={<LoadingFallback />}>
                       <SecurityDashboardPage />
