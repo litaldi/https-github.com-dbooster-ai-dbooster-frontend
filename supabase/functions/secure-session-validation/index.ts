@@ -7,104 +7,118 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface SessionValidationRequest {
+  sessionId: string;
+  deviceFingerprint: string;
+}
+
+function validateSessionId(sessionId: string): boolean {
+  return typeof sessionId === 'string' && sessionId.length >= 10 && sessionId.length <= 200;
+}
+
+function sanitizeFingerprint(fingerprint: string): string {
+  return fingerprint.replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 500);
+}
+
+async function getUserIP(request: Request): Promise<string> {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  return request.headers.get('x-real-ip') || 'unknown';
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    const { sessionId, deviceFingerprint, ipAddress, userAgent } = await req.json()
-
-    // Get the authenticated user
-    const authHeader = req.headers.get('Authorization')!
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
-
-    if (authError || !user) {
+    if (req.method !== 'POST') {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Method not allowed' }), 
+        { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Validate session in database
-    const { data: session, error: sessionError } = await supabaseClient
-      .from('enhanced_session_tracking')
-      .select('*')
-      .eq('session_id', sessionId)
-      .eq('user_id', user.id)
-      .single()
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
 
-    if (sessionError || !session) {
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ valid: false, reason: 'Session not found' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Check if session is expired
-    if (new Date(session.expires_at) < new Date()) {
-      // Mark session as expired
-      await supabaseClient
-        .from('enhanced_session_tracking')
-        .update({ status: 'expired' })
-        .eq('id', session.id)
-
+    let requestBody: SessionValidationRequest;
+    try {
+      const rawBody = await req.text();
+      if (rawBody.length > 5000) {
+        throw new Error('Request body too large');
+      }
+      requestBody = JSON.parse(rawBody);
+    } catch (error) {
       return new Response(
-        JSON.stringify({ valid: false, reason: 'Session expired' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Validate device fingerprint
-    if (session.device_fingerprint && session.device_fingerprint !== deviceFingerprint) {
-      // Log suspicious activity
-      await supabaseClient.from('security_audit_log').insert({
-        user_id: user.id,
-        event_type: 'device_fingerprint_mismatch',
-        event_data: {
-          session_id: sessionId,
-          expected_fingerprint: session.device_fingerprint.substring(0, 8),
-          actual_fingerprint: deviceFingerprint.substring(0, 8)
-        },
-        ip_address: ipAddress
-      })
-
-      // Mark session as suspicious
-      await supabaseClient
-        .from('enhanced_session_tracking')
-        .update({ status: 'suspicious' })
-        .eq('id', session.id)
-
+    if (!requestBody.sessionId || !requestBody.deviceFingerprint) {
       return new Response(
-        JSON.stringify({ valid: false, reason: 'Device fingerprint mismatch' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Update last activity
-    await supabaseClient
-      .from('enhanced_session_tracking')
-      .update({ 
-        last_activity: new Date().toISOString(),
-        ip_address: ipAddress,
-        user_agent: userAgent
-      })
-      .eq('id', session.id)
+    if (!validateSessionId(requestBody.sessionId)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid session ID format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const sanitizedFingerprint = sanitizeFingerprint(requestBody.deviceFingerprint);
+    const userIP = await getUserIP(req);
+    const userAgent = req.headers.get('user-agent') || 'unknown';
+
+    const { data, error } = await supabaseClient.rpc('validate_session_security', {
+      p_session_id: requestBody.sessionId,
+      p_device_fingerprint: sanitizedFingerprint,
+      p_ip_address: userIP,
+      p_user_agent: userAgent
+    });
+
+    if (error) {
+      console.error('Session validation error:', error);
+      return new Response(
+        JSON.stringify({ error: 'Session validation failed' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     return new Response(
-      JSON.stringify({ valid: true, sessionData: session }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify(data),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
+    console.error('Unexpected error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

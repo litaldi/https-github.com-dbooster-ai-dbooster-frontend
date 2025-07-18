@@ -4,22 +4,20 @@ import { productionLogger } from '@/utils/productionLogger';
 
 interface SessionValidationResult {
   valid: boolean;
-  reason?: string;
   securityScore: number;
-  suspicious: boolean;
+  reason?: string;
 }
 
-interface SecureSessionMetadata {
+interface SecureSession {
   sessionId: string;
   deviceFingerprint: string;
-  ipAddress: string;
-  userAgent: string;
+  expiresAt: Date;
   securityScore: number;
 }
 
 class SecureSessionManager {
   private static instance: SecureSessionManager;
-  private currentSessionMetadata: SecureSessionMetadata | null = null;
+  private currentSession: SecureSession | null = null;
 
   static getInstance(): SecureSessionManager {
     if (!SecureSessionManager.instance) {
@@ -28,75 +26,21 @@ class SecureSessionManager {
     return SecureSessionManager.instance;
   }
 
-  async createSecureSession(userId: string, isDemo: boolean = false): Promise<string | null> {
-    try {
-      const sessionId = crypto.randomUUID();
-      const deviceFingerprint = await this.generateDeviceFingerprint();
-      const ipAddress = await this.getUserIP();
-      const userAgent = navigator.userAgent;
-
-      const { error } = await supabase
-        .from('secure_session_validation')
-        .insert({
-          session_id: sessionId,
-          user_id: userId,
-          device_fingerprint: deviceFingerprint,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          security_score: await this.calculateInitialSecurityScore()
-        });
-
-      if (error) {
-        productionLogger.error('Failed to create secure session', error, 'SecureSessionManager');
-        return null;
-      }
-
-      this.currentSessionMetadata = {
-        sessionId,
-        deviceFingerprint,
-        ipAddress,
-        userAgent,
-        securityScore: await this.calculateInitialSecurityScore()
-      };
-
-      productionLogger.secureInfo('Secure session created', {
-        session_id: sessionId.substring(0, 8),
-        security_score: this.currentSessionMetadata.securityScore
-      });
-
-      return sessionId;
-    } catch (error) {
-      productionLogger.error('Error creating secure session', error, 'SecureSessionManager');
-      return null;
-    }
-  }
-
-  async validateSession(sessionId: string): Promise<boolean> {
-    try {
-      const validation = await this.validateCurrentSession();
-      return validation.valid;
-    } catch (error) {
-      productionLogger.error('Session validation failed', error, 'SecureSessionManager');
-      return false;
-    }
-  }
-
   async initializeSecureSession(userId: string): Promise<string | null> {
     try {
-      const sessionId = crypto.randomUUID();
       const deviceFingerprint = await this.generateDeviceFingerprint();
-      const ipAddress = await this.getUserIP();
-      const userAgent = navigator.userAgent;
-
+      const sessionId = this.generateSecureSessionId();
+      
       const { error } = await supabase
         .from('secure_session_validation')
         .insert({
-          session_id: sessionId,
           user_id: userId,
+          session_id: sessionId,
           device_fingerprint: deviceFingerprint,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          security_score: await this.calculateInitialSecurityScore()
+          ip_address: await this.getUserIP(),
+          user_agent: navigator.userAgent,
+          security_score: 80, // Initial score
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         });
 
       if (error) {
@@ -104,17 +48,16 @@ class SecureSessionManager {
         return null;
       }
 
-      this.currentSessionMetadata = {
+      this.currentSession = {
         sessionId,
         deviceFingerprint,
-        ipAddress,
-        userAgent,
-        securityScore: await this.calculateInitialSecurityScore()
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        securityScore: 80
       };
 
-      productionLogger.secureInfo('Secure session initialized', {
-        session_id: sessionId.substring(0, 8),
-        security_score: this.currentSessionMetadata.securityScore
+      productionLogger.info('Secure session initialized', {
+        sessionId: sessionId.substring(0, 8),
+        securityScore: 80
       });
 
       return sessionId;
@@ -125,101 +68,92 @@ class SecureSessionManager {
   }
 
   async validateCurrentSession(): Promise<SessionValidationResult> {
-    if (!this.currentSessionMetadata) {
+    if (!this.currentSession) {
       return {
         valid: false,
-        reason: 'No active session metadata',
         securityScore: 0,
-        suspicious: true
+        reason: 'No active session'
       };
     }
 
     try {
-      const currentFingerprint = await this.generateDeviceFingerprint();
-      const currentIP = await this.getUserIP();
-      const currentUserAgent = navigator.userAgent;
-
-      const { data, error } = await supabase.rpc('validate_session_security', {
-        p_session_id: this.currentSessionMetadata.sessionId,
-        p_device_fingerprint: currentFingerprint,
-        p_ip_address: currentIP,
-        p_user_agent: currentUserAgent
+      const response = await fetch('/functions/v1/secure-session-validation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({
+          sessionId: this.currentSession.sessionId,
+          deviceFingerprint: this.currentSession.deviceFingerprint
+        })
       });
 
-      if (error) {
-        productionLogger.error('Session validation failed', error, 'SecureSessionManager');
+      if (!response.ok) {
         return {
           valid: false,
-          reason: 'Validation error',
           securityScore: 0,
-          suspicious: true
+          reason: 'Session validation failed'
         };
       }
 
-      // Type-safe handling of database response
-      const result = data as unknown as SessionValidationResult;
+      const result = await response.json();
       
-      if (!result.valid || result.suspicious) {
-        productionLogger.warn('Session security issue detected', {
-          session_id: this.currentSessionMetadata.sessionId.substring(0, 8),
-          reason: result.reason,
-          security_score: result.securityScore
-        });
-      }
+      // Update current session with new security score
+      this.currentSession.securityScore = result.security_score || 0;
 
-      return result;
+      return {
+        valid: result.valid,
+        securityScore: result.security_score || 0,
+        reason: result.reason
+      };
     } catch (error) {
-      productionLogger.error('Error validating session', error, 'SecureSessionManager');
+      productionLogger.error('Session validation error', error, 'SecureSessionManager');
       return {
         valid: false,
-        reason: 'Unexpected validation error',
         securityScore: 0,
-        suspicious: true
+        reason: 'Validation error'
       };
-    }
-  }
-
-  async invalidateSession(sessionId?: string): Promise<void> {
-    const targetSessionId = sessionId || this.currentSessionMetadata?.sessionId;
-    
-    if (!targetSessionId) {
-      return;
-    }
-
-    try {
-      await supabase
-        .from('secure_session_validation')
-        .update({ is_validated: false })
-        .eq('session_id', targetSessionId);
-
-      if (this.currentSessionMetadata?.sessionId === targetSessionId) {
-        this.currentSessionMetadata = null;
-      }
-
-      productionLogger.info('Session invalidated', {
-        session_id: targetSessionId.substring(0, 8)
-      });
-    } catch (error) {
-      productionLogger.error('Error invalidating session', error, 'SecureSessionManager');
     }
   }
 
   private async generateDeviceFingerprint(): Promise<string> {
-    const components = [
-      navigator.userAgent,
-      navigator.language,
-      screen.width + 'x' + screen.height,
-      new Date().getTimezoneOffset().toString(),
-      navigator.hardwareConcurrency?.toString() || '0',
-      navigator.platform
-    ];
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillText('Security fingerprint', 2, 2);
+      }
+      
+      const fingerprint = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
+        canvas.toDataURL()
+      ].join('|');
 
-    const fingerprint = components.join('|');
-    const encoder = new TextEncoder();
-    const data = encoder.encode(fingerprint);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      // Simple hash function
+      let hash = 0;
+      for (let i = 0; i < fingerprint.length; i++) {
+        const char = fingerprint.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+      }
+      
+      return Math.abs(hash).toString(16);
+    } catch (error) {
+      // Fallback fingerprint
+      return 'fallback_' + Date.now().toString(16);
+    }
+  }
+
+  private generateSecureSessionId(): string {
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private async getUserIP(): Promise<string> {
@@ -232,18 +166,12 @@ class SecureSessionManager {
     }
   }
 
-  private async calculateInitialSecurityScore(): Promise<number> {
-    let score = 50; // Base score
+  getCurrentSession(): SecureSession | null {
+    return this.currentSession;
+  }
 
-    // HTTPS bonus
-    if (location.protocol === 'https:') score += 20;
-
-    // Modern browser features
-    if ('crypto' in window && 'subtle' in crypto) score += 15;
-    if ('serviceWorker' in navigator) score += 10;
-    if (window.isSecureContext) score += 5;
-
-    return Math.min(score, 100);
+  clearSession(): void {
+    this.currentSession = null;
   }
 }
 

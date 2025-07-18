@@ -1,155 +1,146 @@
 
 import { useState, useCallback } from 'react';
-import { useAuth } from '@/contexts/auth-context';
-import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
-import { enhancedRoleManager } from '@/services/security/enhancedRoleManager';
-import { enhancedClientSecurity } from '@/services/security/enhancedClientSecurity';
-import { enhancedDemoSecurity } from '@/services/security/enhancedDemoSecurity';
-import { enhancedSessionSecurity } from '@/services/security/enhancedSessionSecurity';
+import { secureSessionManager } from '@/services/security/secureSessionManager';
+import { securityAlertsService } from '@/services/security/securityAlertsService';
+import { enhancedPrivilegeControl } from '@/services/security/enhancedPrivilegeControl';
+import { supabase } from '@/integrations/supabase/client';
+import { cleanupAuthState } from '@/utils/authUtils';
 import { productionLogger } from '@/utils/productionLogger';
 
+interface SecurityValidationResult {
+  valid: boolean;
+  securityScore: number;
+  issues: string[];
+  recommendations: string[];
+}
+
 export function useConsolidatedSecurity() {
-  const { user, session, isDemo } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
 
   const validateSession = useCallback(async (): Promise<boolean> => {
-    if (!user || !session) {
-      return false;
-    }
-
+    setIsValidating(true);
     try {
-      setIsLoading(true);
-
-      // For demo sessions, use enhanced demo security validation
-      if (isDemo) {
-        const demoValidation = await enhancedDemoSecurity.validateDemoSession(user.id);
-        
-        if (!demoValidation.isValid) {
-          productionLogger.warn('Demo session validation failed', {
-            reason: demoValidation.reason,
-            userId: user.id.substring(0, 8)
-          }, 'useConsolidatedSecurity');
-          return false;
-        }
-
-        // If demo session requires revalidation, handle it
-        if (demoValidation.requiresRevalidation) {
-          productionLogger.info('Demo session requires revalidation', {
-            securityLevel: demoValidation.securityLevel
-          }, 'useConsolidatedSecurity');
-        }
-
-        return true;
-      }
-
-      // Enhanced session security validation
-      const sessionValidation = await enhancedSessionSecurity.validateSession(
-        session.access_token,
-        user.id
-      );
-
-      if (!sessionValidation.isValid) {
-        productionLogger.warn('Session validation failed', {
-          reason: sessionValidation.reason,
-          shouldReauthenticate: sessionValidation.shouldReauthenticate,
-          securityScore: sessionValidation.securityScore
-        }, 'useConsolidatedSecurity');
-
-        if (sessionValidation.shouldReauthenticate) {
-          // Session needs reauthentication - this could trigger logout
-          return false;
-        }
-      }
-
-      // Legacy consolidated authentication security check
-      const isValid = await consolidatedAuthenticationSecurity.validateSessionSecurity(session.access_token);
+      const result = await secureSessionManager.validateCurrentSession();
       
-      if (isValid) {
-        // Additional client-side security validation
-        const securityMetrics = await enhancedClientSecurity.getSecurityMetrics();
-        
-        if (securityMetrics.vulnerabilities.length > 0) {
-          productionLogger.warn('Client security vulnerabilities detected', {
-            vulnerabilities: securityMetrics.vulnerabilities,
-            securityLevel: securityMetrics.securityLevel
-          }, 'useConsolidatedSecurity');
-        }
+      if (!result.valid) {
+        await securityAlertsService.createSecurityAlert({
+          type: 'session_anomaly',
+          severity: 'medium',
+          message: `Session validation failed: ${result.reason}`,
+          metadata: { securityScore: result.securityScore }
+        });
       }
 
-      return isValid && sessionValidation.isValid;
+      return result.valid;
     } catch (error) {
-      productionLogger.error('Session validation failed', error, 'useConsolidatedSecurity');
+      productionLogger.error('Session validation error', error, 'useConsolidatedSecurity');
       return false;
     } finally {
-      setIsLoading(false);
+      setIsValidating(false);
     }
-  }, [user, session, isDemo]);
+  }, []);
 
-  const getUserRole = useCallback(async () => {
-    if (!user) return 'user';
-    
+  const invalidateSession = useCallback(async (): Promise<void> => {
     try {
-      return await enhancedRoleManager.getCurrentUserRole();
+      // Clear secure session
+      secureSessionManager.clearSession();
+      
+      // Clean up auth state
+      cleanupAuthState();
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      productionLogger.info('Session invalidated successfully');
     } catch (error) {
-      productionLogger.error('Failed to get user role', error, 'useConsolidatedSecurity');
-      return 'user';
+      productionLogger.error('Error invalidating session', error, 'useConsolidatedSecurity');
     }
-  }, [user]);
+  }, []);
 
-  const hasPermission = useCallback(async (permission: string): Promise<boolean> => {
-    if (!user) return false;
-    
+  const initializeSecureSession = useCallback(async (userId: string): Promise<string | null> => {
     try {
-      return await enhancedRoleManager.hasPermission(user.id, permission as any);
-    } catch (error) {
-      productionLogger.error('Permission check failed', error, 'useConsolidatedSecurity');
-      return false;
-    }
-  }, [user]);
-
-  const getSecurityStatus = useCallback(async () => {
-    try {
-      const [clientMetrics, userRole, sessionValid] = await Promise.all([
-        enhancedClientSecurity.getSecurityMetrics(),
-        getUserRole(),
-        validateSession()
-      ]);
-
-      // Get session security metrics if available
-      let sessionMetrics = null;
-      if (session) {
-        sessionMetrics = enhancedSessionSecurity.getSessionMetrics(session.access_token);
+      const sessionId = await secureSessionManager.initializeSecureSession(userId);
+      
+      if (sessionId) {
+        await securityAlertsService.createSecurityAlert({
+          type: 'unusual_activity',
+          severity: 'low',
+          message: 'New secure session initialized',
+          userId,
+          metadata: { sessionType: 'secure' }
+        });
       }
 
-      return {
-        clientSecurity: clientMetrics,
-        userRole,
-        sessionValid,
-        sessionMetrics,
-        isDemo
-      };
+      return sessionId;
     } catch (error) {
-      productionLogger.error('Failed to get security status', error, 'useConsolidatedSecurity');
+      productionLogger.error('Error initializing secure session', error, 'useConsolidatedSecurity');
       return null;
     }
-  }, [getUserRole, validateSession, isDemo, session]);
+  }, []);
 
-  const invalidateSession = useCallback(async () => {
-    if (session) {
-      try {
-        await enhancedSessionSecurity.invalidateSession(session.access_token);
-      } catch (error) {
-        productionLogger.error('Failed to invalidate session', error, 'useConsolidatedSecurity');
-      }
+  const performSecurityAssessment = useCallback(async (userId: string): Promise<SecurityValidationResult> => {
+    try {
+      // Get session validation
+      const sessionResult = await secureSessionManager.validateCurrentSession();
+      
+      // Get security status from privilege control
+      const privilegeStatus = await enhancedPrivilegeControl.getSecurityStatus(userId);
+      
+      // Check for recent alerts
+      const recentAlerts = await securityAlertsService.getRecentAlerts(userId, 10);
+      const criticalAlerts = recentAlerts.filter(alert => alert.severity === 'critical').length;
+      
+      // Calculate overall security score
+      let overallScore = sessionResult.securityScore;
+      if (criticalAlerts > 0) overallScore -= 30;
+      if (!privilegeStatus.isSecure) overallScore -= 20;
+      
+      const allIssues = [
+        ...privilegeStatus.issues,
+        ...(sessionResult.valid ? [] : [`Session issue: ${sessionResult.reason}`]),
+        ...(criticalAlerts > 0 ? [`${criticalAlerts} critical security alerts`] : [])
+      ];
+
+      return {
+        valid: privilegeStatus.isSecure && sessionResult.valid && criticalAlerts === 0,
+        securityScore: Math.max(overallScore, 0),
+        issues: allIssues,
+        recommendations: privilegeStatus.recommendations
+      };
+    } catch (error) {
+      productionLogger.error('Security assessment error', error, 'useConsolidatedSecurity');
+      return {
+        valid: false,
+        securityScore: 0,
+        issues: ['Unable to perform security assessment'],
+        recommendations: ['Contact system administrator']
+      };
     }
-  }, [session]);
+  }, []);
+
+  const reportSecurityIncident = useCallback(async (
+    type: Parameters<typeof securityAlertsService.createSecurityAlert>[0]['type'],
+    message: string,
+    severity: Parameters<typeof securityAlertsService.createSecurityAlert>[0]['severity'] = 'medium',
+    metadata?: Record<string, any>
+  ): Promise<boolean> => {
+    const { data: user } = await supabase.auth.getUser();
+    
+    return securityAlertsService.createSecurityAlert({
+      type,
+      severity,
+      message,
+      userId: user.user?.id,
+      metadata
+    });
+  }, []);
 
   return {
     validateSession,
-    getUserRole,
-    hasPermission,
-    getSecurityStatus,
     invalidateSession,
-    isLoading
+    initializeSecureSession,
+    performSecurityAssessment,
+    reportSecurityIncident,
+    isValidating
   };
 }

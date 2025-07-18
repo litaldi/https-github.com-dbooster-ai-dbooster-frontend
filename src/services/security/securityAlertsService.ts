@@ -2,19 +2,29 @@
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 
+export type SecurityAlertType = 
+  | 'suspicious_login'
+  | 'privilege_escalation'
+  | 'unusual_activity'
+  | 'security_policy_violation'
+  | 'rate_limit_exceeded'
+  | 'session_anomaly';
+
+export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
+
 interface SecurityAlert {
-  id: string;
-  type: 'privilege_escalation' | 'suspicious_session' | 'unauthorized_access' | 'security_violation';
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  id?: string;
+  type: SecurityAlertType;
+  severity: AlertSeverity;
   message: string;
-  timestamp: string;
   userId?: string;
   metadata?: Record<string, any>;
+  createdAt?: string;
 }
 
 class SecurityAlertsService {
   private static instance: SecurityAlertsService;
-  private alertListeners: ((alert: SecurityAlert) => void)[] = [];
+  private alertListeners: Array<(alert: SecurityAlert) => void> = [];
 
   static getInstance(): SecurityAlertsService {
     if (!SecurityAlertsService.instance) {
@@ -23,168 +33,155 @@ class SecurityAlertsService {
     return SecurityAlertsService.instance;
   }
 
-  async getRecentAlerts(userId?: string): Promise<SecurityAlert[]> {
+  async createSecurityAlert(alert: SecurityAlert): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('security_events_enhanced')
+        .insert({
+          event_type: alert.type,
+          severity: alert.severity,
+          user_id: alert.userId,
+          event_data: {
+            message: alert.message,
+            ...alert.metadata
+          },
+          threat_score: this.calculateThreatScore(alert.severity),
+          ip_address: await this.getUserIP(),
+          user_agent: navigator.userAgent
+        });
+
+      if (error) {
+        productionLogger.error('Failed to create security alert', error, 'SecurityAlertsService');
+        return false;
+      }
+
+      // Notify listeners
+      this.notifyListeners(alert);
+
+      productionLogger.warn('Security alert created', {
+        type: alert.type,
+        severity: alert.severity,
+        message: alert.message
+      });
+
+      return true;
+    } catch (error) {
+      productionLogger.error('Error creating security alert', error, 'SecurityAlertsService');
+      return false;
+    }
+  }
+
+  async getRecentAlerts(userId?: string, limit: number = 50): Promise<SecurityAlert[]> {
     try {
       let query = supabase
-        .from('privilege_escalation_attempts')
+        .from('security_events_enhanced')
         .select('*')
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
       if (userId) {
         query = query.eq('user_id', userId);
       }
 
-      const { data: escalationAttempts, error: escalationError } = await query;
+      const { data, error } = await query;
 
-      if (escalationError) {
-        productionLogger.error('Failed to fetch escalation attempts', escalationError, 'SecurityAlertsService');
+      if (error) {
+        productionLogger.error('Failed to fetch security alerts', error, 'SecurityAlertsService');
         return [];
       }
 
-      // Also get suspicious session events
-      const { data: sessionEvents, error: sessionError } = await supabase
-        .from('security_events_enhanced')
-        .select('*')
-        .eq('event_type', 'suspicious_session_validation')
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false });
-
-      if (sessionError) {
-        productionLogger.error('Failed to fetch session events', sessionError, 'SecurityAlertsService');
-      }
-
-      const alerts: SecurityAlert[] = [];
-
-      // Convert escalation attempts to alerts
-      escalationAttempts?.forEach(attempt => {
-        alerts.push({
-          id: attempt.id,
-          type: 'privilege_escalation',
-          severity: attempt.attempted_role === 'admin' ? 'critical' : 'high',
-          message: `Unauthorized ${attempt.attempted_role} role assignment attempt`,
-          timestamp: attempt.created_at,
-          userId: attempt.user_id,
-          metadata: {
-            method: attempt.method,
-            blocked: attempt.blocked,
-            ip_address: attempt.ip_address
-          }
-        });
-      });
-
-      // Convert session events to alerts with safe type handling
-      sessionEvents?.forEach(event => {
-        const eventData = event.event_data;
-        const metadata = eventData && typeof eventData === 'object' && !Array.isArray(eventData) 
-          ? eventData as Record<string, any>
-          : {};
-
-        alerts.push({
-          id: event.id,
-          type: 'suspicious_session',
-          severity: event.severity as SecurityAlert['severity'],
-          message: 'Suspicious session activity detected',
-          timestamp: event.created_at,
-          userId: event.user_id,
-          metadata
-        });
-      });
-
-      return alerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      return data.map(row => ({
+        id: row.id,
+        type: row.event_type as SecurityAlertType,
+        severity: row.severity as AlertSeverity,
+        message: row.event_data?.message || 'Security event detected',
+        userId: row.user_id,
+        metadata: row.event_data,
+        createdAt: row.created_at
+      }));
     } catch (error) {
       productionLogger.error('Error fetching security alerts', error, 'SecurityAlertsService');
       return [];
     }
   }
 
-  async createSecurityAlert(alert: Omit<SecurityAlert, 'id' | 'timestamp'>): Promise<void> {
-    const fullAlert: SecurityAlert = {
-      ...alert,
-      id: crypto.randomUUID(),
-      timestamp: new Date().toISOString()
-    };
-
+  async getAlertStats(userId?: string): Promise<{
+    total: number;
+    byType: Record<string, number>;
+    bySeverity: Record<string, number>;
+  }> {
     try {
-      // Log the alert
-      productionLogger.warn('Security alert created', {
-        type: alert.type,
-        severity: alert.severity,
-        message: alert.message,
-        user_id: alert.userId?.substring(0, 8)
-      });
+      let query = supabase
+        .from('security_events_enhanced')
+        .select('event_type, severity');
 
-      // Notify listeners
-      this.alertListeners.forEach(listener => {
-        try {
-          listener(fullAlert);
-        } catch (error) {
-          productionLogger.error('Error in alert listener', error, 'SecurityAlertsService');
-        }
-      });
-
-      // For critical alerts, also log to security events
-      if (alert.severity === 'critical') {
-        await supabase.from('security_events_enhanced').insert({
-          event_type: 'critical_security_alert',
-          severity: 'high',
-          user_id: alert.userId,
-          event_data: {
-            alert_type: alert.type,
-            message: alert.message,
-            metadata: alert.metadata
-          }
-        });
+      if (userId) {
+        query = query.eq('user_id', userId);
       }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      const stats = {
+        total: data.length,
+        byType: {} as Record<string, number>,
+        bySeverity: {} as Record<string, number>
+      };
+
+      data.forEach(row => {
+        stats.byType[row.event_type] = (stats.byType[row.event_type] || 0) + 1;
+        stats.bySeverity[row.severity] = (stats.bySeverity[row.severity] || 0) + 1;
+      });
+
+      return stats;
     } catch (error) {
-      productionLogger.error('Error creating security alert', error, 'SecurityAlertsService');
+      productionLogger.error('Error fetching alert stats', error, 'SecurityAlertsService');
+      return { total: 0, byType: {}, bySeverity: {} };
     }
   }
 
-  onSecurityAlert(listener: (alert: SecurityAlert) => void): () => void {
-    this.alertListeners.push(listener);
+  onSecurityAlert(callback: (alert: SecurityAlert) => void): () => void {
+    this.alertListeners.push(callback);
     
     // Return unsubscribe function
     return () => {
-      const index = this.alertListeners.indexOf(listener);
+      const index = this.alertListeners.indexOf(callback);
       if (index > -1) {
         this.alertListeners.splice(index, 1);
       }
     };
   }
 
-  async getSecuritySummary(): Promise<{
-    totalAlerts: number;
-    criticalAlerts: number;
-    recentTrends: {
-      privilegeEscalation: number;
-      suspiciousSessions: number;
-      securityViolations: number;
-    };
-  }> {
+  private notifyListeners(alert: SecurityAlert): void {
+    this.alertListeners.forEach(listener => {
+      try {
+        listener(alert);
+      } catch (error) {
+        productionLogger.error('Error in security alert listener', error, 'SecurityAlertsService');
+      }
+    });
+  }
+
+  private calculateThreatScore(severity: AlertSeverity): number {
+    switch (severity) {
+      case 'low': return 25;
+      case 'medium': return 50;
+      case 'high': return 75;
+      case 'critical': return 100;
+      default: return 0;
+    }
+  }
+
+  private async getUserIP(): Promise<string> {
     try {
-      const alerts = await this.getRecentAlerts();
-      
-      return {
-        totalAlerts: alerts.length,
-        criticalAlerts: alerts.filter(a => a.severity === 'critical').length,
-        recentTrends: {
-          privilegeEscalation: alerts.filter(a => a.type === 'privilege_escalation').length,
-          suspiciousSessions: alerts.filter(a => a.type === 'suspicious_session').length,
-          securityViolations: alerts.filter(a => a.type === 'security_violation').length
-        }
-      };
-    } catch (error) {
-      productionLogger.error('Error getting security summary', error, 'SecurityAlertsService');
-      return {
-        totalAlerts: 0,
-        criticalAlerts: 0,
-        recentTrends: {
-          privilegeEscalation: 0,
-          suspiciousSessions: 0,
-          securityViolations: 0
-        }
-      };
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || 'unknown';
+    } catch {
+      return 'unknown';
     }
   }
 }
