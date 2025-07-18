@@ -28,6 +28,59 @@ class SecureSessionManager {
     return SecureSessionManager.instance;
   }
 
+  async createSecureSession(userId: string, isDemo: boolean = false): Promise<string | null> {
+    try {
+      const sessionId = crypto.randomUUID();
+      const deviceFingerprint = await this.generateDeviceFingerprint();
+      const ipAddress = await this.getUserIP();
+      const userAgent = navigator.userAgent;
+
+      const { error } = await supabase
+        .from('secure_session_validation')
+        .insert({
+          session_id: sessionId,
+          user_id: userId,
+          device_fingerprint: deviceFingerprint,
+          ip_address: ipAddress,
+          user_agent: userAgent,
+          security_score: await this.calculateInitialSecurityScore()
+        });
+
+      if (error) {
+        productionLogger.error('Failed to create secure session', error, 'SecureSessionManager');
+        return null;
+      }
+
+      this.currentSessionMetadata = {
+        sessionId,
+        deviceFingerprint,
+        ipAddress,
+        userAgent,
+        securityScore: await this.calculateInitialSecurityScore()
+      };
+
+      productionLogger.secureInfo('Secure session created', {
+        session_id: sessionId.substring(0, 8),
+        security_score: this.currentSessionMetadata.securityScore
+      });
+
+      return sessionId;
+    } catch (error) {
+      productionLogger.error('Error creating secure session', error, 'SecureSessionManager');
+      return null;
+    }
+  }
+
+  async validateSession(sessionId: string): Promise<boolean> {
+    try {
+      const validation = await this.validateCurrentSession();
+      return validation.valid;
+    } catch (error) {
+      productionLogger.error('Session validation failed', error, 'SecureSessionManager');
+      return false;
+    }
+  }
+
   async initializeSecureSession(userId: string): Promise<string | null> {
     try {
       const sessionId = crypto.randomUUID();
@@ -103,7 +156,8 @@ class SecureSessionManager {
         };
       }
 
-      const result = data as SessionValidationResult;
+      // Type-safe handling of database response
+      const result = data as unknown as SessionValidationResult;
       
       if (!result.valid || result.suspicious) {
         productionLogger.warn('Session security issue detected', {

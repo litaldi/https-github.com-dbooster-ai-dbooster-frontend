@@ -85,22 +85,29 @@ class SecureAdminBootstrap {
         };
       }
 
-      const result = data as AdminBootstrapResult;
+      // Type-safe handling of database response
+      const result = data as unknown as AdminBootstrapResult;
       
-      if (result.success) {
-        productionLogger.secureInfo('Admin bootstrap completed successfully', {
-          user_id: userId.substring(0, 8),
-          ip_address: ipAddress
-        });
-      } else {
-        productionLogger.warn('Bootstrap attempt rejected', {
-          user_id: userId.substring(0, 8),
-          reason: result.error,
-          ip_address: ipAddress
-        });
+      if (result && typeof result === 'object' && 'success' in result) {
+        if (result.success) {
+          productionLogger.secureInfo('Admin bootstrap completed successfully', {
+            user_id: userId.substring(0, 8),
+            ip_address: ipAddress
+          });
+        } else {
+          productionLogger.warn('Bootstrap attempt rejected', {
+            user_id: userId.substring(0, 8),
+            reason: result.error,
+            ip_address: ipAddress
+          });
+        }
+        return result;
       }
 
-      return result;
+      return {
+        success: false,
+        error: 'Invalid response from bootstrap function'
+      };
     } catch (error) {
       productionLogger.error('Error during secure bootstrap', error, 'SecureAdminBootstrap');
       return {

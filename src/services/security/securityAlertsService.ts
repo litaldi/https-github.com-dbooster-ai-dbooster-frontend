@@ -73,8 +73,13 @@ class SecurityAlertsService {
         });
       });
 
-      // Convert session events to alerts
+      // Convert session events to alerts with safe type handling
       sessionEvents?.forEach(event => {
+        const eventData = event.event_data;
+        const metadata = eventData && typeof eventData === 'object' && !Array.isArray(eventData) 
+          ? eventData as Record<string, any>
+          : {};
+
         alerts.push({
           id: event.id,
           type: 'suspicious_session',
@@ -82,7 +87,7 @@ class SecurityAlertsService {
           message: 'Suspicious session activity detected',
           timestamp: event.created_at,
           userId: event.user_id,
-          metadata: event.event_data
+          metadata
         });
       });
 

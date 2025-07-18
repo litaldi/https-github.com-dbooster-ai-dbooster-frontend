@@ -58,17 +58,24 @@ class EnhancedPrivilegeControl {
         };
       }
 
-      const result = data as RoleAssignmentResult;
+      // Type-safe handling of database response
+      const result = data as unknown as RoleAssignmentResult;
       
-      if (result.success) {
-        productionLogger.secureInfo('Role assignment completed', {
-          target_user: request.targetUserId.substring(0, 8),
-          new_role: request.newRole,
-          assigned_by: currentUser.user.id.substring(0, 8)
-        });
+      if (result && typeof result === 'object' && 'success' in result) {
+        if (result.success) {
+          productionLogger.secureInfo('Role assignment completed', {
+            target_user: request.targetUserId.substring(0, 8),
+            new_role: request.newRole,
+            assigned_by: currentUser.user.id.substring(0, 8)
+          });
+        }
+        return result;
       }
 
-      return result;
+      return {
+        success: false,
+        error: 'Invalid response from role assignment function'
+      };
     } catch (error) {
       productionLogger.error('Error during role assignment', error, 'EnhancedPrivilegeControl');
       return {
