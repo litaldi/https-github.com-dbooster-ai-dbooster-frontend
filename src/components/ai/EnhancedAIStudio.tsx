@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Brain, Sparkles, Wand2, Zap, Database, BarChart3, Eye, Activity, TrendingUp, DollarSign, GitBranch, Shield, HardDrive, AlertTriangle } from 'lucide-react';
+import { Brain, Sparkles, Wand2, Zap, Database, BarChart3, Eye, Activity, TrendingUp, DollarSign, GitBranch, Shield, HardDrive, AlertTriangle, FileText, Wrench, TestTube, Scale, Link2, Settings } from 'lucide-react';
+
 import { QueryAutoComplete } from './QueryAutoComplete';
 import { QueryPatternLearning } from './QueryPatternLearning';
 import { QueryRiskAssessment } from './QueryRiskAssessment';
@@ -25,6 +25,15 @@ import { DatabaseBackupAdvisor } from './DatabaseBackupAdvisor';
 import { DataQualityMonitor } from './DataQualityMonitor';
 import { CapacityPlanningAssistant } from './CapacityPlanningAssistant';
 import { SecurityThreatDetector } from './SecurityThreatDetector';
+
+// New AI features
+import { DatabaseDocumentationGenerator } from './DatabaseDocumentationGenerator';
+import { DataLineageTracker } from './DataLineageTracker';
+import { DatabaseRefactoringAssistant } from './DatabaseRefactoringAssistant';
+import { QueryExecutionPlanner } from './QueryExecutionPlanner';
+import { PredictiveDatabaseScaling } from './PredictiveDatabaseScaling';
+import { TestDataGenerator } from './TestDataGenerator';
+import { ComplianceAuditor } from './ComplianceAuditor';
 
 export function EnhancedAIStudio() {
   const [currentQuery, setCurrentQuery] = useState('');
@@ -49,7 +58,7 @@ export function EnhancedAIStudio() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-19">
+        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-26">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <Wand2 className="h-4 w-4" />
             Smart Editor
@@ -125,6 +134,34 @@ export function EnhancedAIStudio() {
           <TabsTrigger value="security" className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
             Security Threats
+          </TabsTrigger>
+          <TabsTrigger value="documentation" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Documentation
+          </TabsTrigger>
+          <TabsTrigger value="lineage" className="flex items-center gap-2">
+            <Link2 className="h-4 w-4" />
+            Data Lineage
+          </TabsTrigger>
+          <TabsTrigger value="refactoring" className="flex items-center gap-2">
+            <Wrench className="h-4 w-4" />
+            Refactoring
+          </TabsTrigger>
+          <TabsTrigger value="execution" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Execution Planner
+          </TabsTrigger>
+          <TabsTrigger value="scaling" className="flex items-center gap-2">
+            <Scale className="h-4 w-4" />
+            Predictive Scaling
+          </TabsTrigger>
+          <TabsTrigger value="testdata" className="flex items-center gap-2">
+            <TestTube className="h-4 w-4" />
+            Test Data Generator
+          </TabsTrigger>
+          <TabsTrigger value="compliance" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Compliance Auditor
           </TabsTrigger>
         </TabsList>
 
@@ -242,6 +279,35 @@ export function EnhancedAIStudio() {
 
         <TabsContent value="security">
           <SecurityThreatDetector />
+        </TabsContent>
+
+        {/* New AI Feature Tabs */}
+        <TabsContent value="documentation">
+          <DatabaseDocumentationGenerator />
+        </TabsContent>
+
+        <TabsContent value="lineage">
+          <DataLineageTracker />
+        </TabsContent>
+
+        <TabsContent value="refactoring">
+          <DatabaseRefactoringAssistant />
+        </TabsContent>
+
+        <TabsContent value="execution">
+          <QueryExecutionPlanner />
+        </TabsContent>
+
+        <TabsContent value="scaling">
+          <PredictiveDatabaseScaling />
+        </TabsContent>
+
+        <TabsContent value="testdata">
+          <TestDataGenerator />
+        </TabsContent>
+
+        <TabsContent value="compliance">
+          <ComplianceAuditor />
         </TabsContent>
       </Tabs>
     </div>
