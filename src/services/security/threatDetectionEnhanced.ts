@@ -1,4 +1,3 @@
-
 import { productionLogger } from '@/utils/productionLogger';
 import { realTimeSecurityMonitor } from './realTimeSecurityMonitor';
 
@@ -26,10 +25,27 @@ interface ThreatDetectionResult {
   reason?: string;
 }
 
+interface SecurityEvent {
+  id: string;
+  eventType: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  timestamp: Date;
+  userId?: string;
+  details: Record<string, any>;
+}
+
+interface BehaviorAnalysis {
+  riskScore: number;
+  patterns: string[];
+  anomalies: string[];
+  recommendation: string;
+}
+
 class EnhancedThreatDetection {
   private static instance: EnhancedThreatDetection;
   private threatPatterns: ThreatPattern[] = [];
   private ipThreatMap = new Map<string, IPThreatInfo>();
+  private securityEvents: SecurityEvent[] = [];
   private readonly BLOCK_DURATION = 60 * 60 * 1000; // 1 hour
   private readonly MAX_FAILURES = 5;
   private readonly FAILURE_WINDOW = 15 * 60 * 1000; // 15 minutes
@@ -329,6 +345,90 @@ class EnhancedThreatDetection {
     return Array.from(this.ipThreatMap.entries())
       .filter(([_, info]) => info.isBlocked)
       .map(([ip]) => ip);
+  }
+
+  analyzeBehaviorPatterns(userId: string): Promise<BehaviorAnalysis> {
+    return new Promise((resolve) => {
+      // Get user's recent security events
+      const userEvents = this.securityEvents.filter(event => 
+        event.userId === userId && 
+        Date.now() - event.timestamp.getTime() < 24 * 60 * 60 * 1000 // Last 24 hours
+      );
+
+      let riskScore = 0;
+      const patterns: string[] = [];
+      const anomalies: string[] = [];
+
+      // Analyze patterns
+      if (userEvents.length > 10) {
+        patterns.push('high_activity');
+        riskScore += 20;
+      }
+
+      const criticalEvents = userEvents.filter(e => e.severity === 'critical');
+      if (criticalEvents.length > 0) {
+        patterns.push('critical_security_events');
+        riskScore += 50;
+      }
+
+      const suspiciousEvents = userEvents.filter(e => e.eventType === 'suspicious_activity');
+      if (suspiciousEvents.length > 3) {
+        anomalies.push('repeated_suspicious_activity');
+        riskScore += 30;
+      }
+
+      let recommendation = 'User behavior appears normal';
+      if (riskScore > 70) {
+        recommendation = 'High risk user - consider additional verification';
+      } else if (riskScore > 30) {
+        recommendation = 'Monitor user activity closely';
+      }
+
+      resolve({
+        riskScore: Math.min(riskScore, 100),
+        patterns,
+        anomalies,
+        recommendation
+      });
+    });
+  }
+
+  getRecentEvents(limit: number = 50): SecurityEvent[] {
+    return this.securityEvents
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+  }
+
+  cleanupOldEvents(maxAgeHours: number = 168): void {
+    const cutoffTime = Date.now() - (maxAgeHours * 60 * 60 * 1000);
+    const initialCount = this.securityEvents.length;
+    
+    this.securityEvents = this.securityEvents.filter(event => 
+      event.timestamp.getTime() > cutoffTime
+    );
+
+    const removedCount = initialCount - this.securityEvents.length;
+    if (removedCount > 0) {
+      productionLogger.info(`Cleaned up ${removedCount} old security events`, {
+        maxAgeHours,
+        remainingEvents: this.securityEvents.length
+      });
+    }
+  }
+
+  private addSecurityEvent(event: Omit<SecurityEvent, 'id' | 'timestamp'>): void {
+    const securityEvent: SecurityEvent = {
+      id: crypto.randomUUID(),
+      timestamp: new Date(),
+      ...event
+    };
+    
+    this.securityEvents.push(securityEvent);
+    
+    // Keep only recent events to prevent memory bloat
+    if (this.securityEvents.length > 1000) {
+      this.securityEvents = this.securityEvents.slice(-500);
+    }
   }
 }
 

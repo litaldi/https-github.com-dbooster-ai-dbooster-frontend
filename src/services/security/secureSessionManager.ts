@@ -24,6 +24,14 @@ interface SessionSecurityMetrics {
   averageSecurityScore: number;
 }
 
+// Extend Navigator interface for optional properties
+interface ExtendedNavigator extends Navigator {
+  deviceMemory?: number;
+  connection?: {
+    effectiveType?: string;
+  };
+}
+
 class SecureSessionManager {
   private static instance: SecureSessionManager;
   private readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
@@ -216,6 +224,8 @@ class SecureSessionManager {
   }
 
   private async generateDeviceFingerprint(): Promise<string> {
+    const extendedNavigator = navigator as ExtendedNavigator;
+    
     const components = [
       navigator.userAgent,
       navigator.language,
@@ -223,7 +233,7 @@ class SecureSessionManager {
       screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
       new Date().getTimezoneOffset().toString(),
       navigator.hardwareConcurrency?.toString() || '0',
-      navigator.deviceMemory?.toString() || '0',
+      extendedNavigator.deviceMemory?.toString() || '0',
       navigator.cookieEnabled.toString()
     ];
 
@@ -257,8 +267,9 @@ class SecureSessionManager {
     if (window.isSecureContext) score += 10;
     
     // Connection security
-    if (navigator.connection) {
-      const connection = navigator.connection as any;
+    const extendedNavigator = navigator as ExtendedNavigator;
+    if (extendedNavigator.connection) {
+      const connection = extendedNavigator.connection;
       if (connection.effectiveType === '4g') score += 5;
     }
 

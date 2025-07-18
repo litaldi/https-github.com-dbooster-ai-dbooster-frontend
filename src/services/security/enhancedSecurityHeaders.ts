@@ -18,6 +18,7 @@ interface SecurityHeaderConfig {
 class EnhancedSecurityHeaders {
   private static instance: EnhancedSecurityHeaders;
   private config: SecurityHeaderConfig;
+  private currentNonce: string;
 
   static getInstance(): EnhancedSecurityHeaders {
     if (!EnhancedSecurityHeaders.instance) {
@@ -27,6 +28,7 @@ class EnhancedSecurityHeaders {
   }
 
   constructor() {
+    this.currentNonce = this.generateNonce();
     this.config = {
       contentSecurityPolicy: {
         directives: {
@@ -193,6 +195,63 @@ class EnhancedSecurityHeaders {
       httpsEnforced: location.protocol === 'https:',
       secureContext: window.isSecureContext
     };
+  }
+
+  // Add missing methods
+  validateSecureUrl(url: string): { isValid: boolean; reason?: string; sanitizedUrl?: string } {
+    try {
+      const urlObj = new URL(url);
+      
+      // Block dangerous protocols
+      if (!['http:', 'https:'].includes(urlObj.protocol)) {
+        return {
+          isValid: false,
+          reason: 'Only HTTP and HTTPS protocols are allowed'
+        };
+      }
+
+      // Block private IP ranges
+      const hostname = urlObj.hostname;
+      const privateIpRanges = [
+        /^10\./,
+        /^192\.168\./,
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+        /^127\./,
+        /^169\.254\./,
+        /^::1$/,
+        /^fe80:/i
+      ];
+
+      if (privateIpRanges.some(range => range.test(hostname))) {
+        return {
+          isValid: false,
+          reason: 'Requests to private IP addresses are not allowed'
+        };
+      }
+
+      // Sanitize URL
+      const sanitizedUrl = urlObj.toString();
+
+      return {
+        isValid: true,
+        sanitizedUrl
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        reason: 'Invalid URL format'
+      };
+    }
+  }
+
+  getNonce(): string {
+    return this.currentNonce;
+  }
+
+  private generateNonce(): string {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 }
 
