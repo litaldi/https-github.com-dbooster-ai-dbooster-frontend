@@ -1,17 +1,22 @@
 
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export function useMenuState() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
-  const openMenu = () => setIsMenuOpen(true);
-  const closeMenu = () => setIsMenuOpen(false);
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleMenu = () => setIsOpen(!isOpen);
+  const closeMenu = () => setIsOpen(false);
+
+  const isCurrentRoute = (path: string) => {
+    return location.pathname === path;
+  };
 
   return {
-    isMenuOpen,
-    openMenu,
-    closeMenu,
+    isOpen,
     toggleMenu,
+    closeMenu,
+    isCurrentRoute
   };
 }

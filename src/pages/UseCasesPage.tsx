@@ -1,4 +1,11 @@
 
-import { createSimplePage } from '@/utils/createSimplePage';
+import { PagePlaceholder } from '@/components/PagePlaceholder';
 
-export default createSimplePage("Use Cases", "See how others use our product");
+export default function UseCasesPage() {
+  return (
+    <PagePlaceholder
+      title="Use Cases"
+      description="Real-world optimization scenarios and success stories from our customers."
+    />
+  );
+}

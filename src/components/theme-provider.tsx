@@ -27,28 +27,11 @@ export function ThemeProvider({
   storageKey = 'dbooster-theme',
   ...props
 }: ThemeProviderProps) {
-  // Initialize with defaultTheme to avoid localStorage access during SSR
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Load theme from localStorage after component mounts
-  useEffect(() => {
-    try {
-      const storedTheme = localStorage.getItem(storageKey) as Theme;
-      if (storedTheme && ['dark', 'light', 'system'].includes(storedTheme)) {
-        setTheme(storedTheme);
-      }
-    } catch (error) {
-      console.warn('Failed to load theme from localStorage:', error);
-    } finally {
-      setIsInitialized(true);
-    }
-  }, [storageKey]);
+  const [theme, setTheme] = useState<Theme>(
+    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+  );
 
   useEffect(() => {
-    // Only apply theme changes after initialization
-    if (!isInitialized) return;
-
     const root = window.document.documentElement;
 
     root.classList.remove('light', 'dark');
@@ -64,18 +47,13 @@ export function ThemeProvider({
     }
 
     root.classList.add(theme);
-  }, [theme, isInitialized]);
+  }, [theme]);
 
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      try {
-        localStorage.setItem(storageKey, theme);
-        setTheme(theme);
-      } catch (error) {
-        console.warn('Failed to save theme to localStorage:', error);
-        setTheme(theme);
-      }
+      localStorage.setItem(storageKey, theme);
+      setTheme(theme);
     },
   };
 
