@@ -311,13 +311,12 @@ export class ConsolidatedAuthenticationSecurity {
   async createSecureDemoSession(): Promise<any> {
     try {
       const { secureSessionManager } = await import('./secureSessionManager');
-      const sessionResult = await secureSessionManager.createSecureSession('demo-user', true);
+      const sessionId = await secureSessionManager.createSecureSession('demo-user', true);
       
-      // Handle the case where createSecureSession returns a string (session ID) or null
-      if (typeof sessionResult === 'string') {
-        // If it's just a session ID, create a simple session object
+      if (sessionId) {
+        // Create a session object with the returned session ID
         const session = {
-          id: sessionResult,
+          id: sessionId,
           securityScore: 75 // Default security score for demo sessions
         };
         
@@ -334,21 +333,6 @@ export class ConsolidatedAuthenticationSecurity {
         });
 
         return session;
-      } else if (sessionResult) {
-        // If it's already an object, use it directly
-        this.authStats.activeDemoSessions++;
-        
-        realTimeSecurityMonitor.logSecurityEvent({
-          type: 'login_failure', // Using available type
-          severity: 'low',
-          message: 'Secure demo session created',
-          metadata: {
-            sessionId: sessionResult.id || 'unknown',
-            securityScore: sessionResult.securityScore || 75
-          }
-        });
-
-        return sessionResult;
       } else {
         throw new Error('Failed to create demo session');
       }
