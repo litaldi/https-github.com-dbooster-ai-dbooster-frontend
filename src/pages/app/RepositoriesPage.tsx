@@ -22,7 +22,7 @@ interface Repository {
   last_scan?: string;
   queries_count: number;
   optimizations_count: number;
-  scan_status: 'pending' | 'scanning' | 'completed' | 'error';
+  scan_status: string; // Changed from union type to string to match database
 }
 
 export default function RepositoriesPage() {
@@ -48,7 +48,23 @@ export default function RepositoriesPage() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRepositories(data || []);
+      
+      // Transform data to match our interface
+      const transformedData = (data || []).map(repo => ({
+        id: repo.id,
+        name: repo.name,
+        full_name: repo.full_name,
+        description: repo.description,
+        html_url: repo.html_url,
+        language: repo.language,
+        default_branch: repo.default_branch,
+        last_scan: repo.last_scan,
+        queries_count: repo.queries_count || 0,
+        optimizations_count: repo.optimizations_count || 0,
+        scan_status: repo.scan_status || 'pending'
+      }));
+      
+      setRepositories(transformedData);
     } catch (error) {
       console.error('Error loading repositories:', error);
       enhancedToast.error({

@@ -25,7 +25,7 @@ interface Repository {
   last_scan?: string;
   queries_count: number;
   optimizations_count: number;
-  scan_status: 'pending' | 'scanning' | 'completed' | 'error';
+  scan_status: string; // Changed from union type to string
 }
 
 interface RepositoryCardProps {
