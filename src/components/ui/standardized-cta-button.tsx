@@ -66,7 +66,7 @@ export function StandardizedCTAButton({
       if (user) {
         navigate('/app');
       } else {
-        // For "Start for Free", go to demo first
+        // For "Start for Free", go to demo page to let users experience the product
         navigate('/demo');
       }
     } catch (error) {

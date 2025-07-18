@@ -19,12 +19,24 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function Header() {
-  const { user, isDemo, loginDemo } = useAuth();
+  const { user, isDemo } = useAuth();
   const navigate = useNavigate();
 
-  const handleStartForFree = async () => {
-    // Always navigate to demo page for "Start for Free"
+  const handleStartForFree = () => {
+    // Navigate to demo page where users can experience the product
     navigate('/demo');
+  };
+
+  const handleTryDemo = () => {
+    navigate('/demo');
+  };
+
+  const handleSignUp = () => {
+    navigate('/login?mode=signup');
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
   };
 
   return (
@@ -53,11 +65,11 @@ export function Header() {
           <AccessibilityMenu />
           <ThemeToggle />
 
-          {/* New action buttons */}
+          {/* Action buttons */}
           <div className="flex items-center gap-2 border-l pl-2 ml-2">
             <Button 
               onClick={handleStartForFree}
-              className="bg-gradient-to-r from-primary to-blue-600"
+              className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
             >
               Start for Free
             </Button>
@@ -66,13 +78,20 @@ export function Header() {
               <>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate('/login?mode=signup')}
+                  onClick={handleTryDemo}
+                  className="hidden sm:inline-flex"
+                >
+                  Try Demo
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleSignUp}
                 >
                   Sign Up
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate('/login')}
+                  onClick={handleLogin}
                 >
                   Login
                 </Button>
@@ -138,7 +157,7 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button variant="outline" onClick={() => navigate('/login')}>
+            <Button variant="outline" onClick={handleLogin}>
               Sign In
             </Button>
           )}
