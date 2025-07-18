@@ -1,9 +1,9 @@
-
 import { productionLogger } from '@/utils/productionLogger';
 import { ValidationService } from './validationService';
 import { AuthenticationService } from './authenticationService';
 import { MonitoringService } from './monitoringService';
 import { ApiSecurityService } from './apiSecurityService';
+import { enhancedAuthenticationService } from './enhancedAuthenticationService';
 
 export class SecurityServiceCore {
   private static instance: SecurityServiceCore;
@@ -35,6 +35,23 @@ export class SecurityServiceCore {
     } catch (error) {
       productionLogger.error('Failed to initialize enhanced security', error, 'SecurityService');
     }
+  }
+
+  // Enhanced session management
+  async createSecureSession(userId: string, isDemo: boolean = false): Promise<string> {
+    return enhancedAuthenticationService.createSecureSession(userId, isDemo);
+  }
+
+  async validateSession(sessionId: string): Promise<boolean> {
+    return enhancedAuthenticationService.validateSession(sessionId);
+  }
+
+  async detectSuspiciousActivity(userId: string): Promise<boolean> {
+    return enhancedAuthenticationService.detectSuspiciousActivity(userId);
+  }
+
+  async assignUserRole(targetUserId: string, newRole: string, reason?: string): Promise<boolean> {
+    return enhancedAuthenticationService.assignUserRole(targetUserId, newRole, reason);
   }
 
   // Delegation methods
@@ -84,10 +101,6 @@ export class SecurityServiceCore {
 
   async logAuthEvent(eventType: string, success: boolean, details?: Record<string, any>) {
     return this.monitoringService.logAuthEvent(eventType, success, details);
-  }
-
-  async detectSuspiciousActivity(userId: string) {
-    return this.monitoringService.detectSuspiciousActivity(userId);
   }
 
   async checkPermission(userId: string, permission: string): Promise<boolean> {
