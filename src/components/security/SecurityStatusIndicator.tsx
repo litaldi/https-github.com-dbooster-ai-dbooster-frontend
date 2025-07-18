@@ -1,81 +1,104 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Shield, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
-import { realTimeSecurityMonitor } from '@/services/security/realTimeSecurityMonitor';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { securityOrchestrator } from '@/services/security/securityOrchestrator';
+
+interface SecurityStatus {
+  level: 'secure' | 'warning' | 'danger';
+  message: string;
+  details: string[];
+}
 
 export function SecurityStatusIndicator() {
-  const [securityHealth, setSecurityHealth] = useState({
-    score: 100,
-    status: 'healthy' as 'healthy' | 'warning' | 'critical',
-    issues: [] as string[]
+  const [status, setStatus] = useState<SecurityStatus>({
+    level: 'secure',
+    message: 'System Secure',
+    details: []
   });
 
   useEffect(() => {
-    const updateSecurityHealth = () => {
-      const health = realTimeSecurityMonitor.getSecurityHealth();
-      setSecurityHealth(health);
+    const checkSecurityStatus = async () => {
+      try {
+        // This would typically check various security metrics
+        const config = securityOrchestrator.getConfig();
+        
+        const details = [
+          `Real-time monitoring: ${config.enableRealTimeMonitoring ? 'Active' : 'Inactive'}`,
+          `Threat detection: ${config.enableAdvancedThreatDetection ? 'Active' : 'Inactive'}`,
+          `Behavior analysis: ${config.enableBehaviorAnalysis ? 'Active' : 'Inactive'}`
+        ];
+
+        if (config.enableRealTimeMonitoring && config.enableAdvancedThreatDetection) {
+          setStatus({
+            level: 'secure',
+            message: 'All Security Systems Active',
+            details
+          });
+        } else {
+          setStatus({
+            level: 'warning',
+            message: 'Partial Security Coverage',
+            details
+          });
+        }
+      } catch (error) {
+        setStatus({
+          level: 'danger',
+          message: 'Security System Error',
+          details: ['Unable to verify security status']
+        });
+      }
     };
 
-    updateSecurityHealth();
-    const interval = setInterval(updateSecurityHealth, 30000); // Update every 30 seconds
+    checkSecurityStatus();
+    const interval = setInterval(checkSecurityStatus, 30000); // Check every 30 seconds
 
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusIcon = () => {
-    switch (securityHealth.status) {
-      case 'healthy':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+  const getIcon = () => {
+    switch (status.level) {
+      case 'secure':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'critical':
-        return <Shield className="h-4 w-4 text-red-600" />;
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case 'danger':
+        return <XCircle className="h-4 w-4 text-red-500" />;
     }
   };
 
-  const getStatusColor = () => {
-    switch (securityHealth.status) {
-      case 'healthy':
-        return 'bg-green-100 text-green-800 border-green-200';
+  const getVariant = () => {
+    switch (status.level) {
+      case 'secure':
+        return 'default';
       case 'warning':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'secondary';
+      case 'danger':
+        return 'destructive';
     }
   };
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {getStatusIcon()}
-            <span className="font-medium">Security Status</span>
-          </div>
-          <Badge className={getStatusColor()}>
-            {securityHealth.score}/100
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <Badge variant={getVariant()} className="flex items-center gap-2">
+            {getIcon()}
+            <Shield className="h-4 w-4" />
+            {status.message}
           </Badge>
-        </div>
-
-        {securityHealth.issues.length > 0 && (
-          <div className="mt-3 space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">Active Issues:</div>
-            {securityHealth.issues.map((issue, index) => (
-              <div key={index} className="flex items-center gap-2 text-sm">
-                <AlertTriangle className="h-3 w-3 text-amber-500" />
-                <span>{issue}</span>
-              </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="space-y-1">
+            <p className="font-semibold">Security Status Details:</p>
+            {status.details.map((detail, index) => (
+              <p key={index} className="text-sm">• {detail}</p>
             ))}
           </div>
-        )}
-
-        <div className="mt-3 text-xs text-muted-foreground flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          Updated: {new Date().toLocaleTimeString()}
-        </div>
-      </CardContent>
-    </Card>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
