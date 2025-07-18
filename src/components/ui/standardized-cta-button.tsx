@@ -66,13 +66,12 @@ export function StandardizedCTAButton({
       if (user) {
         navigate('/app');
       } else {
-        // For unauthenticated users, start with demo experience
-        await loginDemo();
-        navigate('/app');
+        // For "Start for Free", go to demo first
+        navigate('/demo');
       }
     } catch (error) {
       console.error('CTA navigation error:', error);
-      navigate('/login');
+      navigate('/demo');
     }
   };
 

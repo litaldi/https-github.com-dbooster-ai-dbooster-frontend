@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,8 +17,9 @@ import {
   Timer,
   Sparkles
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { DemoDashboardSection } from '@/components/demo/DemoDashboardSection';
+import { useAuth } from '@/contexts/auth-context';
 
 const demoFeatures = [
   {
@@ -61,6 +63,20 @@ const demoScenarios = [
 ];
 
 export default function DemoPage() {
+  const navigate = useNavigate();
+  const { loginDemo } = useAuth();
+
+  const handleLaunchDemo = async () => {
+    try {
+      await loginDemo();
+      navigate('/app');
+    } catch (error) {
+      console.error('Demo launch failed:', error);
+      // Still navigate to app even if demo login fails
+      navigate('/app');
+    }
+  };
+
   return (
     <StandardPageLayout
       title="Interactive Demo - See DBooster in Action"
@@ -84,7 +100,7 @@ export default function DemoPage() {
               Get hands-on experience with DBooster's optimization engine. No installation, no signup - just pure database optimization power.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="px-8">
+              <Button size="lg" className="px-8" onClick={handleLaunchDemo}>
                 <Play className="mr-2 h-5 w-5" />
                 Launch Interactive Demo
               </Button>
@@ -213,7 +229,7 @@ export default function DemoPage() {
               After experiencing our demo, start your free trial or speak with our team about your specific optimization needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="secondary" className="px-8">
+              <Button size="lg" variant="secondary" className="px-8" onClick={handleLaunchDemo}>
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>

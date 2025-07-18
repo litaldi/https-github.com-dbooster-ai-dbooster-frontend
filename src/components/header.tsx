@@ -23,17 +23,8 @@ export function Header() {
   const navigate = useNavigate();
 
   const handleStartForFree = async () => {
-    if (user) {
-      navigate('/app');
-    } else {
-      try {
-        await loginDemo();
-        navigate('/app');
-      } catch (error) {
-        console.error('Demo login failed:', error);
-        navigate('/login');
-      }
-    }
+    // Always navigate to demo page for "Start for Free"
+    navigate('/demo');
   };
 
   return (
