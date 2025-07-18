@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Brain, Sparkles, Wand2, Zap, Database, BarChart3, Eye, Activity, TrendingUp, DollarSign, GitBranch, Shield, HardDrive, AlertTriangle, FileText, Wrench, TestTube, Scale, Link2, Settings } from 'lucide-react';
+import { Brain, Sparkles, Wand2, Zap, Database, BarChart3, Eye, Activity, TrendingUp, DollarSign, GitBranch, Shield, HardDrive, AlertTriangle, FileText, Wrench, TestTube, Scale, Link2, Settings, Code2, Network } from 'lucide-react';
 
 import { QueryAutoComplete } from './QueryAutoComplete';
 import { QueryPatternLearning } from './QueryPatternLearning';
@@ -26,7 +26,7 @@ import { DataQualityMonitor } from './DataQualityMonitor';
 import { CapacityPlanningAssistant } from './CapacityPlanningAssistant';
 import { SecurityThreatDetector } from './SecurityThreatDetector';
 
-// New AI features
+// Existing AI features
 import { DatabaseDocumentationGenerator } from './DatabaseDocumentationGenerator';
 import { DataLineageTracker } from './DataLineageTracker';
 import { DatabaseRefactoringAssistant } from './DatabaseRefactoringAssistant';
@@ -34,6 +34,11 @@ import { QueryExecutionPlanner } from './QueryExecutionPlanner';
 import { PredictiveDatabaseScaling } from './PredictiveDatabaseScaling';
 import { TestDataGenerator } from './TestDataGenerator';
 import { ComplianceAuditor } from './ComplianceAuditor';
+
+// New AI features
+import { SmartConnectionPoolOptimizer } from './SmartConnectionPoolOptimizer';
+import { AICodeGenerator } from './AICodeGenerator';
+import { MultiDatabaseCompatibilityAnalyzer } from './MultiDatabaseCompatibilityAnalyzer';
 
 export function EnhancedAIStudio() {
   const [currentQuery, setCurrentQuery] = useState('');
@@ -58,7 +63,7 @@ export function EnhancedAIStudio() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-26">
+        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-29">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <Wand2 className="h-4 w-4" />
             Smart Editor
@@ -162,6 +167,18 @@ export function EnhancedAIStudio() {
           <TabsTrigger value="compliance" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             Compliance Auditor
+          </TabsTrigger>
+          <TabsTrigger value="pool" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Pool Optimizer
+          </TabsTrigger>
+          <TabsTrigger value="codegen" className="flex items-center gap-2">
+            <Code2 className="h-4 w-4" />
+            Code Generator
+          </TabsTrigger>
+          <TabsTrigger value="compatibility" className="flex items-center gap-2">
+            <Network className="h-4 w-4" />
+            DB Compatibility
           </TabsTrigger>
         </TabsList>
 
@@ -281,7 +298,6 @@ export function EnhancedAIStudio() {
           <SecurityThreatDetector />
         </TabsContent>
 
-        {/* New AI Feature Tabs */}
         <TabsContent value="documentation">
           <DatabaseDocumentationGenerator />
         </TabsContent>
@@ -308,6 +324,18 @@ export function EnhancedAIStudio() {
 
         <TabsContent value="compliance">
           <ComplianceAuditor />
+        </TabsContent>
+
+        <TabsContent value="pool">
+          <SmartConnectionPoolOptimizer />
+        </TabsContent>
+
+        <TabsContent value="codegen">
+          <AICodeGenerator />
+        </TabsContent>
+
+        <TabsContent value="compatibility">
+          <MultiDatabaseCompatibilityAnalyzer />
         </TabsContent>
       </Tabs>
     </div>
