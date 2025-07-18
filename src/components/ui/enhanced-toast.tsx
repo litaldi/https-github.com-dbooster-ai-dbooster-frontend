@@ -22,4 +22,9 @@ export const enhancedToast = {
       description,
     });
   },
+  warning: ({ title, description }: ToastOptions) => {
+    toast.warning(title, {
+      description,
+    });
+  },
 };
