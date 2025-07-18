@@ -1,19 +1,24 @@
+
 import { productionLogger } from '@/utils/productionLogger';
 import { ValidationService } from './validationService';
 import { AuthenticationService } from './authenticationService';
 import { MonitoringService } from './monitoringService';
 import { ApiSecurityService } from './apiSecurityService';
-import { enhancedAuthenticationService } from './enhancedAuthenticationService';
 
 // Import the AppRole type
 type AppRole = 'admin' | 'moderator' | 'user';
 
+/**
+ * Core security service that orchestrates all security operations
+ * Uses singleton pattern for consistent state management
+ */
 export class SecurityServiceCore {
   private static instance: SecurityServiceCore;
-  private validationService: ValidationService;
-  private authenticationService: AuthenticationService;
-  private monitoringService: MonitoringService;
-  private apiSecurityService: ApiSecurityService;
+  private readonly validationService: ValidationService;
+  private readonly authenticationService: AuthenticationService;
+  private readonly monitoringService: MonitoringService;
+  private readonly apiSecurityService: ApiSecurityService;
+  private isInitialized = false;
 
   private constructor() {
     this.validationService = ValidationService.getInstance();
@@ -25,39 +30,73 @@ export class SecurityServiceCore {
   static getInstance(): SecurityServiceCore {
     if (!SecurityServiceCore.instance) {
       SecurityServiceCore.instance = new SecurityServiceCore();
-      this.initializeEnhancedSecurity();
     }
     return SecurityServiceCore.instance;
   }
 
-  private static async initializeEnhancedSecurity(): Promise<void> {
+  /**
+   * Initialize enhanced security features with proper error handling
+   */
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+
     try {
+      // Lazy load enhanced security monitor to avoid circular dependencies
       const { enhancedSecurityMonitor } = await import('../enhancedSecurityMonitor');
       await enhancedSecurityMonitor.startMonitoring();
+      
+      this.isInitialized = true;
       productionLogger.info('Enhanced security services initialized');
     } catch (error) {
-      productionLogger.error('Failed to initialize enhanced security', error, 'SecurityService');
+      productionLogger.error('Failed to initialize enhanced security', error, 'SecurityServiceCore');
+      // Don't throw - allow basic security to continue working
     }
   }
 
-  // Enhanced session management
+  // Enhanced session management with better error handling
   async createSecureSession(userId: string, isDemo: boolean = false): Promise<string> {
-    return enhancedAuthenticationService.createSecureSession(userId, isDemo);
+    try {
+      const { enhancedAuthenticationService } = await import('./enhancedAuthenticationService');
+      return enhancedAuthenticationService.createSecureSession(userId, isDemo);
+    } catch (error) {
+      productionLogger.error('Failed to create secure session', error, 'SecurityServiceCore');
+      throw new Error('Session creation failed');
+    }
   }
 
   async validateSession(sessionId: string): Promise<boolean> {
-    return enhancedAuthenticationService.validateSession(sessionId);
+    try {
+      const { enhancedAuthenticationService } = await import('./enhancedAuthenticationService');
+      return enhancedAuthenticationService.validateSession(sessionId);
+    } catch (error) {
+      productionLogger.error('Session validation failed', error, 'SecurityServiceCore');
+      return false;
+    }
   }
 
   async detectSuspiciousActivity(userId: string): Promise<boolean> {
-    return enhancedAuthenticationService.detectSuspiciousActivity(userId);
+    try {
+      const { enhancedAuthenticationService } = await import('./enhancedAuthenticationService');
+      return enhancedAuthenticationService.detectSuspiciousActivity(userId);
+    } catch (error) {
+      productionLogger.error('Suspicious activity detection failed', error, 'SecurityServiceCore');
+      return false;
+    }
   }
 
   async assignUserRole(targetUserId: string, newRole: AppRole, reason?: string): Promise<boolean> {
-    return enhancedAuthenticationService.assignUserRole(targetUserId, newRole, reason);
+    try {
+      const { enhancedAuthenticationService } = await import('./enhancedAuthenticationService');
+      return enhancedAuthenticationService.assignUserRole(targetUserId, newRole, reason);
+    } catch (error) {
+      productionLogger.error('Role assignment failed', error, 'SecurityServiceCore');
+      return false;
+    }
   }
 
-  // Delegation methods
+  // Optimized delegation methods with better error boundaries
   async validateUserInput(input: string, context: string = 'general') {
     return this.validationService.validateUserInput(input, context);
   }
@@ -117,5 +156,18 @@ export class SecurityServiceCore {
   // Public property for backward compatibility
   get consolidatedAuthenticationSecurity() {
     return this.authenticationService.consolidatedAuthenticationSecurity;
+  }
+
+  // Health check method
+  getHealthStatus() {
+    return {
+      initialized: this.isInitialized,
+      services: {
+        validation: !!this.validationService,
+        authentication: !!this.authenticationService,
+        monitoring: !!this.monitoringService,
+        apiSecurity: !!this.apiSecurityService
+      }
+    };
   }
 }
