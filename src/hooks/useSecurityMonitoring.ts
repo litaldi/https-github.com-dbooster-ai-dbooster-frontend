@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { securityMonitoringService, type SecurityAlert } from '@/services/security/securityMonitoringService';
 import { productionLogger } from '@/utils/productionLogger';
 
+// Define the AppRole type to match the database enum
+type AppRole = 'admin' | 'moderator' | 'user';
+
 export function useSecurityMonitoring() {
   const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
   const [metrics, setMetrics] = useState({
@@ -35,7 +38,7 @@ export function useSecurityMonitoring() {
 
   const secureRoleAssignment = async (
     targetUserId: string,
-    newRole: string,
+    newRole: AppRole,
     reason?: string
   ) => {
     try {
