@@ -3,7 +3,11 @@ import { SmartHeader } from '@/components/navigation/SmartHeader';
 import { Section, Container, Heading, Text } from '@/components/ui/visual-hierarchy';
 import { FadeIn } from '@/components/ui/animations';
 import { Card, CardContent } from '@/components/ui/card';
-import { Accessibility as AccessibilityIcon, Users, Eye, Keyboard, Volume2, Heart } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Eye, Keyboard, Volume2, MousePointer, 
+  Smartphone, Globe, Heart, CheckCircle 
+} from 'lucide-react';
 
 export default function Accessibility() {
   return (
@@ -15,16 +19,27 @@ export default function Accessibility() {
           <Container>
             <FadeIn>
               <div className="text-center space-y-4 mb-12">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                  <AccessibilityIcon className="h-8 w-8 text-blue-600" />
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
+                  <Heart className="h-8 w-8 text-purple-600" />
                 </div>
                 <Heading level={1} size="3xl">Accessibility Statement</Heading>
                 <Text size="lg" variant="muted" className="max-w-2xl mx-auto">
-                  DBooster is committed to ensuring digital accessibility for people with disabilities.
+                  DBooster is committed to ensuring digital accessibility for people with disabilities
                 </Text>
-                <Text size="sm" variant="muted">
-                  Last updated: December 2024
-                </Text>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="border-purple-200 text-purple-700">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    WCAG 2.1 AA
+                  </Badge>
+                  <Badge variant="outline" className="border-blue-200 text-blue-700">
+                    <Eye className="h-3 w-3 mr-1" />
+                    Screen Reader Compatible
+                  </Badge>
+                  <Badge variant="outline" className="border-green-200 text-green-700">
+                    <Keyboard className="h-3 w-3 mr-1" />
+                    Keyboard Navigation
+                  </Badge>
+                </div>
               </div>
             </FadeIn>
           </Container>
@@ -34,19 +49,30 @@ export default function Accessibility() {
           <Container size="md">
             <div className="space-y-8">
               <FadeIn delay={0.1}>
-                <Card className="border-blue-200 bg-blue-50/50">
+                <Card className="border-purple-200 bg-purple-50/50">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Heart className="h-5 w-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Heart className="h-5 w-5 text-purple-600" />
                       </div>
                       <div className="space-y-3">
                         <Heading level={2} size="lg">Our Commitment</Heading>
                         <Text variant="muted">
-                          We believe that everyone should have equal access to database optimization tools. 
-                          DBooster is designed to be usable by people of all abilities and is continuously 
-                          improved to meet and exceed accessibility standards.
+                          We are committed to providing a website and application that is accessible to the 
+                          widest possible audience, regardless of technology or ability. We actively work to 
+                          increase the accessibility and usability of our platform.
                         </Text>
+                        <div className="bg-white p-4 rounded-lg border border-purple-200">
+                          <Text size="sm" className="font-medium text-purple-900 mb-2">
+                            Our Accessibility Goals
+                          </Text>
+                          <ul className="text-sm text-purple-800 space-y-1">
+                            <li>• Provide equal access to information and functionality</li>
+                            <li>• Ensure compatibility with assistive technologies</li>
+                            <li>• Maintain high usability standards for all users</li>
+                            <li>• Continuously improve accessibility features</li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -56,27 +82,72 @@ export default function Accessibility() {
               <FadeIn delay={0.2}>
                 <Card>
                   <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <Heading level={2} size="lg">Accessibility Standards</Heading>
+                    <div className="space-y-6">
+                      <Heading level={2} size="lg">Accessibility Features</Heading>
                       <Text variant="muted">
-                        DBooster aims to conform to the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA. 
-                        These guidelines help make web content more accessible to a wider range of people with disabilities.
+                        DBooster includes numerous accessibility features designed to support users 
+                        with diverse needs and abilities.
                       </Text>
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-green-600 mb-2">AA</div>
-                          <Text size="sm" className="font-medium">WCAG 2.1 Level</Text>
-                          <Text size="xs" variant="muted">Compliance Target</Text>
+                      
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3">
+                            <Eye className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                            <div>
+                              <Text size="sm" className="font-medium">Visual Accessibility</Text>
+                              <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                                <li>• High contrast color schemes</li>
+                                <li>• Resizable text up to 200%</li>
+                                <li>• Clear visual hierarchy</li>
+                                <li>• Alternative text for images</li>
+                                <li>• Focus indicators for interactive elements</li>
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-3">
+                            <Keyboard className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                            <div>
+                              <Text size="sm" className="font-medium">Keyboard Navigation</Text>
+                              <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                                <li>• Full keyboard navigation support</li>
+                                <li>• Logical tab order</li>
+                                <li>• Keyboard shortcuts for common actions</li>
+                                <li>• Skip navigation links</li>
+                                <li>• No keyboard traps</li>
+                              </ul>
+                            </div>
+                          </div>
                         </div>
-                        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-blue-600 mb-2">4.5:1</div>
-                          <Text size="sm" className="font-medium">Contrast Ratio</Text>
-                          <Text size="xs" variant="muted">Minimum Standard</Text>
-                        </div>
-                        <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-purple-600 mb-2">100%</div>
-                          <Text size="sm" className="font-medium">Keyboard Navigation</Text>
-                          <Text size="xs" variant="muted">Full Support</Text>
+                        
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3">
+                            <Volume2 className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                            <div>
+                              <Text size="sm" className="font-medium">Screen Reader Support</Text>
+                              <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                                <li>• ARIA labels and descriptions</li>
+                                <li>• Semantic HTML structure</li>
+                                <li>• Screen reader announcements</li>
+                                <li>• Accessible form labels</li>
+                                <li>• Status and error notifications</li>
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-3">
+                            <MousePointer className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                            <div>
+                              <Text size="sm" className="font-medium">Motor Accessibility</Text>
+                              <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                                <li>• Large click targets (44px minimum)</li>
+                                <li>• Drag and drop alternatives</li>
+                                <li>• No time-based interactions</li>
+                                <li>• Gesture alternatives</li>
+                                <li>• Voice control compatibility</li>
+                              </ul>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -88,64 +159,39 @@ export default function Accessibility() {
                 <Card>
                   <CardContent className="p-6">
                     <div className="space-y-4">
-                      <Heading level={2} size="lg">Accessibility Features</Heading>
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Keyboard className="h-4 w-4 text-green-600" />
-                            </div>
-                            <div>
-                              <Text size="sm" className="font-medium">Keyboard Navigation</Text>
-                              <Text size="xs" variant="muted">
-                                Full keyboard support with logical tab order and visible focus indicators
-                              </Text>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Eye className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <Text size="sm" className="font-medium">Screen Reader Support</Text>
-                              <Text size="xs" variant="muted">
-                                Semantic HTML, ARIA labels, and descriptive alt text for all images
-                              </Text>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Volume2 className="h-4 w-4 text-purple-600" />
-                            </div>
-                            <div>
-                              <Text size="sm" className="font-medium">Audio Descriptions</Text>
-                              <Text size="xs" variant="muted">
-                                Audio cues and descriptions for important UI interactions
-                              </Text>
-                            </div>
-                          </div>
+                      <Heading level={2} size="lg">Supported Assistive Technologies</Heading>
+                      <Text variant="muted">
+                        DBooster is designed to work seamlessly with a wide range of assistive technologies.
+                      </Text>
+                      
+                      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="text-center p-4 border rounded-lg">
+                          <Volume2 className="h-8 w-8 text-primary mx-auto mb-2" />
+                          <Text size="sm" className="font-medium">Screen Readers</Text>
+                          <Text size="xs" variant="muted" className="mt-1">
+                            JAWS, NVDA, VoiceOver, TalkBack
+                          </Text>
                         </div>
-
-                        <div className="space-y-4">
-                          <div className="bg-muted/50 p-4 rounded-lg">
-                            <Text size="sm" className="font-medium mb-2">Color & Contrast</Text>
-                            <ul className="text-xs text-muted-foreground space-y-1">
-                              <li>• High contrast color schemes</li>
-                              <li>• Information not conveyed by color alone</li>
-                              <li>• Support for reduced motion preferences</li>
-                            </ul>
-                          </div>
-
-                          <div className="bg-muted/50 p-4 rounded-lg">
-                            <Text size="sm" className="font-medium mb-2">Responsive Design</Text>
-                            <ul className="text-xs text-muted-foreground space-y-1">
-                              <li>• Mobile-friendly interface</li>
-                              <li>• Scalable text up to 200%</li>
-                              <li>• Touch-friendly button sizes</li>
-                            </ul>
-                          </div>
+                        <div className="text-center p-4 border rounded-lg">
+                          <Keyboard className="h-8 w-8 text-primary mx-auto mb-2" />
+                          <Text size="sm" className="font-medium">Keyboard Navigation</Text>
+                          <Text size="xs" variant="muted" className="mt-1">
+                            Standard and alternative keyboards
+                          </Text>
+                        </div>
+                        <div className="text-center p-4 border rounded-lg">
+                          <Eye className="h-8 w-8 text-primary mx-auto mb-2" />
+                          <Text size="sm" className="font-medium">Screen Magnifiers</Text>
+                          <Text size="xs" variant="muted" className="mt-1">
+                            ZoomText, MAGic, built-in magnifiers
+                          </Text>
+                        </div>
+                        <div className="text-center p-4 border rounded-lg">
+                          <Smartphone className="h-8 w-8 text-primary mx-auto mb-2" />
+                          <Text size="sm" className="font-medium">Mobile Accessibility</Text>
+                          <Text size="xs" variant="muted" className="mt-1">
+                            iOS VoiceOver, Android TalkBack
+                          </Text>
                         </div>
                       </div>
                     </div>
@@ -157,37 +203,65 @@ export default function Accessibility() {
                 <Card>
                   <CardContent className="p-6">
                     <div className="space-y-4">
-                      <Heading level={2} size="lg">Keyboard Shortcuts</Heading>
+                      <Heading level={2} size="lg">Accessibility Standards Compliance</Heading>
                       <Text variant="muted">
-                        DBooster includes keyboard shortcuts to help you navigate efficiently:
+                        Our platform conforms to widely accepted accessibility standards and guidelines.
                       </Text>
+                      
                       <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-                            <Text size="sm">Home</Text>
-                            <kbd className="px-2 py-1 bg-background border rounded text-xs">Ctrl + H</kbd>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-                            <Text size="sm">Dashboard</Text>
-                            <kbd className="px-2 py-1 bg-background border rounded text-xs">Ctrl + D</kbd>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-                            <Text size="sm">Query Builder</Text>
-                            <kbd className="px-2 py-1 bg-background border rounded text-xs">Ctrl + Q</kbd>
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                          <Text size="sm" className="font-medium text-green-900 mb-2">
+                            WCAG 2.1 Level AA Compliance
+                          </Text>
+                          <Text size="sm" className="text-green-800 mb-3">
+                            We conform to the Web Content Accessibility Guidelines (WCAG) 2.1 
+                            at the AA level, ensuring our platform meets international standards.
+                          </Text>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <Text size="xs">Perceivable content</Text>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <Text size="xs">Operable interface</Text>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <Text size="xs">Understandable information</Text>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <Text size="xs">Robust compatibility</Text>
+                            </div>
                           </div>
                         </div>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-                            <Text size="sm">Settings</Text>
-                            <kbd className="px-2 py-1 bg-background border rounded text-xs">Ctrl + S</kbd>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-                            <Text size="sm">Help</Text>
-                            <kbd className="px-2 py-1 bg-background border rounded text-xs">Ctrl + /</kbd>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-muted/50 rounded">
-                            <Text size="sm">Skip to Content</Text>
-                            <kbd className="px-2 py-1 bg-background border rounded text-xs">Tab</kbd>
+                        
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                          <Text size="sm" className="font-medium text-blue-900 mb-2">
+                            Additional Standards
+                          </Text>
+                          <Text size="sm" className="text-blue-800 mb-3">
+                            We also adhere to other accessibility standards and best practices 
+                            to ensure comprehensive accessibility support.
+                          </Text>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-blue-600" />
+                              <Text size="xs">Section 508 (US Federal)</Text>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-blue-600" />
+                              <Text size="xs">EN 301 549 (European)</Text>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-blue-600" />
+                              <Text size="xs">AODA (Ontario, Canada)</Text>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-blue-600" />
+                              <Text size="xs">DDA (Australia)</Text>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -199,27 +273,29 @@ export default function Accessibility() {
               <FadeIn delay={0.5}>
                 <Card>
                   <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <Heading level={2} size="lg">Supported Technologies</Heading>
+                    <div className="space-y-3">
+                      <Heading level={2} size="lg">Ongoing Accessibility Efforts</Heading>
                       <Text variant="muted">
-                        DBooster is compatible with assistive technologies including:
+                        Accessibility is an ongoing commitment. We continuously work to improve 
+                        and maintain the accessibility of our platform.
                       </Text>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="text-center p-3 bg-muted/30 rounded-lg">
-                          <Text size="sm" className="font-medium">NVDA</Text>
-                          <Text size="xs" variant="muted">Screen Reader</Text>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
+                          <Text size="sm">Accessibility Audits</Text>
+                          <Badge variant="outline">Quarterly</Badge>
                         </div>
-                        <div className="text-center p-3 bg-muted/30 rounded-lg">
-                          <Text size="sm" className="font-medium">JAWS</Text>
-                          <Text size="xs" variant="muted">Screen Reader</Text>
+                        <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
+                          <Text size="sm">User Testing with Disabilities</Text>
+                          <Badge variant="outline">Bi-annually</Badge>
                         </div>
-                        <div className="text-center p-3 bg-muted/30 rounded-lg">
-                          <Text size="sm" className="font-medium">VoiceOver</Text>
-                          <Text size="xs" variant="muted">macOS/iOS</Text>
+                        <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
+                          <Text size="sm">Staff Accessibility Training</Text>
+                          <Badge variant="outline">Ongoing</Badge>
                         </div>
-                        <div className="text-center p-3 bg-muted/30 rounded-lg">
-                          <Text size="sm" className="font-medium">Dragon</Text>
-                          <Text size="xs" variant="muted">Voice Control</Text>
+                        <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
+                          <Text size="sm">Automated Accessibility Testing</Text>
+                          <Badge variant="outline">Continuous</Badge>
                         </div>
                       </div>
                     </div>
@@ -230,17 +306,30 @@ export default function Accessibility() {
               <FadeIn delay={0.6}>
                 <Card>
                   <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <Heading level={2} size="lg">Testing & Improvement</Heading>
+                    <div className="space-y-3">
+                      <Heading level={2} size="lg">Feedback and Support</Heading>
                       <Text variant="muted">
-                        We regularly test our platform with real users and assistive technologies to ensure 
-                        the best possible experience for everyone.
+                        We welcome your feedback on the accessibility of DBooster. Your input helps 
+                        us identify areas for improvement and prioritize accessibility enhancements.
                       </Text>
-                      <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                        <Text size="sm" className="text-blue-800">
-                          <strong>Continuous Improvement:</strong> We conduct monthly accessibility audits and 
-                          work with accessibility consultants to identify and address potential barriers.
+                      
+                      <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                        <Text size="sm" className="font-medium text-primary mb-2">
+                          How to Report Accessibility Issues
                         </Text>
+                        <div className="space-y-2">
+                          <Text size="sm" variant="muted">
+                            If you encounter any accessibility barriers while using DBooster, please let us know:
+                          </Text>
+                          <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                            <li>• Email: <a href="mailto:accessibility@dbooster.ai" className="text-primary hover:underline">accessibility@dbooster.ai</a></li>
+                            <li>• Phone: +1 (555) 123-4567</li>
+                            <li>• Online form: Available in our Help Center</li>
+                          </ul>
+                          <Text size="sm" variant="muted">
+                            We aim to respond to accessibility feedback within 2 business days.
+                          </Text>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -248,29 +337,17 @@ export default function Accessibility() {
               </FadeIn>
 
               <FadeIn delay={0.7}>
-                <Card className="border-amber-200 bg-amber-50/50">
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <Heading level={2} size="lg">Feedback Welcome</Heading>
-                      <Text variant="muted">
-                        We welcome your feedback on the accessibility of DBooster. If you encounter any 
-                        accessibility barriers or have suggestions for improvement, please let us know.
-                      </Text>
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="flex-1">
-                          <Text size="sm" className="font-medium">Email us:</Text>
-                          <a href="mailto:accessibility@dbooster.ai" className="text-primary hover:underline text-sm">
-                            accessibility@dbooster.ai
-                          </a>
-                        </div>
-                        <div className="flex-1">
-                          <Text size="sm" className="font-medium">Response time:</Text>
-                          <Text size="sm" variant="muted">Within 2 business days</Text>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="text-center py-8 border-t">
+                  <Text size="sm" variant="muted">
+                    This accessibility statement was last reviewed and updated on December 18, 2024.
+                  </Text>
+                  <Text size="xs" variant="muted" className="mt-2">
+                    For questions about this statement, contact us at{' '}
+                    <a href="mailto:accessibility@dbooster.ai" className="text-primary hover:underline">
+                      accessibility@dbooster.ai
+                    </a>
+                  </Text>
+                </div>
               </FadeIn>
             </div>
           </Container>
