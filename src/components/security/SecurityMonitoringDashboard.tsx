@@ -4,32 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
-import { AlertTriangle, Shield, Activity, Clock, Play, Square, RefreshCw, TrendingUp } from 'lucide-react';
+import { AlertTriangle, Shield, Activity, Clock, RefreshCw, TrendingUp, Users } from 'lucide-react';
 
 export function SecurityMonitoringDashboard() {
   const {
-    isMonitoring,
-    lastAuditReport,
-    performanceMetrics,
-    patternUpdateHistory,
     alerts,
+    metrics,
     loading,
-    startMonitoring,
-    stopMonitoring,
-    refreshMonitoringData,
-    performManualAudit,
-    checkForPatternUpdates
+    error,
+    refreshData,
+    secureRoleAssignment,
+    checkAdminBootstrapNeeded
   } = useSecurityMonitoring();
-
-  const getRiskBadgeVariant = (risk: string) => {
-    switch (risk) {
-      case 'critical': return 'destructive';
-      case 'high': return 'destructive';
-      case 'medium': return 'secondary';
-      case 'low': return 'default';
-      default: return 'outline';
-    }
-  };
 
   const getSeverityBadgeVariant = (severity: string) => {
     switch (severity) {
@@ -41,207 +27,195 @@ export function SecurityMonitoringDashboard() {
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-muted rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
+              <p>Error loading security data: {error}</p>
+              <Button onClick={refreshData} className="mt-4">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Security Monitoring Center</h2>
           <p className="text-muted-foreground">
-            Continuous monitoring and automated threat detection
+            Enhanced security monitoring and threat detection
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            onClick={isMonitoring ? stopMonitoring : startMonitoring}
-            disabled={loading}
-            variant={isMonitoring ? "destructive" : "default"}
-          >
-            {isMonitoring ? <Square className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-            {isMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
-          </Button>
-          <Button onClick={refreshMonitoringData} disabled={loading} variant="outline">
+          <Button onClick={refreshData} disabled={loading} variant="outline">
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </div>
 
-      {/* Monitoring Status */}
+      {/* Security Metrics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Security Score</p>
+                <p className={`text-2xl font-bold ${getScoreColor(metrics.securityScore)}`}>
+                  {metrics.securityScore}/100
+                </p>
+              </div>
+              <Shield className={`h-8 w-8 ${getScoreColor(metrics.securityScore)}`} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Recent Attempts</p>
+                <p className="text-2xl font-bold">{metrics.recentEscalationAttempts}</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-orange-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Attempts</p>
+                <p className="text-2xl font-bold">{metrics.totalEscalationAttempts}</p>
+              </div>
+              <Users className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Critical Alerts</p>
+                <p className="text-2xl font-bold text-red-600">{metrics.criticalAlerts}</p>
+              </div>
+              <Activity className="h-8 w-8 text-red-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Security Alerts */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Monitoring Status
+            <AlertTriangle className="h-5 w-5" />
+            Security Alerts
           </CardTitle>
+          <CardDescription>
+            Recent security events and potential threats
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
-            <Badge variant={isMonitoring ? "default" : "secondary"}>
-              {isMonitoring ? 'Active' : 'Inactive'}
-            </Badge>
-            {isMonitoring && (
-              <span className="text-sm text-muted-foreground">
-                Continuous monitoring active • Auto-audits every 15 minutes
-              </span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Latest Audit Report */}
-      {lastAuditReport && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Latest Security Audit
-            </CardTitle>
-            <CardDescription>
-              {new Date(lastAuditReport.timestamp).toLocaleString()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{lastAuditReport.totalEvents}</div>
-                <div className="text-sm text-muted-foreground">Total Events</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{lastAuditReport.suspiciousPatterns?.length || 0}</div>
-                <div className="text-sm text-muted-foreground">Patterns Detected</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{lastAuditReport.threatTrends?.length || 0}</div>
-                <div className="text-sm text-muted-foreground">Threat Trends</div>
-              </div>
-              <div className="text-center">
-                <Badge variant={getRiskBadgeVariant(lastAuditReport.riskLevel)}>
-                  {lastAuditReport.riskLevel?.toUpperCase()}
-                </Badge>
-                <div className="text-sm text-muted-foreground mt-1">Risk Level</div>
-              </div>
+          {alerts.length === 0 ? (
+            <div className="text-center py-8">
+              <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No security alerts found</p>
             </div>
-
-            {lastAuditReport.recommendations && lastAuditReport.recommendations.length > 0 && (
-              <div>
-                <h4 className="font-medium mb-2">Recommendations</h4>
-                <ul className="space-y-1">
-                  {lastAuditReport.recommendations.slice(0, 3).map((rec: string, index: number) => (
-                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                      {rec}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <Button onClick={performManualAudit} disabled={loading} variant="outline" size="sm">
-              Run Manual Audit
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Performance Metrics */}
-      {performanceMetrics && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Performance Metrics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-lg font-semibold">
-                  {Math.round(performanceMetrics.averageResponseTime)}ms
-                </div>
-                <div className="text-sm text-muted-foreground">Avg Response Time</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-semibold">{performanceMetrics.requestsPerMinute}</div>
-                <div className="text-sm text-muted-foreground">Requests/min</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-semibold">
-                  {Math.round((performanceMetrics.memoryUsage || 0) * 100)}%
-                </div>
-                <div className="text-sm text-muted-foreground">Memory Usage</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-semibold">{performanceMetrics.errorRate || 0}%</div>
-                <div className="text-sm text-muted-foreground">Error Rate</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Security Alerts */}
-      {alerts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Active Security Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          ) : (
             <div className="space-y-3">
-              {alerts.slice(0, 5).map((alert: any, index: number) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded">
-                  <div>
-                    <div className="font-medium">{alert.pattern}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {alert.occurrences} occurrences • Last seen: {new Date(alert.lastSeen).toLocaleString()}
+              {alerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className="flex items-start justify-between p-4 border rounded-lg"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant={getSeverityBadgeVariant(alert.severity)}>
+                        {alert.severity.toUpperCase()}
+                      </Badge>
+                      <Badge variant="outline">{alert.type}</Badge>
+                    </div>
+                    <p className="font-medium">{alert.message}</p>
+                    {alert.user_id && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        User ID: {alert.user_id}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {new Date(alert.created_at).toLocaleString()}
                     </div>
                   </div>
-                  <Badge variant={getSeverityBadgeVariant(alert.severity)}>
-                    {alert.severity}
-                  </Badge>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Threat Pattern Updates */}
+      {/* Admin Bootstrap Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Threat Pattern Updates
+            <Shield className="h-5 w-5" />
+            System Security Status
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {patternUpdateHistory.slice(0, 3).map((update: any, index: number) => (
-              <div key={index} className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Version {update.version}</div>
-                  <div className="text-sm text-muted-foreground">{update.description}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium">{update.patternsAdded} patterns</div>
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(update.date).toLocaleDateString()}
-                  </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 border rounded">
+              <div>
+                <div className="font-medium">Admin Bootstrap Status</div>
+                <div className="text-sm text-muted-foreground">
+                  System initialization and first admin setup
                 </div>
               </div>
-            ))}
+              <Button
+                onClick={checkAdminBootstrapNeeded}
+                variant="outline"
+                size="sm"
+              >
+                Check Status
+              </Button>
+            </div>
           </div>
-          <Button
-            onClick={checkForPatternUpdates}
-            disabled={loading}
-            variant="outline"
-            size="sm"
-            className="mt-4"
-          >
-            Check for Updates
-          </Button>
         </CardContent>
       </Card>
     </div>
