@@ -1,5 +1,7 @@
 
-export type AuthMode = 'login' | 'signup';
+export type AuthMode = 'login' | 'signup' | 'reset';
+
+export type LoginType = 'email' | 'phone';
 
 export interface AuthFormData {
   email: string;
@@ -8,6 +10,7 @@ export interface AuthFormData {
   firstName?: string;
   lastName?: string;
   name?: string;
+  phone?: string;
   rememberMe?: boolean;
   acceptedTerms?: boolean;
 }

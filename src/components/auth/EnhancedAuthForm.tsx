@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -94,12 +95,13 @@ export function EnhancedAuthForm({
       if (!formData.acceptedTerms) {
         newErrors.acceptedTerms = 'You must accept the terms and conditions';
       }
-    } else {
+    } else if (authMode === 'login') {
       // Basic password validation for login
       if (!formData.password) {
         newErrors.password = 'Password is required';
       }
     }
+    // For reset mode, only email is required
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -119,6 +121,48 @@ export function EnhancedAuthForm({
       console.error('Form submission error:', error);
     }
   };
+
+  // Reset mode - only show email field
+  if (authMode === 'reset') {
+    return (
+      <div className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email address"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              required
+            />
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email}</p>
+            )}
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Sending...' : 'Send Reset Email'}
+          </Button>
+        </form>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => onAuthModeChange('login')}
+            className="text-sm text-primary hover:underline"
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
