@@ -14,6 +14,7 @@ interface SecurityEvent {
   severity: string;
   message: string;
   timestamp: number;
+  metadata: Record<string, any>;
 }
 
 export function useSecurityMonitoring() {
@@ -41,7 +42,12 @@ export function useSecurityMonitoring() {
   }, []);
 
   const logSecurityEvent = (event: Omit<SecurityEvent, 'timestamp'>) => {
-    realTimeSecurityMonitor.logSecurityEvent(event);
+    // Ensure metadata is always provided
+    const eventWithMetadata = {
+      ...event,
+      metadata: event.metadata || {}
+    };
+    realTimeSecurityMonitor.logSecurityEvent(eventWithMetadata);
   };
 
   return {
