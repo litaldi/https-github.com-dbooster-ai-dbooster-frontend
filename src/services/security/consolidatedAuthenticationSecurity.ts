@@ -311,20 +311,47 @@ export class ConsolidatedAuthenticationSecurity {
   async createSecureDemoSession(): Promise<any> {
     try {
       const { secureSessionManager } = await import('./secureSessionManager');
-      const session = await secureSessionManager.createSecureSession('demo-user', true);
-      this.authStats.activeDemoSessions++;
+      const sessionResult = await secureSessionManager.createSecureSession('demo-user', true);
       
-      realTimeSecurityMonitor.logSecurityEvent({
-        type: 'login_failure', // Using available type
-        severity: 'low',
-        message: 'Secure demo session created',
-        metadata: {
-          sessionId: session.id,
-          securityScore: session.securityScore
-        }
-      });
+      // Handle the case where createSecureSession returns a string (session ID) or null
+      if (typeof sessionResult === 'string') {
+        // If it's just a session ID, create a simple session object
+        const session = {
+          id: sessionResult,
+          securityScore: 75 // Default security score for demo sessions
+        };
+        
+        this.authStats.activeDemoSessions++;
+        
+        realTimeSecurityMonitor.logSecurityEvent({
+          type: 'login_failure', // Using available type
+          severity: 'low',
+          message: 'Secure demo session created',
+          metadata: {
+            sessionId: session.id,
+            securityScore: session.securityScore
+          }
+        });
 
-      return session;
+        return session;
+      } else if (sessionResult) {
+        // If it's already an object, use it directly
+        this.authStats.activeDemoSessions++;
+        
+        realTimeSecurityMonitor.logSecurityEvent({
+          type: 'login_failure', // Using available type
+          severity: 'low',
+          message: 'Secure demo session created',
+          metadata: {
+            sessionId: sessionResult.id || 'unknown',
+            securityScore: sessionResult.securityScore || 75
+          }
+        });
+
+        return sessionResult;
+      } else {
+        throw new Error('Failed to create demo session');
+      }
     } catch (error) {
       productionLogger.error('Secure demo session creation failed', error, 'ConsolidatedAuthenticationSecurity');
       throw error;
@@ -350,8 +377,6 @@ export class ConsolidatedAuthenticationSecurity {
       return 'unknown';
     }
   }
-
-  
 }
 
 export const consolidatedAuthenticationSecurity = ConsolidatedAuthenticationSecurity.getInstance();
