@@ -116,11 +116,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        productionLogger.error('Error signing out', error, 'AuthContext');
-        throw error;
+      if (isDemo) {
+        // Revoke demo session
+        if (user?.id) {
+          await enhancedDemoSecurity.revokeDemoSession(user.id);
+        }
+      } else {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          productionLogger.error('Error signing out', error, 'AuthContext');
+          throw error;
+        }
       }
+      
       setIsDemo(false);
       setGithubAccessToken(null);
     } catch (error) {
@@ -135,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsDemo(true);
       
-      // Create secure demo session instead of hardcoded user
+      // Create secure demo session with enhanced security
       const demoSession = await enhancedDemoSecurity.createSecureDemoSession();
       
       // Create a properly typed demo user object with secure token
@@ -167,9 +175,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(demoSessionObj);
       setLoading(false);
 
-      productionLogger.info('Secure demo session created', {
+      productionLogger.info('Enhanced secure demo session created', {
         sessionId: demoSession.id.substring(0, 8),
-        capabilities: demoSession.capabilities
+        capabilities: demoSession.capabilities,
+        securityScore: demoSession.securityScore
       });
     } catch (error) {
       productionLogger.error('Demo login failed', error, 'AuthContext');

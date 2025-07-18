@@ -1,6 +1,6 @@
 
 import { consolidatedAuthenticationSecurity } from '../consolidatedAuthenticationSecurity';
-import { rbac } from '../roleBasedAccessControl';
+import { enhancedRoleManager } from '../enhancedRoleManager';
 import { ValidationService } from './validationService';
 
 export class AuthenticationService {
@@ -30,9 +30,9 @@ export class AuthenticationService {
       return { allowed: false, reason: 'Invalid repository identifier' };
     }
 
-    // Check if user has required permissions for the action
+    // Check if user has required permissions for the action using enhanced role manager
     if (userId && action === 'delete') {
-      const canManage = await rbac.hasPermission(userId, 'canManageUsers');
+      const canManage = await enhancedRoleManager.hasPermission(userId, 'canManageUsers');
       if (!canManage) {
         return { allowed: false, reason: 'Insufficient permissions for repository deletion' };
       }
@@ -42,10 +42,10 @@ export class AuthenticationService {
   }
 
   async checkPermission(userId: string, permission: string): Promise<boolean> {
-    return rbac.hasPermission(userId, permission as keyof import('../roleBasedAccessControl').RolePermissions);
+    return enhancedRoleManager.hasPermission(userId, permission as keyof import('../enhancedRoleManager').RolePermissions);
   }
 
   async requirePermission(userId: string, permission: string): Promise<void> {
-    return rbac.requirePermission(userId, permission as keyof import('../roleBasedAccessControl').RolePermissions);
+    return enhancedRoleManager.requirePermission(userId, permission as keyof import('../enhancedRoleManager').RolePermissions);
   }
 }

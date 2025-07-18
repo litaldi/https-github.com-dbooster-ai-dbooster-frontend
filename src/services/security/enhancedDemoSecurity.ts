@@ -1,25 +1,29 @@
+
 import { productionLogger } from '@/utils/productionLogger';
-import { secureStorageService } from './secureStorageService';
-import { enhancedSecurityValidation } from './enhancedSecurityValidation';
-import { automaticSecurityResponse } from './automaticSecurityResponse';
+import { enhancedClientSecurity } from './enhancedClientSecurity';
 
 interface SecureDemoSession {
   id: string;
   token: string;
-  createdAt: number;
   expiresAt: number;
+  deviceFingerprint: string;
   capabilities: string[];
-  fingerprint: string;
-  bindingToken: string; // New: for session binding
-  lastValidation: number; // New: for validation tracking
+  securityScore: number;
+  validationKey: string;
+}
+
+interface DemoSessionValidation {
+  isValid: boolean;
+  reason?: string;
+  securityLevel: 'low' | 'medium' | 'high';
+  requiresRevalidation: boolean;
 }
 
 class EnhancedDemoSecurity {
   private static instance: EnhancedDemoSecurity;
-  private readonly DEMO_SESSION_DURATION = 60 * 60 * 1000; // 1 hour
-  private readonly MAX_DEMO_SESSIONS = 5;
-  private readonly VALIDATION_INTERVAL = 5 * 60 * 1000; // 5 minutes
-  private activeDemoSessions = new Map<string, SecureDemoSession>();
+  private activeSessions: Map<string, SecureDemoSession> = new Map();
+  private readonly SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+  private readonly MAX_CONCURRENT_SESSIONS = 3;
 
   static getInstance(): EnhancedDemoSecurity {
     if (!EnhancedDemoSecurity.instance) {
@@ -28,272 +32,330 @@ class EnhancedDemoSecurity {
     return EnhancedDemoSecurity.instance;
   }
 
-  private generateSecureToken(): string {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  async createSecureDemoSession(): Promise<SecureDemoSession> {
+    try {
+      // Clean up expired sessions first
+      await this.cleanupExpiredSessions();
+
+      // Check session limits
+      if (this.activeSessions.size >= this.MAX_CONCURRENT_SESSIONS) {
+        throw new Error('Maximum concurrent demo sessions reached');
+      }
+
+      // Generate secure session data
+      const sessionId = await this.generateSecureSessionId();
+      const deviceFingerprint = await this.generateDeviceFingerprint();
+      const token = await this.generateSecureToken();
+      const validationKey = await this.generateValidationKey(sessionId, deviceFingerprint);
+
+      const session: SecureDemoSession = {
+        id: sessionId,
+        token,
+        expiresAt: Date.now() + this.SESSION_DURATION,
+        deviceFingerprint,
+        capabilities: [
+          'view_dashboard',
+          'view_sample_data',
+          'view_optimizations',
+          'demo_queries'
+        ],
+        securityScore: await this.calculateSecurityScore(),
+        validationKey
+      };
+
+      // Store session
+      this.activeSessions.set(sessionId, session);
+
+      // Store client-side validation data
+      localStorage.setItem('demo_session_validation', JSON.stringify({
+        sessionId,
+        fingerprint: deviceFingerprint,
+        timestamp: Date.now()
+      }));
+
+      productionLogger.info('Secure demo session created', {
+        sessionId: sessionId.substring(0, 8),
+        securityScore: session.securityScore,
+        expiresAt: new Date(session.expiresAt).toISOString()
+      }, 'EnhancedDemoSecurity');
+
+      return session;
+    } catch (error) {
+      productionLogger.error('Failed to create secure demo session', error, 'EnhancedDemoSecurity');
+      throw error;
+    }
+  }
+
+  async validateDemoSession(sessionId: string): Promise<DemoSessionValidation> {
+    try {
+      const session = this.activeSessions.get(sessionId);
+      
+      if (!session) {
+        return {
+          isValid: false,
+          reason: 'Session not found',
+          securityLevel: 'low',
+          requiresRevalidation: true
+        };
+      }
+
+      // Check expiration
+      if (Date.now() > session.expiresAt) {
+        this.activeSessions.delete(sessionId);
+        return {
+          isValid: false,
+          reason: 'Session expired',
+          securityLevel: 'low',
+          requiresRevalidation: true
+        };
+      }
+
+      // Validate device fingerprint
+      const currentFingerprint = await this.generateDeviceFingerprint();
+      const fingerprintValid = await this.validateFingerprint(session.deviceFingerprint, currentFingerprint);
+      
+      if (!fingerprintValid) {
+        productionLogger.warn('Demo session fingerprint mismatch', {
+          sessionId: sessionId.substring(0, 8),
+          storedFingerprint: session.deviceFingerprint.substring(0, 16),
+          currentFingerprint: currentFingerprint.substring(0, 16)
+        }, 'EnhancedDemoSecurity');
+        
+        return {
+          isValid: false,
+          reason: 'Device fingerprint mismatch',
+          securityLevel: 'low',
+          requiresRevalidation: true
+        };
+      }
+
+      // Validate client-side data
+      const clientValidation = this.validateClientSideData(sessionId);
+      if (!clientValidation.valid) {
+        return {
+          isValid: false,
+          reason: clientValidation.reason,
+          securityLevel: 'medium',
+          requiresRevalidation: true
+        };
+      }
+
+      // Calculate security level
+      const securityLevel = this.assessSessionSecurity(session);
+
+      return {
+        isValid: true,
+        securityLevel,
+        requiresRevalidation: securityLevel === 'low'
+      };
+    } catch (error) {
+      productionLogger.error('Demo session validation failed', error, 'EnhancedDemoSecurity');
+      return {
+        isValid: false,
+        reason: 'Validation error',
+        securityLevel: 'low',
+        requiresRevalidation: true
+      };
+    }
+  }
+
+  private async generateSecureSessionId(): Promise<string> {
+    const entropy = await enhancedClientSecurity.collectEnhancedEntropy();
+    const timestamp = Date.now().toString();
+    const random = Math.random().toString(36);
+    
+    return btoa(`${entropy.data}|${timestamp}|${random}`).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
   }
 
   private async generateDeviceFingerprint(): Promise<string> {
     const components = [
       navigator.userAgent,
-      navigator.language,
       screen.width + 'x' + screen.height,
-      new Date().getTimezoneOffset().toString(),
-      navigator.hardwareConcurrency?.toString() || '0'
+      screen.colorDepth.toString(),
+      navigator.language,
+      navigator.hardwareConcurrency.toString(),
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+      new Date().getTimezoneOffset().toString()
     ];
 
-    const fingerprint = components.join('|');
-    const encoder = new TextEncoder();
-    const data = encoder.encode(fingerprint);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  async createSecureDemoSession(): Promise<SecureDemoSession> {
-    // Check if we've exceeded max demo sessions
-    if (this.activeDemoSessions.size >= this.MAX_DEMO_SESSIONS) {
-      // Remove oldest session
-      const oldestSession = Array.from(this.activeDemoSessions.values())
-        .sort((a, b) => a.createdAt - b.createdAt)[0];
-      if (oldestSession) {
-        this.destroyDemoSession(oldestSession.id);
-      }
-    }
-
-    const sessionId = await this.generateSecureToken();
-    const token = await this.generateSecureToken();
-    const bindingToken = await this.generateSecureToken(); // New: session binding
-    const fingerprint = await this.generateDeviceFingerprint();
-    const now = Date.now();
-
-    const session: SecureDemoSession = {
-      id: sessionId,
-      token,
-      createdAt: now,
-      expiresAt: now + this.DEMO_SESSION_DURATION,
-      capabilities: [
-        'view_dashboard',
-        'explore_features',
-        'limited_api_access'
-      ],
-      fingerprint,
-      bindingToken,
-      lastValidation: now
-    };
-
-    this.activeDemoSessions.set(sessionId, session);
-    
-    // Store in secure storage with TTL
-    await secureStorageService.setSecureItem(
-      `demo_session_${sessionId}`, 
-      session, 
-      this.DEMO_SESSION_DURATION
-    );
-
-    // Store session binding separately for enhanced security
-    localStorage.setItem(`session_binding_${sessionId}`, bindingToken);
-
-    productionLogger.info('Secure demo session created', {
-      sessionId: sessionId.substring(0, 8),
-      capabilities: session.capabilities,
-      expiresAt: session.expiresAt
-    });
-
-    return session;
-  }
-
-  async validateDemoSession(sessionId: string, token: string): Promise<boolean> {
+    // Add canvas fingerprint
     try {
-      let session = this.activeDemoSessions.get(sessionId);
-      
-      // If not in memory, try to retrieve from secure storage
-      if (!session) {
-        session = await secureStorageService.getSecureItem<SecureDemoSession>(`demo_session_${sessionId}`);
-        if (session) {
-          this.activeDemoSessions.set(sessionId, session);
-        }
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillText('Demo fingerprint', 2, 2);
+        components.push(canvas.toDataURL());
       }
+    } catch {
+      components.push('canvas_unavailable');
+    }
 
-      if (!session) {
-        return false;
-      }
+    const combined = components.join('|');
+    
+    // Simple hash function for fingerprinting
+    let hash = 0;
+    for (let i = 0; i < combined.length; i++) {
+      const char = combined.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    return hash.toString(36);
+  }
 
-      // Enhanced validation using the new security validation service
-      const validationResult = await enhancedSecurityValidation.enhancedDemoSessionValidation(
-        sessionId,
-        token,
-        {
-          requireSecureContext: true,
-          checkDeviceFingerprint: true,
-          validateTimestamp: true
-        }
-      );
+  private async generateSecureToken(): Promise<string> {
+    const key = await enhancedClientSecurity.generateSecureKey();
+    return key.substring(0, 64); // First 64 chars as token
+  }
 
-      if (!validationResult.isValid) {
-        // Log security incident for failed validation
-        await automaticSecurityResponse.processSecurityIncident({
-          type: 'session_anomaly',
-          severity: validationResult.riskScore > 70 ? 'high' : 'medium',
-          metadata: {
-            sessionId: sessionId.substring(0, 8),
-            reason: validationResult.reason,
-            riskScore: validationResult.riskScore
-          }
-        });
+  private async generateValidationKey(sessionId: string, fingerprint: string): Promise<string> {
+    const data = `${sessionId}|${fingerprint}|${Date.now()}`;
+    return btoa(data);
+  }
 
-        this.destroyDemoSession(sessionId);
-        return false;
-      }
-
-      // Check expiration
-      if (Date.now() > session.expiresAt) {
-        this.destroyDemoSession(sessionId);
-        return false;
-      }
-
-      // Validate token
-      if (session.token !== token) {
-        productionLogger.warn('Demo session token mismatch', {
-          sessionId: sessionId.substring(0, 8)
-        });
-        
-        await automaticSecurityResponse.processSecurityIncident({
-          type: 'session_anomaly',
-          severity: 'high',
-          metadata: {
-            sessionId: sessionId.substring(0, 8),
-            reason: 'Token mismatch'
-          }
-        });
-        
-        return false;
-      }
-
-      // Enhanced session binding validation
-      const storedBinding = localStorage.getItem(`session_binding_${sessionId}`);
-      if (!storedBinding || storedBinding !== session.bindingToken) {
-        productionLogger.warn('Demo session binding validation failed', {
-          sessionId: sessionId.substring(0, 8)
-        });
-        
-        await automaticSecurityResponse.processSecurityIncident({
-          type: 'session_anomaly',
-          severity: 'critical',
-          metadata: {
-            sessionId: sessionId.substring(0, 8),
-            reason: 'Session binding failure - possible session fixation attack'
-          }
-        });
-        
-        this.destroyDemoSession(sessionId);
-        return false;
-      }
-
-      // Periodic validation check
-      const timeSinceLastValidation = Date.now() - session.lastValidation;
-      if (timeSinceLastValidation > this.VALIDATION_INTERVAL) {
-        session.lastValidation = Date.now();
-        
-        // Re-validate device fingerprint
-        const currentFingerprint = await this.generateDeviceFingerprint();
-        if (session.fingerprint !== currentFingerprint) {
-          productionLogger.warn('Demo session fingerprint changed during session', {
-            sessionId: sessionId.substring(0, 8)
-          });
-          
-          await automaticSecurityResponse.processSecurityIncident({
-            type: 'session_anomaly',
-            severity: 'high',
-            metadata: {
-              sessionId: sessionId.substring(0, 8),
-              reason: 'Device fingerprint changed mid-session'
-            }
-          });
-          
-          this.destroyDemoSession(sessionId);
-          return false;
-        }
-      }
-
+  private async validateFingerprint(stored: string, current: string): Promise<boolean> {
+    // Allow some tolerance for minor changes (like timezone changes)
+    if (stored === current) {
       return true;
-    } catch (error) {
-      productionLogger.error('Demo session validation failed', error);
-      
-      await automaticSecurityResponse.processSecurityIncident({
-        type: 'session_anomaly',
-        severity: 'medium',
-        metadata: {
-          sessionId: sessionId.substring(0, 8),
-          reason: 'Validation error',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
-      });
-      
-      return false;
     }
+
+    // Calculate similarity (basic approach)
+    const similarity = this.calculateSimilarity(stored, current);
+    return similarity > 0.85; // 85% similarity threshold
   }
 
-  getDemoSessionCapabilities(sessionId: string): string[] {
-    const session = this.activeDemoSessions.get(sessionId);
-    return session?.capabilities || [];
-  }
-
-  hasCapability(sessionId: string, capability: string): boolean {
-    const capabilities = this.getDemoSessionCapabilities(sessionId);
-    return capabilities.includes(capability);
-  }
-
-  async destroyDemoSession(sessionId: string): Promise<void> {
-    this.activeDemoSessions.delete(sessionId);
-    secureStorageService.removeSecureItem(`demo_session_${sessionId}`);
-    localStorage.removeItem(`session_binding_${sessionId}`);
+  private calculateSimilarity(str1: string, str2: string): number {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
     
-    productionLogger.info('Demo session destroyed', {
-      sessionId: sessionId.substring(0, 8)
-    });
-  }
-
-  getDemoSessionStats(): {
-    activeSessions: number;
-    totalCapabilities: number;
-    oldestSession?: number;
-    newestSession?: number;
-  } {
-    const sessions = Array.from(this.activeDemoSessions.values());
+    if (longer.length === 0) {
+      return 1.0;
+    }
     
-    return {
-      activeSessions: sessions.length,
-      totalCapabilities: [...new Set(sessions.flatMap(s => s.capabilities))].length,
-      oldestSession: sessions.length > 0 ? Math.min(...sessions.map(s => s.createdAt)) : undefined,
-      newestSession: sessions.length > 0 ? Math.max(...sessions.map(s => s.createdAt)) : undefined
-    };
+    const editDistance = this.levenshteinDistance(longer, shorter);
+    return (longer.length - editDistance) / longer.length;
   }
 
-  cleanupExpiredSessions(): void {
-    const now = Date.now();
-    const expiredSessions: string[] = [];
-
-    for (const [sessionId, session] of this.activeDemoSessions.entries()) {
-      if (now > session.expiresAt) {
-        expiredSessions.push(sessionId);
+  private levenshteinDistance(str1: string, str2: string): number {
+    const matrix = [];
+    
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
       }
     }
+    
+    return matrix[str2.length][str1.length];
+  }
 
-    expiredSessions.forEach(sessionId => {
-      this.destroyDemoSession(sessionId);
-    });
+  private validateClientSideData(sessionId: string): { valid: boolean; reason?: string } {
+    try {
+      const storedData = localStorage.getItem('demo_session_validation');
+      if (!storedData) {
+        return { valid: false, reason: 'No client validation data' };
+      }
 
-    if (expiredSessions.length > 0) {
-      productionLogger.info(`Cleaned up ${expiredSessions.length} expired demo sessions`);
+      const parsed = JSON.parse(storedData);
+      if (parsed.sessionId !== sessionId) {
+        return { valid: false, reason: 'Session ID mismatch' };
+      }
+
+      // Check if validation data is too old (indicates tampering)
+      const age = Date.now() - parsed.timestamp;
+      if (age > this.SESSION_DURATION) {
+        return { valid: false, reason: 'Validation data expired' };
+      }
+
+      return { valid: true };
+    } catch {
+      return { valid: false, reason: 'Invalid validation data format' };
     }
+  }
+
+  private assessSessionSecurity(session: SecureDemoSession): 'low' | 'medium' | 'high' {
+    let score = 0;
+
+    // Security score from creation
+    if (session.securityScore >= 80) score += 3;
+    else if (session.securityScore >= 60) score += 2;
+    else score += 1;
+
+    // Age factor
+    const age = Date.now() - (session.expiresAt - this.SESSION_DURATION);
+    if (age < 30 * 60 * 1000) score += 2; // Fresh session
+    else if (age < 60 * 60 * 1000) score += 1;
+
+    // Capabilities
+    if (session.capabilities.length <= 4) score += 1; // Limited capabilities
+
+    if (score >= 5) return 'high';
+    if (score >= 3) return 'medium';
+    return 'low';
+  }
+
+  private async calculateSecurityScore(): Promise<number> {
+    const metrics = await enhancedClientSecurity.getSecurityMetrics();
+    let score = 50; // Base score
+
+    // Entropy score
+    score += Math.min(30, metrics.entropyScore / 10);
+
+    // Security level bonus
+    switch (metrics.securityLevel) {
+      case 'critical': score += 20; break;
+      case 'high': score += 15; break;
+      case 'medium': score += 10; break;
+      case 'low': score += 0; break;
+    }
+
+    // Vulnerability penalty
+    score -= metrics.vulnerabilities.length * 5;
+
+    return Math.max(0, Math.min(100, score));
+  }
+
+  private async cleanupExpiredSessions(): Promise<void> {
+    const now = Date.now();
+    for (const [sessionId, session] of this.activeSessions.entries()) {
+      if (now > session.expiresAt) {
+        this.activeSessions.delete(sessionId);
+        productionLogger.info('Expired demo session cleaned up', {
+          sessionId: sessionId.substring(0, 8)
+        }, 'EnhancedDemoSecurity');
+      }
+    }
+  }
+
+  async revokeDemoSession(sessionId: string): Promise<void> {
+    this.activeSessions.delete(sessionId);
+    localStorage.removeItem('demo_session_validation');
+    
+    productionLogger.info('Demo session revoked', {
+      sessionId: sessionId.substring(0, 8)
+    }, 'EnhancedDemoSecurity');
+  }
+
+  getActiveSessions(): number {
+    return this.activeSessions.size;
   }
 }
 
 export const enhancedDemoSecurity = EnhancedDemoSecurity.getInstance();
-
-// Setup periodic cleanup
-setInterval(() => {
-  enhancedDemoSecurity.cleanupExpiredSessions();
-}, 5 * 60 * 1000); // Run cleanup every 5 minutes
