@@ -1,16 +1,67 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import type { AuditReport } from '../types/securityEvent';
 
 export class SecurityAuditService {
   private static instance: SecurityAuditService;
+  private isMonitoring = false;
+  private monitoringInterval: NodeJS.Timeout | null = null;
 
   static getInstance(): SecurityAuditService {
     if (!SecurityAuditService.instance) {
       SecurityAuditService.instance = new SecurityAuditService();
     }
     return SecurityAuditService.instance;
+  }
+
+  async startContinuousMonitoring(): Promise<void> {
+    if (this.isMonitoring) return;
+    
+    this.isMonitoring = true;
+    productionLogger.secureInfo('Starting continuous security audit monitoring');
+    
+    // Run audit every 15 minutes
+    this.monitoringInterval = setInterval(async () => {
+      await this.performSecurityAudit();
+    }, 15 * 60 * 1000);
+  }
+
+  stopMonitoring(): void {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+    }
+    this.isMonitoring = false;
+    productionLogger.secureInfo('Stopped continuous security audit monitoring');
+  }
+
+  async getLatestAuditReport(): Promise<AuditReport | null> {
+    try {
+      const { data: auditLogs } = await supabase
+        .from('security_audit_log')
+        .select('*')
+        .eq('event_type', 'security_audit_completed')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (!auditLogs || auditLogs.length === 0) return null;
+
+      const latestLog = auditLogs[0];
+      const eventData = latestLog.event_data as any;
+
+      return {
+        id: latestLog.id,
+        timestamp: new Date(latestLog.created_at),
+        riskLevel: eventData?.riskLevel || 'low',
+        totalEvents: eventData?.totalEvents || 0,
+        suspiciousPatterns: eventData?.suspiciousPatterns || [],
+        recommendations: eventData?.recommendations || [],
+        summary: eventData?.summary || 'No audit summary available'
+      };
+    } catch (error) {
+      productionLogger.error('Failed to get latest audit report', error, 'SecurityAuditService');
+      return null;
+    }
   }
 
   async performSecurityAudit(): Promise<AuditReport> {

@@ -52,3 +52,8 @@ export interface AuditReport {
   recommendations: string[];
   summary: string;
 }
+
+// Type guard to safely check event data structure
+export function isEventDataWithThreatTypes(data: Json): data is { threatTypes: string[] } {
+  return typeof data === 'object' && data !== null && 'threatTypes' in data && Array.isArray((data as any).threatTypes);
+}
