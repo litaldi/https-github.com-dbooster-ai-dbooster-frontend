@@ -14,6 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_bootstrap_log: {
+        Row: {
+          bootstrap_method: string | null
+          created_at: string
+          created_by: string | null
+          first_admin_created: boolean | null
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+        }
+        Insert: {
+          bootstrap_method?: string | null
+          created_at?: string
+          created_by?: string | null
+          first_admin_created?: boolean | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+        }
+        Update: {
+          bootstrap_method?: string | null
+          created_at?: string
+          created_by?: string | null
+          first_admin_created?: boolean | null
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      admin_bootstrap_validation: {
+        Row: {
+          bootstrap_token: string
+          created_at: string
+          created_by_ip: unknown | null
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          used_at: string | null
+        }
+        Insert: {
+          bootstrap_token: string
+          created_at?: string
+          created_by_ip?: unknown | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          used_at?: string | null
+        }
+        Update: {
+          bootstrap_token?: string
+          created_at?: string
+          created_by_ip?: unknown | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      admin_ip_whitelist: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          ip_address: unknown
+          is_active: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address: unknown
+          is_active?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
       enhanced_session_tracking: {
         Row: {
           created_at: string
@@ -56,6 +146,39 @@ export type Database = {
           status?: string | null
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      privilege_escalation_attempts: {
+        Row: {
+          attempted_role: Database["public"]["Enums"]["app_role"] | null
+          blocked: boolean | null
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          method: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attempted_role?: Database["public"]["Enums"]["app_role"] | null
+          blocked?: boolean | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          method?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attempted_role?: Database["public"]["Enums"]["app_role"] | null
+          blocked?: boolean | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          method?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -223,6 +346,45 @@ export type Database = {
         }
         Relationships: []
       }
+      role_assignment_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          request_ip: unknown | null
+          requested_by: string
+          requested_role: Database["public"]["Enums"]["app_role"]
+          status: string | null
+          target_user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          request_ip?: unknown | null
+          requested_by: string
+          requested_role: Database["public"]["Enums"]["app_role"]
+          status?: string | null
+          target_user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          request_ip?: unknown | null
+          requested_by?: string
+          requested_role?: Database["public"]["Enums"]["app_role"]
+          status?: string | null
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       role_change_audit: {
         Row: {
           changed_by: string | null
@@ -259,6 +421,84 @@ export type Database = {
         }
         Relationships: []
       }
+      role_time_restrictions: {
+        Row: {
+          created_at: string
+          days_of_week: number[] | null
+          end_time: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          start_time: string | null
+          timezone: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_of_week?: number[] | null
+          end_time?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          start_time?: string | null
+          timezone?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days_of_week?: number[] | null
+          end_time?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          start_time?: string | null
+          timezone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      secure_session_validation: {
+        Row: {
+          created_at: string
+          device_fingerprint: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_validated: boolean | null
+          last_validation: string | null
+          security_score: number | null
+          session_id: string
+          suspicious_activity_count: number | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_validated?: boolean | null
+          last_validation?: string | null
+          security_score?: number | null
+          session_id: string
+          suspicious_activity_count?: number | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_validated?: boolean | null
+          last_validation?: string | null
+          security_score?: number | null
+          session_id?: string
+          suspicious_activity_count?: number | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           created_at: string | null
@@ -284,6 +524,48 @@ export type Database = {
           event_type?: string
           id?: string
           ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_events_enhanced: {
+        Row: {
+          auto_blocked: boolean | null
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          session_id: string | null
+          severity: string
+          threat_score: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          auto_blocked?: boolean | null
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          session_id?: string | null
+          severity: string
+          threat_score?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          auto_blocked?: boolean | null
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          session_id?: string | null
+          severity?: string
+          threat_score?: number | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -318,6 +600,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_role_assignment_request: {
+        Args: { request_id: string; approve?: boolean }
+        Returns: boolean
+      }
       assign_user_role: {
         Args: {
           target_user_id: string
@@ -336,6 +622,53 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      is_admin_bootstrap_needed: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_role_active_now: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      secure_admin_bootstrap: {
+        Args: {
+          bootstrap_token: string
+          target_user_id: string
+          requester_ip?: unknown
+        }
+        Returns: Json
+      }
+      secure_assign_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+          change_reason?: string
+          requester_ip?: unknown
+        }
+        Returns: Json
+      }
+      secure_role_assignment_with_monitoring: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+          change_reason?: string
+          requester_ip?: unknown
+          user_agent_header?: string
+        }
+        Returns: Json
+      }
+      validate_session_security: {
+        Args: {
+          p_session_id: string
+          p_device_fingerprint: string
+          p_ip_address: unknown
+          p_user_agent: string
+        }
+        Returns: Json
       }
     }
     Enums: {

@@ -1,44 +1,25 @@
 
+import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
-import { secureStorageService } from './secureStorageService';
 
-interface SecureSession {
-  id: string;
-  userId: string;
-  token: string;
-  createdAt: number;
-  expiresAt: number;
-  lastActivity: number;
+interface SessionValidationResult {
+  valid: boolean;
+  reason?: string;
+  securityScore: number;
+  suspicious: boolean;
+}
+
+interface SecureSessionMetadata {
+  sessionId: string;
   deviceFingerprint: string;
   ipAddress: string;
   userAgent: string;
-  isDemo: boolean;
   securityScore: number;
-}
-
-interface SessionSecurityMetrics {
-  totalSessions: number;
-  activeSessions: number;
-  expiredSessions: number;
-  suspiciousSessions: number;
-  averageSecurityScore: number;
-}
-
-// Extend Navigator interface for optional properties
-interface ExtendedNavigator extends Navigator {
-  deviceMemory?: number;
-  connection?: {
-    effectiveType?: string;
-  };
 }
 
 class SecureSessionManager {
   private static instance: SecureSessionManager;
-  private readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-  private readonly DEMO_SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour
-  private readonly MAX_INACTIVE_TIME = 15 * 60 * 1000; // 15 minutes
-  private activeSessions = new Map<string, SecureSession>();
-  private cleanupInterval: NodeJS.Timeout;
+  private currentSessionMetadata: SecureSessionMetadata | null = null;
 
   static getInstance(): SecureSessionManager {
     if (!SecureSessionManager.instance) {
@@ -47,194 +28,136 @@ class SecureSessionManager {
     return SecureSessionManager.instance;
   }
 
-  constructor() {
-    // Set up automatic cleanup
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupExpiredSessions();
-    }, 5 * 60 * 1000); // Run every 5 minutes
-  }
-
-  async createSecureSession(userId: string, isDemo: boolean = false): Promise<SecureSession> {
-    const sessionId = await this.generateSecureId();
-    const token = await this.generateSecureToken();
-    const deviceFingerprint = await this.generateDeviceFingerprint();
-    const ipAddress = await this.getUserIP();
-    const securityScore = await this.calculateSecurityScore();
-
-    const session: SecureSession = {
-      id: sessionId,
-      userId,
-      token,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + (isDemo ? this.DEMO_SESSION_TIMEOUT : this.SESSION_TIMEOUT),
-      lastActivity: Date.now(),
-      deviceFingerprint,
-      ipAddress,
-      userAgent: navigator.userAgent,
-      isDemo,
-      securityScore
-    };
-
-    this.activeSessions.set(sessionId, session);
-    
-    // Store in secure storage
-    await secureStorageService.setSecureItem(
-      `session_${sessionId}`, 
-      session, 
-      isDemo ? this.DEMO_SESSION_TIMEOUT : this.SESSION_TIMEOUT
-    );
-
-    productionLogger.secureInfo('Secure session created', {
-      sessionId,
-      userId,
-      isDemo,
-      securityScore,
-      deviceFingerprint: deviceFingerprint.substring(0, 8)
-    });
-
-    return session;
-  }
-
-  async validateSession(sessionId: string): Promise<boolean> {
+  async initializeSecureSession(userId: string): Promise<string | null> {
     try {
-      const session = this.activeSessions.get(sessionId) || 
-        await secureStorageService.getSecureItem<SecureSession>(`session_${sessionId}`);
+      const sessionId = crypto.randomUUID();
+      const deviceFingerprint = await this.generateDeviceFingerprint();
+      const ipAddress = await this.getUserIP();
+      const userAgent = navigator.userAgent;
 
-      if (!session) {
-        return false;
+      const { error } = await supabase
+        .from('secure_session_validation')
+        .insert({
+          session_id: sessionId,
+          user_id: userId,
+          device_fingerprint: deviceFingerprint,
+          ip_address: ipAddress,
+          user_agent: userAgent,
+          security_score: await this.calculateInitialSecurityScore()
+        });
+
+      if (error) {
+        productionLogger.error('Failed to initialize secure session', error, 'SecureSessionManager');
+        return null;
       }
 
-      // Check expiration
-      if (Date.now() > session.expiresAt) {
-        await this.destroySession(sessionId);
-        return false;
-      }
+      this.currentSessionMetadata = {
+        sessionId,
+        deviceFingerprint,
+        ipAddress,
+        userAgent,
+        securityScore: await this.calculateInitialSecurityScore()
+      };
 
-      // Check for suspicious activity
-      if (await this.detectAnomalousActivity(session)) {
-        await this.destroySession(sessionId, 'Anomalous activity detected');
-        return false;
-      }
+      productionLogger.secureInfo('Secure session initialized', {
+        session_id: sessionId.substring(0, 8),
+        security_score: this.currentSessionMetadata.securityScore
+      });
 
-      // Update last activity
-      session.lastActivity = Date.now();
-      this.activeSessions.set(sessionId, session);
-
-      return true;
+      return sessionId;
     } catch (error) {
-      productionLogger.error('Session validation failed', error, 'SecureSessionManager');
-      return false;
+      productionLogger.error('Error initializing secure session', error, 'SecureSessionManager');
+      return null;
     }
   }
 
-  async refreshSession(sessionId: string): Promise<boolean> {
-    const session = this.activeSessions.get(sessionId);
-    if (!session) return false;
+  async validateCurrentSession(): Promise<SessionValidationResult> {
+    if (!this.currentSessionMetadata) {
+      return {
+        valid: false,
+        reason: 'No active session metadata',
+        securityScore: 0,
+        suspicious: true
+      };
+    }
 
-    // Extend expiration
-    const newExpiration = Date.now() + (session.isDemo ? this.DEMO_SESSION_TIMEOUT : this.SESSION_TIMEOUT);
-    session.expiresAt = newExpiration;
-    session.lastActivity = Date.now();
+    try {
+      const currentFingerprint = await this.generateDeviceFingerprint();
+      const currentIP = await this.getUserIP();
+      const currentUserAgent = navigator.userAgent;
 
-    this.activeSessions.set(sessionId, session);
-    await secureStorageService.setSecureItem(`session_${sessionId}`, session, newExpiration - Date.now());
+      const { data, error } = await supabase.rpc('validate_session_security', {
+        p_session_id: this.currentSessionMetadata.sessionId,
+        p_device_fingerprint: currentFingerprint,
+        p_ip_address: currentIP,
+        p_user_agent: currentUserAgent
+      });
 
-    return true;
+      if (error) {
+        productionLogger.error('Session validation failed', error, 'SecureSessionManager');
+        return {
+          valid: false,
+          reason: 'Validation error',
+          securityScore: 0,
+          suspicious: true
+        };
+      }
+
+      const result = data as SessionValidationResult;
+      
+      if (!result.valid || result.suspicious) {
+        productionLogger.warn('Session security issue detected', {
+          session_id: this.currentSessionMetadata.sessionId.substring(0, 8),
+          reason: result.reason,
+          security_score: result.securityScore
+        });
+      }
+
+      return result;
+    } catch (error) {
+      productionLogger.error('Error validating session', error, 'SecureSessionManager');
+      return {
+        valid: false,
+        reason: 'Unexpected validation error',
+        securityScore: 0,
+        suspicious: true
+      };
+    }
   }
 
-  async destroySession(sessionId: string, reason?: string): Promise<void> {
-    this.activeSessions.delete(sessionId);
-    secureStorageService.removeSecureItem(`session_${sessionId}`);
+  async invalidateSession(sessionId?: string): Promise<void> {
+    const targetSessionId = sessionId || this.currentSessionMetadata?.sessionId;
     
-    productionLogger.secureInfo('Session destroyed', {
-      sessionId,
-      reason: reason || 'User logout'
-    });
-  }
-
-  async destroyAllUserSessions(userId: string): Promise<void> {
-    const userSessions = Array.from(this.activeSessions.values())
-      .filter(session => session.userId === userId);
-
-    for (const session of userSessions) {
-      await this.destroySession(session.id, 'All sessions destroyed');
+    if (!targetSessionId) {
+      return;
     }
-  }
 
-  getSessionMetrics(): SessionSecurityMetrics {
-    const sessions = Array.from(this.activeSessions.values());
-    const now = Date.now();
+    try {
+      await supabase
+        .from('secure_session_validation')
+        .update({ is_validated: false })
+        .eq('session_id', targetSessionId);
 
-    const activeSessions = sessions.filter(s => now < s.expiresAt);
-    const expiredSessions = sessions.filter(s => now >= s.expiresAt);
-    const suspiciousSessions = sessions.filter(s => s.securityScore < 50);
+      if (this.currentSessionMetadata?.sessionId === targetSessionId) {
+        this.currentSessionMetadata = null;
+      }
 
-    return {
-      totalSessions: sessions.length,
-      activeSessions: activeSessions.length,
-      expiredSessions: expiredSessions.length,
-      suspiciousSessions: suspiciousSessions.length,
-      averageSecurityScore: sessions.length > 0 
-        ? sessions.reduce((sum, s) => sum + s.securityScore, 0) / sessions.length 
-        : 0
-    };
-  }
-
-  private async detectAnomalousActivity(session: SecureSession): Promise<boolean> {
-    // Check device fingerprint
-    const currentFingerprint = await this.generateDeviceFingerprint();
-    if (currentFingerprint !== session.deviceFingerprint) {
-      productionLogger.warn('Device fingerprint mismatch', {
-        sessionId: session.id,
-        expected: session.deviceFingerprint.substring(0, 8),
-        actual: currentFingerprint.substring(0, 8)
+      productionLogger.info('Session invalidated', {
+        session_id: targetSessionId.substring(0, 8)
       });
-      return true;
+    } catch (error) {
+      productionLogger.error('Error invalidating session', error, 'SecureSessionManager');
     }
-
-    // Check for session timeout
-    if (Date.now() - session.lastActivity > this.MAX_INACTIVE_TIME) {
-      return true;
-    }
-
-    // Check for rapid location changes (would need IP geolocation service)
-    const currentIP = await this.getUserIP();
-    if (currentIP !== session.ipAddress && currentIP !== 'unknown') {
-      // In production, you'd check if IPs are from different geographic regions
-      productionLogger.info('IP address change detected', {
-        sessionId: session.id,
-        originalIP: session.ipAddress,
-        currentIP
-      });
-    }
-
-    return false;
-  }
-
-  private async generateSecureId(): Promise<string> {
-    const array = new Uint8Array(16);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-  }
-
-  private async generateSecureToken(): Promise<string> {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private async generateDeviceFingerprint(): Promise<string> {
-    const extendedNavigator = navigator as ExtendedNavigator;
-    
     const components = [
       navigator.userAgent,
       navigator.language,
-      navigator.languages?.join(',') || '',
-      screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+      screen.width + 'x' + screen.height,
       new Date().getTimezoneOffset().toString(),
       navigator.hardwareConcurrency?.toString() || '0',
-      extendedNavigator.deviceMemory?.toString() || '0',
-      navigator.cookieEnabled.toString()
+      navigator.platform
     ];
 
     const fingerprint = components.join('|');
@@ -255,50 +178,18 @@ class SecureSessionManager {
     }
   }
 
-  private async calculateSecurityScore(): Promise<number> {
+  private async calculateInitialSecurityScore(): Promise<number> {
     let score = 50; // Base score
 
-    // Protocol security
+    // HTTPS bonus
     if (location.protocol === 'https:') score += 20;
-    
-    // Browser security features
-    if ('crypto' in window && 'subtle' in crypto) score += 10;
-    if ('serviceWorker' in navigator) score += 5;
-    if (window.isSecureContext) score += 10;
-    
-    // Connection security
-    const extendedNavigator = navigator as ExtendedNavigator;
-    if (extendedNavigator.connection) {
-      const connection = extendedNavigator.connection;
-      if (connection.effectiveType === '4g') score += 5;
-    }
+
+    // Modern browser features
+    if ('crypto' in window && 'subtle' in crypto) score += 15;
+    if ('serviceWorker' in navigator) score += 10;
+    if (window.isSecureContext) score += 5;
 
     return Math.min(score, 100);
-  }
-
-  private cleanupExpiredSessions(): void {
-    const now = Date.now();
-    const expiredSessions: string[] = [];
-
-    for (const [sessionId, session] of this.activeSessions.entries()) {
-      if (now > session.expiresAt || (now - session.lastActivity) > this.MAX_INACTIVE_TIME) {
-        expiredSessions.push(sessionId);
-      }
-    }
-
-    expiredSessions.forEach(sessionId => {
-      this.destroySession(sessionId, 'Session expired');
-    });
-
-    if (expiredSessions.length > 0) {
-      productionLogger.info('Cleaned up expired sessions', { count: expiredSessions.length });
-    }
-  }
-
-  destroy(): void {
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-    }
   }
 }
 

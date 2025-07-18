@@ -1,43 +1,20 @@
-import { productionLogger } from '@/utils/productionLogger';
 
-// Define the SecurityEventType that's expected
-type SecurityEventType = 'authentication' | 'authorization' | 'data_access' | 'system_security' | 'threat_detection';
+import { supabase } from '@/integrations/supabase/client';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface SecurityAlert {
   id: string;
-  type: 'critical' | 'high' | 'medium' | 'low';
-  category: 'authentication' | 'authorization' | 'data_breach' | 'suspicious_activity' | 'system_security';
-  message: string;
-  details: Record<string, any>;
-  timestamp: number;
-  acknowledged: boolean;
-  adminNotified: boolean;
-}
-
-interface SecurityEvent {
-  type: SecurityEventType;
+  type: 'privilege_escalation' | 'suspicious_session' | 'unauthorized_access' | 'security_violation';
   severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
-  metadata: Record<string, any>;
-}
-
-interface AlertConfig {
-  enableRealTimeAlerts: boolean;
-  criticalAlertThreshold: number;
-  adminNotificationDelay: number;
-  maxAlertsPerHour: number;
+  timestamp: string;
+  userId?: string;
+  metadata?: Record<string, any>;
 }
 
 class SecurityAlertsService {
   private static instance: SecurityAlertsService;
-  private alerts: Map<string, SecurityAlert> = new Map();
-  private config: AlertConfig = {
-    enableRealTimeAlerts: true,
-    criticalAlertThreshold: 3, // Escalate after 3 critical alerts
-    adminNotificationDelay: 5 * 60 * 1000, // 5 minutes
-    maxAlertsPerHour: 100
-  };
-  private alertCounts: Map<string, number> = new Map(); // hourly alert counts
+  private alertListeners: ((alert: SecurityAlert) => void)[] = [];
 
   static getInstance(): SecurityAlertsService {
     if (!SecurityAlertsService.instance) {
@@ -46,329 +23,163 @@ class SecurityAlertsService {
     return SecurityAlertsService.instance;
   }
 
-  async createAlert(
-    type: SecurityAlert['type'],
-    category: SecurityAlert['category'],
-    message: string,
-    details: Record<string, any> = {}
-  ): Promise<string> {
-    const alertId = this.generateAlertId();
-    const timestamp = Date.now();
-    
-    // Check rate limiting
-    const hourKey = Math.floor(timestamp / (60 * 60 * 1000)).toString();
-    const currentHourCount = this.alertCounts.get(hourKey) || 0;
-    
-    if (currentHourCount >= this.config.maxAlertsPerHour) {
-      productionLogger.warn('Alert rate limit exceeded', {
-        hourKey,
-        count: currentHourCount,
-        limit: this.config.maxAlertsPerHour
-      }, 'SecurityAlertsService');
-      return alertId;
-    }
+  async getRecentAlerts(userId?: string): Promise<SecurityAlert[]> {
+    try {
+      let query = supabase
+        .from('privilege_escalation_attempts')
+        .select('*')
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false });
 
-    const alert: SecurityAlert = {
-      id: alertId,
-      type,
-      category,
-      message,
-      details,
-      timestamp,
-      acknowledged: false,
-      adminNotified: false
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data: escalationAttempts, error: escalationError } = await query;
+
+      if (escalationError) {
+        productionLogger.error('Failed to fetch escalation attempts', escalationError, 'SecurityAlertsService');
+        return [];
+      }
+
+      // Also get suspicious session events
+      const { data: sessionEvents, error: sessionError } = await supabase
+        .from('security_events_enhanced')
+        .select('*')
+        .eq('event_type', 'suspicious_session_validation')
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false });
+
+      if (sessionError) {
+        productionLogger.error('Failed to fetch session events', sessionError, 'SecurityAlertsService');
+      }
+
+      const alerts: SecurityAlert[] = [];
+
+      // Convert escalation attempts to alerts
+      escalationAttempts?.forEach(attempt => {
+        alerts.push({
+          id: attempt.id,
+          type: 'privilege_escalation',
+          severity: attempt.attempted_role === 'admin' ? 'critical' : 'high',
+          message: `Unauthorized ${attempt.attempted_role} role assignment attempt`,
+          timestamp: attempt.created_at,
+          userId: attempt.user_id,
+          metadata: {
+            method: attempt.method,
+            blocked: attempt.blocked,
+            ip_address: attempt.ip_address
+          }
+        });
+      });
+
+      // Convert session events to alerts
+      sessionEvents?.forEach(event => {
+        alerts.push({
+          id: event.id,
+          type: 'suspicious_session',
+          severity: event.severity as SecurityAlert['severity'],
+          message: 'Suspicious session activity detected',
+          timestamp: event.created_at,
+          userId: event.user_id,
+          metadata: event.event_data
+        });
+      });
+
+      return alerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    } catch (error) {
+      productionLogger.error('Error fetching security alerts', error, 'SecurityAlertsService');
+      return [];
+    }
+  }
+
+  async createSecurityAlert(alert: Omit<SecurityAlert, 'id' | 'timestamp'>): Promise<void> {
+    const fullAlert: SecurityAlert = {
+      ...alert,
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString()
     };
 
-    this.alerts.set(alertId, alert);
-    this.alertCounts.set(hourKey, currentHourCount + 1);
-
-    // Log the security event with correct type
-    this.logSecurityEvent({
-      type: 'system_security', // Use valid SecurityEventType
-      severity: this.mapTypeToSeverity(type),
-      message: `Security alert created: ${message}`,
-      metadata: {
-        alertId,
-        category,
-        ...details
-      }
-    });
-
-    // Handle critical alerts immediately
-    if (type === 'critical') {
-      await this.handleCriticalAlert(alert);
-    }
-
-    // Schedule admin notification if enabled
-    if (this.config.enableRealTimeAlerts && !alert.adminNotified) {
-      setTimeout(() => {
-        this.notifyAdmins(alert);
-      }, this.config.adminNotificationDelay);
-    }
-
-    productionLogger.warn(`Security alert created: ${type}`, {
-      alertId,
-      category,
-      message,
-      details
-    }, 'SecurityAlertsService');
-
-    return alertId;
-  }
-
-  private logSecurityEvent(event: SecurityEvent): void {
-    productionLogger.info('Security event logged', {
-      type: event.type,
-      severity: event.severity,
-      message: event.message,
-      metadata: event.metadata
-    }, 'SecurityAlertsService');
-  }
-
-  private async handleCriticalAlert(alert: SecurityAlert): Promise<void> {
     try {
-      // Immediate admin notification for critical alerts
-      await this.notifyAdmins(alert, true);
-
-      // Check if we need to escalate (multiple critical alerts)
-      const recentCriticalAlerts = this.getRecentAlerts('critical', 60 * 60 * 1000); // Last hour
-      
-      if (recentCriticalAlerts.length >= this.config.criticalAlertThreshold) {
-        await this.escalateSecurityIncident(recentCriticalAlerts);
-      }
-
-      // Auto-response for certain critical alert types
-      switch (alert.category) {
-        case 'authentication':
-          await this.handleAuthenticationIncident(alert);
-          break;
-        case 'data_breach':
-          await this.handleDataBreachIncident(alert);
-          break;
-        case 'suspicious_activity':
-          await this.handleSuspiciousActivityIncident(alert);
-          break;
-      }
-    } catch (error) {
-      productionLogger.error('Failed to handle critical alert', error, 'SecurityAlertsService');
-    }
-  }
-
-  private async notifyAdmins(alert: SecurityAlert, immediate: boolean = false): Promise<void> {
-    try {
-      // In a real implementation, this would send notifications via:
-      // - Email
-      // - SMS
-      // - Slack/Teams
-      // - Push notifications
-      
-      productionLogger.info('Admin notification sent', {
-        alertId: alert.id,
+      // Log the alert
+      productionLogger.warn('Security alert created', {
         type: alert.type,
-        immediate,
-        message: alert.message
-      }, 'SecurityAlertsService');
+        severity: alert.severity,
+        message: alert.message,
+        user_id: alert.userId?.substring(0, 8)
+      });
 
-      // Mark as notified
-      alert.adminNotified = true;
-      this.alerts.set(alert.id, alert);
+      // Notify listeners
+      this.alertListeners.forEach(listener => {
+        try {
+          listener(fullAlert);
+        } catch (error) {
+          productionLogger.error('Error in alert listener', error, 'SecurityAlertsService');
+        }
+      });
+
+      // For critical alerts, also log to security events
+      if (alert.severity === 'critical') {
+        await supabase.from('security_events_enhanced').insert({
+          event_type: 'critical_security_alert',
+          severity: 'high',
+          user_id: alert.userId,
+          event_data: {
+            alert_type: alert.type,
+            message: alert.message,
+            metadata: alert.metadata
+          }
+        });
+      }
     } catch (error) {
-      productionLogger.error('Failed to notify admins', error, 'SecurityAlertsService');
+      productionLogger.error('Error creating security alert', error, 'SecurityAlertsService');
     }
   }
 
-  private async escalateSecurityIncident(alerts: SecurityAlert[]): Promise<void> {
-    const incidentId = this.generateAlertId();
+  onSecurityAlert(listener: (alert: SecurityAlert) => void): () => void {
+    this.alertListeners.push(listener);
     
-    productionLogger.error('Security incident escalated', {
-      incidentId,
-      alertCount: alerts.length,
-      alerts: alerts.map(a => ({
-        id: a.id,
-        type: a.type,
-        category: a.category,
-        message: a.message
-      }))
-    }, 'SecurityAlertsService');
-
-    // Create high-priority incident alert
-    await this.createAlert(
-      'critical',
-      'system_security',
-      `Security incident escalated: ${alerts.length} critical alerts in the last hour`,
-      {
-        incidentId,
-        triggeringAlerts: alerts.map(a => a.id),
-        escalationReason: 'critical_alert_threshold_exceeded'
+    // Return unsubscribe function
+    return () => {
+      const index = this.alertListeners.indexOf(listener);
+      if (index > -1) {
+        this.alertListeners.splice(index, 1);
       }
-    );
-  }
-
-  private async handleAuthenticationIncident(alert: SecurityAlert): Promise<void> {
-    // Auto-response for authentication incidents
-    productionLogger.info('Authentication incident auto-response triggered', {
-      alertId: alert.id,
-      details: alert.details
-    }, 'SecurityAlertsService');
-
-    // Could implement:
-    // - Temporary account lockouts
-    // - IP blocking
-    // - Enhanced monitoring
-  }
-
-  private async handleDataBreachIncident(alert: SecurityAlert): Promise<void> {
-    // Auto-response for data breach incidents
-    productionLogger.error('Data breach incident detected', {
-      alertId: alert.id,
-      details: alert.details
-    }, 'SecurityAlertsService');
-
-    // Could implement:
-    // - Data access logging
-    // - User notifications
-    // - Compliance reporting
-  }
-
-  private async handleSuspiciousActivityIncident(alert: SecurityAlert): Promise<void> {
-    // Auto-response for suspicious activity
-    productionLogger.warn('Suspicious activity auto-response triggered', {
-      alertId: alert.id,
-      details: alert.details
-    }, 'SecurityAlertsService');
-
-    // Could implement:
-    // - Enhanced user verification
-    // - Activity restrictions
-    // - Fraud detection
-  }
-
-  acknowledgeAlert(alertId: string, acknowledgedBy?: string): boolean {
-    const alert = this.alerts.get(alertId);
-    if (!alert) {
-      return false;
-    }
-
-    alert.acknowledged = true;
-    this.alerts.set(alertId, alert);
-
-    productionLogger.info('Security alert acknowledged', {
-      alertId,
-      acknowledgedBy,
-      type: alert.type,
-      category: alert.category
-    }, 'SecurityAlertsService');
-
-    return true;
-  }
-
-  getAlerts(filters?: {
-    type?: SecurityAlert['type'];
-    category?: SecurityAlert['category'];
-    acknowledged?: boolean;
-    timeRange?: { start: number; end: number };
-  }): SecurityAlert[] {
-    let alerts = Array.from(this.alerts.values());
-
-    if (filters) {
-      if (filters.type) {
-        alerts = alerts.filter(a => a.type === filters.type);
-      }
-      if (filters.category) {
-        alerts = alerts.filter(a => a.category === filters.category);
-      }
-      if (filters.acknowledged !== undefined) {
-        alerts = alerts.filter(a => a.acknowledged === filters.acknowledged);
-      }
-      if (filters.timeRange) {
-        alerts = alerts.filter(a => 
-          a.timestamp >= filters.timeRange!.start && 
-          a.timestamp <= filters.timeRange!.end
-        );
-      }
-    }
-
-    return alerts.sort((a, b) => b.timestamp - a.timestamp);
-  }
-
-  private getRecentAlerts(type?: SecurityAlert['type'], timeWindow: number = 60 * 60 * 1000): SecurityAlert[] {
-    const cutoff = Date.now() - timeWindow;
-    let alerts = Array.from(this.alerts.values()).filter(a => a.timestamp >= cutoff);
-    
-    if (type) {
-      alerts = alerts.filter(a => a.type === type);
-    }
-    
-    return alerts;
-  }
-
-  getAlertStats(): {
-    total: number;
-    byType: Record<SecurityAlert['type'], number>;
-    byCategory: Record<SecurityAlert['category'], number>;
-    acknowledged: number;
-    unacknowledged: number;
-  } {
-    const alerts = Array.from(this.alerts.values());
-    
-    const stats = {
-      total: alerts.length,
-      byType: { critical: 0, high: 0, medium: 0, low: 0 } as Record<SecurityAlert['type'], number>,
-      byCategory: { 
-        authentication: 0, 
-        authorization: 0, 
-        data_breach: 0, 
-        suspicious_activity: 0, 
-        system_security: 0 
-      } as Record<SecurityAlert['category'], number>,
-      acknowledged: 0,
-      unacknowledged: 0
     };
-
-    alerts.forEach(alert => {
-      stats.byType[alert.type]++;
-      stats.byCategory[alert.category]++;
-      if (alert.acknowledged) {
-        stats.acknowledged++;
-      } else {
-        stats.unacknowledged++;
-      }
-    });
-
-    return stats;
   }
 
-  private generateAlertId(): string {
-    return `alert_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-  }
-
-  private mapTypeToSeverity(type: SecurityAlert['type']): 'low' | 'medium' | 'high' | 'critical' {
-    switch (type) {
-      case 'critical': return 'critical';
-      case 'high': return 'high';
-      case 'medium': return 'medium';
-      case 'low': return 'low';
-      default: return 'medium';
-    }
-  }
-
-  // Cleanup old alerts (call periodically)
-  cleanupOldAlerts(maxAge: number = 30 * 24 * 60 * 60 * 1000): void { // 30 days
-    const cutoff = Date.now() - maxAge;
-    let removedCount = 0;
-
-    for (const [alertId, alert] of this.alerts.entries()) {
-      if (alert.timestamp < cutoff && alert.acknowledged) {
-        this.alerts.delete(alertId);
-        removedCount++;
-      }
-    }
-
-    if (removedCount > 0) {
-      productionLogger.info('Old security alerts cleaned up', {
-        removedCount,
-        remainingCount: this.alerts.size
-      }, 'SecurityAlertsService');
+  async getSecuritySummary(): Promise<{
+    totalAlerts: number;
+    criticalAlerts: number;
+    recentTrends: {
+      privilegeEscalation: number;
+      suspiciousSessions: number;
+      securityViolations: number;
+    };
+  }> {
+    try {
+      const alerts = await this.getRecentAlerts();
+      
+      return {
+        totalAlerts: alerts.length,
+        criticalAlerts: alerts.filter(a => a.severity === 'critical').length,
+        recentTrends: {
+          privilegeEscalation: alerts.filter(a => a.type === 'privilege_escalation').length,
+          suspiciousSessions: alerts.filter(a => a.type === 'suspicious_session').length,
+          securityViolations: alerts.filter(a => a.type === 'security_violation').length
+        }
+      };
+    } catch (error) {
+      productionLogger.error('Error getting security summary', error, 'SecurityAlertsService');
+      return {
+        totalAlerts: 0,
+        criticalAlerts: 0,
+        recentTrends: {
+          privilegeEscalation: 0,
+          suspiciousSessions: 0,
+          securityViolations: 0
+        }
+      };
     }
   }
 }
