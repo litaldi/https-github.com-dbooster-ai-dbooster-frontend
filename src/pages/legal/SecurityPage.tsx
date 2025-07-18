@@ -1,11 +1,4 @@
 
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { createSimplePage } from '@/utils/createSimplePage';
 
-export default function SecurityPage() {
-  return (
-    <PagePlaceholder
-      title="Security"
-      description="Our commitment to security, compliance certifications, and how we protect your data."
-    />
-  );
-}
+export default createSimplePage("Security", "Our security practices");

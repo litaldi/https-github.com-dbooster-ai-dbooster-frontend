@@ -1,11 +1,4 @@
 
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { createSimplePage } from '@/utils/createSimplePage';
 
-export default function AccessibilityPage() {
-  return (
-    <PagePlaceholder
-      title="Accessibility"
-      description="Our commitment to making DBooster accessible to all users, including those with disabilities."
-    />
-  );
-}
+export default createSimplePage("Accessibility", "Our commitment to accessibility");

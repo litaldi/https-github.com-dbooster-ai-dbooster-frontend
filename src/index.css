@@ -1,52 +1,52 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-@import url('./styles/design-tokens.css');
-@import url('./styles/enhanced-design-system.css');
-@import url('./styles/accessibility.css');
-@import url('./components/ui/enhanced-interactions.css');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 220 13% 9%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 220 13% 11%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-    --popover: 220 13% 9%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 72.2% 50.6%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --radius: 0.75rem;
-    
-    /* Enhanced Success Colors */
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
-    
-    /* Enhanced Warning Colors */
-    --warning: 32.2 95% 44.1%;
-    --warning-foreground: 210 40% 98%;
-    
-    /* Enhanced Info Colors */
-    --info: 201.3 96% 32.2%;
-    --info-foreground: 210 40% 98%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 
@@ -54,346 +54,7 @@
   * {
     @apply border-border;
   }
-  
-  html {
-    scroll-behavior: smooth;
-    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
-  }
-  
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.6;
-    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(220 13% 8%) 50%, hsl(var(--background)) 100%);
-    min-height: 100vh;
-  }
-  
-  /* Enhanced Typography Base */
-  h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
-    line-height: 1.2;
-    letter-spacing: -0.015em;
-    color: hsl(var(--foreground));
-    text-wrap: balance;
-  }
-  
-  p {
-    line-height: 1.6;
-    color: hsl(var(--muted-foreground));
-    text-wrap: pretty;
-  }
-  
-  /* Enhanced Button Base */
-  button {
-    font-weight: 500;
-    letter-spacing: 0.015em;
-    cursor: pointer;
-  }
-  
-  button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  
-  /* Enhanced Input Base */
-  input, textarea, select {
-    font-size: 1rem;
-    line-height: 1.5;
-    background: hsl(var(--background));
-    border: 1px solid hsl(var(--border));
-    color: hsl(var(--foreground));
-    transition: all 0.2s ease;
-  }
-  
-  input:focus, textarea:focus, select:focus {
-    outline: none;
-    border-color: hsl(var(--ring));
-    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
-  }
-  
-  /* Enhanced Link Base */
-  a {
-    transition: all 0.2s ease;
-    color: hsl(var(--foreground));
-    text-decoration: none;
-  }
-  
-  a:hover {
-    color: hsl(var(--primary));
-  }
-  
-  /* Enhanced Focus Base */
-  :focus-visible {
-    outline: 2px solid hsl(var(--ring) / 0.8);
-    outline-offset: 2px;
-    border-radius: 0.25rem;
-  }
-  
-  /* Enhanced Selection */
-  ::selection {
-    background: hsl(var(--primary) / 0.2);
-    color: hsl(var(--foreground));
-  }
-  
-  /* Enhanced Scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--muted) / 0.3);
-    border-radius: 4px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 4px;
-    transition: background 0.2s ease;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-}
-
-@layer components {
-  /* Enhanced Card Components */
-  .card-elevated-enhanced {
-    @apply bg-card/80 border border-border/40 shadow-lg backdrop-blur-sm rounded-xl;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .card-interactive-enhanced {
-    @apply card-elevated-enhanced hover:shadow-2xl hover:-translate-y-2 hover:border-border/60 cursor-pointer;
-  }
-  
-  /* Enhanced Button Components */
-  .btn-cta-enhanced {
-    @apply bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground shadow-lg hover:shadow-xl font-medium backdrop-blur-sm rounded-lg px-6 py-3 transition-all duration-300;
-  }
-  
-  .btn-cta-enhanced:hover {
-    @apply scale-105 shadow-primary/20;
-    transform: translateY(-2px) scale(1.02);
-  }
-  
-  .btn-cta-enhanced:active {
-    @apply scale-100;
-    transform: translateY(0) scale(1);
-  }
-  
-  /* Enhanced Navigation Components */
-  .nav-item-enhanced {
-    @apply px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200;
-  }
-  
-  .nav-item-enhanced:hover {
-    @apply bg-accent/50 text-accent-foreground;
-  }
-  
-  .nav-item-enhanced.active {
-    @apply bg-primary/10 text-primary border border-primary/20;
-  }
-  
-  /* Enhanced Form Components */
-  .form-field-enhanced {
-    @apply space-y-2;
-  }
-  
-  .form-label-enhanced {
-    @apply text-sm font-medium text-foreground;
-  }
-  
-  .form-input-enhanced {
-    @apply w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground/60 transition-all duration-200;
-  }
-  
-  .form-input-enhanced:focus {
-    @apply border-ring ring-2 ring-ring/20;
-  }
-  
-  .form-error-enhanced {
-    @apply text-sm text-destructive;
-  }
-  
-  /* Enhanced Badge Components */
-  .badge-success-enhanced {
-    @apply bg-success/10 text-success border border-success/20 px-3 py-1 rounded-full text-xs font-medium;
-  }
-  
-  .badge-warning-enhanced {
-    @apply bg-warning/10 text-warning border border-warning/20 px-3 py-1 rounded-full text-xs font-medium;
-  }
-  
-  .badge-info-enhanced {
-    @apply bg-info/10 text-info border border-info/20 px-3 py-1 rounded-full text-xs font-medium;
-  }
-}
-
-@layer utilities {
-  /* Enhanced Text Utilities */
-  .text-balance {
-    text-wrap: balance;
-  }
-  
-  .text-pretty {
-    text-wrap: pretty;
-  }
-  
-  /* Enhanced Layout Utilities */
-  .container-fluid {
-    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-  
-  .section-padding {
-    @apply py-12 md:py-16 lg:py-20;
-  }
-  
-  /* Enhanced Gradient Utilities */
-  .gradient-primary-enhanced {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(217.2 91.2% 65%) 50%, hsl(var(--primary)) 100%);
-  }
-  
-  .gradient-secondary-enhanced {
-    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--muted)) 100%);
-  }
-  
-  .gradient-text-enhanced {
-    @apply bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent;
-  }
-  
-  /* Enhanced Shadow Utilities */
-  .shadow-enhanced {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  }
-  
-  .shadow-enhanced-lg {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .shadow-glow-primary {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-  }
-  
-  /* Enhanced Border Utilities */
-  .border-enhanced {
-    @apply border border-border/60;
-  }
-  
-  .border-enhanced:hover {
-    @apply border-border;
-  }
-  
-  /* Enhanced Interactive States */
-  .interactive-card {
-    @apply transition-all duration-300 hover:scale-105 hover:shadow-enhanced-lg;
-  }
-  
-  .interactive-button {
-    @apply transition-all duration-200 hover:scale-105 active:scale-95;
-  }
-  
-  /* Enhanced Animation Utilities */
-  .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
-  }
-  
-  .animate-slide-in-right {
-    animation: slideInRight 0.5s ease-out;
-  }
-  
-  .animate-bounce-in {
-    animation: bounceIn 0.6s ease-out;
-  }
-}
-
-/* Enhanced Animation Keyframes */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes bounceIn {
-  0%, 20%, 40%, 60%, 80% {
-    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-  }
-  0% {
-    opacity: 0;
-    transform: scale3d(0.3, 0.3, 0.3);
-  }
-  20% {
-    transform: scale3d(1.1, 1.1, 1.1);
-  }
-  40% {
-    transform: scale3d(0.9, 0.9, 0.9);
-  }
-  60% {
-    opacity: 1;
-    transform: scale3d(1.03, 1.03, 1.03);
-  }
-  80% {
-    transform: scale3d(0.97, 0.97, 0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale3d(1, 1, 1);
-  }
-}
-
-/* Enhanced Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  
-  html {
-    scroll-behavior: auto;
-  }
-}
-
-/* Enhanced Dark Theme Optimizations */
-@media (prefers-color-scheme: dark) {
-  body {
-    color-scheme: dark;
-  }
-}
-
-/* Enhanced Print Styles */
-@media print {
-  .no-print {
-    display: none !important;
-  }
-  
-  body {
-    color: black !important;
-    background: white !important;
-  }
-  
-  .card-elevated-enhanced,
-  .card-interactive-enhanced {
-    box-shadow: none !important;
-    border: 1px solid #ccc !important;
+    @apply bg-background text-foreground;
   }
 }

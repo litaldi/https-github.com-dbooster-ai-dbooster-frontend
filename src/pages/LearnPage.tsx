@@ -1,11 +1,4 @@
 
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { createSimplePage } from '@/utils/createSimplePage';
 
-export default function LearnPage() {
-  return (
-    <PagePlaceholder
-      title="Documentation"
-      description="Comprehensive guides, tutorials, and API documentation for DBooster."
-    />
-  );
-}
+export default createSimplePage("Learn", "Learning resources and documentation");

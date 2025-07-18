@@ -1,11 +1,4 @@
 
-import { PagePlaceholder } from '@/components/PagePlaceholder';
+import { createSimplePage } from '@/utils/createSimplePage';
 
-export default function CookiesPage() {
-  return (
-    <PagePlaceholder
-      title="Cookie Policy"
-      description="Information about how we use cookies and similar technologies on our website."
-    />
-  );
-}
+export default createSimplePage("Cookie Policy", "How we use cookies");
