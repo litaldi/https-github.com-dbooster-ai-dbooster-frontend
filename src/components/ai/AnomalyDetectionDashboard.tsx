@@ -20,7 +20,7 @@ import { useAnomalyDetection } from '@/hooks/useAnomalyDetection';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export function AnomalyDetectionDashboard() {
-  const { isDetecting, result, error, detectAnomalies } = useAnomalyDetection();
+  const { isScanning, anomalyData, error, scanForAnomalies } = useAnomalyDetection();
   const [activeTab, setActiveTab] = useState('overview');
 
   const getSeverityColor = (severity: string) => {
@@ -69,11 +69,11 @@ export function AnomalyDetectionDashboard() {
               AI Anomaly Detection
             </CardTitle>
             <Button 
-              onClick={detectAnomalies} 
-              disabled={isDetecting}
+              onClick={scanForAnomalies} 
+              disabled={isScanning}
               variant="outline"
             >
-              {isDetecting ? (
+              {isScanning ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                   Analyzing...
@@ -106,7 +106,7 @@ export function AnomalyDetectionDashboard() {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
-              {result && (
+              {anomalyData && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -118,9 +118,9 @@ export function AnomalyDetectionDashboard() {
                         <div>
                           <p className="text-sm font-medium text-muted-foreground">System Trend</p>
                           <div className="flex items-center gap-2 mt-1">
-                            {getTrendIcon(result.trend)}
+                            {getTrendIcon(anomalyData.trend)}
                             <span className="text-2xl font-bold capitalize">
-                              {result.trend}
+                              {anomalyData.trend}
                             </span>
                           </div>
                         </div>
@@ -136,7 +136,7 @@ export function AnomalyDetectionDashboard() {
                           <div className="flex items-center gap-2 mt-1">
                             <AlertTriangle className="h-5 w-5 text-amber-500" />
                             <span className="text-2xl font-bold">
-                              {result.anomalies.length}
+                              {anomalyData.anomalies.length}
                             </span>
                           </div>
                         </div>
@@ -152,7 +152,7 @@ export function AnomalyDetectionDashboard() {
                           <div className="flex items-center gap-2 mt-1">
                             <AlertTriangle className="h-5 w-5 text-red-500" />
                             <span className="text-2xl font-bold">
-                              {result.anomalies.filter(a => a.severity === 'critical').length}
+                              {anomalyData.anomalies.filter(a => a.severity === 'critical').length}
                             </span>
                           </div>
                         </div>
@@ -195,8 +195,8 @@ export function AnomalyDetectionDashboard() {
 
             <TabsContent value="anomalies" className="space-y-4">
               <AnimatePresence>
-                {result?.anomalies && result.anomalies.length > 0 ? (
-                  result.anomalies.map((anomaly, index) => (
+                {anomalyData?.anomalies && anomalyData.anomalies.length > 0 ? (
+                  anomalyData.anomalies.map((anomaly, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
@@ -250,7 +250,7 @@ export function AnomalyDetectionDashboard() {
             </TabsContent>
 
             <TabsContent value="forecast" className="space-y-4">
-              {result?.forecast && (
+              {anomalyData?.forecast && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -261,7 +261,7 @@ export function AnomalyDetectionDashboard() {
                       <CardTitle className="text-lg">Next Hour</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm">{result.forecast.nextHour}</p>
+                      <p className="text-sm">{anomalyData.forecast.nextHour}</p>
                     </CardContent>
                   </Card>
 
@@ -270,7 +270,7 @@ export function AnomalyDetectionDashboard() {
                       <CardTitle className="text-lg">Next Day</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm">{result.forecast.nextDay}</p>
+                      <p className="text-sm">{anomalyData.forecast.nextDay}</p>
                     </CardContent>
                   </Card>
 
@@ -279,7 +279,7 @@ export function AnomalyDetectionDashboard() {
                       <CardTitle className="text-lg">Next Week</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm">{result.forecast.nextWeek}</p>
+                      <p className="text-sm">{anomalyData.forecast.nextWeek}</p>
                     </CardContent>
                   </Card>
                 </motion.div>

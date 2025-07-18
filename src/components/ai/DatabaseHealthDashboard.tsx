@@ -9,7 +9,7 @@ import { useDatabaseHealth } from '@/hooks/useDatabaseHealth';
 import { HealthInsightsList } from './health/HealthInsightsList';
 
 export function DatabaseHealthDashboard() {
-  const { insights, isLoading, error, generateHealthInsights, applyRecommendation } = useDatabaseHealth('demo-db');
+  const { insights, isAnalyzing, error, generateInsights, applyRecommendation } = useDatabaseHealth('demo-db');
 
   const criticalCount = insights.filter(i => i.priority === 'critical').length;
   const highCount = insights.filter(i => i.priority === 'high').length;
@@ -25,11 +25,11 @@ export function DatabaseHealthDashboard() {
               Database Health Monitor
             </CardTitle>
             <Button 
-              onClick={generateHealthInsights} 
-              disabled={isLoading}
+              onClick={generateInsights} 
+              disabled={isAnalyzing}
               variant="outline"
             >
-              {isLoading ? (
+              {isAnalyzing ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                   Analyzing...
