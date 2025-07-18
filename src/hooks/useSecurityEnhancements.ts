@@ -37,7 +37,7 @@ export function useSecurityEnhancements() {
       // Rate limiting status
       const rateLimitStats = enhancedRateLimiting.getStats();
       
-      // Demo security status
+      // Demo security status - use the correct method name
       const demoStats = enhancedDemoSecurity.getDemoSessionStats();
       
       // CSRF protection status

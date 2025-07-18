@@ -44,15 +44,24 @@ class EnhancedClientSecurity {
         throw new Error(`Insufficient entropy: ${entropyData.score} bits, required: ${this.config.minEntropyBits}`);
       }
 
-      // Generate key using enhanced encryption with collected entropy
-      const key = await enhancedEncryption.generateSecureKey(entropyData.data);
+      // Generate salt for key derivation
+      const salt = new Uint8Array(32);
+      crypto.getRandomValues(salt);
+
+      // Generate key using enhanced encryption with collected entropy and salt
+      const cryptoKey = await enhancedEncryption.generateSecureKey(entropyData.data, salt);
+      
+      // Export the key to get a string representation
+      const keyBuffer = await crypto.subtle.exportKey('raw', cryptoKey);
+      const keyArray = new Uint8Array(keyBuffer);
+      const keyString = Array.from(keyArray).map(b => b.toString(16).padStart(2, '0')).join('');
       
       productionLogger.info('Secure key generated', {
         entropyScore: entropyData.score,
-        keyLength: key.length
+        keyLength: keyString.length
       }, 'EnhancedClientSecurity');
 
-      return key;
+      return keyString;
     } catch (error) {
       productionLogger.error('Failed to generate secure key', error, 'EnhancedClientSecurity');
       throw error;

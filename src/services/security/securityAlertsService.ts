@@ -1,6 +1,7 @@
-
 import { productionLogger } from '@/utils/productionLogger';
-import { realTimeSecurityMonitor } from './realTimeSecurityMonitor';
+
+// Define the SecurityEventType that's expected
+type SecurityEventType = 'authentication' | 'authorization' | 'data_access' | 'system_security' | 'threat_detection';
 
 interface SecurityAlert {
   id: string;
@@ -11,6 +12,13 @@ interface SecurityAlert {
   timestamp: number;
   acknowledged: boolean;
   adminNotified: boolean;
+}
+
+interface SecurityEvent {
+  type: SecurityEventType;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  metadata: Record<string, any>;
 }
 
 interface AlertConfig {
@@ -74,9 +82,9 @@ class SecurityAlertsService {
     this.alerts.set(alertId, alert);
     this.alertCounts.set(hourKey, currentHourCount + 1);
 
-    // Log the security event
-    realTimeSecurityMonitor.logSecurityEvent({
-      type: 'security_alert',
+    // Log the security event with correct type
+    this.logSecurityEvent({
+      type: 'system_security', // Use valid SecurityEventType
       severity: this.mapTypeToSeverity(type),
       message: `Security alert created: ${message}`,
       metadata: {
@@ -106,6 +114,15 @@ class SecurityAlertsService {
     }, 'SecurityAlertsService');
 
     return alertId;
+  }
+
+  private logSecurityEvent(event: SecurityEvent): void {
+    productionLogger.info('Security event logged', {
+      type: event.type,
+      severity: event.severity,
+      message: event.message,
+      metadata: event.metadata
+    }, 'SecurityAlertsService');
   }
 
   private async handleCriticalAlert(alert: SecurityAlert): Promise<void> {

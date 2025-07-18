@@ -1,4 +1,3 @@
-
 import { productionLogger } from '@/utils/productionLogger';
 import { enhancedClientSecurity } from './enhancedClientSecurity';
 
@@ -157,6 +156,19 @@ class EnhancedDemoSecurity {
         requiresRevalidation: true
       };
     }
+  }
+
+  getDemoSessionStats(): { activeSessions: number; totalSessions: number; averageSecurityScore: number } {
+    const sessions = Array.from(this.activeSessions.values());
+    const averageSecurityScore = sessions.length > 0 
+      ? sessions.reduce((sum, session) => sum + session.securityScore, 0) / sessions.length 
+      : 0;
+
+    return {
+      activeSessions: sessions.length,
+      totalSessions: sessions.length, // In this implementation, total = active
+      averageSecurityScore: Math.round(averageSecurityScore)
+    };
   }
 
   private async generateSecureSessionId(): Promise<string> {
