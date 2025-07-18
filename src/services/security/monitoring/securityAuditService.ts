@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import { enhancedThreatDetection } from '../threatDetectionEnhanced';
@@ -345,7 +344,7 @@ export class SecurityAuditService {
           totalEvents: report.totalEvents,
           patternsFound: report.suspiciousPatterns.length,
           recommendations: report.recommendations.length,
-          auditTimestamp: report.timestamp
+          auditTimestamp: report.timestamp.toISOString() // Convert Date to ISO string
         }
       });
     } catch (error) {
