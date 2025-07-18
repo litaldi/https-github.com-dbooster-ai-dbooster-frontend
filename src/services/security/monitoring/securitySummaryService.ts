@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
-import type { SecuritySummary, SecurityEvent } from '../types/securityEvent';
+import type { SecuritySummary } from '../types/securityEvent';
 
 export class SecuritySummaryService {
   async getSecuritySummary(): Promise<SecuritySummary> {
@@ -39,22 +39,11 @@ export class SecuritySummaryService {
           .limit(10)
       ]);
 
-      // Transform the data to match SecurityEvent type
-      const recentHighRiskEvents: SecurityEvent[] = (highRiskResult.data || []).map(event => ({
-        id: event.id,
-        event_type: event.event_type,
-        event_data: event.event_data,
-        created_at: event.created_at,
-        user_id: event.user_id || undefined,
-        ip_address: (event.ip_address as string) || null,
-        user_agent: event.user_agent || null
-      }));
-
       return {
         totalEvents: eventsResult.count || 0,
         threatsDetected: threatsResult.count || 0,
         blockedIPs: blockedResult.count || 0,
-        recentHighRiskEvents
+        recentHighRiskEvents: highRiskResult.data || []
       };
     } catch (error) {
       productionLogger.error('Failed to get security summary', error, 'SecurityMonitor');

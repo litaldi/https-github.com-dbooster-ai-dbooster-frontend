@@ -8,20 +8,11 @@ const preview: Preview = {
     controls: {
       matchers: {
         color: /(background|color)$/i,
-        date: /Date$/i,
+        date: /Date$/,
       },
     },
     docs: {
-      toc: {
-        contentsSelector: '.sbdocs-content',
-        headingSelector: 'h1, h2, h3',
-        ignoreSelector: '#primary',
-        title: 'Table of Contents',
-        disable: false,
-        unsafeTocbotOptions: {
-          orderedList: false,
-        },
-      },
+      toc: true,
     },
     backgrounds: {
       default: 'light',
@@ -54,10 +45,20 @@ const preview: Preview = {
           name: 'Desktop',
           styles: { width: '1024px', height: '768px' },
         },
-        wide: {
-          name: 'Wide screen',
-          styles: { width: '1440px', height: '900px' },
-        },
+      },
+    },
+    a11y: {
+      config: {
+        rules: [
+          {
+            id: 'color-contrast',
+            enabled: true,
+          },
+          {
+            id: 'focus-order-semantics',
+            enabled: true,
+          },
+        ],
       },
     },
   },

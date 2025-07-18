@@ -37,15 +37,21 @@ export class EnhancedSecurityMonitor {
     this.isMonitoring = true;
     productionLogger.info('Enhanced security monitoring started');
 
+    // Monitor for real-time security events
     this.realtimeMonitor.setupRealtimeSecurityMonitoring();
+    
+    // Monitor for suspicious patterns
     this.setupPatternDetection();
+    
+    // Setup automated threat response
     this.threatResponseHandler.setupAutomatedThreatResponse();
   }
 
   private setupPatternDetection(): void {
+    // Monitor for suspicious patterns in user behavior
     setInterval(async () => {
       await this.patternDetector.analyzeSecurityPatterns();
-    }, 60000);
+    }, 60000); // Check every minute
   }
 
   addEventListener(eventType: string, callback: Function): void {

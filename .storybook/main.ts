@@ -3,8 +3,9 @@ import type { StorybookConfig } from '@storybook/react-vite';
 
 const config: StorybookConfig = {
   stories: [
-    '../src/**/*.stories.@(js|jsx|ts|tsx|mdx)',
-    '../src/**/*.mdx',
+    '../src/stories/**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    '../src/stories/**/*.mdx',
+    '../src/components/**/*.stories.@(js|jsx|ts|tsx)',
   ],
   addons: [
     '@storybook/addon-essentials',
@@ -13,6 +14,28 @@ const config: StorybookConfig = {
     '@storybook/addon-controls',
     '@storybook/addon-viewport',
     '@storybook/addon-themes',
+    {
+      name: '@storybook/addon-styling-webpack',
+      options: {
+        rules: [
+          {
+            test: /\.css$/,
+            use: [
+              'style-loader',
+              'css-loader',
+              {
+                loader: 'postcss-loader',
+                options: {
+                  postcssOptions: {
+                    plugins: [require('tailwindcss'), require('autoprefixer')],
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
   ],
   framework: {
     name: '@storybook/react-vite',
@@ -35,8 +58,13 @@ const config: StorybookConfig = {
     if (config.resolve) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        '@': new URL('../src', import.meta.url).pathname,
+        '@': '/src',
       };
+    }
+
+    // Optimize build performance
+    if (config.build) {
+      config.build.sourcemap = false;
     }
 
     return config;
@@ -44,6 +72,12 @@ const config: StorybookConfig = {
   
   // Static directory for assets
   staticDirs: ['../public'],
+  
+  // Feature flags
+  features: {
+    experimentalRSC: false,
+    storyStoreV7: true,
+  },
 };
 
 export default config;

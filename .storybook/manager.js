@@ -7,6 +7,7 @@ addons.setConfig({
     ...themes.light,
     brandTitle: 'DBooster Design System',
     brandUrl: 'https://dbooster.lovable.app',
+    brandImage: undefined,
     brandTarget: '_self',
     
     // Colors

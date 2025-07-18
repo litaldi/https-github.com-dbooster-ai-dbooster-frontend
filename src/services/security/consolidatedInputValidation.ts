@@ -33,15 +33,6 @@ export const consolidatedInputValidation = {
           errors.push('Name must be at least 2 characters long');
         }
         break;
-      case 'security_action':
-        // Additional validation for security actions
-        if (sanitizedValue.length > 100) {
-          errors.push('Security action name too long');
-        }
-        if (!/^[a-zA-Z0-9_-]+$/.test(sanitizedValue)) {
-          errors.push('Security action contains invalid characters');
-        }
-        break;
     }
 
     // Basic sanitization - remove potentially harmful characters
@@ -52,10 +43,5 @@ export const consolidatedInputValidation = {
       errors,
       sanitizedValue
     };
-  },
-
-  // Alias for backward compatibility
-  validateInput: (value: string, context: string = 'general'): ValidationResult => {
-    return consolidatedInputValidation.validateAndSanitize(value, context);
   }
 };
