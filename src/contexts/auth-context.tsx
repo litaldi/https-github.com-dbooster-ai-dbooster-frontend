@@ -4,6 +4,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
+import { enhancedDemoSecurity } from '@/services/security/enhancedDemoSecurity';
+import { enhancedRateLimiting } from '@/services/security/enhancedRateLimiting';
 
 interface AuthContextType {
   user: User | null;
@@ -28,7 +30,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [githubAccessToken, setGithubAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get initial session
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        productionLogger.info('Auth state changed', { event }, 'AuthContext');
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        // Defer additional operations to prevent deadlocks
+        if (session?.user) {
+          setTimeout(() => {
+            // Any additional user data fetching can go here
+          }, 0);
+        }
+      }
+    );
+
+    // THEN check for existing session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -47,23 +66,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        productionLogger.info('Auth state changed', { event }, 'AuthContext');
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string, options?: { rememberMe?: boolean }) => {
     try {
+      // Check rate limiting
+      const rateLimitResult = enhancedRateLimiting.checkRateLimit('login', email);
+      if (!rateLimitResult.allowed) {
+        return { error: rateLimitResult.reason || 'Too many login attempts. Please try again later.' };
+      }
+
       const result = await consolidatedAuthenticationSecurity.secureLogin(email, password, options);
       if (!result.success) {
+        // Record failed attempt for rate limiting
+        enhancedRateLimiting.recordAttempt('login', email);
         return { error: result.error };
       }
       return {};
@@ -75,11 +92,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string, acceptedTerms: boolean) => {
     try {
+      // Check rate limiting
+      const rateLimitResult = enhancedRateLimiting.checkRateLimit('signup', email);
+      if (!rateLimitResult.allowed) {
+        return { error: rateLimitResult.reason || 'Too many signup attempts. Please try again later.' };
+      }
+
       const result = await consolidatedAuthenticationSecurity.secureSignup(email, password, {
         fullName,
         acceptedTerms
       });
       if (!result.success) {
+        // Record failed attempt for rate limiting
+        enhancedRateLimiting.recordAttempt('signup', email);
         return { error: result.error };
       }
       return {};
@@ -110,41 +135,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsDemo(true);
       
-      // Create a properly typed demo user object
+      // Create secure demo session instead of hardcoded user
+      const demoSession = await enhancedDemoSecurity.createSecureDemoSession();
+      
+      // Create a properly typed demo user object with secure token
       const demoUser: User = {
-        id: 'demo-user',
+        id: demoSession.id,
         email: 'demo@example.com',
         user_metadata: { full_name: 'Demo User' },
         app_metadata: {},
         aud: 'authenticated',
         created_at: new Date().toISOString(),
-        phone: '',
-        confirmation_sent_at: '',
-        confirmed_at: new Date().toISOString(),
+        role: 'authenticated',
+        updated_at: new Date().toISOString(),
         email_confirmed_at: new Date().toISOString(),
         last_sign_in_at: new Date().toISOString(),
-        role: 'authenticated',
-        updated_at: new Date().toISOString()
+        confirmation_sent_at: new Date().toISOString()
       };
 
-      const demoSession: Session = {
-        access_token: 'demo-token',
-        token_type: 'bearer',
+      // Create demo session object
+      const demoSessionObj: Session = {
+        access_token: demoSession.token,
+        refresh_token: 'demo-refresh-token',
         expires_in: 3600,
-        refresh_token: 'demo-refresh',
-        user: demoUser,
-        expires_at: Math.floor(Date.now() / 1000) + 3600
+        expires_at: Math.floor(demoSession.expiresAt / 1000),
+        token_type: 'bearer',
+        user: demoUser
       };
 
       setUser(demoUser);
-      setSession(demoSession);
+      setSession(demoSessionObj);
+      setLoading(false);
+
+      productionLogger.info('Secure demo session created', {
+        sessionId: demoSession.id.substring(0, 8),
+        capabilities: demoSession.capabilities
+      });
     } catch (error) {
       productionLogger.error('Demo login failed', error, 'AuthContext');
       throw error;
     }
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     session,
     loading,
@@ -157,11 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loginDemo
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

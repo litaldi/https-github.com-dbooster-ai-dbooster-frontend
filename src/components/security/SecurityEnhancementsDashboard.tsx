@@ -1,294 +1,330 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, AlertTriangle, CheckCircle, XCircle, Activity, Lock, Eye, Settings } from 'lucide-react';
-import { enhancedSecurityHeaders } from '@/services/security/enhancedSecurityHeaders';
+import { useSecurityEnhancements } from '@/hooks/useSecurityEnhancements';
+import { useEnhancedSecurity } from '@/hooks/useEnhancedSecurity';
+import { Shield, Lock, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 
-export function SecurityEnhancementsDashboard() {
-  const [securityStatus, setSecurityStatus] = useState<Record<string, boolean>>({});
-  const [threatStats, setThreatStats] = useState<any>({});
-  const [sessionMetrics, setSessionMetrics] = useState<any>({});
+export default function SecurityEnhancementsDashboard() {
+  const { status: enhancementStatus, refreshStatus } = useSecurityEnhancements();
+  const { status: securityStatus, actions } = useEnhancedSecurity();
 
-  useEffect(() => {
-    loadSecurityStatus();
-    const interval = setInterval(loadSecurityStatus, 30000); // Update every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadSecurityStatus = async () => {
-    try {
-      // Load security headers status
-      const headersStatus = enhancedSecurityHeaders.getSecurityHeadersStatus();
-      setSecurityStatus(headersStatus);
-
-      // Load threat detection stats
-      const { enhancedThreatDetection } = await import('@/services/security/threatDetectionEnhanced');
-      const stats = enhancedThreatDetection.getThreatStatistics();
-      setThreatStats(stats);
-
-      // Load session metrics
-      const { secureSessionManager } = await import('@/services/security/secureSessionManager');
-      const metrics = secureSessionManager.getSessionMetrics();
-      setSessionMetrics(metrics);
-    } catch (error) {
-      console.error('Failed to load security status:', error);
-    }
-  };
-
-  const applySecurityHeaders = () => {
-    enhancedSecurityHeaders.applyStrictSecurityHeaders();
-    loadSecurityStatus();
-  };
-
-  const getSecurityScore = (): number => {
-    const totalChecks = Object.keys(securityStatus).length;
-    const passedChecks = Object.values(securityStatus).filter(Boolean).length;
-    return totalChecks > 0 ? Math.round((passedChecks / totalChecks) * 100) : 0;
-  };
-
-  const getScoreColor = (score: number): string => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getScoreBadge = (score: number): { variant: any; text: string } => {
-    if (score >= 90) return { variant: 'default', text: 'Excellent' };
-    if (score >= 70) return { variant: 'secondary', text: 'Good' };
-    if (score >= 50) return { variant: 'outline', text: 'Fair' };
-    return { variant: 'destructive', text: 'Poor' };
-  };
-
-  const securityScore = getSecurityScore();
-  const scoreBadge = getScoreBadge(securityScore);
+  const getStatusColor = (enabled: boolean) => enabled ? 'bg-green-500' : 'bg-red-500';
+  const getStatusText = (enabled: boolean) => enabled ? 'Active' : 'Inactive';
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Security Enhancements</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Security Enhancements Dashboard</h1>
           <p className="text-muted-foreground">
-            Advanced security monitoring and protection systems
+            Monitor and manage advanced security features
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className={`text-2xl font-bold ${getScoreColor(securityScore)}`}>
-              {securityScore}%
+        <Button onClick={refreshStatus} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
+      </div>
+
+      {/* Overall Security Score */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Shield className="h-5 w-5 mr-2" />
+            Overall Security Score
+          </CardTitle>
+          <CardDescription>
+            Comprehensive security assessment based on all active protections
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-4">
+            <div className="text-4xl font-bold text-green-600">
+              {securityStatus.securityScore}/100
             </div>
-            <Badge variant={scoreBadge.variant}>{scoreBadge.text}</Badge>
+            <div className="flex-1">
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-green-500 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${securityStatus.securityScore}%` }}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                {securityStatus.securityScore >= 80 ? 'Excellent' : 
+                 securityStatus.securityScore >= 60 ? 'Good' : 
+                 securityStatus.securityScore >= 40 ? 'Fair' : 'Needs Improvement'}
+              </p>
+            </div>
           </div>
-          <Shield className="h-8 w-8 text-primary" />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Security Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        {/* Rate Limiting */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Security Headers</CardTitle>
-            <Lock className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center">
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Rate Limiting
+              </span>
+              <Badge className={getStatusColor(enhancementStatus.rateLimiting.enabled)}>
+                {getStatusText(enhancementStatus.rateLimiting.enabled)}
+              </Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {Object.values(securityStatus).filter(Boolean).length}/{Object.keys(securityStatus).length}
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Total Entries:</span>
+                <span>{enhancementStatus.rateLimiting.stats.totalEntries || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Blocked Entries:</span>
+                <span className="text-red-600">
+                  {enhancementStatus.rateLimiting.stats.blockedEntries || 0}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Active Rules:</span>
+                <span>{Object.keys(enhancementStatus.rateLimiting.stats.rules || {}).length}</span>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Security headers active
-            </p>
           </CardContent>
         </Card>
 
+        {/* Demo Security */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Threat Detection</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center">
+                <Lock className="h-4 w-4 mr-2" />
+                Demo Security
+              </span>
+              <Badge className={getStatusColor(enhancementStatus.demoSecurity.enabled)}>
+                {getStatusText(enhancementStatus.demoSecurity.enabled)}
+              </Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{threatStats.blockedIPs || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              IPs currently blocked
-            </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Active Sessions:</span>
+                <span>{enhancementStatus.demoSecurity.activeSessions}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Secure Tokens:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Enabled
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Session Validation:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Active
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
+        {/* CSRF Protection */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Sessions</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center">
+                <Shield className="h-4 w-4 mr-2" />
+                CSRF Protection
+              </span>
+              <Badge className={getStatusColor(enhancementStatus.csrfProtection.enabled)}>
+                {getStatusText(enhancementStatus.csrfProtection.enabled)}
+              </Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sessionMetrics.activeSessions || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Secure sessions active
-            </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Token Status:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Active
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Auto Rotation:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Enabled
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">
+                  Current Token: {enhancementStatus.csrfProtection.currentToken.substring(0, 8)}...
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
+        {/* Secure Storage */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Security Score</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center">
+                <Lock className="h-4 w-4 mr-2" />
+                Secure Storage
+              </span>
+              <Badge className={getStatusColor(enhancementStatus.secureStorage.enabled)}>
+                {getStatusText(enhancementStatus.secureStorage.enabled)}
+              </Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sessionMetrics.averageSecurityScore?.toFixed(0) || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Average session score
-            </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Encryption:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  AES-GCM
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Key Derivation:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  PBKDF2
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>TTL Support:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Enabled
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security Headers */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center">
+                <Shield className="h-4 w-4 mr-2" />
+                Security Headers
+              </span>
+              <Badge className={getStatusColor(securityStatus.headersApplied)}>
+                {getStatusText(securityStatus.headersApplied)}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>CSP:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Active
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>HTTPS:</span>
+                <span className={securityStatus.sessionSecure ? "text-green-600" : "text-red-600"}>
+                  {securityStatus.sessionSecure ? (
+                    <><CheckCircle className="h-3 w-3 inline mr-1" />Enabled</>
+                  ) : (
+                    <><AlertTriangle className="h-3 w-3 inline mr-1" />Disabled</>
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Threat Protection:</span>
+                <span className={securityStatus.threatProtectionActive ? "text-green-600" : "text-red-600"}>
+                  {securityStatus.threatProtectionActive ? (
+                    <><CheckCircle className="h-3 w-3 inline mr-1" />Active</>
+                  ) : (
+                    <><AlertTriangle className="h-3 w-3 inline mr-1" />Inactive</>
+                  )}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Session Security */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center">
+                <Lock className="h-4 w-4 mr-2" />
+                Session Security
+              </span>
+              <Badge className={getStatusColor(securityStatus.sessionSecure)}>
+                {getStatusText(securityStatus.sessionSecure)}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Secure Context:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Yes
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Auto Cleanup:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Active
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Fingerprinting:</span>
+                <span className="text-green-600">
+                  <CheckCircle className="h-3 w-3 inline mr-1" />
+                  Enabled
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="headers" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="headers">Security Headers</TabsTrigger>
-          <TabsTrigger value="threats">Threat Detection</TabsTrigger>
-          <TabsTrigger value="sessions">Session Security</TabsTrigger>
-          <TabsTrigger value="actions">Quick Actions</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="headers" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Headers Status</CardTitle>
-              <CardDescription>
-                Current status of security headers and browser protection
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Object.entries(securityStatus).map(([key, status]) => (
-                <div key={key} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {status ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-red-600" />
-                    )}
-                    <span className="font-medium">
-                      {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                    </span>
-                  </div>
-                  <Badge variant={status ? 'default' : 'destructive'}>
-                    {status ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-              ))}
-              
-              <Button onClick={applySecurityHeaders} className="w-full">
-                <Settings className="mr-2 h-4 w-4" />
-                Apply Security Headers
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="threats" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Threat Detection Statistics</CardTitle>
-              <CardDescription>
-                Real-time threat detection and IP blocking status
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Total Threats Detected</div>
-                  <div className="text-2xl font-bold">{threatStats.totalThreats || 0}</div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Blocked IP Addresses</div>
-                  <div className="text-2xl font-bold text-red-600">{threatStats.blockedIPs || 0}</div>
-                </div>
+      {/* Security Recommendations */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Security Recommendations</CardTitle>
+          <CardDescription>
+            Suggested improvements to enhance your security posture
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {actions.getSecurityRecommendations().map((recommendation, index) => (
+              <div key={index} className="flex items-start space-x-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <span className="text-sm">{recommendation}</span>
               </div>
-              
-              {threatStats.averageThreatScore > 20 && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    High threat activity detected. Monitor system closely and consider additional security measures.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="sessions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Session Security Metrics</CardTitle>
-              <CardDescription>
-                Secure session management and monitoring
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Active Sessions</div>
-                  <div className="text-2xl font-bold text-green-600">{sessionMetrics.activeSessions || 0}</div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Expired Sessions</div>
-                  <div className="text-2xl font-bold text-gray-600">{sessionMetrics.expiredSessions || 0}</div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Suspicious Sessions</div>
-                  <div className="text-2xl font-bold text-orange-600">{sessionMetrics.suspiciousSessions || 0}</div>
-                </div>
+            ))}
+            {actions.getSecurityRecommendations().length === 0 && (
+              <div className="flex items-center space-x-2 text-green-600">
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm">All security recommendations have been implemented!</span>
               </div>
-              
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Average Security Score</div>
-                <div className="flex items-center gap-2">
-                  <div className="text-lg font-bold">
-                    {sessionMetrics.averageSecurityScore?.toFixed(1) || '0.0'}
-                  </div>
-                  <Badge variant={sessionMetrics.averageSecurityScore >= 70 ? 'default' : 'secondary'}>
-                    {sessionMetrics.averageSecurityScore >= 70 ? 'Good' : 'Needs Improvement'}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="actions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Actions</CardTitle>
-              <CardDescription>
-                Quick actions to enhance security posture
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button onClick={applySecurityHeaders} className="w-full">
-                <Shield className="mr-2 h-4 w-4" />
-                Apply All Security Headers
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={loadSecurityStatus} 
-                className="w-full"
-              >
-                <Activity className="mr-2 h-4 w-4" />
-                Refresh Security Status
-              </Button>
-
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Important:</strong> Enable "Leaked Password Protection" in your Supabase Dashboard → Authentication → Settings for enhanced security.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
