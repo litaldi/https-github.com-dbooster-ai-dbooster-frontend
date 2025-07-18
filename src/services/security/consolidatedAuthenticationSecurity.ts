@@ -1,32 +1,17 @@
+import { enhancedPasswordValidator, PasswordValidationResult } from './enhancedPasswordValidation';
+import { sessionSecurityService } from './sessionSecurityService';
+import { realTimeSecurityMonitor } from './realTimeSecurityMonitor';
 import { productionLogger } from '@/utils/productionLogger';
-import { rateLimitService } from './rateLimitService';
-import { enhancedThreatDetection } from './threatDetectionEnhanced';
-import { enhancedPasswordValidation } from './enhancedPasswordValidation';
-import { supabase } from '@/integrations/supabase/client';
 
-interface AuthAttempt {
-  timestamp: number;
+export interface AuthenticationResult {
   success: boolean;
-  ip: string;
-  userAgent: string;
-  email?: string;
-}
-
-interface DemoSession {
-  id: string;
-  createdAt: number;
-  lastActivity: number;
-  isActive: boolean;
+  message?: string;
+  user?: any;
+  sessionToken?: string;
 }
 
 export class ConsolidatedAuthenticationSecurity {
   private static instance: ConsolidatedAuthenticationSecurity;
-  private authAttempts: AuthAttempt[] = [];
-  private suspiciousIPs: Set<string> = new Set();
-  private demoSessions: Map<string, DemoSession> = new Map();
-  private maxFailedAttempts = 5;
-  private lockoutDurationMs = 900000; // 15 minutes
-  private demoSessionTimeout = 3600000; // 1 hour
 
   static getInstance(): ConsolidatedAuthenticationSecurity {
     if (!ConsolidatedAuthenticationSecurity.instance) {
@@ -35,382 +20,72 @@ export class ConsolidatedAuthenticationSecurity {
     return ConsolidatedAuthenticationSecurity.instance;
   }
 
-  async validateAuthenticationAttempt(
-    email: string,
-    ip: string,
-    userAgent: string
-  ): Promise<{
-    allowed: boolean;
-    reason?: string;
-    waitTime?: number;
-  }> {
+  async validatePasswordWithBreachCheck(password: string, userInfo?: { email?: string; name?: string }): Promise<PasswordValidationResult> {
     try {
-      // Check rate limiting first
-      const rateLimitResult = await rateLimitService.checkRateLimit(ip, 'auth');
-      if (!rateLimitResult.allowed) {
-        return {
-          allowed: false,
-          reason: 'Too many authentication attempts. Please try again later.',
-          waitTime: rateLimitResult.retryAfter
-        };
+      const result = await enhancedPasswordValidator.validatePassword(password, userInfo);
+      
+      if (result.breachInfo?.isBreached) {
+        realTimeSecurityMonitor.logSecurityEvent({
+          type: 'security_violation',
+          severity: 'high',
+          message: 'User attempted to use breached password',
+          metadata: {
+            breachCount: result.breachInfo.breachCount,
+            userEmail: userInfo?.email
+          }
+        });
       }
 
-      // Check for suspicious patterns in email
-      const threatResult = await enhancedThreatDetection.detectThreats(email, {
-        inputType: 'email',
-        userAgent,
-        ip
+      return result;
+    } catch (error) {
+      productionLogger.error('Password validation with breach check failed', error, 'ConsolidatedAuthenticationSecurity');
+      throw error;
+    }
+  }
+
+  async createSecureDemoSession(): Promise<any> {
+    try {
+      const session = await sessionSecurityService.createSecureDemoSession();
+      
+      realTimeSecurityMonitor.logSecurityEvent({
+        type: 'login_failure', // Using available type
+        severity: 'low',
+        message: 'Demo session created',
+        metadata: {
+          sessionId: session.id,
+          securityScore: session.metadata.securityScore
+        }
       });
 
-      if (threatResult.shouldBlock) {
-        productionLogger.error('Malicious authentication attempt blocked', {
-          email: this.sanitizeEmail(email),
-          ip,
-          threatTypes: threatResult.threatTypes
-        }, 'AuthSecurity');
+      return session;
+    } catch (error) {
+      productionLogger.error('Demo session creation failed', error, 'ConsolidatedAuthenticationSecurity');
+      throw error;
+    }
+  }
 
-        return {
-          allowed: false,
-          reason: 'Invalid authentication data detected.'
-        };
-      }
+  async validateSessionSecurity(sessionId: string): Promise<boolean> {
+    try {
+      const isValid = await sessionSecurityService.validateSession(sessionId);
+      const isAnomalous = await sessionSecurityService.detectAnomalousActivity(sessionId);
 
-      // Check for brute force patterns
-      const recentFailures = this.getRecentFailedAttempts(ip, email);
-      if (recentFailures >= this.maxFailedAttempts) {
-        this.suspiciousIPs.add(ip);
+      if (isAnomalous) {
+        realTimeSecurityMonitor.logSecurityEvent({
+          type: 'suspicious_activity',
+          severity: 'medium',
+          message: 'Anomalous session activity detected',
+          metadata: { sessionId }
+        });
         
-        productionLogger.warn('Brute force attempt detected', {
-          ip,
-          email: this.sanitizeEmail(email),
-          failureCount: recentFailures
-        }, 'AuthSecurity');
-
-        return {
-          allowed: false,
-          reason: 'Too many failed attempts. Account temporarily locked.',
-          waitTime: this.lockoutDurationMs
-        };
+        await sessionSecurityService.cleanupSession(sessionId);
+        return false;
       }
 
-      return { allowed: true };
+      return isValid;
     } catch (error) {
-      productionLogger.error('Authentication security check failed', error, 'AuthSecurity');
-      return { allowed: false, reason: 'Security check failed. Please try again.' };
-    }
-  }
-
-  async validateStrongPassword(password: string, email?: string, userData?: {
-    name?: string;
-    username?: string;
-  }): Promise<{
-    isValid: boolean;
-    score: number;
-    feedback: string[];
-    riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  }> {
-    return enhancedPasswordValidation.validatePassword(password, email, userData);
-  }
-
-  generateSecureDemoSession(): string {
-    // Generate cryptographically secure demo session ID
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    const sessionId = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-    
-    const session: DemoSession = {
-      id: sessionId,
-      createdAt: Date.now(),
-      lastActivity: Date.now(),
-      isActive: true
-    };
-    
-    this.demoSessions.set(sessionId, session);
-    this.cleanupExpiredDemoSessions();
-    
-    productionLogger.secureInfo('Demo session created', {
-      sessionId: sessionId.substring(0, 8) + '...',
-      totalActiveSessions: this.demoSessions.size
-    }, 'AuthSecurity');
-    
-    return sessionId;
-  }
-
-  validateDemoSession(sessionId: string): boolean {
-    const session = this.demoSessions.get(sessionId);
-    if (!session || !session.isActive) {
+      productionLogger.error('Session security validation failed', error, 'ConsolidatedAuthenticationSecurity');
       return false;
     }
-    
-    const now = Date.now();
-    if (now - session.lastActivity > this.demoSessionTimeout) {
-      session.isActive = false;
-      this.demoSessions.delete(sessionId);
-      return false;
-    }
-    
-    // Update last activity
-    session.lastActivity = now;
-    return true;
-  }
-
-  private cleanupExpiredDemoSessions(): void {
-    const now = Date.now();
-    const expired: string[] = [];
-    
-    for (const [id, session] of this.demoSessions.entries()) {
-      if (now - session.lastActivity > this.demoSessionTimeout) {
-        expired.push(id);
-      }
-    }
-    
-    expired.forEach(id => this.demoSessions.delete(id));
-    
-    if (expired.length > 0) {
-      productionLogger.secureInfo('Demo sessions cleaned up', {
-        expiredCount: expired.length,
-        activeCount: this.demoSessions.size
-      }, 'AuthSecurity');
-    }
-  }
-
-  async secureLogin(email: string, password: string, options: { 
-    rememberMe?: boolean;
-    deviceFingerprint?: string;
-  } = {}): Promise<{
-    success: boolean;
-    error?: string;
-    requiresVerification?: boolean;
-  }> {
-    try {
-      const userAgent = navigator.userAgent;
-      const ip = 'unknown'; // Would be set by server in real implementation
-
-      // Validate authentication attempt
-      const validation = await this.validateAuthenticationAttempt(email, ip, userAgent);
-      if (!validation.allowed) {
-        this.logAuthenticationAttempt(false, ip, userAgent, email);
-        return { success: false, error: validation.reason };
-      }
-
-      // Perform actual login with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        this.logAuthenticationAttempt(false, ip, userAgent, email);
-        return { success: false, error: error.message };
-      }
-
-      this.logAuthenticationAttempt(true, ip, userAgent, email);
-
-      // Handle remember me option
-      if (options.rememberMe) {
-        localStorage.setItem('dbooster_remember_me', 'true');
-        localStorage.setItem('dbooster_email', email);
-      }
-
-      return { 
-        success: true, 
-        requiresVerification: !data.session 
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
-      return { success: false, error: errorMessage };
-    }
-  }
-
-  async secureSignup(email: string, password: string, options: {
-    fullName?: string;
-    acceptedTerms?: boolean;
-  } = {}): Promise<{
-    success: boolean;
-    error?: string;
-    requiresVerification?: boolean;
-  }> {
-    try {
-      if (!options.acceptedTerms) {
-        return { success: false, error: 'You must accept the terms and conditions' };
-      }
-
-      // Validate password strength with enhanced validation
-      const passwordValidation = await this.validateStrongPassword(
-        password, 
-        email, 
-        { name: options.fullName }
-      );
-      
-      if (!passwordValidation.isValid) {
-        return { 
-          success: false, 
-          error: passwordValidation.feedback.join('. ') 
-        };
-      }
-
-      // Perform actual signup with Supabase
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { 
-            full_name: options.fullName || '',
-            name: options.fullName || '',
-            accepted_terms: options.acceptedTerms,
-          },
-          emailRedirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { 
-        success: true,
-        requiresVerification: !data.session 
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Signup failed';
-      return { success: false, error: errorMessage };
-    }
-  }
-
-  generateDeviceFingerprint(): string {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.textBaseline = 'top';
-      ctx.font = '14px Arial';
-      ctx.fillText('Device fingerprint', 2, 2);
-    }
-
-    return btoa(JSON.stringify({
-      userAgent: navigator.userAgent,
-      language: navigator.language,
-      platform: navigator.platform,
-      screenResolution: `${screen.width}x${screen.height}`,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      canvas: canvas.toDataURL(),
-      timestamp: Date.now()
-    })).substring(0, 32);
-  }
-
-  async validateSessionSecurity(): Promise<boolean> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) return false;
-
-      // Check if session is still valid
-      const now = new Date();
-      const sessionExpiry = new Date(session.expires_at || 0);
-      
-      return sessionExpiry > now;
-    } catch (error) {
-      productionLogger.error('Session validation failed', error, 'AuthSecurity');
-      return false;
-    }
-  }
-
-  logAuthenticationAttempt(
-    success: boolean,
-    ip: string,
-    userAgent: string,
-    email?: string
-  ): void {
-    const attempt: AuthAttempt = {
-      timestamp: Date.now(),
-      success,
-      ip,
-      userAgent,
-      email: email ? this.sanitizeEmail(email) : undefined
-    };
-
-    this.authAttempts.push(attempt);
-
-    // Keep only last 1000 attempts
-    if (this.authAttempts.length > 1000) {
-      this.authAttempts = this.authAttempts.slice(-1000);
-    }
-
-    // Log security event
-    if (!success) {
-      productionLogger.warn('Failed authentication attempt', {
-        ip,
-        email: email ? this.sanitizeEmail(email) : 'unknown',
-        userAgent: userAgent.substring(0, 100) // Limit logged user agent
-      }, 'AuthSecurity');
-    } else {
-      productionLogger.secureInfo('Successful authentication', {
-        ip,
-        email: email ? this.sanitizeEmail(email) : 'unknown'
-      }, 'AuthSecurity');
-    }
-  }
-
-  private getRecentFailedAttempts(ip: string, email?: string): number {
-    const cutoff = Date.now() - this.lockoutDurationMs;
-    
-    return this.authAttempts.filter(attempt => 
-      !attempt.success &&
-      attempt.timestamp > cutoff &&
-      (attempt.ip === ip || (email && attempt.email === this.sanitizeEmail(email)))
-    ).length;
-  }
-
-  private sanitizeEmail(email: string): string {
-    if (!email || typeof email !== 'string') return 'invalid';
-    
-    const [local, domain] = email.split('@');
-    if (!local || !domain) return 'malformed';
-    
-    // Mask part of local for privacy
-    const maskedLocal = local.length > 2 
-      ? local.charAt(0) + '*'.repeat(local.length - 2) + local.charAt(local.length - 1)
-      : local;
-    
-    return `${maskedLocal}@${domain}`;
-  }
-
-  getAuthenticationStats(): {
-    totalAttempts: number;
-    successfulAttempts: number;
-    failedAttempts: number;
-    suspiciousIPs: number;
-    recentFailureRate: number;
-    activeDemoSessions: number;
-  } {
-    const recentCutoff = Date.now() - (60 * 60 * 1000); // Last hour
-    const recentAttempts = this.authAttempts.filter(a => a.timestamp > recentCutoff);
-    
-    const totalAttempts = this.authAttempts.length;
-    const successfulAttempts = this.authAttempts.filter(a => a.success).length;
-    const failedAttempts = totalAttempts - successfulAttempts;
-    
-    const recentFailures = recentAttempts.filter(a => !a.success).length;
-    const recentFailureRate = recentAttempts.length > 0 
-      ? (recentFailures / recentAttempts.length) * 100 
-      : 0;
-
-    return {
-      totalAttempts,
-      successfulAttempts,
-      failedAttempts,
-      suspiciousIPs: this.suspiciousIPs.size,
-      recentFailureRate: Math.round(recentFailureRate * 100) / 100,
-      activeDemoSessions: this.demoSessions.size
-    };
-  }
-
-  clearOldAttempts(maxAgeHours: number = 24): void {
-    const cutoff = Date.now() - (maxAgeHours * 60 * 60 * 1000);
-    this.authAttempts = this.authAttempts.filter(attempt => attempt.timestamp > cutoff);
-    
-    productionLogger.secureDebug('Cleared old authentication attempts', {
-      remainingAttempts: this.authAttempts.length
-    }, 'AuthSecurity');
   }
 }
 

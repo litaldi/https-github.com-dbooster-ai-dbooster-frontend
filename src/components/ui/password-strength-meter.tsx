@@ -1,94 +1,127 @@
 
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { enhancedPasswordValidation } from '@/services/security/enhancedPasswordValidation';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, XCircle, AlertCircle, Shield } from 'lucide-react';
+import { enhancedPasswordValidator, PasswordValidationResult } from '@/services/security/enhancedPasswordValidation';
 
 interface PasswordStrengthMeterProps {
   password: string;
-  email?: string;
-  userData?: {
-    name?: string;
-    username?: string;
-  };
-  className?: string;
+  userInfo?: { email?: string; name?: string };
+  onValidationChange?: (result: PasswordValidationResult) => void;
 }
 
-export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
-  password,
-  email,
-  userData,
-  className = ''
-}) => {
-  const [validation, setValidation] = React.useState<{
-    score: number;
-    feedback: string[];
-    riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  } | null>(null);
+export function PasswordStrengthMeter({ password, userInfo, onValidationChange }: PasswordStrengthMeterProps) {
+  const [validation, setValidation] = useState<PasswordValidationResult>({
+    isValid: false,
+    score: 0,
+    feedback: []
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!password) {
-      setValidation(null);
+      setValidation({ isValid: false, score: 0, feedback: [] });
       return;
     }
 
     const validatePassword = async () => {
-      const result = await enhancedPasswordValidation.validatePassword(password, email, userData);
-      setValidation({
-        score: result.score,
-        feedback: result.feedback,
-        riskLevel: result.riskLevel
-      });
+      setIsLoading(true);
+      try {
+        const result = await enhancedPasswordValidator.validatePassword(password, userInfo);
+        setValidation(result);
+        onValidationChange?.(result);
+      } catch (error) {
+        console.error('Password validation error:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     const debounceTimer = setTimeout(validatePassword, 300);
     return () => clearTimeout(debounceTimer);
-  }, [password, email, userData]);
+  }, [password, userInfo, onValidationChange]);
 
-  if (!password || !validation) {
-    return null;
-  }
-
-  const strengthLabel = enhancedPasswordValidation.getPasswordStrengthLabel(validation.score);
-  const strengthColor = enhancedPasswordValidation.getPasswordStrengthColor(validation.score);
-  const progressValue = (validation.score / 8) * 100;
-
-  const getProgressColor = () => {
-    if (validation.score >= 7) return 'bg-green-500';
-    if (validation.score >= 5) return 'bg-blue-500';
-    if (validation.score >= 3) return 'bg-yellow-500';
-    if (validation.score >= 1) return 'bg-orange-500';
-    return 'bg-red-500';
+  const getStrengthLabel = (score: number) => {
+    if (score < 30) return 'Very Weak';
+    if (score < 50) return 'Weak';
+    if (score < 70) return 'Good';
+    if (score < 90) return 'Strong';
+    return 'Very Strong';
   };
 
+  const getStrengthColor = (score: number) => {
+    if (score < 30) return 'bg-red-500';
+    if (score < 50) return 'bg-orange-500';
+    if (score < 70) return 'bg-yellow-500';
+    if (score < 90) return 'bg-blue-500';
+    return 'bg-green-500';
+  };
+
+  const getBadgeVariant = (score: number) => {
+    if (score < 30) return 'destructive';
+    if (score < 50) return 'secondary';
+    if (score < 70) return 'outline';
+    return 'default';
+  };
+
+  if (!password) return null;
+
   return (
-    <div className={`space-y-2 ${className}`}>
-      <div className="flex justify-between items-center text-sm">
-        <span className="text-muted-foreground">Password Strength:</span>
-        <span className={strengthColor}>{strengthLabel}</span>
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Progress 
+          value={validation.score} 
+          className="flex-1 h-2"
+        />
+        <Badge variant={getBadgeVariant(validation.score)} className="text-xs">
+          {getStrengthLabel(validation.score)}
+        </Badge>
       </div>
-      
-      <Progress 
-        value={progressValue} 
-        className="h-2"
-        style={{
-          '--progress-foreground': validation.score >= 7 ? 'hsl(142 76% 36%)' :
-                                  validation.score >= 5 ? 'hsl(221 83% 53%)' :
-                                  validation.score >= 3 ? 'hsl(48 96% 53%)' :
-                                  validation.score >= 1 ? 'hsl(25 95% 53%)' :
-                                  'hsl(0 84% 60%)'
-        } as React.CSSProperties}
-      />
-      
+
+      {validation.breachInfo?.isBreached && (
+        <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-md">
+          <Shield className="h-4 w-4 text-red-600" />
+          <span className="text-sm text-red-800">
+            Password found in {validation.breachInfo.breachCount} data breaches
+          </span>
+        </div>
+      )}
+
       {validation.feedback.length > 0 && (
-        <div className="text-xs text-muted-foreground space-y-1">
-          {validation.feedback.map((feedback, index) => (
-            <div key={index} className="flex items-start gap-1">
-              <span className="text-red-500 mt-0.5">•</span>
-              <span>{feedback}</span>
-            </div>
-          ))}
+        <div className="space-y-1">
+          {validation.feedback.map((item, index) => {
+            const isError = item.includes('must') || item.includes('should') || item.includes('found in');
+            const isWarning = item.includes('Consider') || item.includes('Avoid');
+            
+            return (
+              <div key={index} className="flex items-center gap-2 text-sm">
+                {isError ? (
+                  <XCircle className="h-3 w-3 text-red-500" />
+                ) : isWarning ? (
+                  <AlertCircle className="h-3 w-3 text-yellow-500" />
+                ) : (
+                  <CheckCircle className="h-3 w-3 text-green-500" />
+                )}
+                <span className={
+                  isError ? 'text-red-700' : 
+                  isWarning ? 'text-yellow-700' : 
+                  'text-green-700'
+                }>
+                  {item}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="text-sm text-muted-foreground flex items-center gap-2">
+          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+          Checking password security...
         </div>
       )}
     </div>
   );
-};
+}
