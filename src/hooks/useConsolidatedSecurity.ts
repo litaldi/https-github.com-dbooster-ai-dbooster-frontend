@@ -25,8 +25,34 @@ export function useConsolidatedSecurity() {
     }
   }, []);
 
+  const invalidateSession = useCallback(async (): Promise<void> => {
+    try {
+      // Clear demo session validation data
+      localStorage.removeItem('demo_validation');
+      localStorage.removeItem('demo_session_validation');
+      
+      // If there's an active demo session, revoke it
+      const sessionData = localStorage.getItem('demo_session_validation');
+      if (sessionData) {
+        try {
+          const parsed = JSON.parse(sessionData);
+          if (parsed.sessionId) {
+            await enhancedDemoSessionSecurity.revokeDemoSession(parsed.sessionId);
+          }
+        } catch (error) {
+          // Ignore parsing errors during cleanup
+        }
+      }
+      
+      productionLogger.info('Session invalidated', {}, 'useConsolidatedSecurity');
+    } catch (error) {
+      productionLogger.error('Session invalidation failed', error, 'useConsolidatedSecurity');
+    }
+  }, []);
+
   return {
     validateSession,
+    invalidateSession,
     isLoading
   };
 }
