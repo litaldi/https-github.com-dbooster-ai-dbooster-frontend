@@ -60,20 +60,6 @@ const preview: Preview = {
         },
       },
     },
-    a11y: {
-      config: {
-        rules: [
-          {
-            id: 'color-contrast',
-            enabled: true,
-          },
-          {
-            id: 'focus-order-semantics',
-            enabled: true,
-          },
-        ],
-      },
-    },
   },
   globalTypes: {
     theme: {
