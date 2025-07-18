@@ -32,16 +32,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event);
         productionLogger.info('Auth state changed', { event }, 'AuthContext');
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
         
-        // Defer additional operations to prevent deadlocks
-        if (session?.user) {
-          setTimeout(() => {
-            // Any additional user data fetching can go here
-          }, 0);
+        // Only update state if not in demo mode or if signing out
+        if (!isDemo || event === 'SIGNED_OUT') {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          
+          // If signing out, clear demo state
+          if (event === 'SIGNED_OUT') {
+            setIsDemo(false);
+          }
         }
       }
     );
@@ -52,7 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           productionLogger.error('Error getting initial session', error, 'AuthContext');
-        } else {
+        } else if (!isDemo) {
+          // Only set session if not in demo mode
           setSession(session);
           setUser(session?.user ?? null);
         }
@@ -66,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getInitialSession();
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isDemo]);
 
   const signIn = async (email: string, password: string, options?: { rememberMe?: boolean }) => {
     try {
@@ -139,6 +143,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginDemo = async () => {
     try {
+      console.log('Starting demo login...');
+      setLoading(true);
       setIsDemo(true);
       
       // Create a simple demo session without complex security
@@ -164,7 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         confirmation_sent_at: new Date().toISOString()
       };
 
-      // Create demo session object
+      // Create demo session object  
       const demoSessionObj: Session = {
         access_token: demoToken,
         refresh_token: 'demo-refresh-token',
@@ -174,15 +180,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user: demoUser
       };
 
+      // Set demo state immediately
       setUser(demoUser);
       setSession(demoSessionObj);
       setLoading(false);
 
-      productionLogger.info('Simple demo session created', {
+      console.log('Demo session created successfully');
+      productionLogger.info('Demo session created successfully', {
         sessionId: demoSessionId.substring(0, 8)
       });
     } catch (error) {
+      console.error('Demo login failed:', error);
       productionLogger.error('Demo login failed', error, 'AuthContext');
+      setLoading(false);
+      setIsDemo(false);
       throw error;
     }
   };

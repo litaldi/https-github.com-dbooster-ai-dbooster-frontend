@@ -63,7 +63,9 @@ export default function LoginPage() {
   const handleDemoLogin = async () => {
     try {
       setIsLoading(true);
+      console.log('Starting demo login from LoginPage...');
       await loginDemo();
+      console.log('Demo login successful, navigating...');
       toast.success('Demo session started!');
       navigate('/app/dashboard-alt');
     } catch (error) {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -84,7 +83,9 @@ export function DemoDashboardSection() {
   const handleStartLiveDemo = async () => {
     try {
       setIsLaunching(true);
+      console.log('Starting demo from DemoDashboardSection...');
       await loginDemo();
+      console.log('Demo login successful, navigating to dashboard...');
       toast.success('Demo session started!');
       navigate('/app/dashboard-alt');
     } catch (error) {
