@@ -1,20 +1,6 @@
 import { productionLogger } from '@/utils/productionLogger';
 import { supabase } from '@/integrations/supabase/client';
-
-interface SecurityMetrics {
-  failedLogins: number;
-  suspiciousActivities: number;
-  blockedRequests: number;
-  activeThreats: number;
-}
-
-interface SecurityEvent {
-  type: 'login_failure' | 'suspicious_activity' | 'rate_limit_hit' | 'security_violation';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  message: string;
-  metadata: Record<string, any>;
-  timestamp: number;
-}
+import type { SecurityEvent, SecurityMetrics, SecurityHealthCheck } from './types/securityTypes';
 
 class RealTimeSecurityMonitor {
   private static instance: RealTimeSecurityMonitor;
@@ -80,11 +66,7 @@ class RealTimeSecurityMonitor {
     return this.recentEvents.slice(0, limit);
   }
 
-  getSecurityHealth(): {
-    score: number;
-    status: 'healthy' | 'warning' | 'critical';
-    issues: string[];
-  } {
+  getSecurityHealth(): SecurityHealthCheck {
     const issues: string[] = [];
     let score = 100;
 

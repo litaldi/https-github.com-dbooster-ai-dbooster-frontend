@@ -1,21 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { realTimeSecurityMonitor } from '@/services/security/realTimeSecurityMonitor';
-
-interface SecurityMetrics {
-  failedLogins: number;
-  suspiciousActivities: number;
-  blockedRequests: number;
-  activeThreats: number;
-}
-
-interface SecurityEvent {
-  type: string;
-  severity: string;
-  message: string;
-  timestamp: number;
-  metadata: Record<string, any>;
-}
+import type { SecurityEvent, SecurityMetrics } from '@/services/security/types/securityTypes';
 
 export function useSecurityMonitoring() {
   const [metrics, setMetrics] = useState<SecurityMetrics>({
@@ -43,7 +29,7 @@ export function useSecurityMonitoring() {
 
   const logSecurityEvent = (event: Omit<SecurityEvent, 'timestamp'>) => {
     // Ensure metadata is always provided
-    const eventWithMetadata = {
+    const eventWithMetadata: Omit<SecurityEvent, 'timestamp'> = {
       ...event,
       metadata: event.metadata || {}
     };
