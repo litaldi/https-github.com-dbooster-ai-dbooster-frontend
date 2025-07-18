@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import {
   Server, 
   HardDrive, 
   Cpu,
-  Memory,
+  Database,
   Calendar,
   AlertTriangle,
   RefreshCw
@@ -114,7 +113,7 @@ export function CapacityPlanningAssistant() {
     switch (metric) {
       case 'storage': return <HardDrive className="h-5 w-5" />;
       case 'cpu': return <Cpu className="h-5 w-5" />;
-      case 'memory': return <Memory className="h-5 w-5" />;
+      case 'memory': return <Database className="h-5 w-5" />;
       case 'connections': return <Server className="h-5 w-5" />;
       default: return <Server className="h-5 w-5" />;
     }
