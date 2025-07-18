@@ -2,12 +2,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { enhancedSecurityHeaders } from '@/services/security/enhancedSecurityHeaders';
 import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
+import { enhancedSecurityValidation } from '@/services/security/enhancedSecurityValidation';
+import { automaticSecurityResponse } from '@/services/security/automaticSecurityResponse';
+import { serverSideRateLimit } from '@/services/security/serverSideRateLimit';
 
 interface SecurityStatus {
   headersApplied: boolean;
   sessionSecure: boolean;
   threatProtectionActive: boolean;
   securityScore: number;
+  healthCheck?: {
+    overall: 'healthy' | 'warning' | 'critical';
+    checks: Array<{ name: string; status: 'pass' | 'fail'; details?: string }>;
+  };
+  incidentStats?: {
+    total: number;
+    bySeverity: Record<string, number>;
+    responseRate: number;
+  };
 }
 
 interface SecurityActions {
@@ -15,6 +27,8 @@ interface SecurityActions {
   validateCurrentSession: () => Promise<boolean>;
   getSecurityRecommendations: () => string[];
   refreshSecurityStatus: () => void;
+  performHealthCheck: () => Promise<void>;
+  getIncidentStats: () => any;
 }
 
 export function useEnhancedSecurity(): {
@@ -34,12 +48,12 @@ export function useEnhancedSecurity(): {
     let score = 0;
     const maxScore = 100;
     
-    // Security headers (30 points)
+    // Security headers (25 points)
     const headersStatus = enhancedSecurityHeaders.getSecurityHeadersStatus();
     const headersCount = Object.values(headersStatus).filter(Boolean).length;
     const totalHeaders = Object.keys(headersStatus).length;
     if (totalHeaders > 0) {
-      score += (headersCount / totalHeaders) * 30;
+      score += (headersCount / totalHeaders) * 25;
     }
 
     // HTTPS (20 points)
@@ -57,18 +71,46 @@ export function useEnhancedSecurity(): {
     if ('serviceWorker' in navigator) score += 5;
     if ('permissions' in navigator) score += 5;
 
-    // Content Security Policy (15 points)
+    // Content Security Policy (10 points)
     if (document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
-      score += 15;
+      score += 10;
     }
 
+    // Enhanced security features (10 points)
+    if (status.healthCheck?.overall === 'healthy') score += 5;
+    if (status.incidentStats && status.incidentStats.responseRate > 90) score += 5;
+
     return Math.min(Math.round(score), maxScore);
+  }, [status.healthCheck, status.incidentStats]);
+
+  const performHealthCheck = useCallback(async () => {
+    try {
+      const healthCheck = await enhancedSecurityValidation.performSecurityHealthCheck();
+      setStatus(prev => ({
+        ...prev,
+        healthCheck
+      }));
+    } catch (error) {
+      console.error('Health check failed:', error);
+    }
+  }, []);
+
+  const getIncidentStats = useCallback(() => {
+    return automaticSecurityResponse.getIncidentStats();
   }, []);
 
   const refreshSecurityStatus = useCallback(async () => {
     setIsLoading(true);
     try {
       const headersStatus = enhancedSecurityHeaders.getSecurityHeadersStatus();
+      
+      // Get incident statistics
+      const incidentStats = getIncidentStats();
+      
+      // Perform health check
+      await performHealthCheck();
+      
+      // Calculate security score
       const securityScore = calculateSecurityScore();
       
       // Check if main security features are active
@@ -76,18 +118,20 @@ export function useEnhancedSecurity(): {
       const sessionSecure = window.isSecureContext && location.protocol === 'https:';
       const threatProtectionActive = !!document.querySelector('meta[http-equiv="Content-Security-Policy"]');
 
-      setStatus({
+      setStatus(prev => ({
+        ...prev,
         headersApplied,
         sessionSecure,
         threatProtectionActive,
-        securityScore
-      });
+        securityScore,
+        incidentStats
+      }));
     } catch (error) {
       console.error('Failed to refresh security status:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [calculateSecurityScore]);
+  }, [calculateSecurityScore, performHealthCheck, getIncidentStats]);
 
   const applySecurityHeaders = useCallback(() => {
     enhancedSecurityHeaders.applyStrictSecurityHeaders();
@@ -96,8 +140,15 @@ export function useEnhancedSecurity(): {
 
   const validateCurrentSession = useCallback(async (): Promise<boolean> => {
     try {
-      // This would typically validate against the current session
-      // For now, we'll check basic security requirements
+      // Enhanced session validation
+      const session = JSON.parse(localStorage.getItem('supabase.auth.token') || 'null');
+      
+      if (session) {
+        const validationResult = await enhancedSecurityValidation.validateSupabaseSession(session);
+        return validationResult.isValid;
+      }
+      
+      // Basic security requirements check
       return window.isSecureContext && location.protocol === 'https:';
     } catch (error) {
       console.error('Session validation failed:', error);
@@ -127,6 +178,14 @@ export function useEnhancedSecurity(): {
     if (location.protocol !== 'https:') {
       recommendations.push('Enable HTTPS to secure all data transmission');
     }
+
+    if (status.healthCheck?.overall === 'critical') {
+      recommendations.push('Critical security issues detected - immediate attention required');
+    }
+
+    if (status.incidentStats && status.incidentStats.responseRate < 80) {
+      recommendations.push('Improve automatic security response rate');
+    }
     
     return recommendations;
   }, [status]);
@@ -144,7 +203,9 @@ export function useEnhancedSecurity(): {
     applySecurityHeaders,
     validateCurrentSession,
     getSecurityRecommendations,
-    refreshSecurityStatus
+    refreshSecurityStatus,
+    performHealthCheck,
+    getIncidentStats
   };
 
   return {

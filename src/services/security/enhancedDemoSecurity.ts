@@ -1,6 +1,7 @@
-
 import { productionLogger } from '@/utils/productionLogger';
 import { secureStorageService } from './secureStorageService';
+import { enhancedSecurityValidation } from './enhancedSecurityValidation';
+import { automaticSecurityResponse } from './automaticSecurityResponse';
 
 interface SecureDemoSession {
   id: string;
@@ -9,12 +10,15 @@ interface SecureDemoSession {
   expiresAt: number;
   capabilities: string[];
   fingerprint: string;
+  bindingToken: string; // New: for session binding
+  lastValidation: number; // New: for validation tracking
 }
 
 class EnhancedDemoSecurity {
   private static instance: EnhancedDemoSecurity;
   private readonly DEMO_SESSION_DURATION = 60 * 60 * 1000; // 1 hour
   private readonly MAX_DEMO_SESSIONS = 5;
+  private readonly VALIDATION_INTERVAL = 5 * 60 * 1000; // 5 minutes
   private activeDemoSessions = new Map<string, SecureDemoSession>();
 
   static getInstance(): EnhancedDemoSecurity {
@@ -60,6 +64,7 @@ class EnhancedDemoSecurity {
 
     const sessionId = await this.generateSecureToken();
     const token = await this.generateSecureToken();
+    const bindingToken = await this.generateSecureToken(); // New: session binding
     const fingerprint = await this.generateDeviceFingerprint();
     const now = Date.now();
 
@@ -73,7 +78,9 @@ class EnhancedDemoSecurity {
         'explore_features',
         'limited_api_access'
       ],
-      fingerprint
+      fingerprint,
+      bindingToken,
+      lastValidation: now
     };
 
     this.activeDemoSessions.set(sessionId, session);
@@ -84,6 +91,9 @@ class EnhancedDemoSecurity {
       session, 
       this.DEMO_SESSION_DURATION
     );
+
+    // Store session binding separately for enhanced security
+    localStorage.setItem(`session_binding_${sessionId}`, bindingToken);
 
     productionLogger.info('Secure demo session created', {
       sessionId: sessionId.substring(0, 8),
@@ -110,6 +120,33 @@ class EnhancedDemoSecurity {
         return false;
       }
 
+      // Enhanced validation using the new security validation service
+      const validationResult = await enhancedSecurityValidation.enhancedDemoSessionValidation(
+        sessionId,
+        token,
+        {
+          requireSecureContext: true,
+          checkDeviceFingerprint: true,
+          validateTimestamp: true
+        }
+      );
+
+      if (!validationResult.isValid) {
+        // Log security incident for failed validation
+        await automaticSecurityResponse.processSecurityIncident({
+          type: 'session_anomaly',
+          severity: validationResult.riskScore > 70 ? 'high' : 'medium',
+          metadata: {
+            sessionId: sessionId.substring(0, 8),
+            reason: validationResult.reason,
+            riskScore: validationResult.riskScore
+          }
+        });
+
+        this.destroyDemoSession(sessionId);
+        return false;
+      }
+
       // Check expiration
       if (Date.now() > session.expiresAt) {
         this.destroyDemoSession(sessionId);
@@ -121,22 +158,79 @@ class EnhancedDemoSecurity {
         productionLogger.warn('Demo session token mismatch', {
           sessionId: sessionId.substring(0, 8)
         });
+        
+        await automaticSecurityResponse.processSecurityIncident({
+          type: 'session_anomaly',
+          severity: 'high',
+          metadata: {
+            sessionId: sessionId.substring(0, 8),
+            reason: 'Token mismatch'
+          }
+        });
+        
         return false;
       }
 
-      // Validate device fingerprint
-      const currentFingerprint = await this.generateDeviceFingerprint();
-      if (session.fingerprint !== currentFingerprint) {
-        productionLogger.warn('Demo session fingerprint mismatch', {
+      // Enhanced session binding validation
+      const storedBinding = localStorage.getItem(`session_binding_${sessionId}`);
+      if (!storedBinding || storedBinding !== session.bindingToken) {
+        productionLogger.warn('Demo session binding validation failed', {
           sessionId: sessionId.substring(0, 8)
         });
+        
+        await automaticSecurityResponse.processSecurityIncident({
+          type: 'session_anomaly',
+          severity: 'critical',
+          metadata: {
+            sessionId: sessionId.substring(0, 8),
+            reason: 'Session binding failure - possible session fixation attack'
+          }
+        });
+        
         this.destroyDemoSession(sessionId);
         return false;
+      }
+
+      // Periodic validation check
+      const timeSinceLastValidation = Date.now() - session.lastValidation;
+      if (timeSinceLastValidation > this.VALIDATION_INTERVAL) {
+        session.lastValidation = Date.now();
+        
+        // Re-validate device fingerprint
+        const currentFingerprint = await this.generateDeviceFingerprint();
+        if (session.fingerprint !== currentFingerprint) {
+          productionLogger.warn('Demo session fingerprint changed during session', {
+            sessionId: sessionId.substring(0, 8)
+          });
+          
+          await automaticSecurityResponse.processSecurityIncident({
+            type: 'session_anomaly',
+            severity: 'high',
+            metadata: {
+              sessionId: sessionId.substring(0, 8),
+              reason: 'Device fingerprint changed mid-session'
+            }
+          });
+          
+          this.destroyDemoSession(sessionId);
+          return false;
+        }
       }
 
       return true;
     } catch (error) {
       productionLogger.error('Demo session validation failed', error);
+      
+      await automaticSecurityResponse.processSecurityIncident({
+        type: 'session_anomaly',
+        severity: 'medium',
+        metadata: {
+          sessionId: sessionId.substring(0, 8),
+          reason: 'Validation error',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
+      
       return false;
     }
   }
@@ -154,6 +248,7 @@ class EnhancedDemoSecurity {
   async destroyDemoSession(sessionId: string): Promise<void> {
     this.activeDemoSessions.delete(sessionId);
     secureStorageService.removeSecureItem(`demo_session_${sessionId}`);
+    localStorage.removeItem(`session_binding_${sessionId}`);
     
     productionLogger.info('Demo session destroyed', {
       sessionId: sessionId.substring(0, 8)

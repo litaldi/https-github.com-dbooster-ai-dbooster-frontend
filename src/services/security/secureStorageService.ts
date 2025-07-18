@@ -1,10 +1,11 @@
-
 import { productionLogger } from '@/utils/productionLogger';
+import { enhancedEncryption } from './enhancedEncryption';
 
 interface EncryptedData {
   data: string;
   iv: string;
   salt: string;
+  rotated?: boolean;
 }
 
 class SecureStorageService {
@@ -13,61 +14,13 @@ class SecureStorageService {
   private readonly ALGORITHM = 'AES-GCM';
   private readonly KEY_LENGTH = 256;
   private readonly IV_LENGTH = 12;
-  private readonly SALT_LENGTH = 16;
+  private readonly SALT_LENGTH = 32; // Increased from 16
 
   static getInstance(): SecureStorageService {
     if (!SecureStorageService.instance) {
       SecureStorageService.instance = new SecureStorageService();
     }
     return SecureStorageService.instance;
-  }
-
-  private async deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
-    const encoder = new TextEncoder();
-    const passwordBuffer = encoder.encode(password);
-    
-    const importedKey = await crypto.subtle.importKey(
-      'raw',
-      passwordBuffer,
-      'PBKDF2',
-      false,
-      ['deriveKey']
-    );
-
-    return crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: salt,
-        iterations: 100000,
-        hash: 'SHA-256'
-      },
-      importedKey,
-      {
-        name: this.ALGORITHM,
-        length: this.KEY_LENGTH
-      },
-      false,
-      ['encrypt', 'decrypt']
-    );
-  }
-
-  private async getOrCreateEncryptionKey(): Promise<CryptoKey> {
-    if (this.encryptionKey) {
-      return this.encryptionKey;
-    }
-
-    // Use a combination of factors to create a consistent key
-    const keyMaterial = [
-      navigator.userAgent,
-      window.location.origin,
-      'secure-storage-key-v1'
-    ].join('|');
-
-    const salt = new Uint8Array(this.SALT_LENGTH);
-    crypto.getRandomValues(salt);
-
-    this.encryptionKey = await this.deriveKey(keyMaterial, salt);
-    return this.encryptionKey;
   }
 
   async setSecureItem<T>(key: string, value: T, ttl?: number): Promise<void> {
@@ -78,33 +31,21 @@ class SecureStorageService {
         ttl: ttl ? Date.now() + ttl : null
       });
 
-      const encoder = new TextEncoder();
-      const data = encoder.encode(dataToEncrypt);
-      
-      const iv = new Uint8Array(this.IV_LENGTH);
-      crypto.getRandomValues(iv);
-      
-      const salt = new Uint8Array(this.SALT_LENGTH);
-      crypto.getRandomValues(salt);
-
-      const encryptionKey = await this.deriveKey(key, salt);
-      
-      const encryptedData = await crypto.subtle.encrypt(
-        {
-          name: this.ALGORITHM,
-          iv: iv
-        },
-        encryptionKey,
-        data
-      );
+      // Use enhanced encryption with auto-rotation
+      const encryptionResult = await enhancedEncryption.encryptWithAutoRotation(dataToEncrypt, key);
 
       const encryptedItem: EncryptedData = {
-        data: Array.from(new Uint8Array(encryptedData)).map(b => b.toString(16).padStart(2, '0')).join(''),
-        iv: Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join(''),
-        salt: Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('')
+        data: encryptionResult.encryptedData,
+        iv: encryptionResult.iv,
+        salt: encryptionResult.salt,
+        rotated: encryptionResult.rotated
       };
 
       localStorage.setItem(`secure_${key}`, JSON.stringify(encryptedItem));
+
+      if (encryptionResult.rotated) {
+        productionLogger.info('Storage encryption keys rotated', { key: key.substring(0, 8) });
+      }
     } catch (error) {
       productionLogger.error('Failed to store secure item', error, 'SecureStorageService');
       throw error;
@@ -120,23 +61,19 @@ class SecureStorageService {
 
       const encryptedItem: EncryptedData = JSON.parse(storedData);
       
-      const data = new Uint8Array(encryptedItem.data.match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []);
-      const iv = new Uint8Array(encryptedItem.iv.match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []);
-      const salt = new Uint8Array(encryptedItem.salt.match(/.{2}/g)?.map(byte => parseInt(byte, 16)) || []);
-
-      const encryptionKey = await this.deriveKey(key, salt);
-      
-      const decryptedData = await crypto.subtle.decrypt(
-        {
-          name: this.ALGORITHM,
-          iv: iv
-        },
-        encryptionKey,
-        data
+      // Use enhanced decryption with validation
+      const decryptedString = await enhancedEncryption.decryptWithValidation(
+        encryptedItem.data,
+        encryptedItem.iv,
+        encryptedItem.salt,
+        key
       );
 
-      const decoder = new TextDecoder();
-      const decryptedString = decoder.decode(decryptedData);
+      if (!decryptedString) {
+        productionLogger.warn('Failed to decrypt secure item', { key: key.substring(0, 8) });
+        return null;
+      }
+
       const parsedData = JSON.parse(decryptedString);
 
       // Check TTL
@@ -165,6 +102,52 @@ class SecureStorageService {
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
+  }
+
+  async performStorageHealthCheck(): Promise<{
+    status: 'healthy' | 'warning' | 'error';
+    issues: string[];
+    encryptionStrength: any;
+  }> {
+    const issues: string[] = [];
+    
+    try {
+      // Test encryption/decryption
+      const testKey = 'health_check_test';
+      const testData = { test: 'data', timestamp: Date.now() };
+      
+      await this.setSecureItem(testKey, testData);
+      const retrieved = await this.getSecureItem(testKey);
+      this.removeSecureItem(testKey);
+      
+      if (!retrieved || retrieved.test !== testData.test) {
+        issues.push('Encryption/decryption test failed');
+      }
+    } catch (error) {
+      issues.push('Storage encryption test failed');
+    }
+
+    // Check encryption strength
+    const encryptionStrength = enhancedEncryption.getEncryptionStrength();
+    if (encryptionStrength.strength === 'weak' || encryptionStrength.strength === 'moderate') {
+      issues.push('Encryption strength below recommended level');
+    }
+
+    // Check storage availability
+    try {
+      localStorage.setItem('storage_test', 'test');
+      localStorage.removeItem('storage_test');
+    } catch {
+      issues.push('Local storage not available');
+    }
+
+    const status = issues.length === 0 ? 'healthy' : issues.length <= 2 ? 'warning' : 'error';
+    
+    return {
+      status,
+      issues,
+      encryptionStrength
+    };
   }
 }
 
