@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +13,10 @@ import { IntelligentIndexAdvisor } from './IntelligentIndexAdvisor';
 import { PredictiveQueryOptimizer } from './PredictiveQueryOptimizer';
 import { AnomalyDetectionDashboard } from './AnomalyDetectionDashboard';
 import { DatabaseHealthDashboard } from './DatabaseHealthDashboard';
+import { QueryValidator } from './QueryValidator';
+import { CodeReviewAssistant } from './CodeReviewAssistant';
+import { SmartDataVisualizer } from './SmartDataVisualizer';
+import { DatabaseChatAssistant } from './DatabaseChatAssistant';
 
 export function EnhancedAIStudio() {
   const [currentQuery, setCurrentQuery] = useState('');
@@ -38,10 +41,26 @@ export function EnhancedAIStudio() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-12">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <Wand2 className="h-4 w-4" />
             Smart Editor
+          </TabsTrigger>
+          <TabsTrigger value="validator" className="flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Validator
+          </TabsTrigger>
+          <TabsTrigger value="review" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Code Review
+          </TabsTrigger>
+          <TabsTrigger value="chat" className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            AI Assistant
+          </TabsTrigger>
+          <TabsTrigger value="visualizer" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Visualizer
           </TabsTrigger>
           <TabsTrigger value="natural" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
@@ -115,6 +134,22 @@ export function EnhancedAIStudio() {
           />
 
           <QueryRiskAssessment query={currentQuery} />
+        </TabsContent>
+
+        <TabsContent value="validator">
+          <QueryValidator query={currentQuery} onQueryChange={setCurrentQuery} />
+        </TabsContent>
+
+        <TabsContent value="review">
+          <CodeReviewAssistant />
+        </TabsContent>
+
+        <TabsContent value="chat">
+          <DatabaseChatAssistant />
+        </TabsContent>
+
+        <TabsContent value="visualizer">
+          <SmartDataVisualizer />
         </TabsContent>
 
         <TabsContent value="natural">
