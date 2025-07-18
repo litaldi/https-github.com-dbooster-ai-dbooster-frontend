@@ -90,15 +90,29 @@ class SecurityAlertsService {
         return [];
       }
 
-      return data.map(row => ({
-        id: row.id,
-        type: row.event_type as SecurityAlertType,
-        severity: row.severity as AlertSeverity,
-        message: row.event_data?.message || 'Security event detected',
-        userId: row.user_id,
-        metadata: row.event_data,
-        createdAt: row.created_at
-      }));
+      return data.map(row => {
+        // Safely handle the event_data JSON field
+        const eventData = row.event_data;
+        let message = 'Security event detected';
+        let metadata: Record<string, any> = {};
+
+        if (eventData && typeof eventData === 'object') {
+          if ('message' in eventData && typeof eventData.message === 'string') {
+            message = eventData.message;
+          }
+          metadata = eventData as Record<string, any>;
+        }
+
+        return {
+          id: row.id,
+          type: row.event_type as SecurityAlertType,
+          severity: row.severity as AlertSeverity,
+          message,
+          userId: row.user_id,
+          metadata,
+          createdAt: row.created_at
+        };
+      });
     } catch (error) {
       productionLogger.error('Error fetching security alerts', error, 'SecurityAlertsService');
       return [];

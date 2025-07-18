@@ -15,10 +15,10 @@ interface SecurityValidationResult {
 }
 
 export function useConsolidatedSecurity() {
-  const [isValidating, setIsValidating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateSession = useCallback(async (): Promise<boolean> => {
-    setIsValidating(true);
+    setIsLoading(true);
     try {
       const result = await secureSessionManager.validateCurrentSession();
       
@@ -36,7 +36,7 @@ export function useConsolidatedSecurity() {
       productionLogger.error('Session validation error', error, 'useConsolidatedSecurity');
       return false;
     } finally {
-      setIsValidating(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -141,6 +141,6 @@ export function useConsolidatedSecurity() {
     initializeSecureSession,
     performSecurityAssessment,
     reportSecurityIncident,
-    isValidating
+    isLoading
   };
 }

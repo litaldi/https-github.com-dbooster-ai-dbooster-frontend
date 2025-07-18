@@ -67,6 +67,79 @@ class SecureSessionManager {
     }
   }
 
+  async createSecureSession(userId: string, isDemo: boolean = false): Promise<string | null> {
+    try {
+      const deviceFingerprint = await this.generateDeviceFingerprint();
+      const sessionId = this.generateSecureSessionId();
+      
+      const { error } = await supabase
+        .from('enhanced_session_tracking')
+        .insert({
+          user_id: userId,
+          session_id: sessionId,
+          device_fingerprint: deviceFingerprint,
+          ip_address: await this.getUserIP(),
+          user_agent: navigator.userAgent,
+          is_demo: isDemo,
+          security_score: 80,
+          expires_at: new Date(Date.now() + (isDemo ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000)).toISOString()
+        });
+
+      if (error) {
+        productionLogger.error('Failed to create secure session', error, 'SecureSessionManager');
+        return null;
+      }
+
+      this.currentSession = {
+        sessionId,
+        deviceFingerprint,
+        expiresAt: new Date(Date.now() + (isDemo ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000)),
+        securityScore: 80
+      };
+
+      return sessionId;
+    } catch (error) {
+      productionLogger.error('Error creating secure session', error, 'SecureSessionManager');
+      return null;
+    }
+  }
+
+  async validateSession(sessionId: string): Promise<boolean> {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return false;
+
+      const deviceFingerprint = await this.generateDeviceFingerprint();
+      const ipAddress = await this.getUserIP();
+      const userAgent = navigator.userAgent;
+
+      // Call the secure session validation edge function
+      const response = await fetch('/functions/v1/secure-session-validation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({
+          sessionId,
+          deviceFingerprint,
+          ipAddress,
+          userAgent
+        })
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const result = await response.json();
+      return result.valid || false;
+    } catch (error) {
+      productionLogger.error('Session validation failed', error, 'SecureSessionManager');
+      return false;
+    }
+  }
+
   async validateCurrentSession(): Promise<SessionValidationResult> {
     if (!this.currentSession) {
       return {
