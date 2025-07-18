@@ -58,7 +58,7 @@ const config: StorybookConfig = {
     if (config.resolve) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        '@': '/src',
+        '@': new URL('../src', import.meta.url).pathname,
       };
     }
 
@@ -75,7 +75,6 @@ const config: StorybookConfig = {
   
   // Feature flags
   features: {
-    experimentalRSC: false,
     storyStoreV7: true,
   },
 };
