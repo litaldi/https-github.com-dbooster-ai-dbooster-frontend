@@ -5,15 +5,15 @@ import { Github, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface SocialAuthProps {
-  isLoading?: boolean;
-  onLoadingChange?: (loading: boolean) => void;
+interface SocialAuthButtonsProps {
+  isLoading: boolean;
+  onLoadingChange: (loading: boolean) => void;
 }
 
-export function SocialAuth({ isLoading = false, onLoadingChange }: SocialAuthProps) {
+export function SocialAuthButtons({ isLoading, onLoadingChange }: SocialAuthButtonsProps) {
   const handleGoogleAuth = async () => {
     try {
-      onLoadingChange?.(true);
+      onLoadingChange(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -27,13 +27,13 @@ export function SocialAuth({ isLoading = false, onLoadingChange }: SocialAuthPro
     } catch (error) {
       toast.error('Failed to connect with Google');
     } finally {
-      onLoadingChange?.(false);
+      onLoadingChange(false);
     }
   };
 
   const handleGithubAuth = async () => {
     try {
-      onLoadingChange?.(true);
+      onLoadingChange(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
@@ -47,7 +47,7 @@ export function SocialAuth({ isLoading = false, onLoadingChange }: SocialAuthPro
     } catch (error) {
       toast.error('Failed to connect with GitHub');
     } finally {
-      onLoadingChange?.(false);
+      onLoadingChange(false);
     }
   };
 

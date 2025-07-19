@@ -1,3 +1,4 @@
+
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -38,7 +39,7 @@ import ContactPage from '@/pages/ContactPage';
 import PartnersPage from '@/pages/PartnersPage';
 import PressPage from '@/pages/PressPage';
 import CareersPage from '@/pages/CareersPage';
-import LoginPage from '@/pages/LoginPage';
+import AuthPage from '@/pages/AuthPage';
 import SearchPage from '@/pages/SearchPage';
 import TestingPage from '@/pages/TestingPage';
 
@@ -60,6 +61,9 @@ import MonitoringPage from '@/pages/app/MonitoringPage';
 import SettingsPage from '@/pages/app/SettingsPage';
 import AccountPage from '@/pages/app/AccountPage';
 import DashboardPage from '@/pages/app/DashboardPage';
+
+// CMS Pages
+import CMSDashboard from '@/pages/cms/CMSDashboard';
 
 // Lazy load the security dashboard
 const SecurityDashboardPage = React.lazy(() => 
@@ -92,6 +96,10 @@ function App() {
           <Router>
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
+                {/* Auth Routes */}
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/login" element={<Navigate to="/auth" replace />} />
+
                 {/* Public Routes */}
                 <Route path="/" element={<PublicLayout />}>
                   <Route index element={<Home />} />
@@ -137,11 +145,8 @@ function App() {
                   <Route path="security" element={<SecurityPage />} />
                   <Route path="accessibility" element={<AccessibilityPage />} />
                   
-                  {/* Auth & Search */}
-                  <Route path="login" element={<LoginPage />} />
+                  {/* Search & Testing */}
                   <Route path="search" element={<SearchPage />} />
-                  
-                  {/* Testing Page */}
                   <Route path="testing" element={<TestingPage />} />
                 </Route>
 
@@ -167,6 +172,15 @@ function App() {
                       <SecurityDashboardPage />
                     </Suspense>
                   } />
+                </Route>
+
+                {/* Protected CMS Routes */}
+                <Route path="/cms" element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<CMSDashboard />} />
                 </Route>
 
                 {/* Fallback */}

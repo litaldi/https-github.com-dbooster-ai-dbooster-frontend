@@ -104,6 +104,152 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_media: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          filename: string
+          id: string
+          mime_type: string
+          original_name: string
+          size_bytes: number | null
+          uploaded_by: string | null
+          url: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          filename: string
+          id?: string
+          mime_type: string
+          original_name: string
+          size_bytes?: number | null
+          uploaded_by?: string | null
+          url: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          filename?: string
+          id?: string
+          mime_type?: string
+          original_name?: string
+          size_bytes?: number | null
+          uploaded_by?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
+      cms_navigation: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          label: string
+          parent_id: string | null
+          sort_order: number | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          label: string
+          parent_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          parent_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_navigation_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cms_navigation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_pages: {
+        Row: {
+          content: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          published: boolean | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          published?: boolean | null
+          slug: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          published?: boolean | null
+          slug?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      cms_settings: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: Json | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value?: Json | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json | null
+        }
+        Relationships: []
+      }
       enhanced_session_tracking: {
         Row: {
           created_at: string
