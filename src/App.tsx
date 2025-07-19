@@ -1,10 +1,10 @@
-
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import { NotificationProvider } from '@/components/ui/enhanced-notification-system';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Import production manager
 import { productionManager } from '@/utils/productionManager';
@@ -90,119 +90,121 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
-      <AuthProvider>
-        <NotificationProvider>
-          <Router>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                {/* Auth Routes */}
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/login" element={<Navigate to="/auth" replace />} />
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
+        <AuthProvider>
+          <NotificationProvider>
+            <Router>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* Auth Routes */}
+                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/login" element={<Navigate to="/auth" replace />} />
 
-                {/* Public Routes */}
-                <Route path="/" element={<PublicLayout />}>
-                  <Route index element={<Home />} />
-                  <Route path="home" element={<Navigate to="/" replace />} />
-                  
-                  {/* Main Landing Pages */}
-                  <Route path="product" element={<ProductPage />} />
-                  <Route path="solutions" element={<SolutionsPage />} />
-                  
-                  {/* Product Routes */}
-                  <Route path="features" element={<FeaturesPage />} />
-                  <Route path="how-it-works" element={<HowItWorksPage />} />
-                  <Route path="ai-studio" element={<AIStudioPage />} />
-                  <Route path="demo" element={<DemoPage />} />
-                  <Route path="pricing" element={<PricingPage />} />
-                  
-                  {/* Solutions Routes */}
-                  <Route path="for-developers" element={<ForDevelopersPage />} />
-                  <Route path="for-teams" element={<ForTeamsPage />} />
-                  <Route path="for-enterprises" element={<ForEnterprisesPage />} />
-                  <Route path="use-cases" element={<UseCasesPage />} />
-                  
-                  {/* Resources Routes */}
-                  <Route path="learn" element={<LearnPage />} />
-                  <Route path="documentation" element={<DocumentationPage />} />
-                  <Route path="blog" element={<BlogPage />} />
-                  <Route path="faq" element={<FAQPage />} />
-                  <Route path="support" element={<SupportPage />} />
-                  <Route path="status" element={<StatusPage />} />
-                  <Route path="changelog" element={<ChangelogPage />} />
-                  
-                  {/* Company Routes */}
-                  <Route path="about" element={<AboutPage />} />
-                  <Route path="contact" element={<ContactPage />} />
-                  <Route path="partners" element={<PartnersPage />} />
-                  <Route path="press" element={<PressPage />} />
-                  <Route path="careers" element={<CareersPage />} />
-                  
-                  {/* Legal Routes */}
-                  <Route path="terms" element={<TermsPage />} />
-                  <Route path="privacy" element={<PrivacyPage />} />
-                  <Route path="cookies" element={<CookiesPage />} />
-                  <Route path="security" element={<SecurityPage />} />
-                  <Route path="accessibility" element={<AccessibilityPage />} />
-                  
-                  {/* Search & Testing */}
-                  <Route path="search" element={<SearchPage />} />
-                  <Route path="testing" element={<TestingPage />} />
-                </Route>
+                  {/* Public Routes */}
+                  <Route path="/" element={<PublicLayout />}>
+                    <Route index element={<Home />} />
+                    <Route path="home" element={<Navigate to="/" replace />} />
+                    
+                    {/* Main Landing Pages */}
+                    <Route path="product" element={<ProductPage />} />
+                    <Route path="solutions" element={<SolutionsPage />} />
+                    
+                    {/* Product Routes */}
+                    <Route path="features" element={<FeaturesPage />} />
+                    <Route path="how-it-works" element={<HowItWorksPage />} />
+                    <Route path="ai-studio" element={<AIStudioPage />} />
+                    <Route path="demo" element={<DemoPage />} />
+                    <Route path="pricing" element={<PricingPage />} />
+                    
+                    {/* Solutions Routes */}
+                    <Route path="for-developers" element={<ForDevelopersPage />} />
+                    <Route path="for-teams" element={<ForTeamsPage />} />
+                    <Route path="for-enterprises" element={<ForEnterprisesPage />} />
+                    <Route path="use-cases" element={<UseCasesPage />} />
+                    
+                    {/* Resources Routes */}
+                    <Route path="learn" element={<LearnPage />} />
+                    <Route path="documentation" element={<DocumentationPage />} />
+                    <Route path="blog" element={<BlogPage />} />
+                    <Route path="faq" element={<FAQPage />} />
+                    <Route path="support" element={<SupportPage />} />
+                    <Route path="status" element={<StatusPage />} />
+                    <Route path="changelog" element={<ChangelogPage />} />
+                    
+                    {/* Company Routes */}
+                    <Route path="about" element={<AboutPage />} />
+                    <Route path="contact" element={<ContactPage />} />
+                    <Route path="partners" element={<PartnersPage />} />
+                    <Route path="press" element={<PressPage />} />
+                    <Route path="careers" element={<CareersPage />} />
+                    
+                    {/* Legal Routes */}
+                    <Route path="terms" element={<TermsPage />} />
+                    <Route path="privacy" element={<PrivacyPage />} />
+                    <Route path="cookies" element={<CookiesPage />} />
+                    <Route path="security" element={<SecurityPage />} />
+                    <Route path="accessibility" element={<AccessibilityPage />} />
+                    
+                    {/* Search & Testing */}
+                    <Route path="search" element={<SearchPage />} />
+                    <Route path="testing" element={<TestingPage />} />
+                  </Route>
 
-                {/* Protected Dashboard Routes */}
-                <Route path="/app" element={
-                  <ProtectedRoute>
-                    <Layout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<Dashboard />} />
-                  <Route path="dashboard-alt" element={<DashboardPage />} />
-                  <Route path="analytics" element={<AnalyticsPage />} />
-                  <Route path="queries" element={<QueriesPage />} />
-                  <Route path="repositories" element={<RepositoriesPage />} />
-                  <Route path="ai-studio" element={<AIStudioAppPage />} />
-                  <Route path="reports" element={<ReportsPage />} />
-                  <Route path="monitoring" element={<MonitoringPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                  <Route path="account" element={<AccountPage />} />
-                  <Route path="testing" element={<TestingPage />} />
-                  <Route path="security" element={
-                    <Suspense fallback={<LoadingFallback />}>
-                      <SecurityDashboardPage />
-                    </Suspense>
-                  } />
-                </Route>
+                  {/* Protected Dashboard Routes */}
+                  <Route path="/app" element={
+                    <ProtectedRoute>
+                      <Layout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Dashboard />} />
+                    <Route path="dashboard-alt" element={<DashboardPage />} />
+                    <Route path="analytics" element={<AnalyticsPage />} />
+                    <Route path="queries" element={<QueriesPage />} />
+                    <Route path="repositories" element={<RepositoriesPage />} />
+                    <Route path="ai-studio" element={<AIStudioAppPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="monitoring" element={<MonitoringPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="account" element={<AccountPage />} />
+                    <Route path="testing" element={<TestingPage />} />
+                    <Route path="security" element={
+                      <Suspense fallback={<LoadingFallback />}>
+                        <SecurityDashboardPage />
+                      </Suspense>
+                    } />
+                  </Route>
 
-                {/* Protected CMS Routes */}
-                <Route path="/cms" element={
-                  <ProtectedRoute>
-                    <Layout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<CMSDashboard />} />
-                </Route>
+                  {/* Protected CMS Routes */}
+                  <Route path="/cms" element={
+                    <ProtectedRoute>
+                      <Layout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<CMSDashboard />} />
+                  </Route>
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-            <Toaster 
-              position="top-right" 
-              richColors 
-              theme="dark"
-              toastOptions={{
-                style: {
-                  background: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  color: 'hsl(var(--foreground))',
-                },
-              }}
-            />
-          </Router>
-        </NotificationProvider>
-      </AuthProvider>
-    </ThemeProvider>
+                  {/* Fallback */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+              <Toaster 
+                position="top-right" 
+                richColors 
+                theme="dark"
+                toastOptions={{
+                  style: {
+                    background: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    color: 'hsl(var(--foreground))',
+                  },
+                }}
+              />
+            </Router>
+          </NotificationProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

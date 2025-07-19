@@ -27,11 +27,23 @@ export function ThemeProvider({
   storageKey = 'dbooster-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Safely access localStorage only on client side
+    if (typeof window !== 'undefined') {
+      try {
+        const storedTheme = localStorage.getItem(storageKey) as Theme;
+        return storedTheme || defaultTheme;
+      } catch (error) {
+        console.warn('Failed to access localStorage for theme:', error);
+        return defaultTheme;
+      }
+    }
+    return defaultTheme;
+  });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const root = window.document.documentElement;
 
     root.classList.remove('light', 'dark');
@@ -52,7 +64,13 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(storageKey, theme);
+        } catch (error) {
+          console.warn('Failed to save theme to localStorage:', error);
+        }
+      }
       setTheme(theme);
     },
   };

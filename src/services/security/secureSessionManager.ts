@@ -1,88 +1,65 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 import { secureStorageService } from './secureStorageService';
 
-export interface SecureSession {
+export interface SessionData {
   id: string;
   userId: string;
-  deviceFingerprint: string;
-  ipAddress: string;
-  userAgent: string;
-  securityScore: number;
   isDemo: boolean;
-  expiresAt: Date;
-  encrypted: boolean;
+  createdAt: string;
+  expiresAt: string;
+  deviceFingerprint?: string;
 }
 
-interface SessionValidationResponse {
-  valid: boolean;
-  reason?: string;
-  securityScore?: number;
-}
+class SecureSessionManager {
+  private encryptionKey: CryptoKey | null = null;
+  private initialized = false;
 
-export class SecureSessionManager {
-  private static instance: SecureSessionManager;
+  // Add the missing initializeEncryption method
+  async initializeEncryption(): Promise<void> {
+    if (this.initialized) return;
 
-  static getInstance(): SecureSessionManager {
-    if (!SecureSessionManager.instance) {
-      SecureSessionManager.instance = new SecureSessionManager();
+    try {
+      // Generate or retrieve encryption key
+      await this.generateEncryptionKey();
+      this.initialized = true;
+      productionLogger.info('Session encryption initialized', {}, 'SecureSessionManager');
+    } catch (error) {
+      productionLogger.error('Failed to initialize session encryption', error, 'SecureSessionManager');
+      throw error;
     }
-    return SecureSessionManager.instance;
   }
 
   async createSecureSession(userId: string, isDemo: boolean = false): Promise<string> {
+    if (!this.initialized) {
+      await this.initializeEncryption();
+    }
+
+    const sessionId = crypto.randomUUID();
+    const expirationTime = isDemo ? 
+      Date.now() + (60 * 60 * 1000) : // 1 hour for demo
+      Date.now() + (24 * 60 * 60 * 1000); // 24 hours for regular
+
+    const sessionData: SessionData = {
+      id: sessionId,
+      userId,
+      isDemo,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(expirationTime).toISOString(),
+      deviceFingerprint: await this.generateDeviceFingerprint()
+    };
+
     try {
-      // Initialize secure storage
-      await secureStorageService.initialize();
+      const encryptedData = await this.encryptSessionData(sessionData);
+      const storageKey = `secure_session_${sessionId}`;
       
-      const sessionId = crypto.randomUUID();
-      const deviceFingerprint = await this.generateDeviceFingerprint();
-      const ipAddress = await this.getUserIP();
-      const userAgent = navigator.userAgent;
-      const securityScore = await this.calculateSecurityScore();
-      const expiresAt = new Date(Date.now() + (isDemo ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000));
-
-      // Create session in database
-      const { error } = await supabase
-        .from('enhanced_session_tracking')
-        .insert({
-          user_id: userId,
-          session_id: sessionId,
-          device_fingerprint: deviceFingerprint,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          is_demo: isDemo,
-          security_score: securityScore,
-          expires_at: expiresAt.toISOString()
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      // Store session data using secure storage instead of localStorage
-      const sessionData: SecureSession = {
-        id: sessionId,
-        userId,
-        deviceFingerprint,
-        ipAddress,
-        userAgent,
-        securityScore,
+      await secureStorageService.setSecureItem(storageKey, encryptedData);
+      
+      productionLogger.info('Secure session created', { 
+        sessionId: sessionId.substring(0, 8),
         isDemo,
-        expiresAt,
-        encrypted: true
-      };
-
-      await secureStorageService.setSecureItem(`session_${sessionId}`, sessionData);
-
-      // Log session creation
-      await this.logSecurityEvent('secure_session_created', {
-        session_id: sessionId,
-        is_demo: isDemo,
-        security_score: securityScore,
-        device_fingerprint: deviceFingerprint.substring(0, 8) + '...'
-      });
+        expiresAt: sessionData.expiresAt
+      }, 'SecureSessionManager');
 
       return sessionId;
     } catch (error) {
@@ -92,72 +69,31 @@ export class SecureSessionManager {
   }
 
   async validateSession(sessionId: string): Promise<boolean> {
+    if (!sessionId) return false;
+
     try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return false;
-
-      const deviceFingerprint = await this.generateDeviceFingerprint();
-      const ipAddress = await this.getUserIP();
-      const userAgent = navigator.userAgent;
-
-      // Validate session via Supabase function
-      const { data, error } = await supabase.rpc('validate_session_security', {
-        p_session_id: sessionId,
-        p_device_fingerprint: deviceFingerprint,
-        p_ip_address: ipAddress,
-        p_user_agent: userAgent
-      });
-
-      if (error) {
-        await this.logSecurityEvent('session_validation_failed', {
-          session_id: sessionId,
-          reason: 'Database validation error',
-          error: error.message
-        });
-        return false;
-      }
-
-      // Safely parse the response data with proper type checking
-      let validationResponse: SessionValidationResponse;
+      const storageKey = `secure_session_${sessionId}`;
+      const encryptedData = await secureStorageService.getSecureItem(storageKey);
       
-      try {
-        // Handle different response formats from Supabase RPC
-        if (data && typeof data === 'object' && !Array.isArray(data)) {
-          // Check if the object has the expected structure
-          const responseObj = data as Record<string, unknown>;
-          if (typeof responseObj.valid === 'boolean') {
-            validationResponse = {
-              valid: responseObj.valid,
-              reason: typeof responseObj.reason === 'string' ? responseObj.reason : undefined,
-              securityScore: typeof responseObj.security_score === 'number' ? responseObj.security_score : undefined
-            };
-          } else {
-            validationResponse = { valid: false, reason: 'Invalid response structure' };
-          }
-        } else {
-          // If data is not in expected format, treat as invalid
-          validationResponse = { valid: false, reason: 'Invalid response format' };
-        }
-      } catch (parseError) {
-        await this.logSecurityEvent('session_validation_failed', {
-          session_id: sessionId,
-          reason: 'Response parsing error'
-        });
-        return false;
-      }
-      
-      if (!validationResponse?.valid) {
-        await this.logSecurityEvent('session_validation_failed', {
-          session_id: sessionId,
-          reason: validationResponse?.reason || 'Unknown validation failure'
-        });
+      if (!encryptedData) {
         return false;
       }
 
-      // Additional client-side validation using secure storage
-      const localSessionData = await secureStorageService.getSecureItem<SecureSession>(`session_${sessionId}`);
-      if (localSessionData && new Date() > new Date(localSessionData.expiresAt)) {
-        await secureStorageService.removeSecureItem(`session_${sessionId}`);
+      const sessionData = await this.decryptSessionData(encryptedData);
+      
+      // Check expiration
+      if (new Date() > new Date(sessionData.expiresAt)) {
+        await this.destroySession(sessionId);
+        return false;
+      }
+
+      // Validate device fingerprint
+      const currentFingerprint = await this.generateDeviceFingerprint();
+      if (sessionData.deviceFingerprint && sessionData.deviceFingerprint !== currentFingerprint) {
+        productionLogger.warn('Session device fingerprint mismatch', {
+          sessionId: sessionId.substring(0, 8)
+        }, 'SecureSessionManager');
+        await this.destroySession(sessionId);
         return false;
       }
 
@@ -168,93 +104,106 @@ export class SecureSessionManager {
     }
   }
 
-  async invalidateSession(sessionId: string): Promise<void> {
+  async destroySession(sessionId: string): Promise<void> {
     try {
-      // Remove from database
-      await supabase
-        .from('enhanced_session_tracking')
-        .update({ status: 'invalidated' })
-        .eq('session_id', sessionId);
-
-      // Remove from secure storage
-      await secureStorageService.removeSecureItem(`session_${sessionId}`);
-
-      await this.logSecurityEvent('session_invalidated', { session_id: sessionId });
+      const storageKey = `secure_session_${sessionId}`;
+      await secureStorageService.removeSecureItem(storageKey);
+      
+      productionLogger.info('Session destroyed', {
+        sessionId: sessionId.substring(0, 8)
+      }, 'SecureSessionManager');
     } catch (error) {
-      productionLogger.error('Failed to invalidate session', error, 'SecureSessionManager');
+      productionLogger.error('Failed to destroy session', error, 'SecureSessionManager');
     }
   }
 
-  async rotateSessionKey(): Promise<void> {
+  private async generateEncryptionKey(): Promise<void> {
     try {
-      // Rotate the encryption key in secure storage
-      await secureStorageService.rotateEncryptionKey();
-
-      await this.logSecurityEvent('session_key_rotated', {});
+      this.encryptionKey = await crypto.subtle.generateKey(
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
     } catch (error) {
-      productionLogger.error('Failed to rotate session key', error, 'SecureSessionManager');
+      productionLogger.error('Failed to generate encryption key', error, 'SecureSessionManager');
+      throw error;
+    }
+  }
+
+  private async encryptSessionData(sessionData: SessionData): Promise<string> {
+    if (!this.encryptionKey) {
+      throw new Error('Encryption key not initialized');
+    }
+
+    try {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify(sessionData));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+
+      const encryptedData = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv },
+        this.encryptionKey,
+        data
+      );
+
+      return JSON.stringify({
+        iv: Array.from(iv),
+        data: Array.from(new Uint8Array(encryptedData))
+      });
+    } catch (error) {
+      productionLogger.error('Session encryption failed', error, 'SecureSessionManager');
+      throw error;
+    }
+  }
+
+  private async decryptSessionData(encryptedData: string): Promise<SessionData> {
+    if (!this.encryptionKey) {
+      throw new Error('Encryption key not initialized');
+    }
+
+    try {
+      const { iv, data } = JSON.parse(encryptedData);
+      const ivArray = new Uint8Array(iv);
+      const dataArray = new Uint8Array(data);
+
+      const decryptedData = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: ivArray },
+        this.encryptionKey,
+        dataArray
+      );
+
+      const decoder = new TextDecoder();
+      const sessionString = decoder.decode(decryptedData);
+      
+      return JSON.parse(sessionString) as SessionData;
+    } catch (error) {
+      productionLogger.error('Session decryption failed', error, 'SecureSessionManager');
+      throw error;
     }
   }
 
   private async generateDeviceFingerprint(): Promise<string> {
-    const components = [
-      navigator.userAgent,
-      navigator.language,
-      screen.width + 'x' + screen.height,
-      new Date().getTimezoneOffset().toString(),
-      navigator.hardwareConcurrency?.toString() || '0',
-      navigator.platform
-    ];
-
-    const fingerprint = components.join('|');
-    const encoder = new TextEncoder();
-    const data = encoder.encode(fingerprint);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  private async calculateSecurityScore(): Promise<number> {
-    let score = 50; // Base score
-
-    // HTTPS bonus
-    if (location.protocol === 'https:') score += 20;
-
-    // Modern browser features
-    if ('crypto' in window && 'subtle' in crypto) score += 15;
-    if ('serviceWorker' in navigator) score += 10;
-    if (window.isSecureContext) score += 5;
-
-    return Math.min(score, 100);
-  }
-
-  private async getUserIP(): Promise<string> {
     try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip || 'unknown';
-    } catch {
-      return 'unknown';
-    }
-  }
+      const components = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        new Date().getTimezoneOffset().toString()
+      ];
 
-  private async logSecurityEvent(eventType: string, eventData: any): Promise<void> {
-    try {
-      const { data: user } = await supabase.auth.getUser();
+      const fingerprint = components.join('|');
+      const encoder = new TextEncoder();
+      const data = encoder.encode(fingerprint);
       
-      await supabase.from('comprehensive_security_log').insert({
-        user_id: user.user?.id,
-        event_type: eventType,
-        event_category: 'session_management',
-        severity: 'info',
-        event_data: eventData,
-        ip_address: await this.getUserIP(),
-        user_agent: navigator.userAgent
-      });
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     } catch (error) {
-      productionLogger.error('Failed to log session security event', error, 'SecureSessionManager');
+      productionLogger.warn('Failed to generate device fingerprint', error, 'SecureSessionManager');
+      return 'unknown';
     }
   }
 }
 
-export const secureSessionManager = SecureSessionManager.getInstance();
+export const secureSessionManager = new SecureSessionManager();

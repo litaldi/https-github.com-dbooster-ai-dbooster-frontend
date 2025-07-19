@@ -102,6 +102,98 @@ export class UnifiedSecurityService {
     }
   }
 
+  // Add missing method for form data validation
+  async validateFormData(formData: Record<string, any>, context: string = 'form'): Promise<{
+    isValid: boolean;
+    errors: Record<string, string>;
+    sanitized: Record<string, any>;
+  }> {
+    const errors: Record<string, string> = {};
+    const sanitized: Record<string, any> = {};
+    let isValid = true;
+
+    for (const [key, value] of Object.entries(formData)) {
+      try {
+        const result = await this.validateInput(String(value), `${context}_${key}`);
+        if (!result.isValid) {
+          errors[key] = `Invalid ${key}: ${result.threatTypes.join(', ')}`;
+          isValid = false;
+        }
+        sanitized[key] = result.sanitizedInput;
+      } catch (error) {
+        errors[key] = `Validation failed for ${key}`;
+        sanitized[key] = '';
+        isValid = false;
+      }
+    }
+
+    return { isValid, errors, sanitized };
+  }
+
+  // Add missing secure login method
+  async secureLogin(email: string, password: string, options?: { rememberMe?: boolean }): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      // Validate input
+      const emailValidation = await this.validateInput(email, 'email');
+      if (!emailValidation.isValid) {
+        return { success: false, error: 'Invalid email format' };
+      }
+
+      // Attempt login
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailValidation.sanitizedInput,
+        password
+      });
+
+      if (error) {
+        await this.logSecurityEvent('login_failed', false, { email, error: error.message }, 'authentication');
+        return { success: false, error: error.message };
+      }
+
+      await this.logSecurityEvent('login_success', true, { email }, 'authentication');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  // Add missing secure signup method
+  async secureSignup(email: string, password: string, metadata?: { fullName?: string; acceptedTerms?: boolean }): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      // Validate input
+      const emailValidation = await this.validateInput(email, 'email');
+      if (!emailValidation.isValid) {
+        return { success: false, error: 'Invalid email format' };
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email: emailValidation.sanitizedInput,
+        password,
+        options: {
+          data: metadata || {}
+        }
+      });
+
+      if (error) {
+        await this.logSecurityEvent('signup_failed', false, { email, error: error.message }, 'authentication');
+        return { success: false, error: error.message };
+      }
+
+      await this.logSecurityEvent('signup_success', true, { email }, 'authentication');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Signup failed';
+      return { success: false, error: errorMessage };
+    }
+  }
+
   sanitizeError(error: unknown, context: string) {
     if (!this.config.enableErrorSanitization) {
       // In non-sanitization mode, still provide basic error handling

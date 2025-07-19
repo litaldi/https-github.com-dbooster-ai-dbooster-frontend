@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -61,8 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string, options?: { rememberMe?: boolean }) => {
     try {
-      // Check rate limiting
-      const rateLimitResult = unifiedSecurityService.checkRateLimit('login', email);
+      // Check rate limiting - properly await the promise
+      const rateLimitResult = await unifiedSecurityService.checkRateLimit(email, 'login');
       if (!rateLimitResult.allowed) {
         return { error: rateLimitResult.reason || 'Too many login attempts. Please try again later.' };
       }
@@ -80,8 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string, acceptedTerms: boolean) => {
     try {
-      // Check rate limiting
-      const rateLimitResult = unifiedSecurityService.checkRateLimit('signup', email);
+      // Check rate limiting - properly await the promise
+      const rateLimitResult = await unifiedSecurityService.checkRateLimit(email, 'signup');
       if (!rateLimitResult.allowed) {
         return { error: rateLimitResult.reason || 'Too many signup attempts. Please try again later.' };
       }
