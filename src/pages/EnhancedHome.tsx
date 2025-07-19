@@ -10,15 +10,14 @@ import { ArrowRight } from 'lucide-react';
 
 export default function EnhancedHome() {
   const navigate = useNavigate();
-  const { user, loginDemo } = useAuth();
+  const { user } = useAuth();
 
   const handleGetStarted = async () => {
     try {
       if (user) {
         navigate('/app');
       } else {
-        await loginDemo();
-        navigate('/app');
+        navigate('/auth');
       }
     } catch (error) {
       console.error('Navigation error:', error);
@@ -64,7 +63,7 @@ export default function EnhancedHome() {
                 onClick={handleGetStarted}
                 className="min-w-[200px] h-12 text-base font-semibold shadow-lg hover:shadow-xl"
               >
-                {user ? 'Go to Your Dashboard' : 'Start Free Analysis'}
+                {user ? 'Go to Your Dashboard' : 'Start Free Today'}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               

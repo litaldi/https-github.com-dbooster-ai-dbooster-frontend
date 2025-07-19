@@ -22,7 +22,7 @@ export function DemoAccessCard({ isLoading, onLoadingChange }: DemoAccessCardPro
       onLoadingChange(true);
       await loginDemo();
       toast.success('Demo session started!');
-      navigate('/app/dashboard-alt');
+      navigate('/app');
     } catch (error) {
       console.error('Demo login error:', error);
       toast.error('Failed to start demo session');

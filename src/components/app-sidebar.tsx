@@ -30,26 +30,26 @@ const items = [
   },
   {
     title: "Database Repositories",
-    url: "/repositories",
+    url: "/app/repositories",
     icon: Database,
     description: "Manage your database connections"
   },
   {
     title: "Query Manager",
-    url: "/queries",
+    url: "/app/queries",
     icon: Search,
     description: "Optimize and manage SQL queries"
   },
   {
     title: "AI Studio",
-    url: "/ai-studio",
+    url: "/app/ai-studio",
     icon: Brain,
     description: "AI-powered optimization tools",
     badge: "AI"
   },
   {
     title: "Performance Reports",
-    url: "/reports",
+    url: "/app/reports",
     icon: FileText,
     description: "Detailed analytics and insights"
   },
@@ -58,7 +58,7 @@ const items = [
 const managementItems = [
   {
     title: "Team Management",
-    url: "/teams",
+    url: "/app/teams",
     icon: Users,
     description: "Manage team members and permissions"
   },

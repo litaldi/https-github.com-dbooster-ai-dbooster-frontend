@@ -23,7 +23,7 @@ export function StandardizedCTAButton({
   variant,
   ...props 
 }: StandardizedCTAButtonProps) {
-  const { user, loginDemo } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const getButtonText = () => {
@@ -66,12 +66,12 @@ export function StandardizedCTAButton({
       if (user) {
         navigate('/app');
       } else {
-        // For "Start for Free", go to demo page to let users experience the product
-        navigate('/demo');
+        // For "Start for Free", go to auth page to let users sign up
+        navigate('/auth');
       }
     } catch (error) {
       console.error('CTA navigation error:', error);
-      navigate('/demo');
+      navigate('/auth');
     }
   };
 

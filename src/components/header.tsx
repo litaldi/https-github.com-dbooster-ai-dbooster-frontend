@@ -23,8 +23,7 @@ export function Header() {
   const navigate = useNavigate();
 
   const handleStartForFree = () => {
-    // Navigate to demo page where users can experience the product
-    navigate('/demo');
+    navigate('/auth');
   };
 
   const handleTryDemo = () => {
@@ -32,11 +31,11 @@ export function Header() {
   };
 
   const handleSignUp = () => {
-    navigate('/login?mode=signup');
+    navigate('/auth');
   };
 
   const handleLogin = () => {
-    navigate('/login');
+    navigate('/auth');
   };
 
   return (
@@ -82,12 +81,6 @@ export function Header() {
                   className="hidden sm:inline-flex"
                 >
                   Try Demo
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={handleSignUp}
-                >
-                  Sign Up
                 </Button>
                 <Button 
                   variant="outline" 
@@ -156,11 +149,7 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
-            <Button variant="outline" onClick={handleLogin}>
-              Sign In
-            </Button>
-          )}
+          ) : null}
         </div>
       </div>
     </header>
