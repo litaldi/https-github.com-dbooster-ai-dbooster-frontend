@@ -146,13 +146,23 @@ export class SecureSessionManager {
         return false;
       }
 
-      // Safely parse the response data
+      // Safely parse the response data with proper type checking
       let validationResponse: SessionValidationResponse;
       
       try {
         // Handle different response formats from Supabase RPC
-        if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
-          validationResponse = data as SessionValidationResponse;
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+          // Check if the object has the expected structure
+          const responseObj = data as Record<string, unknown>;
+          if (typeof responseObj.valid === 'boolean') {
+            validationResponse = {
+              valid: responseObj.valid,
+              reason: typeof responseObj.reason === 'string' ? responseObj.reason : undefined,
+              securityScore: typeof responseObj.security_score === 'number' ? responseObj.security_score : undefined
+            };
+          } else {
+            validationResponse = { valid: false, reason: 'Invalid response structure' };
+          }
         } else {
           // If data is not in expected format, treat as invalid
           validationResponse = { valid: false, reason: 'Invalid response format' };
