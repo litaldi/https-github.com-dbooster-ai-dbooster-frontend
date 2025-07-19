@@ -3,21 +3,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
-import { consolidatedAuthenticationSecurity } from '@/services/security/consolidatedAuthenticationSecurity';
-import { enhancedRateLimiting } from '@/services/security/enhancedRateLimiting';
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  isDemo: boolean;
-  githubAccessToken: string | null;
-  signIn: (email: string, password: string, options?: { rememberMe?: boolean }) => Promise<{ error?: string }>;
-  signUp: (email: string, password: string, fullName: string, acceptedTerms: boolean) => Promise<{ error?: string }>;
-  signOut: () => Promise<void>;
-  logout: () => Promise<void>;
-  loginDemo: () => Promise<void>;
-}
+import { unifiedSecurityService } from '@/services/security/unified/UnifiedSecurityService';
+import type { AuthContextType } from '@/types/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -75,15 +62,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string, options?: { rememberMe?: boolean }) => {
     try {
       // Check rate limiting
-      const rateLimitResult = enhancedRateLimiting.checkRateLimit('login', email);
+      const rateLimitResult = unifiedSecurityService.checkRateLimit('login', email);
       if (!rateLimitResult.allowed) {
         return { error: rateLimitResult.reason || 'Too many login attempts. Please try again later.' };
       }
 
-      const result = await consolidatedAuthenticationSecurity.secureLogin(email, password, options);
+      const result = await unifiedSecurityService.secureLogin(email, password, options);
       if (!result.success) {
-        // Record failed attempt for rate limiting
-        enhancedRateLimiting.recordAttempt('login', email);
         return { error: result.error };
       }
       return {};
@@ -96,18 +81,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, fullName: string, acceptedTerms: boolean) => {
     try {
       // Check rate limiting
-      const rateLimitResult = enhancedRateLimiting.checkRateLimit('signup', email);
+      const rateLimitResult = unifiedSecurityService.checkRateLimit('signup', email);
       if (!rateLimitResult.allowed) {
         return { error: rateLimitResult.reason || 'Too many signup attempts. Please try again later.' };
       }
 
-      const result = await consolidatedAuthenticationSecurity.secureSignup(email, password, {
+      const result = await unifiedSecurityService.secureSignup(email, password, {
         fullName,
         acceptedTerms
       });
       if (!result.success) {
-        // Record failed attempt for rate limiting
-        enhancedRateLimiting.recordAttempt('signup', email);
         return { error: result.error };
       }
       return {};
@@ -147,10 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       setIsDemo(true);
       
-      // Create a simple demo session without complex security
-      const demoSessionId = crypto.randomUUID();
-      const demoToken = Array.from(crypto.getRandomValues(new Uint8Array(32)), 
-        byte => byte.toString(16).padStart(2, '0')).join('');
+      // Create a secure demo session
+      const demoSessionId = await unifiedSecurityService.createSecureSession('demo-user', true);
       
       // Create a properly typed demo user object
       const demoUser: User = {
@@ -172,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Create demo session object  
       const demoSessionObj: Session = {
-        access_token: demoToken,
+        access_token: demoSessionId,
         refresh_token: 'demo-refresh-token',
         expires_in: 3600,
         expires_at: Math.floor((Date.now() + 3600000) / 1000),

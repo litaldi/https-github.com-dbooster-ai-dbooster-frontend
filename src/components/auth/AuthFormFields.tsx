@@ -2,21 +2,18 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PasswordField } from '@/components/forms/PasswordField';
-import { Mail, User } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { AuthMode, AuthFormData } from '@/types/auth';
 
 interface AuthFormFieldsProps {
-  formData: {
-    email: string;
-    password: string;
-    confirmPassword?: string;
-    firstName?: string;
-    lastName?: string;
-  };
-  onInputChange: (field: string, value: string) => void;
+  formData: AuthFormData;
+  onInputChange: (field: string, value: string | boolean) => void;
   errors: Record<string, string>;
-  authMode: 'login' | 'signup' | 'reset';
+  authMode: AuthMode;
   isLoading: boolean;
+  showPassword?: boolean;
+  onTogglePassword?: () => void;
 }
 
 export function AuthFormFields({
@@ -24,47 +21,47 @@ export function AuthFormFields({
   onInputChange,
   errors,
   authMode,
-  isLoading
+  isLoading,
+  showPassword = false,
+  onTogglePassword
 }: AuthFormFieldsProps) {
   return (
-    <div className="space-y-4">
+    <>
       {authMode === 'signup' && (
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              First Name
-            </Label>
-            <Input
-              id="firstName"
-              type="text"
-              placeholder="John"
-              value={formData.firstName || ''}
-              onChange={(e) => onInputChange('firstName', e.target.value)}
-              disabled={isLoading}
-              className={errors.firstName ? 'border-destructive' : ''}
-              required
-            />
+            <Label htmlFor="firstName">First Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="First name"
+                className="pl-10"
+                value={formData.firstName || ''}
+                onChange={(e) => onInputChange('firstName', e.target.value)}
+                required
+              />
+            </div>
             {errors.firstName && (
               <p className="text-sm text-destructive">{errors.firstName}</p>
             )}
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="lastName" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Last Name
-            </Label>
-            <Input
-              id="lastName"
-              type="text"
-              placeholder="Doe"
-              value={formData.lastName || ''}
-              onChange={(e) => onInputChange('lastName', e.target.value)}
-              disabled={isLoading}
-              className={errors.lastName ? 'border-destructive' : ''}
-              required
-            />
+            <Label htmlFor="lastName">Last Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Last name"
+                className="pl-10"
+                value={formData.lastName || ''}
+                onChange={(e) => onInputChange('lastName', e.target.value)}
+                required
+              />
+            </div>
             {errors.lastName && (
               <p className="text-sm text-destructive">{errors.lastName}</p>
             )}
@@ -73,49 +70,76 @@ export function AuthFormFields({
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="flex items-center gap-2">
-          <Mail className="h-4 w-4" />
-          Email
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          value={formData.email}
-          onChange={(e) => onInputChange('email', e.target.value)}
-          disabled={isLoading}
-          className={errors.email ? 'border-destructive' : ''}
-          required
-        />
+        <Label htmlFor="email">Email</Label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            className="pl-10"
+            value={formData.email}
+            onChange={(e) => onInputChange('email', e.target.value)}
+            required
+          />
+        </div>
         {errors.email && (
           <p className="text-sm text-destructive">{errors.email}</p>
         )}
       </div>
 
-      <PasswordField
-        id="password"
-        label="Password"
-        placeholder="Enter your password"
-        value={formData.password}
-        onChange={(value) => onInputChange('password', value)}
-        error={errors.password}
-        required={true}
-        autoComplete={authMode === 'login' ? 'current-password' : 'new-password'}
-        showStrength={authMode === 'signup'}
-      />
+      {authMode !== 'reset' && (
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
+              className="pl-10 pr-10"
+              value={formData.password}
+              onChange={(e) => onInputChange('password', e.target.value)}
+              required
+            />
+            {onTogglePassword && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                onClick={onTogglePassword}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            )}
+          </div>
+          {errors.password && (
+            <p className="text-sm text-destructive">{errors.password}</p>
+          )}
+        </div>
+      )}
 
       {authMode === 'signup' && (
-        <PasswordField
-          id="confirmPassword"
-          label="Confirm Password"
-          placeholder="Confirm your password"
-          value={formData.confirmPassword || ''}
-          onChange={(value) => onInputChange('confirmPassword', value)}
-          error={errors.confirmPassword}
-          required={true}
-          autoComplete="new-password"
-        />
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="confirmPassword"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Confirm your password"
+              className="pl-10"
+              value={formData.confirmPassword || ''}
+              onChange={(e) => onInputChange('confirmPassword', e.target.value)}
+              required
+            />
+          </div>
+          {errors.confirmPassword && (
+            <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+          )}
+        </div>
       )}
-    </div>
+    </>
   );
 }
