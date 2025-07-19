@@ -6,7 +6,7 @@ import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
 import { useState, useEffect } from 'react';
 
 export function SecurityDashboardPage() {
-  const { validateSession, isLoading } = useConsolidatedSecurity();
+  const { validateSession, loading } = useConsolidatedSecurity();
   const [sessionValid, setSessionValid] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export function SecurityDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoading ? 'Checking...' : sessionValid ? 'Valid' : 'Invalid'}
+              {loading ? 'Checking...' : sessionValid ? 'Valid' : 'Invalid'}
             </div>
             <p className="text-xs text-muted-foreground">
               Current authentication session

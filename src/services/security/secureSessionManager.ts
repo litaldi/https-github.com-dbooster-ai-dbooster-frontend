@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 
@@ -12,6 +11,12 @@ export interface SecureSession {
   isDemo: boolean;
   expiresAt: Date;
   encrypted: boolean;
+}
+
+interface SessionValidationResponse {
+  valid: boolean;
+  reason?: string;
+  securityScore?: number;
 }
 
 export class SecureSessionManager {
@@ -132,10 +137,22 @@ export class SecureSessionManager {
         p_user_agent: userAgent
       });
 
-      if (error || !data?.valid) {
+      if (error) {
         await this.logSecurityEvent('session_validation_failed', {
           session_id: sessionId,
-          reason: data?.reason || 'Unknown validation failure'
+          reason: 'Database validation error',
+          error: error.message
+        });
+        return false;
+      }
+
+      // Parse the response data properly
+      const validationResponse = data as SessionValidationResponse;
+      
+      if (!validationResponse?.valid) {
+        await this.logSecurityEvent('session_validation_failed', {
+          session_id: sessionId,
+          reason: validationResponse?.reason || 'Unknown validation failure'
         });
         return false;
       }

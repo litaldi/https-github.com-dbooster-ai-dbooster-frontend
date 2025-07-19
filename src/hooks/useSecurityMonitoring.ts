@@ -49,23 +49,24 @@ export function useSecurityMonitoring() {
       // Get user security status
       const userSecurityStatus = await enhancedPrivilegeControl.getSecurityStatus(user.user.id);
       
-      // Validate current session
-      const sessionValidation = await secureSessionManager.validateCurrentSession();
+      // Create a temporary session for validation
+      const tempSessionId = await secureSessionManager.createSecureSession(user.user.id, true);
+      const sessionValidation = await secureSessionManager.validateSession(tempSessionId);
       
       // Calculate overall security score
-      const baseScore = sessionValidation.securityScore;
+      const baseScore = sessionValidation ? 80 : 40;
       const alertPenalty = Math.min(alerts.length * 10, 50);
       const issuePenalty = userSecurityStatus.issues.length * 15;
       const overallScore = Math.max(baseScore - alertPenalty - issuePenalty, 0);
 
       setSecurityStatus({
-        isSecure: userSecurityStatus.isSecure && sessionValidation.valid && alerts.length < 3,
+        isSecure: userSecurityStatus.isSecure && sessionValidation && alerts.length < 3,
         alerts,
-        sessionValid: sessionValidation.valid,
+        sessionValid: sessionValidation,
         securityScore: overallScore,
         issues: [
           ...userSecurityStatus.issues,
-          ...(sessionValidation.valid ? [] : [sessionValidation.reason || 'Session validation failed'])
+          ...(sessionValidation ? [] : ['Session validation failed'])
         ],
         recommendations: userSecurityStatus.recommendations
       });
@@ -100,11 +101,11 @@ export function useSecurityMonitoring() {
     await refreshSecurityStatus();
   }, [refreshSecurityStatus]);
 
-  const initializeSecureSession = useCallback(async () => {
+  const createSecureSession = useCallback(async () => {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) return null;
 
-    const sessionId = await secureSessionManager.initializeSecureSession(user.user.id);
+    const sessionId = await secureSessionManager.createSecureSession(user.user.id);
     if (sessionId) {
       await refreshSecurityStatus();
     }
@@ -133,6 +134,6 @@ export function useSecurityMonitoring() {
     isLoading,
     refreshSecurityStatus,
     createSecurityAlert,
-    initializeSecureSession
+    createSecureSession
   };
 }
