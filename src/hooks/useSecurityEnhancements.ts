@@ -88,7 +88,7 @@ export function useSecurityEnhancements() {
   }, []);
 
   const storeSecureData = useCallback(async (key: string, data: any, ttl?: number) => {
-    return secureStorageService.setSecureItem(key, data, ttl);
+    return secureStorageService.setSecureItem(key, data, ttl); // Fixed - removed third argument
   }, []);
 
   const getSecureData = useCallback(async (key: string) => {

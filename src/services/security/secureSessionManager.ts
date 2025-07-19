@@ -79,7 +79,7 @@ class SecureSessionManager {
         return false;
       }
 
-      const sessionData = await this.decryptSessionData(encryptedData);
+      const sessionData = await this.decryptSessionData(String(encryptedData)); // Fixed type cast
       
       // Check expiration
       if (new Date() > new Date(sessionData.expiresAt)) {

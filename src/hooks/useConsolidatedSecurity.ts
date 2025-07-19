@@ -156,7 +156,7 @@ export function useConsolidatedSecurity() {
     }
   }, []);
 
-  // Invalidate session and clean up
+  // Invalidate session and clean up - Fixed method name
   const invalidateSession = useCallback(async () => {
     try {
       // Find demo sessions in localStorage and invalidate them
@@ -165,7 +165,7 @@ export function useConsolidatedSecurity() {
         if (key.startsWith('demo_session_') || key.startsWith('secure_session_')) {
           const sessionId = key.split('_').pop();
           if (sessionId) {
-            await secureSessionManager.invalidateSession(sessionId);
+            await secureSessionManager.destroySession(sessionId); // Changed from invalidateSession to destroySession
           }
           localStorage.removeItem(key);
         }

@@ -31,11 +31,11 @@ export class EventMonitoring {
         formObject[key] = value;
       }
 
-      // Enhanced form validation
+      // Enhanced form validation - Fixed property name
       try {
         const validation = await unifiedSecurityService.validateFormData(formObject, `form_${form.action || 'unknown'}`);
         
-        if (!validation.valid) {
+        if (!validation.isValid) { // Fixed from 'valid' to 'isValid'
           event.preventDefault();
           productionLogger.error('Form submission blocked due to security validation failure', {
             formAction: form.action,
@@ -85,12 +85,12 @@ export class EventMonitoring {
       // Monitor for potential injection attempts in regular inputs
       if (target.value.length > 100) { // Only check longer inputs
         try {
-          const validation = await unifiedSecurityService.validateUserInput(target.value, `input_${target.name || 'unknown'}`);
+          const validation = await unifiedSecurityService.validateInput(target.value, `input_${target.name || 'unknown'}`); // Fixed method name
           
-          if (!validation.isValid && validation.threats?.length) {
+          if (!validation.isValid && validation.threatTypes?.length) {
             productionLogger.warn('Potentially malicious input detected', {
               inputName: target.name,
-              threats: validation.threats,
+              threats: validation.threatTypes,
               riskLevel: validation.riskLevel
             }, 'SecurityMonitor');
           }
