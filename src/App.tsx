@@ -1,57 +1,210 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { QueryClient } from '@tanstack/react-query';
+import { AuthProvider } from '@/contexts/auth-context';
+import { ThemeProvider } from '@/components/theme-provider';
+import { NotificationProvider } from '@/components/ui/enhanced-notification-system';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-import Home from '@/pages/Home';
-import Login from '@/pages/Login';
-import Signup from '@/pages/Signup';
-import Profile from '@/pages/Profile';
-import Admin from '@/pages/Admin';
-import NotFound from '@/pages/NotFound';
-import Unauthorized from '@/pages/Unauthorized';
-import RequireAuth from '@/components/RequireAuth';
+// Import production manager
+import { productionManager } from '@/utils/productionManager';
+
+// Layouts
+import { PublicLayout } from '@/components/PublicLayout';
+import Layout from '@/components/layout';
 import ProtectedRoute from '@/components/protected-route';
-import { SecurityHeadersProvider } from '@/components/SecurityHeadersProvider';
+
+// Public Pages
+import Home from '@/pages/Home';
+import ProductPage from '@/pages/ProductPage';
+import SolutionsPage from '@/pages/SolutionsPage';
+import FeaturesPage from '@/pages/FeaturesPage';
+import HowItWorksPage from '@/pages/HowItWorksPage';
+import AIStudioPage from '@/pages/AIStudioPage';
+import DemoPage from '@/pages/DemoPage';
+import PricingPage from '@/pages/PricingPage';
+import ForDevelopersPage from '@/pages/ForDevelopersPage';
+import ForTeamsPage from '@/pages/ForTeamsPage';
+import ForEnterprisesPage from '@/pages/ForEnterprisesPage';
+import UseCasesPage from '@/pages/UseCasesPage';
+import LearnPage from '@/pages/LearnPage';
+import DocumentationPage from '@/pages/DocumentationPage';
+import BlogPage from '@/pages/BlogPage';
+import FAQPage from '@/pages/FAQPage';
+import SupportPage from '@/pages/SupportPage';
+import StatusPage from '@/pages/StatusPage';
+import ChangelogPage from '@/pages/ChangelogPage';
+import AboutPage from '@/pages/AboutPage';
+import ContactPage from '@/pages/ContactPage';
+import PartnersPage from '@/pages/PartnersPage';
+import PressPage from '@/pages/PressPage';
+import CareersPage from '@/pages/CareersPage';
+import AuthPage from '@/pages/AuthPage';
+import SearchPage from '@/pages/SearchPage';
+import TestingPage from '@/pages/TestingPage';
+
+// Legal Pages
+import TermsPage from '@/pages/legal/TermsPage';
+import PrivacyPage from '@/pages/legal/PrivacyPage';
+import CookiesPage from '@/pages/legal/CookiesPage';
+import SecurityPage from '@/pages/legal/SecurityPage';
+import AccessibilityPage from '@/pages/legal/AccessibilityPage';
+
+// Dashboard Pages
+import Dashboard from '@/pages/Dashboard';
+import AnalyticsPage from '@/pages/app/AnalyticsPage';
+import QueriesPage from '@/pages/app/QueriesPage';
+import RepositoriesPage from '@/pages/app/RepositoriesPage';
+import AIStudioAppPage from '@/pages/app/AIStudioAppPage';
+import ReportsPage from '@/pages/app/ReportsPage';
+import MonitoringPage from '@/pages/app/MonitoringPage';
+import SettingsPage from '@/pages/app/SettingsPage';
+import AccountPage from '@/pages/app/AccountPage';
+import DashboardPage from '@/pages/app/DashboardPage';
+
+// CMS Pages
+import CMSDashboard from '@/pages/cms/CMSDashboard';
+
+// Lazy load the security dashboard
+const SecurityDashboardPage = React.lazy(() => 
+  import('@/components/security/SecurityDashboardPage').then(m => ({
+    default: m.SecurityDashboardPage
+  }))
+);
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
 function App() {
+  useEffect(() => {
+    // Initialize production optimizations
+    productionManager.initialize();
+
+    // Cleanup on unmount
+    return () => {
+      productionManager.cleanup();
+    };
+  }, []);
+
   return (
-    <QueryClient>
-      <BrowserRouter>
-        <SecurityHeadersProvider>
-          <div className="min-h-screen bg-background">
-            <Toaster />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/unauthorized" element={<Unauthorized />} />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <RequireAuth>
-                      <Profile />
-                    </RequireAuth>
-                  </ProtectedRoute>
-                }
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
+        <AuthProvider>
+          <NotificationProvider>
+            <Router>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* Auth Routes */}
+                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/login" element={<Navigate to="/auth" replace />} />
+
+                  {/* Public Routes */}
+                  <Route path="/" element={<PublicLayout />}>
+                    <Route index element={<Home />} />
+                    <Route path="home" element={<Navigate to="/" replace />} />
+                    
+                    {/* Main Landing Pages */}
+                    <Route path="product" element={<ProductPage />} />
+                    <Route path="solutions" element={<SolutionsPage />} />
+                    
+                    {/* Product Routes */}
+                    <Route path="features" element={<FeaturesPage />} />
+                    <Route path="how-it-works" element={<HowItWorksPage />} />
+                    <Route path="ai-studio" element={<AIStudioPage />} />
+                    <Route path="demo" element={<DemoPage />} />
+                    <Route path="pricing" element={<PricingPage />} />
+                    
+                    {/* Solutions Routes */}
+                    <Route path="for-developers" element={<ForDevelopersPage />} />
+                    <Route path="for-teams" element={<ForTeamsPage />} />
+                    <Route path="for-enterprises" element={<ForEnterprisesPage />} />
+                    <Route path="use-cases" element={<UseCasesPage />} />
+                    
+                    {/* Resources Routes */}
+                    <Route path="learn" element={<LearnPage />} />
+                    <Route path="documentation" element={<DocumentationPage />} />
+                    <Route path="blog" element={<BlogPage />} />
+                    <Route path="faq" element={<FAQPage />} />
+                    <Route path="support" element={<SupportPage />} />
+                    <Route path="status" element={<StatusPage />} />
+                    <Route path="changelog" element={<ChangelogPage />} />
+                    
+                    {/* Company Routes */}
+                    <Route path="about" element={<AboutPage />} />
+                    <Route path="contact" element={<ContactPage />} />
+                    <Route path="partners" element={<PartnersPage />} />
+                    <Route path="press" element={<PressPage />} />
+                    <Route path="careers" element={<CareersPage />} />
+                    
+                    {/* Legal Routes */}
+                    <Route path="terms" element={<TermsPage />} />
+                    <Route path="privacy" element={<PrivacyPage />} />
+                    <Route path="cookies" element={<CookiesPage />} />
+                    <Route path="security" element={<SecurityPage />} />
+                    <Route path="accessibility" element={<AccessibilityPage />} />
+                    
+                    {/* Search & Testing */}
+                    <Route path="search" element={<SearchPage />} />
+                    <Route path="testing" element={<TestingPage />} />
+                  </Route>
+
+                  {/* Protected Dashboard Routes */}
+                  <Route path="/app" element={
+                    <ProtectedRoute>
+                      <Layout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Dashboard />} />
+                    <Route path="dashboard-alt" element={<DashboardPage />} />
+                    <Route path="analytics" element={<AnalyticsPage />} />
+                    <Route path="queries" element={<QueriesPage />} />
+                    <Route path="repositories" element={<RepositoriesPage />} />
+                    <Route path="ai-studio" element={<AIStudioAppPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="monitoring" element={<MonitoringPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="account" element={<AccountPage />} />
+                    <Route path="testing" element={<TestingPage />} />
+                    <Route path="security" element={
+                      <Suspense fallback={<LoadingFallback />}>
+                        <SecurityDashboardPage />
+                      </Suspense>
+                    } />
+                  </Route>
+
+                  {/* Protected CMS Routes */}
+                  <Route path="/cms" element={
+                    <ProtectedRoute>
+                      <Layout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<CMSDashboard />} />
+                  </Route>
+
+                  {/* Fallback */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+              <Toaster 
+                position="top-right" 
+                richColors 
+                theme="dark"
+                toastOptions={{
+                  style: {
+                    background: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    color: 'hsl(var(--foreground))',
+                  },
+                }}
               />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute>
-                    <RequireAuth requiredRole="admin">
-                      <Admin />
-                    </RequireAuth>
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-        </SecurityHeadersProvider>
-      </BrowserRouter>
-    </QueryClient>
+            </Router>
+          </NotificationProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
