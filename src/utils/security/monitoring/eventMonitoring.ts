@@ -1,6 +1,7 @@
 
 import { productionLogger } from '@/utils/productionLogger';
 import { enhancedSecurityHeaders } from '@/services/security/enhancedSecurityHeaders';
+import { unifiedSecurityService } from '@/services/security/unified/UnifiedSecurityService';
 
 export class EventMonitoring {
   private static instance: EventMonitoring;
@@ -32,8 +33,7 @@ export class EventMonitoring {
 
       // Enhanced form validation
       try {
-        const { securityService } = await import('@/services/securityService');
-        const validation = await securityService.validateFormData(formObject, `form_${form.action || 'unknown'}`);
+        const validation = await unifiedSecurityService.validateFormData(formObject, `form_${form.action || 'unknown'}`);
         
         if (!validation.valid) {
           event.preventDefault();
@@ -85,10 +85,9 @@ export class EventMonitoring {
       // Monitor for potential injection attempts in regular inputs
       if (target.value.length > 100) { // Only check longer inputs
         try {
-          const { securityService } = await import('@/services/securityService');
-          const validation = await securityService.validateUserInput(target.value, `input_${target.name || 'unknown'}`);
+          const validation = await unifiedSecurityService.validateUserInput(target.value, `input_${target.name || 'unknown'}`);
           
-          if (!validation.valid && validation.threats?.length) {
+          if (!validation.isValid && validation.threats?.length) {
             productionLogger.warn('Potentially malicious input detected', {
               inputName: target.name,
               threats: validation.threats,

@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { unifiedSecurityService } from '@/services/security/unified/UnifiedSecurityService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SecurityStatus {
   isSecure: boolean;
@@ -29,6 +30,25 @@ export function useConsolidatedSecurity() {
     }
 
     return await unifiedSecurityService.validateSession(sessionId);
+  }, []);
+
+  const invalidateSession = useCallback(async () => {
+    try {
+      // Clear all session-related storage
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('secure_session_') || key.startsWith('sb-') || key.includes('supabase.auth')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      // Refresh security status
+      await refreshSecurityStatus();
+    } catch (error) {
+      console.error('Failed to invalidate session:', error);
+    }
   }, []);
 
   const validateInput = useCallback(async (input: string, context?: string) => {
@@ -91,6 +111,7 @@ export function useConsolidatedSecurity() {
     securityStatus,
     isLoading,
     validateSession,
+    invalidateSession,
     validateInput,
     checkRateLimit,
     logSecurityEvent,

@@ -9,6 +9,12 @@ interface SecurityValidation {
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
 }
 
+interface FormValidationResult {
+  valid: boolean;
+  errors: string[];
+  sanitizedData: Record<string, any>;
+}
+
 interface SessionInfo {
   sessionId: string;
   userId: string;
@@ -132,6 +138,29 @@ export class UnifiedSecurityService {
       threats,
       sanitized,
       riskLevel
+    };
+  }
+
+  async validateFormData(formData: Record<string, any>, context: string): Promise<FormValidationResult> {
+    const errors: string[] = [];
+    const sanitizedData: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(formData)) {
+      if (typeof value === 'string') {
+        const validation = await this.validateUserInput(value, `${context}.${key}`);
+        if (!validation.isValid) {
+          errors.push(...validation.threats);
+        }
+        sanitizedData[key] = validation.sanitized;
+      } else {
+        sanitizedData[key] = value;
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      sanitizedData
     };
   }
 
