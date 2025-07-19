@@ -146,8 +146,24 @@ export class SecureSessionManager {
         return false;
       }
 
-      // Parse the response data properly
-      const validationResponse = data as SessionValidationResponse;
+      // Safely parse the response data
+      let validationResponse: SessionValidationResponse;
+      
+      try {
+        // Handle different response formats from Supabase RPC
+        if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+          validationResponse = data as SessionValidationResponse;
+        } else {
+          // If data is not in expected format, treat as invalid
+          validationResponse = { valid: false, reason: 'Invalid response format' };
+        }
+      } catch (parseError) {
+        await this.logSecurityEvent('session_validation_failed', {
+          session_id: sessionId,
+          reason: 'Response parsing error'
+        });
+        return false;
+      }
       
       if (!validationResponse?.valid) {
         await this.logSecurityEvent('session_validation_failed', {

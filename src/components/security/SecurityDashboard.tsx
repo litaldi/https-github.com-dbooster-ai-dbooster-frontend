@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -8,7 +7,7 @@ import { Shield, AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-r
 import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
 
 export function SecurityDashboard() {
-  const { securityStatus, isLoading, refreshSecurityStatus, initializeSecureSession } = useSecurityMonitoring();
+  const { securityStatus, isLoading, refreshSecurityStatus, createSecureSession } = useSecurityMonitoring();
 
   const getSecurityBadgeVariant = (score: number) => {
     if (score >= 80) return 'default';
@@ -76,12 +75,12 @@ export function SecurityDashboard() {
             </div>
             {!securityStatus.sessionValid && (
               <Button 
-                onClick={initializeSecureSession} 
+                onClick={createSecureSession} 
                 variant="outline" 
                 size="sm" 
                 className="mt-2"
               >
-                Reinitialize Session
+                Create New Session
               </Button>
             )}
           </CardContent>
