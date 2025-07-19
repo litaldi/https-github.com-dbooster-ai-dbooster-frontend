@@ -801,6 +801,51 @@ export type Database = {
         }
         Relationships: []
       }
+      session_security_events: {
+        Row: {
+          blocked: boolean | null
+          created_at: string | null
+          device_fingerprint: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          security_score: number | null
+          session_id: string
+          severity: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          blocked?: boolean | null
+          created_at?: string | null
+          device_fingerprint?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          security_score?: number | null
+          session_id: string
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          blocked?: boolean | null
+          created_at?: string | null
+          device_fingerprint?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          security_score?: number | null
+          session_id?: string
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string | null
@@ -897,6 +942,16 @@ export type Database = {
           new_role: Database["public"]["Enums"]["app_role"]
           change_reason?: string
           requester_ip?: unknown
+        }
+        Returns: Json
+      }
+      secure_role_assignment_enhanced: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+          change_reason?: string
+          requester_ip?: unknown
+          user_agent_header?: string
         }
         Returns: Json
       }

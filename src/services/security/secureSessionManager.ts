@@ -1,5 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
+import { secureStorageService } from './secureStorageService';
 
 export interface SecureSession {
   id: string;
@@ -21,7 +23,6 @@ interface SessionValidationResponse {
 
 export class SecureSessionManager {
   private static instance: SecureSessionManager;
-  private encryptionKey: CryptoKey | null = null;
 
   static getInstance(): SecureSessionManager {
     if (!SecureSessionManager.instance) {
@@ -30,37 +31,10 @@ export class SecureSessionManager {
     return SecureSessionManager.instance;
   }
 
-  async initializeEncryption(): Promise<void> {
-    try {
-      // Generate or retrieve encryption key for session data
-      const keyData = localStorage.getItem('session_key');
-      if (keyData) {
-        const keyBuffer = new Uint8Array(JSON.parse(keyData));
-        this.encryptionKey = await crypto.subtle.importKey(
-          'raw',
-          keyBuffer,
-          { name: 'AES-GCM' },
-          false,
-          ['encrypt', 'decrypt']
-        );
-      } else {
-        this.encryptionKey = await crypto.subtle.generateKey(
-          { name: 'AES-GCM', length: 256 },
-          true,
-          ['encrypt', 'decrypt']
-        );
-        
-        const keyBuffer = await crypto.subtle.exportKey('raw', this.encryptionKey);
-        localStorage.setItem('session_key', JSON.stringify(Array.from(new Uint8Array(keyBuffer))));
-      }
-    } catch (error) {
-      productionLogger.error('Failed to initialize session encryption', error, 'SecureSessionManager');
-    }
-  }
-
   async createSecureSession(userId: string, isDemo: boolean = false): Promise<string> {
     try {
-      await this.initializeEncryption();
+      // Initialize secure storage
+      await secureStorageService.initialize();
       
       const sessionId = crypto.randomUUID();
       const deviceFingerprint = await this.generateDeviceFingerprint();
@@ -87,23 +61,20 @@ export class SecureSessionManager {
         throw error;
       }
 
-      // Store encrypted session data locally for demo sessions
-      if (isDemo && this.encryptionKey) {
-        const sessionData: SecureSession = {
-          id: sessionId,
-          userId,
-          deviceFingerprint,
-          ipAddress,
-          userAgent,
-          securityScore,
-          isDemo,
-          expiresAt,
-          encrypted: true
-        };
+      // Store session data using secure storage instead of localStorage
+      const sessionData: SecureSession = {
+        id: sessionId,
+        userId,
+        deviceFingerprint,
+        ipAddress,
+        userAgent,
+        securityScore,
+        isDemo,
+        expiresAt,
+        encrypted: true
+      };
 
-        const encryptedData = await this.encryptSessionData(sessionData);
-        localStorage.setItem(`secure_session_${sessionId}`, encryptedData);
-      }
+      await secureStorageService.setSecureItem(`session_${sessionId}`, sessionData);
 
       // Log session creation
       await this.logSecurityEvent('secure_session_created', {
@@ -183,14 +154,11 @@ export class SecureSessionManager {
         return false;
       }
 
-      // Additional client-side validation for demo sessions
-      const localSessionData = localStorage.getItem(`secure_session_${sessionId}`);
-      if (localSessionData) {
-        const decryptedSession = await this.decryptSessionData(localSessionData);
-        if (decryptedSession && new Date() > decryptedSession.expiresAt) {
-          localStorage.removeItem(`secure_session_${sessionId}`);
-          return false;
-        }
+      // Additional client-side validation using secure storage
+      const localSessionData = await secureStorageService.getSecureItem<SecureSession>(`session_${sessionId}`);
+      if (localSessionData && new Date() > new Date(localSessionData.expiresAt)) {
+        await secureStorageService.removeSecureItem(`session_${sessionId}`);
+        return false;
       }
 
       return true;
@@ -208,8 +176,8 @@ export class SecureSessionManager {
         .update({ status: 'invalidated' })
         .eq('session_id', sessionId);
 
-      // Remove from local storage
-      localStorage.removeItem(`secure_session_${sessionId}`);
+      // Remove from secure storage
+      await secureStorageService.removeSecureItem(`session_${sessionId}`);
 
       await this.logSecurityEvent('session_invalidated', { session_id: sessionId });
     } catch (error) {
@@ -219,63 +187,12 @@ export class SecureSessionManager {
 
   async rotateSessionKey(): Promise<void> {
     try {
-      // Generate new encryption key
-      this.encryptionKey = await crypto.subtle.generateKey(
-        { name: 'AES-GCM', length: 256 },
-        true,
-        ['encrypt', 'decrypt']
-      );
-      
-      const keyBuffer = await crypto.subtle.exportKey('raw', this.encryptionKey);
-      localStorage.setItem('session_key', JSON.stringify(Array.from(new Uint8Array(keyBuffer))));
+      // Rotate the encryption key in secure storage
+      await secureStorageService.rotateEncryptionKey();
 
       await this.logSecurityEvent('session_key_rotated', {});
     } catch (error) {
       productionLogger.error('Failed to rotate session key', error, 'SecureSessionManager');
-    }
-  }
-
-  private async encryptSessionData(sessionData: SecureSession): Promise<string> {
-    if (!this.encryptionKey) {
-      throw new Error('Encryption key not initialized');
-    }
-
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encodedData = new TextEncoder().encode(JSON.stringify(sessionData));
-    
-    const encryptedData = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      this.encryptionKey,
-      encodedData
-    );
-
-    return JSON.stringify({
-      iv: Array.from(iv),
-      data: Array.from(new Uint8Array(encryptedData))
-    });
-  }
-
-  private async decryptSessionData(encryptedData: string): Promise<SecureSession | null> {
-    try {
-      if (!this.encryptionKey) {
-        await this.initializeEncryption();
-        if (!this.encryptionKey) return null;
-      }
-
-      const { iv, data } = JSON.parse(encryptedData);
-      const decryptedData = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: new Uint8Array(iv) },
-        this.encryptionKey,
-        new Uint8Array(data)
-      );
-
-      const sessionData = JSON.parse(new TextDecoder().decode(decryptedData));
-      sessionData.expiresAt = new Date(sessionData.expiresAt);
-      
-      return sessionData;
-    } catch (error) {
-      productionLogger.error('Failed to decrypt session data', error, 'SecureSessionManager');
-      return null;
     }
   }
 

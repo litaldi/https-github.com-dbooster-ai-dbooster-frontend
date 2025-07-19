@@ -1,29 +1,36 @@
 
-import { productionLogger } from '@/utils/productionLogger';
 import { supabase } from '@/integrations/supabase/client';
+import { productionLogger } from '@/utils/productionLogger';
+import { inputValidationService } from '../inputValidationService';
+import { secureErrorHandler } from '../secureErrorHandler';
+import { secureStorageService } from '../secureStorageService';
+import { secureSessionManager } from '../secureSessionManager';
 
-interface SecurityValidation {
-  isValid: boolean;
-  threats: string[];
-  sanitized: string;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+interface SecurityConfig {
+  enableRateLimit: boolean;
+  enableInputValidation: boolean;
+  enableSessionSecurity: boolean;
+  enableErrorSanitization: boolean;
+  strictMode: boolean;
 }
 
-interface FormValidationResult {
-  valid: boolean;
-  errors: string[];
-  sanitizedData: Record<string, any>;
-}
-
-interface SessionInfo {
-  sessionId: string;
-  userId: string;
-  isDemo: boolean;
-  expiresAt: Date;
+interface SecurityEvent {
+  type: string;
+  success: boolean;
+  data?: any;
+  context?: string;
 }
 
 export class UnifiedSecurityService {
   private static instance: UnifiedSecurityService;
+  private config: SecurityConfig = {
+    enableRateLimit: true,
+    enableInputValidation: true,
+    enableSessionSecurity: true,
+    enableErrorSanitization: true,
+    strictMode: true
+  };
+  private initialized = false;
 
   static getInstance(): UnifiedSecurityService {
     if (!UnifiedSecurityService.instance) {
@@ -32,213 +39,272 @@ export class UnifiedSecurityService {
     return UnifiedSecurityService.instance;
   }
 
-  // Authentication Methods
-  async secureLogin(email: string, password: string, options?: { rememberMe?: boolean }) {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+  async initialize(config?: Partial<SecurityConfig>): Promise<void> {
+    if (this.initialized) return;
 
-      if (error) {
-        await this.logAuthEvent('login_failed', false, { email, error: error.message });
-        return { success: false, error: error.message };
+    try {
+      if (config) {
+        this.config = { ...this.config, ...config };
       }
 
-      await this.logAuthEvent('login_success', true, { email, userId: data.user?.id });
-      return { success: true, user: data.user, session: data.session };
-    } catch (error) {
-      productionLogger.error('Login error', error, 'UnifiedSecurityService');
-      return { success: false, error: 'Login failed' };
-    }
-  }
+      // Initialize secure storage
+      await secureStorageService.initialize();
 
-  async secureSignup(email: string, password: string, metadata: { fullName: string; acceptedTerms: boolean }) {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: metadata.fullName,
-            accepted_terms: metadata.acceptedTerms,
-          },
-          emailRedirectTo: `${window.location.origin}/`,
-        },
-      });
+      // Set up security headers
+      await this.setupSecurityHeaders();
 
-      if (error) {
-        await this.logAuthEvent('signup_failed', false, { email, error: error.message });
-        return { success: false, error: error.message };
+      // Initialize rate limiting
+      if (this.config.enableRateLimit) {
+        await this.initializeRateLimit();
       }
 
-      await this.logAuthEvent('signup_success', true, { email, userId: data.user?.id });
-      return { success: true, user: data.user, session: data.session };
-    } catch (error) {
-      productionLogger.error('Signup error', error, 'UnifiedSecurityService');
-      return { success: false, error: 'Signup failed' };
-    }
-  }
+      this.initialized = true;
+      productionLogger.info('Unified Security Service initialized', this.config, 'UnifiedSecurityService');
 
-  // Session Management
-  async createSecureSession(userId: string, isDemo: boolean = false): Promise<string> {
-    const sessionId = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + (isDemo ? 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000));
-
-    try {
-      // Store session info securely
-      const sessionInfo: SessionInfo = { sessionId, userId, isDemo, expiresAt };
-      localStorage.setItem(`secure_session_${sessionId}`, JSON.stringify(sessionInfo));
-      
-      productionLogger.info('Secure session created', { sessionId: sessionId.substring(0, 8), isDemo });
-      return sessionId;
     } catch (error) {
-      productionLogger.error('Failed to create secure session', error, 'UnifiedSecurityService');
+      productionLogger.error('Failed to initialize security service', error, 'UnifiedSecurityService');
       throw error;
     }
   }
 
-  async validateSession(sessionId: string): Promise<boolean> {
-    try {
-      const storedSession = localStorage.getItem(`secure_session_${sessionId}`);
-      if (!storedSession) return false;
+  async validateInput(input: string, context: string = 'general') {
+    if (!this.config.enableInputValidation) {
+      return {
+        isValid: true,
+        hasThreats: false,
+        threatTypes: [],
+        sanitizedInput: input,
+        riskLevel: 'low' as const,
+        blocked: false
+      };
+    }
 
-      const sessionInfo: SessionInfo = JSON.parse(storedSession);
-      return new Date() < new Date(sessionInfo.expiresAt);
+    try {
+      const result = await inputValidationService.validateInput(input, context);
+      return {
+        isValid: result.isValid,
+        hasThreats: result.threatTypes.length > 0,
+        threatTypes: result.threatTypes,
+        sanitizedInput: result.sanitizedInput,
+        riskLevel: result.riskLevel,
+        blocked: result.blocked
+      };
+    } catch (error) {
+      productionLogger.error('Input validation failed', error, 'UnifiedSecurityService');
+      return {
+        isValid: false,
+        hasThreats: true,
+        threatTypes: ['validation_error'],
+        sanitizedInput: '',
+        riskLevel: 'critical' as const,
+        blocked: true
+      };
+    }
+  }
+
+  sanitizeError(error: unknown, context: string) {
+    if (!this.config.enableErrorSanitization) {
+      // In non-sanitization mode, still provide basic error handling
+      return {
+        message: error instanceof Error ? error.message : String(error),
+        code: 'UNSANITIZED_ERROR',
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    return secureErrorHandler.sanitizeError(error, context);
+  }
+
+  async validateSession(sessionId: string): Promise<boolean> {
+    if (!this.config.enableSessionSecurity) {
+      return true; // Skip validation if disabled
+    }
+
+    try {
+      return await secureSessionManager.validateSession(sessionId);
     } catch (error) {
       productionLogger.error('Session validation failed', error, 'UnifiedSecurityService');
       return false;
     }
   }
 
-  // Input Validation
-  async validateUserInput(input: string, context: string = 'general'): Promise<SecurityValidation> {
-    const threats: string[] = [];
-    let sanitized = input.trim();
-    let riskLevel: SecurityValidation['riskLevel'] = 'low';
-
-    // XSS Detection
-    if (/<script|javascript:/i.test(input)) {
-      threats.push('XSS attempt detected');
-      riskLevel = 'high';
-      sanitized = sanitized.replace(/<script[^>]*>.*?<\/script>/gi, '');
+  async createSecureSession(userId: string, isDemo: boolean = false): Promise<string> {
+    if (!this.config.enableSessionSecurity) {
+      // Return a simple session ID if security is disabled
+      return crypto.randomUUID();
     }
 
-    // SQL Injection Detection
-    if (/('|(--)|;|\/\*|\*\/)/i.test(input)) {
-      threats.push('SQL injection attempt detected');
-      riskLevel = 'high';
-    }
-
-    // Basic sanitization
-    sanitized = sanitized.replace(/[<>'"]/g, '');
-
-    return {
-      isValid: threats.length === 0,
-      threats,
-      sanitized,
-      riskLevel
-    };
+    return await secureSessionManager.createSecureSession(userId, isDemo);
   }
 
-  async validateFormData(formData: Record<string, any>, context: string): Promise<FormValidationResult> {
-    const errors: string[] = [];
-    const sanitizedData: Record<string, any> = {};
+  async checkRateLimit(identifier: string, action: string = 'api'): Promise<{ allowed: boolean; reason?: string }> {
+    if (!this.config.enableRateLimit) {
+      return { allowed: true };
+    }
 
-    for (const [key, value] of Object.entries(formData)) {
-      if (typeof value === 'string') {
-        const validation = await this.validateUserInput(value, `${context}.${key}`);
-        if (!validation.isValid) {
-          errors.push(...validation.threats);
-        }
-        sanitizedData[key] = validation.sanitized;
-      } else {
-        sanitizedData[key] = value;
+    try {
+      const { data, error } = await supabase
+        .from('rate_limit_tracking')
+        .select('attempt_count, window_start, blocked_until')
+        .eq('identifier', identifier)
+        .eq('action_type', action)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
       }
-    }
 
-    return {
-      valid: errors.length === 0,
-      errors,
-      sanitizedData
-    };
-  }
+      const now = new Date();
+      const windowSize = 60 * 1000; // 1 minute window
+      const maxAttempts = action === 'login' ? 5 : 10;
 
-  // Monitoring and Logging
-  async logAuthEvent(eventType: string, success: boolean, details?: Record<string, any>) {
-    try {
-      productionLogger.secureInfo('Auth event', {
-        eventType,
-        success,
-        timestamp: new Date().toISOString(),
-        ...details
-      }, 'UnifiedSecurityService');
+      if (data) {
+        const windowStart = new Date(data.window_start);
+        const isInCurrentWindow = now.getTime() - windowStart.getTime() < windowSize;
+
+        if (data.blocked_until && new Date(data.blocked_until) > now) {
+          return { allowed: false, reason: 'Rate limit exceeded, temporarily blocked' };
+        }
+
+        if (isInCurrentWindow && data.attempt_count >= maxAttempts) {
+          // Block for increasing durations
+          const blockDuration = Math.min(data.attempt_count * 60 * 1000, 30 * 60 * 1000); // Max 30 minutes
+          const blockedUntil = new Date(now.getTime() + blockDuration);
+
+          await supabase
+            .from('rate_limit_tracking')
+            .update({
+              attempt_count: data.attempt_count + 1,
+              blocked_until: blockedUntil.toISOString(),
+              updated_at: now.toISOString()
+            })
+            .eq('identifier', identifier)
+            .eq('action_type', action);
+
+          return { allowed: false, reason: 'Rate limit exceeded' };
+        }
+
+        if (isInCurrentWindow) {
+          // Increment attempt count
+          await supabase
+            .from('rate_limit_tracking')
+            .update({
+              attempt_count: data.attempt_count + 1,
+              updated_at: now.toISOString()
+            })
+            .eq('identifier', identifier)
+            .eq('action_type', action);
+        } else {
+          // Reset window
+          await supabase
+            .from('rate_limit_tracking')
+            .update({
+              attempt_count: 1,
+              window_start: now.toISOString(),
+              blocked_until: null,
+              updated_at: now.toISOString()
+            })
+            .eq('identifier', identifier)
+            .eq('action_type', action);
+        }
+      } else {
+        // Create new rate limit record
+        await supabase
+          .from('rate_limit_tracking')
+          .insert({
+            identifier,
+            action_type: action,
+            attempt_count: 1,
+            window_start: now.toISOString()
+          });
+      }
+
+      return { allowed: true };
     } catch (error) {
-      productionLogger.error('Failed to log auth event', error, 'UnifiedSecurityService');
+      productionLogger.error('Rate limit check failed', error, 'UnifiedSecurityService');
+      return { allowed: this.config.strictMode ? false : true };
     }
   }
 
-  async logSecurityEvent(event: any) {
+  async logSecurityEvent(type: string, success: boolean, data?: any, context?: string): Promise<void> {
     try {
-      productionLogger.secureInfo('Security event', {
-        ...event,
-        timestamp: new Date().toISOString()
-      }, 'UnifiedSecurityService');
+      const { data: user } = await supabase.auth.getUser();
+      
+      await supabase.from('comprehensive_security_log').insert({
+        user_id: user.user?.id,
+        event_type: type,
+        event_category: context || 'general',
+        severity: success ? 'info' : 'warning',
+        event_data: data,
+        ip_address: await this.getUserIP(),
+        user_agent: navigator.userAgent
+      });
     } catch (error) {
       productionLogger.error('Failed to log security event', error, 'UnifiedSecurityService');
     }
   }
 
-  // Rate Limiting
-  private rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-  checkRateLimit(action: string, identifier: string): { allowed: boolean; reason?: string } {
-    const key = `${action}:${identifier}`;
-    const now = Date.now();
-    const limit = this.getRateLimitForAction(action);
-    
-    const record = this.rateLimitStore.get(key);
-    
-    if (!record || now > record.resetTime) {
-      this.rateLimitStore.set(key, { count: 1, resetTime: now + 60000 }); // 1 minute window
-      return { allowed: true };
+  private async setupSecurityHeaders(): Promise<void> {
+    try {
+      // Call the security headers edge function to validate setup
+      await supabase.functions.invoke('security-headers', {
+        body: { action: 'validate_headers' }
+      });
+      
+      productionLogger.info('Security headers validated', {}, 'UnifiedSecurityService');
+    } catch (error) {
+      productionLogger.warn('Security headers validation failed', error, 'UnifiedSecurityService');
     }
-
-    if (record.count >= limit) {
-      return { allowed: false, reason: `Rate limit exceeded for ${action}` };
-    }
-
-    record.count++;
-    return { allowed: true };
   }
 
-  private getRateLimitForAction(action: string): number {
-    const limits: Record<string, number> = {
-      login: 5,
-      signup: 3,
-      api: 100,
-      default: 10
+  private async initializeRateLimit(): Promise<void> {
+    try {
+      // Clean up old rate limit records
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      
+      await supabase
+        .from('rate_limit_tracking')
+        .delete()
+        .lt('updated_at', oneHourAgo.toISOString());
+      
+      productionLogger.info('Rate limiting initialized', {}, 'UnifiedSecurityService');
+    } catch (error) {
+      productionLogger.warn('Rate limit cleanup failed', error, 'UnifiedSecurityService');
+    }
+  }
+
+  private async getUserIP(): Promise<string> {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  // Get security status
+  getSecurityStatus() {
+    return {
+      initialized: this.initialized,
+      config: this.config,
+      timestamp: new Date().toISOString()
     };
-    return limits[action] || limits.default;
   }
 
-  // Utility Methods
-  sanitizeInput(input: string, context: string = 'general'): string {
-    let sanitized = input.trim();
-    
-    switch (context) {
-      case 'html':
-        sanitized = sanitized.replace(/[<>]/g, '');
-        break;
-      case 'sql':
-        sanitized = sanitized.replace(/[';-]/g, '');
-        break;
-      default:
-        sanitized = sanitized.replace(/[<>'"]/g, '');
-        break;
+  // Emergency security lockdown
+  async emergencyLockdown(reason: string): Promise<void> {
+    try {
+      // Clear all secure storage
+      secureStorageService.clearAllSecureItems();
+      
+      // Log the lockdown
+      await this.logSecurityEvent('emergency_lockdown', true, { reason }, 'security');
+      
+      productionLogger.warn('Emergency security lockdown activated', { reason }, 'UnifiedSecurityService');
+    } catch (error) {
+      productionLogger.error('Emergency lockdown failed', error, 'UnifiedSecurityService');
     }
-    
-    return sanitized;
   }
 }
 
