@@ -1,20 +1,24 @@
 
-import { productionLogger } from '@/utils/productionLogger';
 import { supabase } from '@/integrations/supabase/client';
+import { productionLogger } from '@/utils/productionLogger';
 
-interface SecurityValidationResult {
+export interface SecurityValidationResult {
   isValid: boolean;
-  reason?: string;
-  riskScore: number;
+  hasThreats: boolean;
+  threatTypes: string[];
+  sanitizedInput: string;
+  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  blocked: boolean;
 }
 
-interface SessionValidationOptions {
-  requireSecureContext?: boolean;
-  checkDeviceFingerprint?: boolean;
-  validateTimestamp?: boolean;
+export interface ValidationConfig {
+  maxLength?: number;
+  allowHtml?: boolean;
+  strictMode?: boolean;
+  context?: string;
 }
 
-class EnhancedSecurityValidation {
+export class EnhancedSecurityValidation {
   private static instance: EnhancedSecurityValidation;
 
   static getInstance(): EnhancedSecurityValidation {
@@ -24,249 +28,226 @@ class EnhancedSecurityValidation {
     return EnhancedSecurityValidation.instance;
   }
 
-  async validateSupabaseSession(session: any): Promise<SecurityValidationResult> {
-    let riskScore = 0;
-    
-    if (!session || !session.access_token) {
-      return { isValid: false, reason: 'No valid session found', riskScore: 100 };
-    }
-
-    // Check if session is expired
-    if (session.expires_at && Date.now() / 1000 > session.expires_at) {
-      return { isValid: false, reason: 'Session expired', riskScore: 100 };
-    }
-
-    // Validate token format
-    if (!this.isValidJWT(session.access_token)) {
-      riskScore += 50;
-      productionLogger.warn('Invalid JWT format detected');
-    }
-
-    // Check for secure context
-    if (!window.isSecureContext) {
-      riskScore += 30;
-      productionLogger.warn('Session not in secure context');
-    }
-
-    // Validate session metadata
-    if (session.user) {
-      const userValidation = await this.validateUserMetadata(session.user);
-      riskScore += userValidation.riskScore;
-    }
-
-    return {
-      isValid: riskScore < 70,
-      reason: riskScore >= 70 ? 'High risk session detected' : undefined,
-      riskScore
-    };
-  }
-
-  async enhancedDemoSessionValidation(
-    sessionId: string, 
-    token: string,
-    options: SessionValidationOptions = {}
+  async validateAndSanitizeInput(
+    input: string, 
+    config: ValidationConfig = {}
   ): Promise<SecurityValidationResult> {
-    let riskScore = 0;
-
-    // Enhanced device fingerprinting
-    const currentFingerprint = await this.generateEnhancedFingerprint();
+    const { maxLength = 10000, allowHtml = false, strictMode = true, context = 'general' } = config;
     
-    // Server-side session validation (simulated for demo)
-    const serverValidation = await this.validateSessionWithServer(sessionId, token);
-    if (!serverValidation.isValid) {
-      return { isValid: false, reason: 'Server session validation failed', riskScore: 100 };
-    }
+    let sanitizedInput = input;
+    const threatTypes: string[] = [];
+    let riskLevel: SecurityValidationResult['riskLevel'] = 'low';
+    let blocked = false;
 
-    // Check session binding
-    const bindingValidation = await this.validateSessionBinding(sessionId, currentFingerprint);
-    if (!bindingValidation.isValid) {
-      riskScore += 60;
-      productionLogger.warn('Session binding validation failed', { sessionId: sessionId.substring(0, 8) });
-    }
-
-    // Enhanced timestamp validation
-    if (options.validateTimestamp) {
-      const timestampValidation = this.validateSessionTimestamp(token);
-      riskScore += timestampValidation.riskScore;
-    }
-
-    return {
-      isValid: riskScore < 50,
-      reason: riskScore >= 50 ? 'Enhanced demo session validation failed' : undefined,
-      riskScore
-    };
-  }
-
-  private async generateEnhancedFingerprint(): Promise<string> {
-    const components = [
-      navigator.userAgent,
-      navigator.language,
-      navigator.languages?.join(',') || '',
-      screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
-      new Date().getTimezoneOffset().toString(),
-      navigator.hardwareConcurrency?.toString() || '0',
-      navigator.cookieEnabled.toString(),
-      navigator.doNotTrack || 'unknown',
-      navigator.platform,
-      // Hardware entropy when available
-      (navigator as any).deviceMemory?.toString() || '0',
-      (navigator as any).connection?.effectiveType || 'unknown'
-    ];
-
-    // Add canvas fingerprint for additional entropy
-    const canvasFingerprint = await this.generateCanvasFingerprint();
-    components.push(canvasFingerprint);
-
-    const fingerprint = components.join('|');
-    const encoder = new TextEncoder();
-    const data = encoder.encode(fingerprint);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  private async generateCanvasFingerprint(): Promise<string> {
     try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return 'no-canvas';
-
-      canvas.width = 200;
-      canvas.height = 50;
-      
-      ctx.textBaseline = 'top';
-      ctx.font = '14px Arial';
-      ctx.fillStyle = '#f60';
-      ctx.fillRect(125, 1, 62, 20);
-      ctx.fillStyle = '#069';
-      ctx.fillText('Security fingerprint', 2, 15);
-      ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-      ctx.fillText('Enhanced validation', 4, 17);
-
-      const dataURL = canvas.toDataURL();
-      const encoder = new TextEncoder();
-      const data = encoder.encode(dataURL);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
-    } catch {
-      return 'canvas-error';
-    }
-  }
-
-  private async validateSessionWithServer(sessionId: string, token: string): Promise<SecurityValidationResult> {
-    // In a real implementation, this would make a server call
-    // For now, we'll simulate server-side validation
-    const isValidFormat = sessionId.length === 64 && token.length === 64;
-    const isValidChars = /^[a-f0-9]+$/.test(sessionId) && /^[a-f0-9]+$/.test(token);
-    
-    return {
-      isValid: isValidFormat && isValidChars,
-      riskScore: isValidFormat && isValidChars ? 0 : 100
-    };
-  }
-
-  private async validateSessionBinding(sessionId: string, fingerprint: string): Promise<SecurityValidationResult> {
-    // Check if session is properly bound to device
-    try {
-      const storedBinding = localStorage.getItem(`session_binding_${sessionId}`);
-      if (!storedBinding) {
-        // First time binding
-        localStorage.setItem(`session_binding_${sessionId}`, fingerprint);
-        return { isValid: true, riskScore: 0 };
+      // Length validation
+      if (input.length > maxLength) {
+        threatTypes.push('excessive_length');
+        sanitizedInput = input.substring(0, maxLength);
+        riskLevel = 'medium';
       }
 
-      const isMatching = storedBinding === fingerprint;
-      return {
-        isValid: isMatching,
-        riskScore: isMatching ? 0 : 70
+      // XSS Detection and Prevention
+      const xssPatterns = [
+        /<script[\s\S]*?>[\s\S]*?<\/script>/gi,
+        /javascript:/gi,
+        /on\w+\s*=/gi,
+        /<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi,
+        /<object[\s\S]*?>[\s\S]*?<\/object>/gi,
+        /<embed[\s\S]*?>/gi,
+        /vbscript:/gi,
+        /data:text\/html/gi
+      ];
+
+      for (const pattern of xssPatterns) {
+        if (pattern.test(input)) {
+          threatTypes.push('xss_attempt');
+          sanitizedInput = sanitizedInput.replace(pattern, '');
+          riskLevel = 'high';
+          if (strictMode) blocked = true;
+        }
+      }
+
+      // SQL Injection Detection
+      const sqlPatterns = [
+        /(\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b|\bDROP\b|\bCREATE\b|\bALTER\b)[\s\S]*?(\bFROM\b|\bINTO\b|\bSET\b|\bWHERE\b|\bTABLE\b)/gi,
+        /['"];?\s*(\bOR\b|\bAND\b)\s+['"]?\d+['"]?\s*=\s*['"]?\d+/gi,
+        /['"];?\s*(\bOR\b|\bAND\b)\s+['"]?1['"]?\s*=\s*['"]?1/gi,
+        /\/\*[\s\S]*?\*\//gi,
+        /--[\s\S]*?$/gm
+      ];
+
+      for (const pattern of sqlPatterns) {
+        if (pattern.test(input)) {
+          threatTypes.push('sql_injection');
+          sanitizedInput = sanitizedInput.replace(pattern, '');
+          riskLevel = 'critical';
+          blocked = true;
+        }
+      }
+
+      // Command Injection Detection
+      const commandPatterns = [
+        /[;&|`$(){}[\]]/g,
+        /\b(exec|eval|system|shell_exec|passthru|popen|proc_open)\b/gi
+      ];
+
+      for (const pattern of commandPatterns) {
+        if (pattern.test(input)) {
+          threatTypes.push('command_injection');
+          sanitizedInput = sanitizedInput.replace(pattern, '');
+          riskLevel = 'critical';
+          blocked = true;
+        }
+      }
+
+      // Path Traversal Detection
+      const pathTraversalPatterns = [
+        /\.\.[\/\\]/g,
+        /[\/\\]etc[\/\\]/gi,
+        /[\/\\]proc[\/\\]/gi,
+        /[\/\\]sys[\/\\]/gi
+      ];
+
+      for (const pattern of pathTraversalPatterns) {
+        if (pattern.test(input)) {
+          threatTypes.push('path_traversal');
+          sanitizedInput = sanitizedInput.replace(pattern, '');
+          riskLevel = 'high';
+          blocked = true;
+        }
+      }
+
+      // HTML sanitization if not allowed
+      if (!allowHtml) {
+        const htmlPattern = /<[^>]*>/g;
+        if (htmlPattern.test(sanitizedInput)) {
+          threatTypes.push('html_content');
+          sanitizedInput = sanitizedInput.replace(htmlPattern, '');
+          if (riskLevel === 'low') riskLevel = 'medium';
+        }
+      }
+
+      // Additional sanitization
+      sanitizedInput = sanitizedInput
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
+        .trim();
+
+      const result: SecurityValidationResult = {
+        isValid: threatTypes.length === 0,
+        hasThreats: threatTypes.length > 0,
+        threatTypes,
+        sanitizedInput,
+        riskLevel,
+        blocked
       };
-    } catch {
-      return { isValid: false, riskScore: 50 };
+
+      // Log validation results for high-risk inputs
+      if (riskLevel === 'high' || riskLevel === 'critical' || blocked) {
+        await this.logSecurityValidation(result, context);
+      }
+
+      return result;
+    } catch (error) {
+      productionLogger.error('Security validation failed', error, 'EnhancedSecurityValidation');
+      return {
+        isValid: false,
+        hasThreats: true,
+        threatTypes: ['validation_error'],
+        sanitizedInput: '',
+        riskLevel: 'critical',
+        blocked: true
+      };
     }
   }
 
-  private validateSessionTimestamp(token: string): { riskScore: number } {
+  async validateCMSContent(content: any, contentType: string): Promise<SecurityValidationResult> {
+    if (typeof content === 'string') {
+      return this.validateAndSanitizeInput(content, {
+        allowHtml: contentType === 'rich_text',
+        strictMode: true,
+        context: `cms_${contentType}`,
+        maxLength: contentType === 'title' ? 200 : 50000
+      });
+    }
+
+    if (typeof content === 'object' && content !== null) {
+      const results: SecurityValidationResult[] = [];
+      
+      for (const [key, value] of Object.entries(content)) {
+        if (typeof value === 'string') {
+          const result = await this.validateAndSanitizeInput(value, {
+            allowHtml: key.includes('content') || key.includes('body'),
+            context: `cms_${contentType}_${key}`,
+            maxLength: key === 'title' ? 200 : 10000
+          });
+          results.push(result);
+        }
+      }
+
+      // Aggregate results
+      const hasThreats = results.some(r => r.hasThreats);
+      const blocked = results.some(r => r.blocked);
+      const maxRiskLevel = this.getMaxRiskLevel(results.map(r => r.riskLevel));
+      
+      return {
+        isValid: !hasThreats,
+        hasThreats,
+        threatTypes: [...new Set(results.flatMap(r => r.threatTypes))],
+        sanitizedInput: JSON.stringify(content), // This would need more sophisticated handling
+        riskLevel: maxRiskLevel,
+        blocked
+      };
+    }
+
+    return {
+      isValid: true,
+      hasThreats: false,
+      threatTypes: [],
+      sanitizedInput: String(content),
+      riskLevel: 'low',
+      blocked: false
+    };
+  }
+
+  private async logSecurityValidation(result: SecurityValidationResult, context: string): Promise<void> {
     try {
-      // Basic timestamp validation for demo tokens
-      const tokenAge = Date.now() - parseInt(token.substring(0, 13), 16);
-      const maxAge = 60 * 60 * 1000; // 1 hour
+      const { data: user } = await supabase.auth.getUser();
       
-      if (tokenAge > maxAge) {
-        return { riskScore: 40 };
-      }
-      
-      return { riskScore: 0 };
+      await supabase.rpc('log_input_validation', {
+        p_user_id: user.user?.id || null,
+        p_context: context,
+        p_validation_result: {
+          isValid: result.isValid,
+          hasThreats: result.hasThreats,
+          threatTypes: result.threatTypes,
+          sanitizedInput: result.sanitizedInput,
+          riskLevel: result.riskLevel,
+          blocked: result.blocked
+        },
+        p_ip_address: await this.getUserIP()
+      });
+    } catch (error) {
+      productionLogger.error('Failed to log security validation', error, 'EnhancedSecurityValidation');
+    }
+  }
+
+  private getMaxRiskLevel(levels: SecurityValidationResult['riskLevel'][]): SecurityValidationResult['riskLevel'] {
+    const priority = { critical: 4, high: 3, medium: 2, low: 1 };
+    const maxLevel = levels.reduce((max, level) => 
+      priority[level] > priority[max] ? level : max, 'low'
+    );
+    return maxLevel;
+  }
+
+  private async getUserIP(): Promise<string> {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip || 'unknown';
     } catch {
-      return { riskScore: 20 };
+      return 'unknown';
     }
-  }
-
-  private async validateUserMetadata(user: any): Promise<SecurityValidationResult> {
-    let riskScore = 0;
-
-    // Check for suspicious user metadata
-    if (!user.email_confirmed_at && !user.phone_confirmed_at) {
-      riskScore += 20;
-    }
-
-    // Check for recent account creation
-    if (user.created_at) {
-      const accountAge = Date.now() - new Date(user.created_at).getTime();
-      const minAge = 5 * 60 * 1000; // 5 minutes
-      
-      if (accountAge < minAge) {
-        riskScore += 10;
-      }
-    }
-
-    return { isValid: riskScore < 30, riskScore };
-  }
-
-  private isValidJWT(token: string): boolean {
-    const parts = token.split('.');
-    return parts.length === 3 && parts.every(part => part.length > 0);
-  }
-
-  async performSecurityHealthCheck(): Promise<{
-    overall: 'healthy' | 'warning' | 'critical';
-    checks: Array<{ name: string; status: 'pass' | 'fail'; details?: string }>;
-  }> {
-    const checks = [];
-
-    // Check HTTPS
-    checks.push({
-      name: 'HTTPS Connection',
-      status: location.protocol === 'https:' ? 'pass' : 'fail',
-      details: location.protocol === 'https:' ? undefined : 'Application not served over HTTPS'
-    });
-
-    // Check secure context
-    checks.push({
-      name: 'Secure Context',
-      status: window.isSecureContext ? 'pass' : 'fail',
-      details: window.isSecureContext ? undefined : 'Not running in secure context'
-    });
-
-    // Check crypto availability
-    checks.push({
-      name: 'Crypto API',
-      status: 'crypto' in window && 'subtle' in crypto ? 'pass' : 'fail',
-      details: 'crypto' in window && 'subtle' in crypto ? undefined : 'Crypto API not available'
-    });
-
-    // Check CSP
-    const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-    checks.push({
-      name: 'Content Security Policy',
-      status: cspMeta ? 'pass' : 'fail',
-      details: cspMeta ? undefined : 'CSP not configured'
-    });
-
-    const failedChecks = checks.filter(check => check.status === 'fail').length;
-    const overall = failedChecks === 0 ? 'healthy' : failedChecks <= 2 ? 'warning' : 'critical';
-
-    return { overall, checks };
   }
 }
 

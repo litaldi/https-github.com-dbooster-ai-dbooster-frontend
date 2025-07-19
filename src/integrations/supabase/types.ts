@@ -250,6 +250,54 @@ export type Database = {
         }
         Relationships: []
       }
+      comprehensive_security_log: {
+        Row: {
+          affected_resource: string | null
+          auto_blocked: boolean | null
+          created_at: string
+          event_category: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          risk_score: number | null
+          session_id: string | null
+          severity: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          affected_resource?: string | null
+          auto_blocked?: boolean | null
+          created_at?: string
+          event_category?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          risk_score?: number | null
+          session_id?: string | null
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          affected_resource?: string | null
+          auto_blocked?: boolean | null
+          created_at?: string
+          event_category?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          risk_score?: number | null
+          session_id?: string | null
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       enhanced_session_tracking: {
         Row: {
           created_at: string
@@ -292,6 +340,42 @@ export type Database = {
           status?: string | null
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      input_validation_log: {
+        Row: {
+          created_at: string
+          id: string
+          input_context: string
+          ip_address: unknown | null
+          sanitized_input: string | null
+          threat_detected: boolean | null
+          threat_types: string[] | null
+          user_id: string | null
+          validation_result: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          input_context: string
+          ip_address?: unknown | null
+          sanitized_input?: string | null
+          threat_detected?: boolean | null
+          threat_types?: string[] | null
+          user_id?: string | null
+          validation_result: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          input_context?: string
+          ip_address?: unknown | null
+          sanitized_input?: string | null
+          threat_detected?: boolean | null
+          threat_types?: string[] | null
+          user_id?: string | null
+          validation_result?: Json
         }
         Relationships: []
       }
@@ -758,6 +842,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      enhanced_secure_role_assignment: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+          change_reason?: string
+          requester_ip?: unknown
+          user_agent_header?: string
+        }
+        Returns: Json
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -779,6 +873,15 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      log_input_validation: {
+        Args: {
+          p_user_id: string
+          p_context: string
+          p_validation_result: Json
+          p_ip_address?: unknown
+        }
+        Returns: undefined
       }
       secure_admin_bootstrap: {
         Args: {

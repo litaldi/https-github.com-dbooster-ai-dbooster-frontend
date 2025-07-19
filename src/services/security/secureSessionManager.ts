@@ -2,22 +2,21 @@
 import { supabase } from '@/integrations/supabase/client';
 import { productionLogger } from '@/utils/productionLogger';
 
-interface SessionValidationResult {
-  valid: boolean;
-  securityScore: number;
-  reason?: string;
-}
-
-interface SecureSession {
-  sessionId: string;
+export interface SecureSession {
+  id: string;
+  userId: string;
   deviceFingerprint: string;
-  expiresAt: Date;
+  ipAddress: string;
+  userAgent: string;
   securityScore: number;
+  isDemo: boolean;
+  expiresAt: Date;
+  encrypted: boolean;
 }
 
-class SecureSessionManager {
+export class SecureSessionManager {
   private static instance: SecureSessionManager;
-  private currentSession: SecureSession | null = null;
+  private encryptionKey: CryptoKey | null = null;
 
   static getInstance(): SecureSessionManager {
     if (!SecureSessionManager.instance) {
@@ -26,81 +25,93 @@ class SecureSessionManager {
     return SecureSessionManager.instance;
   }
 
-  async initializeSecureSession(userId: string): Promise<string | null> {
+  async initializeEncryption(): Promise<void> {
     try {
-      const deviceFingerprint = await this.generateDeviceFingerprint();
-      const sessionId = this.generateSecureSessionId();
-      
-      const { error } = await supabase
-        .from('secure_session_validation')
-        .insert({
-          user_id: userId,
-          session_id: sessionId,
-          device_fingerprint: deviceFingerprint,
-          ip_address: await this.getUserIP(),
-          user_agent: navigator.userAgent,
-          security_score: 80, // Initial score
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        });
-
-      if (error) {
-        productionLogger.error('Failed to initialize secure session', error, 'SecureSessionManager');
-        return null;
+      // Generate or retrieve encryption key for session data
+      const keyData = localStorage.getItem('session_key');
+      if (keyData) {
+        const keyBuffer = new Uint8Array(JSON.parse(keyData));
+        this.encryptionKey = await crypto.subtle.importKey(
+          'raw',
+          keyBuffer,
+          { name: 'AES-GCM' },
+          false,
+          ['encrypt', 'decrypt']
+        );
+      } else {
+        this.encryptionKey = await crypto.subtle.generateKey(
+          { name: 'AES-GCM', length: 256 },
+          true,
+          ['encrypt', 'decrypt']
+        );
+        
+        const keyBuffer = await crypto.subtle.exportKey('raw', this.encryptionKey);
+        localStorage.setItem('session_key', JSON.stringify(Array.from(new Uint8Array(keyBuffer))));
       }
-
-      this.currentSession = {
-        sessionId,
-        deviceFingerprint,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        securityScore: 80
-      };
-
-      productionLogger.info('Secure session initialized', {
-        sessionId: sessionId.substring(0, 8),
-        securityScore: 80
-      });
-
-      return sessionId;
     } catch (error) {
-      productionLogger.error('Error initializing secure session', error, 'SecureSessionManager');
-      return null;
+      productionLogger.error('Failed to initialize session encryption', error, 'SecureSessionManager');
     }
   }
 
-  async createSecureSession(userId: string, isDemo: boolean = false): Promise<string | null> {
+  async createSecureSession(userId: string, isDemo: boolean = false): Promise<string> {
     try {
-      const deviceFingerprint = await this.generateDeviceFingerprint();
-      const sessionId = this.generateSecureSessionId();
+      await this.initializeEncryption();
       
+      const sessionId = crypto.randomUUID();
+      const deviceFingerprint = await this.generateDeviceFingerprint();
+      const ipAddress = await this.getUserIP();
+      const userAgent = navigator.userAgent;
+      const securityScore = await this.calculateSecurityScore();
+      const expiresAt = new Date(Date.now() + (isDemo ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000));
+
+      // Create session in database
       const { error } = await supabase
         .from('enhanced_session_tracking')
         .insert({
           user_id: userId,
           session_id: sessionId,
           device_fingerprint: deviceFingerprint,
-          ip_address: await this.getUserIP(),
-          user_agent: navigator.userAgent,
+          ip_address: ipAddress,
+          user_agent: userAgent,
           is_demo: isDemo,
-          security_score: 80,
-          expires_at: new Date(Date.now() + (isDemo ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000)).toISOString()
+          security_score: securityScore,
+          expires_at: expiresAt.toISOString()
         });
 
       if (error) {
-        productionLogger.error('Failed to create secure session', error, 'SecureSessionManager');
-        return null;
+        throw error;
       }
 
-      this.currentSession = {
-        sessionId,
-        deviceFingerprint,
-        expiresAt: new Date(Date.now() + (isDemo ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000)),
-        securityScore: 80
-      };
+      // Store encrypted session data locally for demo sessions
+      if (isDemo && this.encryptionKey) {
+        const sessionData: SecureSession = {
+          id: sessionId,
+          userId,
+          deviceFingerprint,
+          ipAddress,
+          userAgent,
+          securityScore,
+          isDemo,
+          expiresAt,
+          encrypted: true
+        };
+
+        const encryptedData = await this.encryptSessionData(sessionData);
+        localStorage.setItem(`secure_session_${sessionId}`, encryptedData);
+      }
+
+      // Log session creation
+      await this.logSecurityEvent('secure_session_created', {
+        session_id: sessionId,
+        is_demo: isDemo,
+        security_score: securityScore,
+        device_fingerprint: deviceFingerprint.substring(0, 8) + '...'
+      });
 
       return sessionId;
     } catch (error) {
-      productionLogger.error('Error creating secure session', error, 'SecureSessionManager');
-      return null;
+      productionLogger.error('Failed to create secure session', error, 'SecureSessionManager');
+      throw error;
     }
   }
 
@@ -113,120 +124,148 @@ class SecureSessionManager {
       const ipAddress = await this.getUserIP();
       const userAgent = navigator.userAgent;
 
-      // Call the secure session validation edge function
-      const response = await fetch('/functions/v1/secure-session-validation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-        },
-        body: JSON.stringify({
-          sessionId,
-          deviceFingerprint,
-          ipAddress,
-          userAgent
-        })
+      // Validate session via Supabase function
+      const { data, error } = await supabase.rpc('validate_session_security', {
+        p_session_id: sessionId,
+        p_device_fingerprint: deviceFingerprint,
+        p_ip_address: ipAddress,
+        p_user_agent: userAgent
       });
 
-      if (!response.ok) {
+      if (error || !data?.valid) {
+        await this.logSecurityEvent('session_validation_failed', {
+          session_id: sessionId,
+          reason: data?.reason || 'Unknown validation failure'
+        });
         return false;
       }
 
-      const result = await response.json();
-      return result.valid || false;
+      // Additional client-side validation for demo sessions
+      const localSessionData = localStorage.getItem(`secure_session_${sessionId}`);
+      if (localSessionData) {
+        const decryptedSession = await this.decryptSessionData(localSessionData);
+        if (decryptedSession && new Date() > decryptedSession.expiresAt) {
+          localStorage.removeItem(`secure_session_${sessionId}`);
+          return false;
+        }
+      }
+
+      return true;
     } catch (error) {
       productionLogger.error('Session validation failed', error, 'SecureSessionManager');
       return false;
     }
   }
 
-  async validateCurrentSession(): Promise<SessionValidationResult> {
-    if (!this.currentSession) {
-      return {
-        valid: false,
-        securityScore: 0,
-        reason: 'No active session'
-      };
+  async invalidateSession(sessionId: string): Promise<void> {
+    try {
+      // Remove from database
+      await supabase
+        .from('enhanced_session_tracking')
+        .update({ status: 'invalidated' })
+        .eq('session_id', sessionId);
+
+      // Remove from local storage
+      localStorage.removeItem(`secure_session_${sessionId}`);
+
+      await this.logSecurityEvent('session_invalidated', { session_id: sessionId });
+    } catch (error) {
+      productionLogger.error('Failed to invalidate session', error, 'SecureSessionManager');
+    }
+  }
+
+  async rotateSessionKey(): Promise<void> {
+    try {
+      // Generate new encryption key
+      this.encryptionKey = await crypto.subtle.generateKey(
+        { name: 'AES-GCM', length: 256 },
+        true,
+        ['encrypt', 'decrypt']
+      );
+      
+      const keyBuffer = await crypto.subtle.exportKey('raw', this.encryptionKey);
+      localStorage.setItem('session_key', JSON.stringify(Array.from(new Uint8Array(keyBuffer))));
+
+      await this.logSecurityEvent('session_key_rotated', {});
+    } catch (error) {
+      productionLogger.error('Failed to rotate session key', error, 'SecureSessionManager');
+    }
+  }
+
+  private async encryptSessionData(sessionData: SecureSession): Promise<string> {
+    if (!this.encryptionKey) {
+      throw new Error('Encryption key not initialized');
     }
 
-    try {
-      const response = await fetch('/functions/v1/secure-session-validation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-        },
-        body: JSON.stringify({
-          sessionId: this.currentSession.sessionId,
-          deviceFingerprint: this.currentSession.deviceFingerprint
-        })
-      });
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encodedData = new TextEncoder().encode(JSON.stringify(sessionData));
+    
+    const encryptedData = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      this.encryptionKey,
+      encodedData
+    );
 
-      if (!response.ok) {
-        return {
-          valid: false,
-          securityScore: 0,
-          reason: 'Session validation failed'
-        };
+    return JSON.stringify({
+      iv: Array.from(iv),
+      data: Array.from(new Uint8Array(encryptedData))
+    });
+  }
+
+  private async decryptSessionData(encryptedData: string): Promise<SecureSession | null> {
+    try {
+      if (!this.encryptionKey) {
+        await this.initializeEncryption();
+        if (!this.encryptionKey) return null;
       }
 
-      const result = await response.json();
-      
-      // Update current session with new security score
-      this.currentSession.securityScore = result.security_score || 0;
+      const { iv, data } = JSON.parse(encryptedData);
+      const decryptedData = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: new Uint8Array(iv) },
+        this.encryptionKey,
+        new Uint8Array(data)
+      );
 
-      return {
-        valid: result.valid,
-        securityScore: result.security_score || 0,
-        reason: result.reason
-      };
+      const sessionData = JSON.parse(new TextDecoder().decode(decryptedData));
+      sessionData.expiresAt = new Date(sessionData.expiresAt);
+      
+      return sessionData;
     } catch (error) {
-      productionLogger.error('Session validation error', error, 'SecureSessionManager');
-      return {
-        valid: false,
-        securityScore: 0,
-        reason: 'Validation error'
-      };
+      productionLogger.error('Failed to decrypt session data', error, 'SecureSessionManager');
+      return null;
     }
   }
 
   private async generateDeviceFingerprint(): Promise<string> {
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.textBaseline = 'top';
-        ctx.font = '14px Arial';
-        ctx.fillText('Security fingerprint', 2, 2);
-      }
-      
-      const fingerprint = [
-        navigator.userAgent,
-        navigator.language,
-        screen.width + 'x' + screen.height,
-        Intl.DateTimeFormat().resolvedOptions().timeZone,
-        canvas.toDataURL()
-      ].join('|');
+    const components = [
+      navigator.userAgent,
+      navigator.language,
+      screen.width + 'x' + screen.height,
+      new Date().getTimezoneOffset().toString(),
+      navigator.hardwareConcurrency?.toString() || '0',
+      navigator.platform
+    ];
 
-      // Simple hash function
-      let hash = 0;
-      for (let i = 0; i < fingerprint.length; i++) {
-        const char = fingerprint.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-      }
-      
-      return Math.abs(hash).toString(16);
-    } catch (error) {
-      // Fallback fingerprint
-      return 'fallback_' + Date.now().toString(16);
-    }
+    const fingerprint = components.join('|');
+    const encoder = new TextEncoder();
+    const data = encoder.encode(fingerprint);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  private generateSecureSessionId(): string {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  private async calculateSecurityScore(): Promise<number> {
+    let score = 50; // Base score
+
+    // HTTPS bonus
+    if (location.protocol === 'https:') score += 20;
+
+    // Modern browser features
+    if ('crypto' in window && 'subtle' in crypto) score += 15;
+    if ('serviceWorker' in navigator) score += 10;
+    if (window.isSecureContext) score += 5;
+
+    return Math.min(score, 100);
   }
 
   private async getUserIP(): Promise<string> {
@@ -239,12 +278,22 @@ class SecureSessionManager {
     }
   }
 
-  getCurrentSession(): SecureSession | null {
-    return this.currentSession;
-  }
-
-  clearSession(): void {
-    this.currentSession = null;
+  private async logSecurityEvent(eventType: string, eventData: any): Promise<void> {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      await supabase.from('comprehensive_security_log').insert({
+        user_id: user.user?.id,
+        event_type: eventType,
+        event_category: 'session_management',
+        severity: 'info',
+        event_data: eventData,
+        ip_address: await this.getUserIP(),
+        user_agent: navigator.userAgent
+      });
+    } catch (error) {
+      productionLogger.error('Failed to log session security event', error, 'SecureSessionManager');
+    }
   }
 }
 
