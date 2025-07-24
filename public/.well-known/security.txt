@@ -1,0 +1,11 @@
+Contact: mailto:security@example.com
+Expires: 2025-12-31T23:59:59.000Z
+Encryption: https://example.com/pgp-key.txt
+Acknowledgments: https://example.com/security-acknowledgments
+Policy: https://example.com/security-policy
+Hiring: https://example.com/security-jobs
+
+# Security Disclosure Guidelines
+# Please report security vulnerabilities responsibly
+# Expected response time: 72 hours
+# We appreciate responsible disclosure and will acknowledge security researchers

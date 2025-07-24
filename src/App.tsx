@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import { NotificationProvider } from '@/components/ui/enhanced-notification-system';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { SecurityHeadersProvider } from '@/components/SecurityHeadersProvider';
 
 // Import production manager
 import { productionManager } from '@/utils/productionManager';
@@ -91,9 +92,10 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
-        <AuthProvider>
-          <NotificationProvider>
+      <SecurityHeadersProvider>
+        <ThemeProvider defaultTheme="system" storageKey="dbooster-ui-theme">
+          <AuthProvider>
+            <NotificationProvider>
             <Router>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
@@ -204,6 +206,7 @@ function App() {
           </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>
+      </SecurityHeadersProvider>
     </ErrorBoundary>
   );
 }
