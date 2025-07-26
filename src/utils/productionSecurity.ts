@@ -36,7 +36,7 @@ export class ProductionSecurityManager {
   private getProductionCSP(): string {
     return [
       "default-src 'self'",
-      "script-src 'self'",
+      "script-src 'self'", // Removed unsafe-eval for production
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: blob:",
@@ -44,7 +44,12 @@ export class ProductionSecurityManager {
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
-      "upgrade-insecure-requests"
+      "object-src 'none'",
+      "media-src 'self'",
+      "worker-src 'self'",
+      "manifest-src 'self'",
+      "upgrade-insecure-requests",
+      "block-all-mixed-content"
     ].join('; ');
   }
 
@@ -79,7 +84,12 @@ export class ProductionSecurityManager {
       { name: 'X-Frame-Options', content: 'DENY' },
       { name: 'X-XSS-Protection', content: '1; mode=block' },
       { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
-      { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(), payment=()' }
+      { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), serial=()' },
+      { name: 'Strict-Transport-Security', content: 'max-age=31536000; includeSubDomains; preload' },
+      { name: 'X-Permitted-Cross-Domain-Policies', content: 'none' },
+      { name: 'Cross-Origin-Embedder-Policy', content: 'require-corp' },
+      { name: 'Cross-Origin-Opener-Policy', content: 'same-origin' },
+      { name: 'Cross-Origin-Resource-Policy', content: 'same-origin' }
     ];
 
     securityTags.forEach(({ name, content }) => {

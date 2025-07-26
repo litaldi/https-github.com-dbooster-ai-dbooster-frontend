@@ -9,19 +9,23 @@ export const SecurityHeadersProvider: React.FC<SecurityHeadersProviderProps> = (
     // Generate nonce for inline scripts
     const nonce = generateNonce();
     
-    // Apply enhanced Content Security Policy
+    // Apply enhanced Content Security Policy with nonce-based security
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: https:",
-      "font-src 'self' https://fonts.gstatic.com",
+      `script-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`, // Removed unsafe-inline
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // Keep unsafe-inline for styles temporarily
+      "img-src 'self' data: https: blob:",
+      "font-src 'self' https://fonts.gstatic.com data:",
       "connect-src 'self' https://sxcbpmqsbcpsljwwwwyv.supabase.co wss://sxcbpmqsbcpsljwwwwyv.supabase.co",
       "object-src 'none'",
+      "media-src 'self'",
+      "worker-src 'self'",
+      "manifest-src 'self'",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
-      "upgrade-insecure-requests"
+      "upgrade-insecure-requests",
+      "block-all-mixed-content"
     ].join('; ');
 
     // Remove existing security headers to avoid duplicates
@@ -34,7 +38,7 @@ export const SecurityHeadersProvider: React.FC<SecurityHeadersProviderProps> = (
       { name: 'X-Frame-Options', content: 'DENY' },
       { name: 'X-XSS-Protection', content: '1; mode=block' },
       { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
-      { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=()' },
+      { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), serial=()' },
       { name: 'Strict-Transport-Security', content: 'max-age=31536000; includeSubDomains; preload' },
       { name: 'X-Permitted-Cross-Domain-Policies', content: 'none' },
       { name: 'X-DNS-Prefetch-Control', content: 'off' },

@@ -247,21 +247,42 @@ export class PasswordSecurityService {
 
   private async checkPasswordCompromise(password: string): Promise<boolean> {
     try {
-      // Create SHA-1 hash of password
+      // Create SHA-1 hash of password for HaveIBeenPwned API
       const encoder = new TextEncoder();
       const data = encoder.encode(password);
       const hashBuffer = await crypto.subtle.digest('SHA-1', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-      // Check against known leaked password hashes
-      // In production, you might want to use the HaveIBeenPwned API
-      return LEAKED_PASSWORD_HASHES.has(hashHex);
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+      
+      const prefix = hashHex.substring(0, 5);
+      const suffix = hashHex.substring(5);
+      
+      // Use HaveIBeenPwned API to check for password breaches
+      const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+      if (!response.ok) {
+        // Fallback to local check if API is unavailable
+        return LEAKED_PASSWORD_HASHES.has(hashHex.toLowerCase());
+      }
+      
+      const text = await response.text();
+      return text.includes(suffix);
 
     } catch (error) {
       productionLogger.error('Password compromise check failed', error, 'PasswordSecurityService');
-      return false;
+      // Fallback to local check
+      return this.checkLocalPasswordCompromise(password);
     }
+  }
+
+  private checkLocalPasswordCompromise(password: string): boolean {
+    // Local fallback for common compromised passwords
+    const commonCompromisedPasswords = [
+      'password', '123456', 'password123', 'admin', 'qwerty', 
+      'letmein', 'welcome', 'monkey', '1234567890', 'abc123',
+      'password1', 'iloveyou', 'princess', 'rockyou', 'football'
+    ];
+    
+    return commonCompromisedPasswords.includes(password.toLowerCase());
   }
 
   private getStrengthLevel(score: number): PasswordStrengthResult['strength'] {

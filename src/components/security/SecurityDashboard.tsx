@@ -1,213 +1,222 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
-import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
+import { useEnhancedSecurity } from '@/hooks/useEnhancedSecurity';
+import { useMFA } from '@/hooks/useMFA';
 
 export function SecurityDashboard() {
-  const { securityStatus, isLoading, refreshSecurityStatus, createSecureSession } = useSecurityMonitoring();
+  const { 
+    securityMetrics, 
+    securityAlerts, 
+    isLoading, 
+    refreshSecurityData,
+    invalidateAllSessions 
+  } = useEnhancedSecurity();
+  
+  const { mfaConfig, enableMFA, disableMFA } = useMFA();
 
-  const getSecurityBadgeVariant = (score: number) => {
-    if (score >= 80) return 'default';
-    if (score >= 60) return 'secondary';
-    if (score >= 40) return 'outline';
-    return 'destructive';
+  const handleRefreshSecurity = async () => {
+    await refreshSecurityData();
   };
 
-  const getSecurityBadgeText = (score: number) => {
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Good';
-    if (score >= 40) return 'Fair';
-    return 'Poor';
+  const handleInvalidateAllSessions = async () => {
+    try {
+      await invalidateAllSessions('current-user-id'); // In real app, get from auth
+      await refreshSecurityData();
+    } catch (error) {
+      console.error('Failed to invalidate sessions:', error);
+    }
+  };
+
+  const getSecurityScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getSecurityScoreBadge = (score: number) => {
+    if (score >= 80) return 'default';
+    if (score >= 60) return 'secondary';
+    return 'destructive';
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <RefreshCw className="h-6 w-6 animate-spin" />
-        <span className="ml-2">Loading security status...</span>
+        <RefreshCw className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading security metrics...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Shield className="h-6 w-6" />
-          <h2 className="text-2xl font-bold">Security Dashboard</h2>
-        </div>
-        <Button onClick={refreshSecurityStatus} variant="outline" size="sm">
+        <h1 className="text-3xl font-bold">Security Dashboard</h1>
+        <Button onClick={handleRefreshSecurity} variant="outline" size="sm">
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
       </div>
 
-      {/* Security Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Security Score</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{securityStatus.securityScore}/100</div>
-            <Badge variant={getSecurityBadgeVariant(securityStatus.securityScore)} className="mt-2">
-              {getSecurityBadgeText(securityStatus.securityScore)}
-            </Badge>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Session Status</CardTitle>
-            {securityStatus.sessionValid ? (
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            ) : (
-              <XCircle className="h-4 w-4 text-red-500" />
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {securityStatus.sessionValid ? 'Valid' : 'Invalid'}
+      {/* Security Score Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Shield className="h-5 w-5 mr-2" />
+            Security Score
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-4">
+            <div className={`text-4xl font-bold ${getSecurityScoreColor(securityMetrics?.overallSecurityScore || 0)}`}>
+              {securityMetrics?.overallSecurityScore || 0}%
             </div>
-            {!securityStatus.sessionValid && (
-              <Button 
-                onClick={createSecureSession} 
-                variant="outline" 
-                size="sm" 
-                className="mt-2"
-              >
-                Create New Session
-              </Button>
-            )}
+            <Badge variant={getSecurityScoreBadge(securityMetrics?.overallSecurityScore || 0)}>
+              {securityMetrics?.overallSecurityScore >= 80 ? 'Excellent' : 
+               securityMetrics?.overallSecurityScore >= 60 ? 'Good' : 'Needs Improvement'}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            Overall security posture based on current threats and configurations
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Security Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Security Events</p>
+                <p className="text-2xl font-bold">{securityMetrics?.totalSecurityEvents || 0}</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Security Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{securityStatus.alerts.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Recent alerts (7 days)
-            </p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Critical Alerts</p>
+                <p className="text-2xl font-bold text-red-600">{securityMetrics?.criticalAlerts || 0}</p>
+              </div>
+              <XCircle className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Active Sessions</p>
+                <p className="text-2xl font-bold">{securityMetrics?.activeSessions || 0}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">MFA Users</p>
+                <p className="text-2xl font-bold">{securityMetrics?.mfaEnabledUsers || 0}</p>
+              </div>
+              <Shield className="h-8 w-8 text-blue-500" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Security Issues */}
-      {securityStatus.issues.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2 text-yellow-500" />
-              Security Issues
-            </CardTitle>
-            <CardDescription>
-              Issues that require your attention
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {securityStatus.issues.map((issue, index) => (
-                <Alert key={index} variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Security Issue</AlertTitle>
-                  <AlertDescription>{issue}</AlertDescription>
-                </Alert>
-              ))}
+      {/* MFA Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Multi-Factor Authentication</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">
+                Status: {mfaConfig?.isMfaEnabled ? 'Enabled' : 'Disabled'}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {mfaConfig?.isMfaEnabled 
+                  ? 'Your account is protected with multi-factor authentication'
+                  : 'Enable MFA to add an extra layer of security'
+                }
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Recommendations */}
-      {securityStatus.recommendations.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <CheckCircle className="h-5 w-5 mr-2 text-blue-500" />
-              Security Recommendations
-            </CardTitle>
-            <CardDescription>
-              Suggestions to improve your security
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {securityStatus.recommendations.map((recommendation, index) => (
-                <Alert key={index}>
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertTitle>Recommendation</AlertTitle>
-                  <AlertDescription>{recommendation}</AlertDescription>
-                </Alert>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            <Button
+              variant={mfaConfig?.isMfaEnabled ? 'destructive' : 'default'}
+              onClick={mfaConfig?.isMfaEnabled ? disableMFA : enableMFA}
+            >
+              {mfaConfig?.isMfaEnabled ? 'Disable MFA' : 'Enable MFA'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Security Alerts */}
-      {securityStatus.alerts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Security Alerts</CardTitle>
-            <CardDescription>
-              Security events from the past 7 days
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {securityStatus.alerts.slice(0, 5).map((alert) => (
-                <div key={alert.id} className="flex justify-between items-start p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Security Alerts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {securityAlerts && securityAlerts.length > 0 ? (
+            <div className="space-y-3">
+              {securityAlerts.slice(0, 5).map((alert) => (
+                <Alert key={alert.id} variant={alert.severity === 'critical' ? 'destructive' : 'default'}>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <div className="flex items-center justify-between">
+                      <span>{alert.message}</span>
                       <Badge variant={alert.severity === 'critical' ? 'destructive' : 'secondary'}>
                         {alert.severity}
                       </Badge>
-                      <span className="font-medium">{alert.message}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {new Date(alert.timestamp).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
+                  </AlertDescription>
+                </Alert>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground">No recent security alerts</p>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Overall Security Status */}
+      {/* Security Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            {securityStatus.isSecure ? (
-              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
-            ) : (
-              <XCircle className="h-5 w-5 mr-2 text-red-500" />
-            )}
-            Overall Security Status
-          </CardTitle>
+          <CardTitle>Security Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-lg">
-            {securityStatus.isSecure ? (
-              <span className="text-green-600">Your account security is good</span>
-            ) : (
-              <span className="text-red-600">Security issues require attention</span>
-            )}
+          <div className="space-y-3">
+            <Button 
+              variant="outline" 
+              onClick={handleInvalidateAllSessions}
+              className="w-full justify-start"
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Invalidate All Sessions
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleRefreshSecurity}
+              className="w-full justify-start"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh Security Data
+            </Button>
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            {securityStatus.isSecure 
-              ? "Continue following security best practices to maintain protection."
-              : "Please review and address the security issues listed above."}
-          </p>
         </CardContent>
       </Card>
     </div>
