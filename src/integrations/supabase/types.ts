@@ -846,6 +846,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_mfa_config: {
+        Row: {
+          backup_codes: string[] | null
+          created_at: string | null
+          id: string
+          is_mfa_enabled: boolean | null
+          recovery_codes_used: number | null
+          totp_secret: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          created_at?: string | null
+          id?: string
+          is_mfa_enabled?: boolean | null
+          recovery_codes_used?: number | null
+          totp_secret?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[] | null
+          created_at?: string | null
+          id?: string
+          is_mfa_enabled?: boolean | null
+          recovery_codes_used?: number | null
+          totp_secret?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string | null
