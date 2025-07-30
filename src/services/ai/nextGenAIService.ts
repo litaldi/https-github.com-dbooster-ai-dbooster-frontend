@@ -118,10 +118,8 @@ class NextGenAIService extends AIServiceCore {
   }
 
   protected async getStoredAPIKey(): Promise<string | null> {
-    // Check for OpenAI API key in various sources
-    return localStorage.getItem('openai_api_key') || 
-           sessionStorage.getItem('openai_api_key') || 
-           null;
+    // SECURITY: Client-side API keys removed for security. Use secure edge functions instead.
+    throw new Error('Client-side API key access disabled for security. Use secureApiKeyManager instead.');
   }
 
   protected async testConnection(): Promise<void> {
@@ -137,35 +135,24 @@ class NextGenAIService extends AIServiceCore {
   }
 
   protected async callAI(prompt: string): Promise<string> {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
+    // SECURITY: Use secure edge function instead of direct API calls
+    const { secureApiKeyManager } = await import('@/services/security/secureApiKeyManager');
+    
+    const result = await secureApiKeyManager.makeChatRequest([
+      {
+        role: 'system',
+        content: 'You are an expert database engineer and SQL specialist. Provide accurate, optimized solutions with detailed explanations.'
       },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert database engineer and SQL specialist. Provide accurate, optimized solutions with detailed explanations.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: this.config.temperature,
-        max_tokens: this.config.maxTokens,
-      }),
+      {
+        role: 'user',
+        content: prompt
+      }
+    ], {
+      temperature: this.config.temperature,
+      max_tokens: this.config.maxTokens,
     });
 
-    if (!response.ok) {
-      throw new Error(`AI service error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
+    return result.content;
   }
 
   async convertNaturalLanguageToSQL(request: SQLConversionRequest): Promise<ConversionResult> {

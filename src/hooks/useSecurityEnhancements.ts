@@ -1,9 +1,10 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { enhancedRateLimiting } from '@/services/security/enhancedRateLimiting';
 import { enhancedDemoSecurity } from '@/services/security/enhancedDemoSecurity';
 import { csrfProtection } from '@/services/security/csrfProtection';
 import { secureStorageService } from '@/services/security/secureStorageService';
+import { enhancedCSPViolationHandler } from '@/services/security/enhancedCSPViolationHandler';
+import { adminSecurityMonitor } from '@/services/security/adminSecurityMonitor';
 
 interface SecurityEnhancementsStatus {
   rateLimiting: {
@@ -22,6 +23,14 @@ interface SecurityEnhancementsStatus {
     enabled: boolean;
     encrypted: boolean;
   };
+  cspViolationMonitoring: {
+    enabled: boolean;
+    violationStats: any;
+  };
+  adminSecurityMonitoring: {
+    enabled: boolean;
+    recentAlerts: number;
+  };
 }
 
 export function useSecurityEnhancements() {
@@ -29,19 +38,27 @@ export function useSecurityEnhancements() {
     rateLimiting: { enabled: false, stats: {} },
     demoSecurity: { enabled: false, activeSessions: 0 },
     csrfProtection: { enabled: false, currentToken: '' },
-    secureStorage: { enabled: false, encrypted: false }
+    secureStorage: { enabled: false, encrypted: false },
+    cspViolationMonitoring: { enabled: false, violationStats: {} },
+    adminSecurityMonitoring: { enabled: false, recentAlerts: 0 }
   });
 
-  const refreshStatus = useCallback(() => {
+  const refreshStatus = useCallback(async () => {
     try {
       // Rate limiting status
       const rateLimitStats = enhancedRateLimiting.getStats();
       
-      // Demo security status - use the correct method name
+      // Demo security status
       const demoStats = enhancedDemoSecurity.getDemoSessionStats();
       
       // CSRF protection status
       const csrfToken = csrfProtection.getCSRFToken();
+      
+      // CSP violation monitoring stats
+      const cspStats = enhancedCSPViolationHandler.getViolationStats();
+      
+      // Admin security monitoring stats
+      const adminAlerts = await adminSecurityMonitor.getRecentAlerts(10);
       
       setStatus({
         rateLimiting: {
@@ -59,6 +76,14 @@ export function useSecurityEnhancements() {
         secureStorage: {
           enabled: true,
           encrypted: true // Our secure storage uses AES-GCM encryption
+        },
+        cspViolationMonitoring: {
+          enabled: true,
+          violationStats: cspStats
+        },
+        adminSecurityMonitoring: {
+          enabled: true,
+          recentAlerts: adminAlerts.length
         }
       });
     } catch (error) {
@@ -67,6 +92,9 @@ export function useSecurityEnhancements() {
   }, []);
 
   useEffect(() => {
+    // Initialize security monitoring
+    adminSecurityMonitor.initializeMonitoring();
+    
     refreshStatus();
     
     // Refresh status every 30 seconds
@@ -87,8 +115,8 @@ export function useSecurityEnhancements() {
     return csrfProtection.validateCSRFToken(token);
   }, []);
 
-  const storeSecureData = useCallback(async (key: string, data: any, ttl?: number) => {
-    return secureStorageService.setSecureItem(key, data); // Fixed - removed ttl parameter as it's not supported
+  const storeSecureData = useCallback(async (key: string, data: any) => {
+    return secureStorageService.setSecureItem(key, data);
   }, []);
 
   const getSecureData = useCallback(async (key: string) => {
@@ -99,6 +127,14 @@ export function useSecurityEnhancements() {
     secureStorageService.removeSecureItem(key);
   }, []);
 
+  const getCSPViolationStats = useCallback(() => {
+    return enhancedCSPViolationHandler.getViolationStats();
+  }, []);
+
+  const acknowledgeAdminAlert = useCallback(async (alertId: string, userId: string) => {
+    return adminSecurityMonitor.acknowledgeAlert(alertId, userId);
+  }, []);
+
   return {
     status,
     refreshStatus,
@@ -107,6 +143,8 @@ export function useSecurityEnhancements() {
     validateCSRFToken,
     storeSecureData,
     getSecureData,
-    clearSecureData
+    clearSecureData,
+    getCSPViolationStats,
+    acknowledgeAdminAlert
   };
 }

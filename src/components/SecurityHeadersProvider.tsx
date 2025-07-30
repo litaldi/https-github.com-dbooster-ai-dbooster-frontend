@@ -6,6 +6,11 @@ interface SecurityHeadersProviderProps {
 
 export const SecurityHeadersProvider: React.FC<SecurityHeadersProviderProps> = ({ children }) => {
   useEffect(() => {
+    // Initialize enhanced CSP violation handler
+    import('@/services/security/enhancedCSPViolationHandler').then(({ enhancedCSPViolationHandler }) => {
+      enhancedCSPViolationHandler.setupEnhancedCSPMonitoring();
+    });
+
     // Generate nonce for inline scripts
     const nonce = generateNonce();
     

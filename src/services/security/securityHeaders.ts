@@ -13,7 +13,7 @@ export class SecurityHeaders {
     // Content Security Policy - strict policy
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com",
+      "script-src 'self' 'nonce-${this.generateNonce()}' https://cdn.jsdelivr.net https://unpkg.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: https: blob:",
@@ -59,8 +59,15 @@ export class SecurityHeaders {
   };
 
   applyToDocument(): void {
+    // Generate nonce for this session
+    const nonce = this.generateNonce();
+    const cspWithNonce = this.SECURITY_HEADERS['Content-Security-Policy'].replace(
+      "'nonce-${this.generateNonce()}'", 
+      `'nonce-${nonce}'`
+    );
+    
     // Apply meta tags for security headers that can be set client-side
-    this.setMetaTag('Content-Security-Policy', this.SECURITY_HEADERS['Content-Security-Policy']);
+    this.setMetaTag('Content-Security-Policy', cspWithNonce);
     this.setMetaTag('X-Content-Type-Options', this.SECURITY_HEADERS['X-Content-Type-Options']);
     this.setMetaTag('X-Frame-Options', this.SECURITY_HEADERS['X-Frame-Options']);
     this.setMetaTag('Referrer-Policy', this.SECURITY_HEADERS['Referrer-Policy']);
@@ -183,6 +190,12 @@ export class SecurityHeaders {
         reason: 'Invalid URL format'
       };
     }
+  }
+
+  private generateNonce(): string {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 }
 
