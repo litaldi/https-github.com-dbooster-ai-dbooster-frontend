@@ -1,4 +1,5 @@
 import { productionLogger } from '@/utils/productionLogger';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ChatMessage {
   id: string;
@@ -25,15 +26,9 @@ class AdvancedChatService {
   private conversationHistory: ChatMessage[] = [];
   private apiKey: string | null = null;
 
-  async initialize(apiKey?: string): Promise<boolean> {
+  async initialize(): Promise<boolean> {
     try {
-      this.apiKey = apiKey || localStorage.getItem('openai_api_key');
-      
-      if (!this.apiKey) {
-        throw new Error('OpenAI API key required');
-      }
-
-      await this.testConnection();
+      // No longer store API keys client-side - use edge function instead
       return true;
     } catch (error) {
       productionLogger.error('Advanced chat service initialization failed', error, 'AdvancedChatService');
@@ -345,10 +340,7 @@ The query appears to be ${this.getPerformanceRating(args.sql_query)} optimized.`
     this.conversationHistory = [];
   }
 
-  setApiKey(apiKey: string): void {
-    this.apiKey = apiKey;
-    localStorage.setItem('openai_api_key', apiKey);
-  }
+  // API key management removed for security - now handled server-side
 }
 
 export const advancedChatService = new AdvancedChatService();

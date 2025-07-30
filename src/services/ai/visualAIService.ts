@@ -1,5 +1,6 @@
 
 import { productionLogger } from '@/utils/productionLogger';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface VisualAnalysisResult {
   description: string;
@@ -25,14 +26,9 @@ export interface ScreenshotAnalysisOptions {
 class VisualAIService {
   private apiKey: string | null = null;
 
-  async initialize(apiKey?: string): Promise<boolean> {
+  async initialize(): Promise<boolean> {
     try {
-      this.apiKey = apiKey || localStorage.getItem('openai_api_key');
-      
-      if (!this.apiKey) {
-        throw new Error('OpenAI API key required for visual AI features');
-      }
-
+      // No longer store API keys client-side - use edge function instead
       return true;
     } catch (error) {
       productionLogger.error('Visual AI service initialization failed', error, 'VisualAIService');
@@ -345,10 +341,7 @@ class VisualAIService {
     }
   }
 
-  setApiKey(apiKey: string): void {
-    this.apiKey = apiKey;
-    localStorage.setItem('openai_api_key', apiKey);
-  }
+  // API key management removed for security - now handled server-side
 }
 
 export const visualAIService = new VisualAIService();

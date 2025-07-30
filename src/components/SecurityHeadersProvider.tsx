@@ -58,7 +58,7 @@ export const SecurityHeadersProvider: React.FC<SecurityHeadersProviderProps> = (
     // Add security reporting endpoint
     const reportingMeta = document.createElement('meta');
     reportingMeta.httpEquiv = 'Content-Security-Policy-Report-Only';
-    reportingMeta.content = `${csp}; report-uri /api/security/csp-violation`;
+    reportingMeta.content = `${csp}; report-uri https://sxcbpmqsbcpsljwwwwyv.supabase.co/functions/v1/csp-violation-report`;
     reportingMeta.setAttribute('data-security-header', 'true');
     document.head.appendChild(reportingMeta);
 
@@ -138,17 +138,19 @@ function checkForSecurityThreats() {
     if (pattern.test(bodyText)) {
       console.error('Potential XSS pattern detected');
       
-      // Report to security endpoint
-      fetch('/api/security/xss-detection', {
+      // Report to security endpoint via Supabase function
+      fetch('https://sxcbpmqsbcpsljwwwwyv.supabase.co/functions/v1/csp-violation-report', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          pattern: pattern.source,
-          timestamp: new Date().toISOString(),
-          userAgent: navigator.userAgent,
-          url: window.location.href
+          'csp-report': {
+            'blocked-uri': 'xss-pattern-detected',
+            'document-uri': window.location.href,
+            'violated-directive': 'xss-protection',
+            'original-policy': pattern.source
+          }
         })
       }).catch(err => console.error('Failed to report XSS detection:', err));
     }
