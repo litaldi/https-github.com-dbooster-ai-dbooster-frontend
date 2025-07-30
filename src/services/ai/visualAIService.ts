@@ -37,51 +37,21 @@ class VisualAIService {
   }
 
   async analyzeScreenshot(options: ScreenshotAnalysisOptions): Promise<VisualAnalysisResult> {
-    if (!this.apiKey) {
-      throw new Error('Visual AI service not initialized');
-    }
-
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-4-vision-preview',
-          messages: [
-            {
-              role: 'system',
-              content: this.getSystemPromptForAnalysis(options.analysisType)
-            },
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `Analyze this ${options.analysisType} image and provide detailed insights. ${options.context || ''}`
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: options.imageData
-                  }
-                }
-              ]
-            }
-          ],
-          max_tokens: 1000
-        })
+      // Use secure edge function instead of direct API call
+      const { data, error } = await supabase.functions.invoke('secure-ai-visual', {
+        body: {
+          image: options.imageData,
+          prompt: `Analyze this ${options.analysisType} image and provide detailed insights. ${options.context || ''}`,
+          analysisType: options.analysisType
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Visual analysis request failed');
+      if (error) {
+        throw new Error(`Visual analysis request failed: ${error.message}`);
       }
 
-      const data = await response.json();
       const analysis = data.choices[0].message.content;
-
       return this.parseVisualAnalysis(analysis, options.analysisType);
 
     } catch (error) {

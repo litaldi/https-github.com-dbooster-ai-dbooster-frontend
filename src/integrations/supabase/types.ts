@@ -379,6 +379,42 @@ export type Database = {
         }
         Relationships: []
       }
+      persistent_rate_limits: {
+        Row: {
+          action_type: string
+          attempt_count: number | null
+          blocked_until: string | null
+          created_at: string | null
+          id: string
+          identifier: string
+          metadata: Json | null
+          updated_at: string | null
+          window_start: string | null
+        }
+        Insert: {
+          action_type: string
+          attempt_count?: number | null
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          identifier: string
+          metadata?: Json | null
+          updated_at?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          action_type?: string
+          attempt_count?: number | null
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          identifier?: string
+          metadata?: Json | null
+          updated_at?: string | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       privilege_escalation_attempts: {
         Row: {
           attempted_role: Database["public"]["Enums"]["app_role"] | null
@@ -729,6 +765,51 @@ export type Database = {
         }
         Relationships: []
       }
+      secure_user_sessions: {
+        Row: {
+          created_at: string
+          device_fingerprint: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          last_activity: string | null
+          metadata: Json | null
+          security_score: number | null
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity?: string | null
+          metadata?: Json | null
+          security_score?: number | null
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity?: string | null
+          metadata?: Json | null
+          security_score?: number | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           created_at: string | null
@@ -879,6 +960,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_password_history: {
+        Row: {
+          breach_source: string | null
+          created_at: string
+          id: string
+          is_compromised: boolean | null
+          password_hash: string
+          user_id: string
+        }
+        Insert: {
+          breach_source?: string | null
+          created_at?: string
+          id?: string
+          is_compromised?: boolean | null
+          password_hash: string
+          user_id: string
+        }
+        Update: {
+          breach_source?: string | null
+          created_at?: string
+          id?: string
+          is_compromised?: boolean | null
+          password_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string | null
@@ -919,6 +1027,10 @@ export type Database = {
           change_reason?: string
         }
         Returns: boolean
+      }
+      cleanup_expired_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       enhanced_secure_role_assignment: {
         Args: {
@@ -995,6 +1107,14 @@ export type Database = {
           change_reason?: string
           requester_ip?: unknown
           user_agent_header?: string
+        }
+        Returns: Json
+      }
+      validate_secure_session: {
+        Args: {
+          p_session_token: string
+          p_device_fingerprint?: string
+          p_ip_address?: unknown
         }
         Returns: Json
       }

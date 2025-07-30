@@ -43,8 +43,6 @@ export function EnhancedAIChatAssistant() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,42 +53,21 @@ export function EnhancedAIChatAssistant() {
   }, [messages]);
 
   useEffect(() => {
-    // Check if API key exists
-    const storedApiKey = localStorage.getItem('openai_api_key');
-    if (!storedApiKey) {
-      setShowApiKeyInput(true);
-    } else {
-      setApiKey(storedApiKey);
-      initializeServices(storedApiKey);
-    }
+    // Services are now secure - no client-side API key needed
+    initializeServices();
   }, []);
 
-  const initializeServices = async (key: string) => {
+  const initializeServices = async () => {
     try {
-      await advancedChatService.initialize(key);
-      await visualAIService.initialize(key);
+      await advancedChatService.initialize();
+      await visualAIService.initialize();
       toast.success('AI services initialized successfully!');
     } catch (error) {
       toast.error('Failed to initialize AI services');
-      setShowApiKeyInput(true);
     }
   };
 
-  const handleApiKeySubmit = async () => {
-    if (!apiKey.trim()) {
-      toast.error('Please enter a valid API key');
-      return;
-    }
-
-    try {
-      await initializeServices(apiKey);
-      setShowApiKeyInput(false);
-      advancedChatService.setApiKey(apiKey);
-      visualAIService.setApiKey(apiKey);
-    } catch (error) {
-      toast.error('Invalid API key or connection failed');
-    }
-  };
+  // API key management removed - now handled securely server-side
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isProcessing) return;
@@ -264,32 +241,7 @@ export function EnhancedAIChatAssistant() {
     }
   };
 
-  if (showApiKeyInput) {
-    return (
-      <Card className="h-[600px] flex flex-col items-center justify-center">
-        <CardContent className="text-center space-y-4">
-          <Brain className="h-12 w-12 text-primary mx-auto" />
-          <h3 className="text-lg font-semibold">AI Services Setup</h3>
-          <p className="text-muted-foreground">
-            Enter your OpenAI API key to enable advanced AI features
-          </p>
-          <div className="flex gap-2 max-w-md">
-            <Input
-              type="password"
-              placeholder="sk-..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleApiKeySubmit()}
-            />
-            <Button onClick={handleApiKeySubmit}>
-              <Zap className="h-4 w-4 mr-2" />
-              Connect
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Removed API key input UI - services are now secure
 
   return (
     <Card className="h-[700px] flex flex-col">

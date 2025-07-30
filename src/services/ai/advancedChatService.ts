@@ -37,23 +37,11 @@ class AdvancedChatService {
   }
 
   private async testConnection(): Promise<void> {
-    const response = await fetch('https://api.openai.com/v1/models', {
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Invalid API key or connection failed');
-    }
+    // Connection testing now handled by edge function
+    return;
   }
 
   async chatWithContext(message: string, context?: any): Promise<ChatResponse> {
-    if (!this.apiKey) {
-      throw new Error('Chat service not initialized');
-    }
-
     try {
       const systemPrompt = this.buildSystemPrompt(context);
       const messages = [
@@ -62,27 +50,20 @@ class AdvancedChatService {
         { role: 'user', content: message }
       ];
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
+      // Use secure edge function instead of direct API call
+      const { data, error } = await supabase.functions.invoke('secure-ai-chat', {
+        body: {
           messages,
-          temperature: 0.7,
-          max_tokens: 2000,
-          functions: this.getFunctionDefinitions(),
-          function_call: 'auto'
-        })
+          model: 'gpt-4o-mini',
+          maxTokens: 2000,
+          temperature: 0.7
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Chat API request failed');
+      if (error) {
+        throw new Error(`Secure chat request failed: ${error.message}`);
       }
 
-      const data = await response.json();
       const assistantMessage = data.choices[0].message;
 
       // Handle function calls
