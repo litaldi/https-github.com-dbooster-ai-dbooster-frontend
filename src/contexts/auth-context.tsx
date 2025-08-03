@@ -18,7 +18,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
         productionLogger.info('Auth state changed', { event }, 'AuthContext');
         
         // Only update state if not in demo mode or if signing out

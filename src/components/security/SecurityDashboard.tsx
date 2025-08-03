@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { useEnhancedSecurity } from '@/hooks/useEnhancedSecurity';
 import { useMFA } from '@/hooks/useMFA';
+import { productionLogger } from '@/utils/productionLogger';
 
 export function SecurityDashboard() {
   const { 
@@ -27,7 +28,7 @@ export function SecurityDashboard() {
       await invalidateAllSessions('current-user-id'); // In real app, get from auth
       await refreshSecurityData();
     } catch (error) {
-      console.error('Failed to invalidate sessions:', error);
+      productionLogger.error('Failed to invalidate sessions', error, 'SecurityDashboard');
     }
   };
 

@@ -4,6 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { PageLoading } from '@/components/ui/loading-states';
 import { useConsolidatedSecurity } from '@/hooks/useConsolidatedSecurity';
 import { useEffect, useState } from 'react';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
           }
         })
         .catch(error => {
-          // Use production logger here instead of console.error
+          productionLogger.warn('User not authenticated for protected route', {}, 'ProtectedRoute');
           import('@/utils/cleanLogger').then(({ cleanLogger }) => {
             cleanLogger.error('Session validation failed', error, 'ProtectedRoute');
           });

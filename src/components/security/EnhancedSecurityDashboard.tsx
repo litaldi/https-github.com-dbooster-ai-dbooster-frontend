@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, AlertTriangle, CheckCircle, Activity, Users, Database, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface SecurityMetrics {
   totalEvents: number;
@@ -48,7 +49,7 @@ export function EnhancedSecurityDashboard() {
         .limit(50);
 
       if (auditError) {
-        console.error('Error loading security data:', auditError);
+        productionLogger.error('Error loading security data', auditError, 'EnhancedSecurityDashboard');
         enhancedToast.error({
           title: "Security Data Error",
           description: "Unable to load security metrics",
@@ -80,7 +81,7 @@ export function EnhancedSecurityDashboard() {
         }))
       });
     } catch (error) {
-      console.error('Error loading security metrics:', error);
+      productionLogger.error('Error loading security metrics', error, 'EnhancedSecurityDashboard');
       enhancedToast.error({
         title: "Security Dashboard Error",
         description: "Failed to load security dashboard",
