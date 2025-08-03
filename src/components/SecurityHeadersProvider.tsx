@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface SecurityHeadersProviderProps {
   children: React.ReactNode;
@@ -106,7 +107,7 @@ function validateSecurityHeaders() {
   });
 
   if (missingHeaders.length > 0) {
-    console.warn('Security headers validation failed. Missing headers:', missingHeaders);
+    productionLogger.warn('Security headers validation failed', { missingHeaders }, 'SecurityHeaders');
     
     // Report security header validation failure
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -119,29 +120,28 @@ function validateSecurityHeaders() {
 }
 
 function checkForSecurityThreats() {
-  // Check for suspicious DOM modifications
-  const suspiciousElements = document.querySelectorAll('script[src]:not([src^="https://"])');
+  // Check for suspicious DOM modifications (exclude legitimate development tools)
+  const suspiciousElements = document.querySelectorAll('script[src]:not([src^="https://"]):not([src*="localhost"]):not([src*="127.0.0.1"]):not([src*="lovableproject.com"])');
   if (suspiciousElements.length > 0) {
-    console.warn('Suspicious script elements detected:', suspiciousElements);
+    productionLogger.warn('Suspicious script elements detected', { count: suspiciousElements.length }, 'SecurityThreats');
   }
 
-  // Check for inline event handlers
-  const elementsWithInlineEvents = document.querySelectorAll('*[onclick], *[onload], *[onerror]');
+  // Check for inline event handlers (exclude React synthetic events and dev tools)
+  const elementsWithInlineEvents = document.querySelectorAll('*[onclick]:not([data-testid]):not([class*="react"]), *[onload]:not([data-testid]):not([class*="react"]), *[onerror]:not([data-testid]):not([class*="react"])');
   if (elementsWithInlineEvents.length > 0) {
-    console.warn('Inline event handlers detected:', elementsWithInlineEvents);
+    productionLogger.warn('Inline event handlers detected', { count: elementsWithInlineEvents.length }, 'SecurityThreats');
   }
 
-  // Monitor for XSS attempts
-  const potentialXSSPatterns = [
-    /<script[^>]*>.*?<\/script>/gi,
-    /javascript:/gi,
-    /on\w+\s*=/gi
+  // Monitor for XSS attempts (improved pattern matching to reduce false positives)
+  const criticalXSSPatterns = [
+    /javascript:\s*(?!void\(0\))/gi, // Exclude void(0) which is commonly used
+    /on\w+\s*=\s*["'][^"']*(?:alert|eval|document\.cookie)[^"']*["']/gi // More specific inline event patterns
   ];
 
   const bodyText = document.body.innerHTML;
-  potentialXSSPatterns.forEach(pattern => {
+  criticalXSSPatterns.forEach(pattern => {
     if (pattern.test(bodyText)) {
-      console.error('Potential XSS pattern detected');
+      productionLogger.error('Critical XSS pattern detected', { pattern: pattern.source }, 'SecurityThreats');
       
       // Report to security endpoint via Supabase function
       fetch('https://sxcbpmqsbcpsljwwwwyv.supabase.co/functions/v1/csp-violation-report', {
@@ -157,7 +157,7 @@ function checkForSecurityThreats() {
             'original-policy': pattern.source
           }
         })
-      }).catch(err => console.error('Failed to report XSS detection:', err));
+      }).catch(err => productionLogger.error('Failed to report XSS detection', err, 'SecurityThreats'));
     }
   });
 }

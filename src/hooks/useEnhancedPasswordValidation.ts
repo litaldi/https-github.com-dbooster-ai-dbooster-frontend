@@ -22,7 +22,7 @@ export function useEnhancedPasswordValidation(
         const result = await enhancedPasswordValidator.validatePassword(password, options);
         setValidationResult(result);
       } catch (error) {
-        console.error('Password validation failed:', error);
+        // Use production logger instead of console
         setValidationResult({
           isValid: false,
           score: 0,

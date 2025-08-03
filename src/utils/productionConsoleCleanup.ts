@@ -54,13 +54,20 @@ class ProductionConsoleManager {
       if (level === 'error' || level === 'warn') {
         const message = args[0];
         if (typeof message === 'string') {
-          const isCritical = ['security', 'critical', 'auth', 'network'].some(keyword =>
+          const isCritical = ['security', 'critical', 'auth', 'network', 'violation', 'xss', 'csp'].some(keyword =>
             message.toLowerCase().includes(keyword)
           );
           
           if (isCritical) {
             this.originalConsole[level as keyof ConsoleMethod]?.(`[${level.toUpperCase()}]`, ...args);
           }
+        }
+      }
+      // Allow info logs for security initialization messages
+      if (level === 'info') {
+        const message = args[0];
+        if (typeof message === 'string' && message.includes('security')) {
+          this.originalConsole[level as keyof ConsoleMethod]?.(`[${level.toUpperCase()}]`, ...args);
         }
       }
     };
