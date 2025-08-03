@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Code2, Wand2, Copy, Download, Eye, Settings } from 'lucide-react';
 import { nextGenAIService } from '@/services/ai/nextGenAIService';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface GeneratedCode {
   type: string;
@@ -48,7 +49,7 @@ export function AICodeGenerator() {
       setGeneratedCode(mockCode);
       setActiveTab('code');
     } catch (error) {
-      console.error('Code generation failed:', error);
+      productionLogger.error('Code generation failed', error, 'AICodeGenerator');
     } finally {
       setIsGenerating(false);
     }

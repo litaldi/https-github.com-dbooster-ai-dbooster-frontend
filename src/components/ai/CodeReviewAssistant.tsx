@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Code, AlertCircle, CheckCircle, Lightbulb, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { nextGenAIService } from '@/services/ai/nextGenAIService';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface CodeReviewResult {
   issues: Array<{
@@ -39,7 +40,7 @@ export function CodeReviewAssistant() {
       setResult(reviewResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Code review failed');
-      console.error('Code review failed:', err);
+      productionLogger.error('Code review failed', err, 'CodeReviewAssistant');
     } finally {
       setIsReviewing(false);
     }

@@ -7,6 +7,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, Send, Bot, User, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { nextGenAIService } from '@/services/ai/nextGenAIService';
+import { productionLogger } from '@/utils/productionLogger';
+import { toast } from 'sonner';
 
 interface ChatMessage {
   id: string;
@@ -63,7 +65,7 @@ export function DatabaseChatAssistant() {
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Chat failed:', error);
+      productionLogger.error('Chat failed', error, 'DatabaseChatAssistant');
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
@@ -79,8 +81,9 @@ export function DatabaseChatAssistant() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
     } catch (err) {
-      console.error('Failed to copy:', err);
+      productionLogger.error('Failed to copy to clipboard', err, 'DatabaseChatAssistant');
     }
   };
 

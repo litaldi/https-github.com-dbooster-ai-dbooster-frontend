@@ -21,6 +21,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
+import { productionLogger } from '@/utils/productionLogger';
 
 export function DemoDashboardSection() {
   const [activeTab, setActiveTab] = useState('metrics');
@@ -83,13 +84,13 @@ export function DemoDashboardSection() {
   const handleStartLiveDemo = async () => {
     try {
       setIsLaunching(true);
-      console.log('Starting demo from DemoDashboardSection...');
+      productionLogger.info('Starting demo from DemoDashboardSection', {}, 'DemoDashboardSection');
       await loginDemo();
-      console.log('Demo login successful, navigating to dashboard...');
+      productionLogger.info('Demo login successful, navigating to dashboard', {}, 'DemoDashboardSection');
       toast.success('Demo session started!');
       navigate('/app/dashboard-alt');
     } catch (error) {
-      console.error('Demo start error:', error);
+      productionLogger.error('Demo start error', error, 'DemoDashboardSection');
       toast.error('Failed to start demo session. Please try again.');
     } finally {
       setIsLaunching(false);

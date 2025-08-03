@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Database, Table, RefreshCw, FileText, Link } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { nextGenAIService } from '@/services/ai/nextGenAIService';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface SchemaDesign {
   tables: TableDesign[];
@@ -58,7 +59,7 @@ export function AISchemaDesigner() {
       setDesign(schemaDesign);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Schema generation failed');
-      console.error('Schema generation failed:', err);
+      productionLogger.error('Schema generation failed', err, 'AISchemaDesigner');
     } finally {
       setIsDesigning(false);
     }
