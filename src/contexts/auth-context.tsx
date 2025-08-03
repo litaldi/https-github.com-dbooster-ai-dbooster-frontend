@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginDemo = async () => {
     try {
-      console.log('Starting demo login...');
+      productionLogger.info('Starting demo login', {}, 'AuthContext');
       setLoading(true);
       setIsDemo(true);
       
@@ -164,12 +164,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(demoSessionObj);
       setLoading(false);
 
-      console.log('Demo session created successfully');
-      productionLogger.info('Demo session created successfully', {
-        sessionId: demoSessionId.substring(0, 8)
-      });
+      productionLogger.info('Demo session created successfully', { sessionId: demoSessionId.substring(0, 8) }, 'AuthContext');
     } catch (error) {
-      console.error('Demo login failed:', error);
       productionLogger.error('Demo login failed', error, 'AuthContext');
       setLoading(false);
       setIsDemo(false);

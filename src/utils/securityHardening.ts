@@ -3,7 +3,7 @@ import { productionLogger } from '@/utils/productionLogger';
 
 export function initializeSecurityHardening() {
   // Only run security hardening in production
-  if (process.env.NODE_ENV !== 'production') {
+  if (import.meta.env.DEV) {
     return;
   }
 

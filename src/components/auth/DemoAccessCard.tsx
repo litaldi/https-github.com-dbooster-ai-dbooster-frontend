@@ -7,6 +7,7 @@ import { Eye, Database, TrendingUp, Zap } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface DemoAccessCardProps {
   isLoading: boolean;
@@ -24,7 +25,7 @@ export function DemoAccessCard({ isLoading, onLoadingChange }: DemoAccessCardPro
       toast.success('Demo session started!');
       navigate('/app');
     } catch (error) {
-      console.error('Demo login error:', error);
+      productionLogger.error('Demo login error', error, 'DemoAccessCard');
       toast.error('Failed to start demo session');
     } finally {
       onLoadingChange(false);

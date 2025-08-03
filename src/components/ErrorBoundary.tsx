@@ -19,7 +19,7 @@ const DefaultErrorFallback = ({ error }: { error?: Error }) => (
       <p className="text-muted-foreground mb-4">
         We're sorry, but an unexpected error occurred. Please try refreshing the page.
       </p>
-      {process.env.NODE_ENV === 'development' && error && (
+      {import.meta.env.DEV && error && (
         <pre className="text-xs text-left bg-muted p-4 rounded overflow-auto max-w-lg">
           {error.stack}
         </pre>

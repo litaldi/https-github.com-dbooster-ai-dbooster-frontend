@@ -9,7 +9,7 @@ export function initializeEnhancedSecurity(): void {
     // Log security initialization - the consolidated services are already initialized
     productionLogger.warn('Enhanced security features initialized', {
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
+      environment: import.meta.env.MODE || 'development',
       features: ['consolidatedAuth', 'inputValidation', 'rateLimiting', 'threatDetection']
     }, 'EnhancedSecurityInit');
 

@@ -11,7 +11,7 @@ import React from 'react';
 export const cleanupUnusedCode = () => {
   // This would be handled by build tools like Vite's tree shaking
   // and ESLint rules for unused variables
-  if (process.env.NODE_ENV !== 'production') {
+  if (import.meta.env.DEV) {
     console.info('Code cleanup handled by build tools and ESLint');
   }
 };
@@ -30,7 +30,7 @@ export const measurePerformance = (name: string, fn: () => void) => {
   const start = performance.now();
   fn();
   const end = performance.now();
-  if (process.env.NODE_ENV !== 'production') {
+  if (import.meta.env.DEV) {
     console.info(`${name} took ${end - start} milliseconds`);
   }
 };
@@ -39,7 +39,7 @@ export const measurePerformance = (name: string, fn: () => void) => {
  * Remove console logs in production
  */
 export const safeLog = (message: any, ...args: any[]) => {
-  if (process.env.NODE_ENV !== 'production') {
+  if (import.meta.env.DEV) {
     console.log(message, ...args);
   }
 };
