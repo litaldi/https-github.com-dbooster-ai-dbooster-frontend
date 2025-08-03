@@ -15,6 +15,8 @@ import {
   Shield,
   Play
 } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface QuickSetupWizardProps {
   onClose: () => void;
@@ -63,7 +65,7 @@ export function QuickSetupWizard({ onClose }: QuickSetupWizardProps) {
 
   const handleStepAction = (stepIndex: number) => {
     // Here you would implement the actual step logic
-    console.log(`Executing step ${stepIndex}`);
+    productionLogger.debug(`Executing step ${stepIndex}`, {}, 'QuickSetupWizard');
     // For demo purposes, we'll just mark it as completed
     setCurrentStep(stepIndex + 1);
   };

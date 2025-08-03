@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { FileText, Download, RefreshCw, BookOpen, Database, Link } from 'lucide-react';
 import { nextGenAIService } from '@/services/ai/nextGenAIService';
+import { productionLogger } from '@/utils/productionLogger';
 
 export function DatabaseDocumentationGenerator() {
   const [schema, setSchema] = useState('');
@@ -49,7 +50,7 @@ export function DatabaseDocumentationGenerator() {
         ]
       });
     } catch (error) {
-      console.error('Documentation generation failed:', error);
+      productionLogger.error('Documentation generation failed', error, 'DatabaseDocumentationGenerator');
     } finally {
       setIsGenerating(false);
     }

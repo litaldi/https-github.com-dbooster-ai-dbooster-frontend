@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Play, CheckCircle2, XCircle, ExternalLink } from 'lucide-react';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { productionLogger } from '@/utils/productionLogger';
 import { useNavigate, useLocation } from 'react-router-dom';
+
 
 interface TestResult {
   id: string;
@@ -121,9 +124,9 @@ export function NavigationTester({ onResults }: NavigationTesterProps) {
       const currentPath = window.location.pathname;
       const duration = Date.now() - startTime;
       
-      console.log(`✅ ${test.name}: ${currentPath} (${duration}ms)`);
+      productionLogger.debug(`${test.name}: ${currentPath} (${duration}ms)`, {}, 'NavigationTester');
     } catch (error) {
-      console.error(`❌ ${test.name}:`, error);
+      productionLogger.error(`${test.name} failed`, error, 'NavigationTester');
     }
   };
 

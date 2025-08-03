@@ -18,6 +18,8 @@ import {
   Database,
   Globe
 } from 'lucide-react';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { productionLogger } from '@/utils/productionLogger';
 import { productionInitializer } from '@/utils/productionInit';
 import { performanceMonitor } from '@/utils/performanceMonitor';
 import { accessibilityChecker } from '@/utils/accessibilityChecker';
@@ -39,7 +41,7 @@ export function ProductionDashboard() {
       setPerformanceMetrics(metrics);
       setAccessibilityReport(a11yReport);
     } catch (error) {
-      console.error('Failed to run health checks:', error);
+      productionLogger.error('Failed to run health checks', error, 'ProductionDashboard');
     } finally {
       setIsLoading(false);
     }

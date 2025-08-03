@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Code, Sparkles, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { nextGenAIService } from '@/services/ai/nextGenAIService';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface ConversionResult {
   sql: string;
@@ -39,7 +40,7 @@ export function NaturalLanguageQueryBuilder() {
       setResult(conversionResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Conversion failed');
-      console.error('Natural language conversion failed:', err);
+      productionLogger.error('Natural language conversion failed', err, 'NaturalLanguageQueryBuilder');
     } finally {
       setIsConverting(false);
     }

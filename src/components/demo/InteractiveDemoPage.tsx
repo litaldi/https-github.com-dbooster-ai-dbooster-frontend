@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface QueryOptimization {
   id: string;
@@ -102,7 +104,7 @@ export function InteractiveDemoPage() {
       }
       navigate('/app');
     } catch (error) {
-      console.error('Demo start error:', error);
+      productionLogger.error('Demo start error', error, 'InteractiveDemoPage');
     }
   };
 

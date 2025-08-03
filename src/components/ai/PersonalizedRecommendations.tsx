@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { aiService, type QuerySuggestion } from '@/services/aiService';
+import { nextGenAIService } from '@/services/ai/nextGenAIService';
+import { productionLogger } from '@/utils/productionLogger';
 
 export function PersonalizedRecommendations() {
   const { user } = useAuth();
@@ -58,7 +60,7 @@ export function PersonalizedRecommendations() {
         skillLevel: 'Intermediate'
       });
     } catch (error) {
-      console.error('Failed to load recommendations:', error);
+      productionLogger.error('Failed to load recommendations', error, 'PersonalizedRecommendations');
       // Fallback recommendations
       setRecommendations([
         {

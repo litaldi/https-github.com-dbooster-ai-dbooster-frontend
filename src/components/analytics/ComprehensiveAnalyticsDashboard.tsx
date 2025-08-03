@@ -16,6 +16,8 @@ import {
   FileText, Calendar, Filter, RefreshCw
 } from 'lucide-react';
 import { addDays } from 'date-fns';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface MetricData {
   period: string;
@@ -77,7 +79,7 @@ export function ComprehensiveAnalyticsDashboard() {
 
   const exportData = (format: 'csv' | 'pdf' | 'excel') => {
     // Implement export functionality
-    console.log(`Exporting data as ${format}`);
+    productionLogger.info(`Exporting data as ${format}`, {}, 'ComprehensiveAnalyticsDashboard');
   };
 
   const getTrendIcon = (trend: string) => {

@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Play, Smartphone, Tablet, Monitor, CheckCircle2, XCircle } from 'lucide-react';
+import { enhancedToast } from '@/components/ui/enhanced-toast';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface TestResult {
   id: string;
@@ -93,7 +95,7 @@ export function ResponsiveTester({ onResults }: ResponsiveTesterProps) {
     return new Promise((resolve) => {
       // Simulate viewport testing
       setTimeout(() => {
-        console.log(`✅ ${viewport.name}: Layout tested at ${viewport.width}x${viewport.height}`);
+        productionLogger.debug(`${viewport.name}: Layout tested at ${viewport.width}x${viewport.height}`, {}, 'ResponsiveTester');
         resolve();
       }, 500);
     });
@@ -101,7 +103,7 @@ export function ResponsiveTester({ onResults }: ResponsiveTesterProps) {
 
   const testSingleViewport = (viewport: ViewportTest) => {
     setCurrentViewport(viewport);
-    console.log(`Testing ${viewport.name} (${viewport.width}x${viewport.height})`);
+    productionLogger.debug(`Testing ${viewport.name} (${viewport.width}x${viewport.height})`, {}, 'ResponsiveTester');
     
     // Reset after 3 seconds
     setTimeout(() => {
@@ -127,7 +129,7 @@ export function ResponsiveTester({ onResults }: ResponsiveTesterProps) {
 
     elements.forEach(({ name, selector }) => {
       const isVisible = checkElementVisibility(selector);
-      console.log(`${isVisible ? '✅' : '❌'} ${name}: ${isVisible ? 'Visible' : 'Hidden/Not Found'}`);
+      productionLogger.debug(`${isVisible ? '✅' : '❌'} ${name}: ${isVisible ? 'Visible' : 'Hidden/Not Found'}`, {}, 'ResponsiveTester');
     });
   };
 
@@ -182,7 +184,7 @@ export function ResponsiveTester({ onResults }: ResponsiveTesterProps) {
                                  currentWidth < 768 ? 'Small Tablet' :
                                  currentWidth < 1024 ? 'Tablet' : 
                                  currentWidth < 1280 ? 'Desktop' : 'Large Desktop';
-                console.log(`Current breakpoint: ${breakpoint} (${currentWidth}px)`);
+                productionLogger.debug(`Current breakpoint: ${breakpoint} (${currentWidth}px)`, {}, 'ResponsiveTester');
               }}
             >
               Check Current Breakpoint

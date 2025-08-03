@@ -28,6 +28,7 @@ import { advancedChatService, type ChatMessage, type ChatResponse } from '@/serv
 import { voiceInterfaceService, type SpeechRecognitionResult } from '@/services/ai/voiceInterfaceService';
 import { visualAIService, type VisualAnalysisResult } from '@/services/ai/visualAIService';
 import { toast } from 'sonner';
+import { productionLogger } from '@/utils/productionLogger';
 
 export function EnhancedAIChatAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -106,7 +107,7 @@ export function EnhancedAIChatAssistant() {
       }
 
     } catch (error) {
-      console.error('Chat failed:', error);
+      productionLogger.error('Chat failed', error, 'EnhancedAIChatAssistant');
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
