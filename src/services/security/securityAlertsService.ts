@@ -190,13 +190,8 @@ class SecurityAlertsService {
   }
 
   private async getUserIP(): Promise<string> {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip || 'unknown';
-    } catch {
-      return 'unknown';
-    }
+    // Avoid client-side IP collection; rely on server-side logs
+    return 'unknown';
   }
 }
 
