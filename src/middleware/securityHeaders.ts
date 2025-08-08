@@ -18,21 +18,11 @@ export class SecurityHeaders {
     // Remove existing security headers to avoid duplicates
     this.removeExistingHeaders();
 
-    // Add security headers
-    const headers = [
-      { name: 'X-Content-Type-Options', content: 'nosniff' },
-      { name: 'X-Frame-Options', content: 'DENY' },
-      { name: 'X-XSS-Protection', content: '1; mode=block' },
-      { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
-      { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(), payment=()' }
-    ];
-
-    headers.forEach(({ name, content }) => {
-      const meta = document.createElement('meta');
-      meta.httpEquiv = name;
-      meta.content = content;
-      document.head.appendChild(meta);
-    });
+    // Add only effective client-side meta policies
+    const referrerMeta = document.createElement('meta');
+    referrerMeta.name = 'referrer';
+    referrerMeta.content = 'strict-origin-when-cross-origin';
+    document.head.appendChild(referrerMeta);
   }
 
   private removeExistingHeaders() {
@@ -50,6 +40,10 @@ export class SecurityHeaders {
         existing.remove();
       }
     });
+    const existingReferrer = document.querySelector('meta[name="referrer"]');
+    if (existingReferrer) {
+      existingReferrer.remove();
+    }
   }
 
   addCSPHeader(policy: string) {

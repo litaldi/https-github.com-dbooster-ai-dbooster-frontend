@@ -171,13 +171,8 @@ export class EnhancedAuthenticationService {
   }
 
   private async getUserIP(): Promise<string> {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip || 'unknown';
-    } catch {
-      return 'unknown';
-    }
+    // Avoid client-side IP lookups for privacy; IP is captured server-side where needed
+    return 'unknown';
   }
 
   private async calculateSecurityScore(): Promise<number> {
