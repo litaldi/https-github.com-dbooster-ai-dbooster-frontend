@@ -1,5 +1,5 @@
 
-import { enhancedSecurityHeaders } from '@/services/security/enhancedSecurityHeaders';
+import { SecurityHeaders as ClientSecurityHeaders } from '@/middleware/securityHeaders';
 import { realTimeSecurityMonitor } from '@/services/security/realTimeSecurityMonitor';
 import { productionLogger } from '@/utils/productionLogger';
 
@@ -22,9 +22,8 @@ class SecurityInitializer {
     try {
       productionLogger.info('Initializing enhanced security systems...');
 
-      // Apply security headers
-      enhancedSecurityHeaders.applyStrictSecurityHeaders();
-      
+      // Apply only effective client-side security meta (Referrer-Policy)
+      ClientSecurityHeaders.applyToDocument();
       // Set up security event monitoring
       this.setupSecurityEventListeners();
       
