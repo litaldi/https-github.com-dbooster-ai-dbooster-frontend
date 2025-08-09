@@ -241,13 +241,8 @@ export class EnhancedSecurityValidation {
   }
 
   private async getUserIP(): Promise<string> {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip || 'unknown';
-    } catch {
-      return 'unknown';
-    }
+    // Client-side IP collection removed; rely on server headers
+    return 'unknown';
   }
 }
 

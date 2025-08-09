@@ -291,13 +291,6 @@ export function useEnhancedSessionSecurity() {
 
 // Helper function to get client IP (approximation)
 async function getClientIP(): Promise<string> {
-  try {
-    // This is a simplified approach - in production, you might want to use a more reliable service
-    const response = await fetch('https://api.ipify.org?format=json');
-    const data = await response.json();
-    return data.ip;
-  } catch (error) {
-    // Fallback to empty string if IP detection fails
-    return '';
-  }
+  // Client-side IP collection removed; rely on server headers
+  return '';
 }

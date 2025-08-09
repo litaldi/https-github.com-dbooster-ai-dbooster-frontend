@@ -165,30 +165,14 @@ export class UnifiedSecurityService {
   }
 
   initializeSecurityHeaders(): void {
-    // Add CSP meta tag if not already present
-    if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
-      const cspMeta = document.createElement('meta');
-      cspMeta.httpEquiv = 'Content-Security-Policy';
-      cspMeta.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://api.ipify.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; connect-src 'self' https://api.ipify.org https://*.supabase.co wss://*.supabase.co;";
-      document.head.appendChild(cspMeta);
+    // Only apply client-effective header via meta: Referrer Policy
+    let referrerMeta = document.querySelector('meta[name="referrer"]') as HTMLMetaElement;
+    if (!referrerMeta) {
+      referrerMeta = document.createElement('meta');
+      referrerMeta.name = 'referrer';
+      document.head.appendChild(referrerMeta);
     }
-
-    // Add other security headers via meta tags
-    const securityHeaders = [
-      { name: 'X-Content-Type-Options', content: 'nosniff' },
-      { name: 'X-Frame-Options', content: 'DENY' },
-      { name: 'X-XSS-Protection', content: '1; mode=block' },
-      { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' }
-    ];
-
-    securityHeaders.forEach(header => {
-      if (!document.querySelector(`meta[http-equiv="${header.name}"]`)) {
-        const meta = document.createElement('meta');
-        meta.httpEquiv = header.name;
-        meta.content = header.content;
-        document.head.appendChild(meta);
-      }
-    });
+    referrerMeta.content = 'strict-origin-when-cross-origin';
   }
 
   private async basicEncryptSessionData(sessionData: any): Promise<string> {
@@ -227,13 +211,8 @@ export class UnifiedSecurityService {
   }
 
   private async getUserIP(): Promise<string> {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip || 'unknown';
-    } catch {
-      return 'unknown';
-    }
+    // Client-side IP collection removed; rely on server headers
+    return 'unknown';
   }
 }
 

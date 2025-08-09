@@ -33,11 +33,11 @@ class EnhancedSecurityHeaders {
       contentSecurityPolicy: {
         directives: {
           'default-src': ["'self'"],
-          'script-src': ["'self'", `'nonce-${this.currentNonce}'`, 'https://api.ipify.org'],
+          'script-src': ["'self'", `'nonce-${this.currentNonce}'`],
           'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
           'font-src': ["'self'", 'https://fonts.gstatic.com'],
           'img-src': ["'self'", 'data:', 'https:'],
-          'connect-src': ["'self'", 'https://api.pwnedpasswords.com', 'https://api.ipify.org', 'wss:', 'https:'],
+          'connect-src': ["'self'", 'https://api.pwnedpasswords.com', 'wss:', 'https:'],
           'frame-ancestors': ["'none'"],
           'base-uri': ["'self'"],
           'form-action': ["'self'"]

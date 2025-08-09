@@ -233,14 +233,8 @@ class ServerSideRateLimit {
       }
     }
     
-    // Fallback to getting current IP
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip || null;
-    } catch {
-      return null;
-    }
+    // Fallback removed: do not collect IP client-side
+    return null;
   }
 
   private isValidIP(ip: string): boolean {
