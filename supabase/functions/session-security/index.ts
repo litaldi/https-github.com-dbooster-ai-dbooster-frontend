@@ -39,23 +39,43 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    const { sessionId, deviceFingerprint, ipAddress, userAgent, action = 'validate' } = 
-      await req.json() as SessionValidationRequest;
+    const body = await req.json() as SessionValidationRequest;
 
-    console.log(`Session security action: ${action} for session: ${sessionId}`);
+    const authHeader = req.headers.get('Authorization') || '';
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const sessionId = body.sessionId;
+    const deviceFingerprint = body.deviceFingerprint;
+    const ipAddressResolved = body.ipAddress || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '';
+    const userAgentResolved = body.userAgent || req.headers.get('user-agent') || '';
+    const action = body.action || 'validate';
+
+    console.log(`Session security action: ${action} for session: ${sessionId} by user: ${user.id}`);
 
     switch (action) {
       case 'validate':
-        return await validateSession(supabase, sessionId, deviceFingerprint, ipAddress, userAgent);
+        return await validateSession(supabase, sessionId, deviceFingerprint, ipAddressResolved, userAgentResolved, user.id);
       
       case 'rotate':
-        return await rotateSession(supabase, sessionId, deviceFingerprint, ipAddress, userAgent);
+        return await rotateSession(supabase, sessionId, deviceFingerprint, ipAddressResolved, userAgentResolved, user.id);
       
       case 'invalidate':
-        return await invalidateSession(supabase, sessionId);
+        return await invalidateSession(supabase, sessionId, user.id);
       
       case 'check_concurrent':
-        return await checkConcurrentSessions(supabase, sessionId);
+        return await checkConcurrentSessions(supabase, sessionId, user.id);
       
       default:
         throw new Error('Invalid action specified');
@@ -98,6 +118,18 @@ async function validateSession(
         securityScore: 0
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Ensure the session belongs to the authenticated user
+  if (sessionData.user_id !== currentUserId) {
+    return new Response(
+      JSON.stringify({ 
+        valid: false, 
+        reason: 'Session does not belong to current user',
+        securityScore: 0
+      }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 
@@ -206,6 +238,13 @@ async function rotateSession(
     );
   }
 
+  if (oldSession.user_id !== currentUserId) {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden: Session does not belong to current user' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   // Generate new session ID
   const newSessionId = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -261,13 +300,27 @@ async function rotateSession(
   );
 }
 
-async function invalidateSession(supabase: any, sessionId: string) {
+async function invalidateSession(supabase: any, sessionId: string, currentUserId: string) {
   // Get session info before deletion for logging
-  const { data: sessionData } = await supabase
+  const { data: sessionData, error: fetchError } = await supabase
     .from('secure_session_validation')
     .select('user_id')
     .eq('session_id', sessionId)
     .single();
+
+  if (fetchError || !sessionData) {
+    return new Response(
+      JSON.stringify({ error: 'Session not found' }),
+      { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  if (sessionData.user_id !== currentUserId) {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden: Session does not belong to current user' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
 
   // Delete session
   const { error } = await supabase
@@ -301,7 +354,7 @@ async function invalidateSession(supabase: any, sessionId: string) {
   );
 }
 
-async function checkConcurrentSessions(supabase: any, sessionId: string) {
+async function checkConcurrentSessions(supabase: any, sessionId: string, currentUserId: string) {
   // Get user ID from session
   const { data: sessionData, error } = await supabase
     .from('secure_session_validation')
@@ -313,6 +366,13 @@ async function checkConcurrentSessions(supabase: any, sessionId: string) {
     return new Response(
       JSON.stringify({ error: 'Session not found' }),
       { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  if (sessionData.user_id !== currentUserId) {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden: Session does not belong to current user' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 

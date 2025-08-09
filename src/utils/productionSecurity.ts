@@ -73,33 +73,12 @@ export class ProductionSecurityManager {
 
   private setupSecurityHeaders() {
     SecurityHeaders.applyToDocument();
-    
-    // Add additional security meta tags
-    this.addSecurityMetaTags();
+    // Only client-effective headers are set here (Referrer Policy via meta and CSP)
   }
 
   private addSecurityMetaTags() {
-    const securityTags = [
-      { name: 'X-Content-Type-Options', content: 'nosniff' },
-      { name: 'X-Frame-Options', content: 'DENY' },
-      { name: 'X-XSS-Protection', content: '1; mode=block' },
-      { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
-      { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), serial=()' },
-      { name: 'Strict-Transport-Security', content: 'max-age=31536000; includeSubDomains; preload' },
-      { name: 'X-Permitted-Cross-Domain-Policies', content: 'none' },
-      { name: 'Cross-Origin-Embedder-Policy', content: 'require-corp' },
-      { name: 'Cross-Origin-Opener-Policy', content: 'same-origin' },
-      { name: 'Cross-Origin-Resource-Policy', content: 'same-origin' }
-    ];
-
-    securityTags.forEach(({ name, content }) => {
-      if (!document.querySelector(`meta[http-equiv="${name}"]`)) {
-        const meta = document.createElement('meta');
-        meta.httpEquiv = name;
-        meta.content = content;
-        document.head.appendChild(meta);
-      }
-    });
+    // No-op: Non-CSP security headers (e.g., X-Frame-Options, HSTS) cannot be enforced via meta tags.
+    // These must be delivered by the server; in a client-only app we avoid adding ineffective http-equiv tags.
   }
 }
 
