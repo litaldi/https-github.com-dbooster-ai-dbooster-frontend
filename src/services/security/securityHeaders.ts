@@ -201,14 +201,5 @@ export class SecurityHeaders {
 
 export const securityHeaders = SecurityHeaders.getInstance();
 
-// Auto-apply security headers when module loads
-if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
-    securityHeaders.applyToDocument();
-  });
-  
-  // Apply immediately if DOM is already loaded
-  if (document.readyState === 'loading') {
-    securityHeaders.applyToDocument();
-  }
-}
+// Auto-apply disabled: ineffective headers like CSP, X-Frame-Options, and X-Content-Type-Options cannot be set reliably via meta tags client-side.
+// Use server headers or src/middleware/securityHeaders.ts for the limited, effective client meta (referrer policy) instead.

@@ -101,7 +101,8 @@ async function validateSession(
   sessionId: string, 
   deviceFingerprint: string, 
   ipAddress?: string, 
-  userAgent?: string
+  userAgent?: string,
+  currentUserId?: string
 ) {
   // Get session from secure_session_validation table
   const { data: sessionData, error } = await supabase
@@ -222,7 +223,8 @@ async function rotateSession(
   oldSessionId: string,
   deviceFingerprint: string,
   ipAddress?: string,
-  userAgent?: string
+  userAgent?: string,
+  currentUserId?: string
 ) {
   // Get existing session
   const { data: oldSession, error } = await supabase

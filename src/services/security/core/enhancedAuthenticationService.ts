@@ -63,8 +63,9 @@ export class EnhancedAuthenticationService {
       const userAgent = navigator.userAgent;
 
       // Call the secure session validation edge function
-      const { data, error } = await supabase.functions.invoke('secure-session-validation', {
+      const { data, error } = await supabase.functions.invoke('session-security', {
         body: {
+          action: 'validate',
           sessionId,
           deviceFingerprint,
           ipAddress,
