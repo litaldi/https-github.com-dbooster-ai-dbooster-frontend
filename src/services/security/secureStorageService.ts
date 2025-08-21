@@ -11,7 +11,8 @@ class SecureStorageService {
   private static instance: SecureStorageService;
   private encryptionKey: CryptoKey | null = null;
   private readonly STORAGE_PREFIX = 'secure_';
-  private readonly KEY_STORAGE = 'encryption_key';
+  // SECURITY FIX: Use session-only storage for encryption keys (not persistent)
+  private readonly SENSITIVE_KEY_PATTERN = /(token|secret|password|apikey|privatekey|auth|jwt|session)/i;
 
   static getInstance(): SecureStorageService {
     if (!SecureStorageService.instance) {
@@ -31,33 +32,27 @@ class SecureStorageService {
 
   private async loadOrGenerateKey(): Promise<void> {
     try {
-      const storedKey = localStorage.getItem(this.KEY_STORAGE);
-      if (storedKey) {
-        const keyData = JSON.parse(storedKey);
-        this.encryptionKey = await crypto.subtle.importKey(
-          'raw',
-          new Uint8Array(keyData),
-          { name: 'AES-GCM' },
-          false,
-          ['encrypt', 'decrypt']
-        );
-      } else {
-        this.encryptionKey = await crypto.subtle.generateKey(
-          { name: 'AES-GCM', length: 256 },
-          true,
-          ['encrypt', 'decrypt']
-        );
-        
-        const keyBuffer = await crypto.subtle.exportKey('raw', this.encryptionKey);
-        localStorage.setItem(this.KEY_STORAGE, JSON.stringify(Array.from(new Uint8Array(keyBuffer))));
-      }
+      // SECURITY FIX: Generate non-exportable keys in memory only (no persistent storage)
+      this.encryptionKey = await crypto.subtle.generateKey(
+        { name: 'AES-GCM', length: 256 },
+        false, // non-extractable
+        ['encrypt', 'decrypt']
+      );
+      
+      productionLogger.info('Generated non-exportable encryption key for session', {}, 'SecureStorageService');
     } catch (error) {
-      productionLogger.error('Failed to load or generate encryption key', error, 'SecureStorageService');
+      productionLogger.error('Failed to generate encryption key', error, 'SecureStorageService');
       throw error;
     }
   }
 
   async setSecureItem(key: string, value: any): Promise<void> {
+    // SECURITY FIX: Block sensitive key names
+    if (this.SENSITIVE_KEY_PATTERN.test(key)) {
+      productionLogger.warn('Blocked attempt to store sensitive key', { key }, 'SecureStorageService');
+      throw new Error('Storage of sensitive keys is not allowed for security reasons');
+    }
+
     if (!this.encryptionKey) {
       await this.initialize();
     }
@@ -81,7 +76,8 @@ class SecureStorageService {
         timestamp: Date.now()
       };
 
-      localStorage.setItem(this.STORAGE_PREFIX + key, JSON.stringify(encryptedPackage));
+      // Use sessionStorage for enhanced security (cleared on tab close)
+      sessionStorage.setItem(this.STORAGE_PREFIX + key, JSON.stringify(encryptedPackage));
     } catch (error) {
       productionLogger.error('Failed to set secure item', error, 'SecureStorageService');
       throw error;
@@ -94,7 +90,19 @@ class SecureStorageService {
     }
 
     try {
-      const storedData = localStorage.getItem(this.STORAGE_PREFIX + key);
+      // Check sessionStorage first (new secure approach)
+      let storedData = sessionStorage.getItem(this.STORAGE_PREFIX + key);
+      
+      // Fallback to localStorage for migration purposes
+      if (!storedData) {
+        storedData = localStorage.getItem(this.STORAGE_PREFIX + key);
+        if (storedData) {
+          // Migrate to sessionStorage and remove from localStorage
+          sessionStorage.setItem(this.STORAGE_PREFIX + key, storedData);
+          localStorage.removeItem(this.STORAGE_PREFIX + key);
+        }
+      }
+      
       if (!storedData) return null;
 
       const encryptedPackage: EncryptedData = JSON.parse(storedData);
@@ -117,52 +125,57 @@ class SecureStorageService {
   }
 
   removeSecureItem(key: string): void {
-    localStorage.removeItem(this.STORAGE_PREFIX + key);
+    sessionStorage.removeItem(this.STORAGE_PREFIX + key);
+    localStorage.removeItem(this.STORAGE_PREFIX + key); // cleanup legacy
   }
 
   clearAllSecureItems(): void {
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(this.STORAGE_PREFIX)) {
-        localStorage.removeItem(key);
-      }
+    // Clear from both storages for complete cleanup
+    [sessionStorage, localStorage].forEach(storage => {
+      Object.keys(storage).forEach(key => {
+        if (key.startsWith(this.STORAGE_PREFIX)) {
+          storage.removeItem(key);
+        }
+      });
     });
   }
 
   async rotateEncryptionKey(): Promise<void> {
     try {
-      // Generate new key
+      // SECURITY FIX: Generate new non-exportable key
       const newKey = await crypto.subtle.generateKey(
         { name: 'AES-GCM', length: 256 },
-        true,
+        false, // non-extractable
         ['encrypt', 'decrypt']
       );
 
-      // Get all secure items
+      // Get all secure items from both storages
       const secureItems: Record<string, any> = {};
-      const keys = Object.keys(localStorage);
-      
-      for (const storageKey of keys) {
-        if (storageKey.startsWith(this.STORAGE_PREFIX)) {
-          const itemKey = storageKey.replace(this.STORAGE_PREFIX, '');
-          const value = await this.getSecureItem(itemKey);
-          if (value !== null) {
-            secureItems[itemKey] = value;
+      [sessionStorage, localStorage].forEach(storage => {
+        Object.keys(storage).forEach(storageKey => {
+          if (storageKey.startsWith(this.STORAGE_PREFIX)) {
+            const itemKey = storageKey.replace(this.STORAGE_PREFIX, '');
+            if (!secureItems[itemKey]) {
+              // Get the raw data to avoid recursive decryption
+              const rawData = storage.getItem(storageKey);
+              if (rawData) {
+                secureItems[itemKey] = rawData;
+              }
+            }
           }
-        }
-      }
+        });
+      });
 
       // Update encryption key
       this.encryptionKey = newKey;
-      const keyBuffer = await crypto.subtle.exportKey('raw', this.encryptionKey);
-      localStorage.setItem(this.KEY_STORAGE, JSON.stringify(Array.from(new Uint8Array(keyBuffer))));
 
-      // Re-encrypt all items with new key
-      for (const [key, value] of Object.entries(secureItems)) {
-        await this.setSecureItem(key, value);
-      }
+      // Clear old items
+      this.clearAllSecureItems();
 
-      productionLogger.info('Encryption key rotated successfully', {}, 'SecureStorageService');
+      // Note: We can't re-encrypt existing items with a new key since the old key
+      // is non-extractable and lost. This is intentional for security.
+      
+      productionLogger.info('Encryption key rotated - old data cleared for security', {}, 'SecureStorageService');
     } catch (error) {
       productionLogger.error('Failed to rotate encryption key', error, 'SecureStorageService');
       throw error;

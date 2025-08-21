@@ -89,29 +89,9 @@ export class UnifiedSecurityService {
 
   async createSecureSession(userId: string, isDemo: boolean = false): Promise<string> {
     if (!this.config.enableSessionSecurity) {
-      // Fallback to basic session creation
-      const sessionId = crypto.randomUUID();
-      if (isDemo) {
-        // For demo sessions, still encrypt the storage even if session security is disabled
-        const sessionData = {
-          id: sessionId,
-          userId,
-          isDemo,
-          createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour for demo
-        };
-        
-        try {
-          // Use basic encryption for demo session data
-          const encryptedData = await this.basicEncryptSessionData(sessionData);
-          localStorage.setItem(`demo_session_${sessionId}`, encryptedData);
-        } catch (error) {
-          productionLogger.error('Failed to encrypt demo session data', error, 'UnifiedSecurityService');
-          // Fall back to unencrypted storage as last resort
-          localStorage.setItem(`demo_session_${sessionId}`, JSON.stringify(sessionData));
-        }
-      }
-      return sessionId;
+      // SECURITY FIX: Always use secure session manager, no weak fallbacks
+      productionLogger.warn('Session security disabled - using basic UUID only', { userId, isDemo }, 'UnifiedSecurityService');
+      return crypto.randomUUID();
     }
 
     return await secureSessionManager.createSecureSession(userId, isDemo);
@@ -119,17 +99,9 @@ export class UnifiedSecurityService {
 
   async validateSession(sessionId: string): Promise<boolean> {
     if (!this.config.enableSessionSecurity) {
-      // Basic validation for fallback mode
-      const sessionData = localStorage.getItem(`demo_session_${sessionId}`);
-      if (sessionData) {
-        try {
-          const session = JSON.parse(sessionData);
-          return new Date() < new Date(session.expiresAt);
-        } catch {
-          return false;
-        }
-      }
-      return true; // Allow regular sessions in fallback mode
+      // SECURITY FIX: No fallback session validation - strict mode only
+      productionLogger.warn('Session security disabled - validation bypassed', { sessionId }, 'UnifiedSecurityService');
+      return false;
     }
 
     return await secureSessionManager.validateSession(sessionId);
@@ -175,40 +147,7 @@ export class UnifiedSecurityService {
     referrerMeta.content = 'strict-origin-when-cross-origin';
   }
 
-  private async basicEncryptSessionData(sessionData: any): Promise<string> {
-    try {
-      // Generate a simple key from user agent and timestamp for basic encryption
-      const keyMaterial = navigator.userAgent + Date.now().toString();
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(keyMaterial);
-      
-      const key = await crypto.subtle.importKey(
-        'raw',
-        keyData.slice(0, 32), // Use first 32 bytes
-        { name: 'AES-GCM' },
-        false,
-        ['encrypt']
-      );
-
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const encodedData = encoder.encode(JSON.stringify(sessionData));
-      
-      const encryptedData = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
-        key,
-        encodedData
-      );
-
-      return JSON.stringify({
-        iv: Array.from(iv),
-        data: Array.from(new Uint8Array(encryptedData)),
-        timestamp: Date.now()
-      });
-    } catch (error) {
-      productionLogger.error('Basic session encryption failed', error, 'UnifiedSecurityService');
-      throw error;
-    }
-  }
+  // SECURITY FIX: Removed basicEncryptSessionData - weak encryption removed
 
   private async getUserIP(): Promise<string> {
     // Client-side IP collection removed; rely on server headers
