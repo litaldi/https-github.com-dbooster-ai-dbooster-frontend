@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1017,14 +1017,14 @@ export type Database = {
     }
     Functions: {
       approve_role_assignment_request: {
-        Args: { request_id: string; approve?: boolean }
+        Args: { approve?: boolean; request_id: string }
         Returns: boolean
       }
       assign_user_role: {
         Args: {
-          target_user_id: string
-          new_role: Database["public"]["Enums"]["app_role"]
           change_reason?: string
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
         }
         Returns: boolean
       }
@@ -1034,10 +1034,10 @@ export type Database = {
       }
       enhanced_secure_role_assignment: {
         Args: {
-          target_user_id: string
-          new_role: Database["public"]["Enums"]["app_role"]
           change_reason?: string
+          new_role: Database["public"]["Enums"]["app_role"]
           requester_ip?: unknown
+          target_user_id: string
           user_agent_header?: string
         }
         Returns: Json
@@ -1048,8 +1048,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -1059,70 +1059,70 @@ export type Database = {
       }
       is_role_active_now: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
       log_input_validation: {
         Args: {
-          p_user_id: string
           p_context: string
-          p_validation_result: Json
           p_ip_address?: unknown
+          p_user_id: string
+          p_validation_result: Json
         }
         Returns: undefined
       }
       secure_admin_bootstrap: {
         Args: {
           bootstrap_token: string
-          target_user_id: string
           requester_ip?: unknown
+          target_user_id: string
         }
         Returns: Json
       }
       secure_assign_user_role: {
         Args: {
-          target_user_id: string
-          new_role: Database["public"]["Enums"]["app_role"]
           change_reason?: string
+          new_role: Database["public"]["Enums"]["app_role"]
           requester_ip?: unknown
+          target_user_id: string
         }
         Returns: Json
       }
       secure_role_assignment_enhanced: {
         Args: {
-          target_user_id: string
-          new_role: Database["public"]["Enums"]["app_role"]
           change_reason?: string
+          new_role: Database["public"]["Enums"]["app_role"]
           requester_ip?: unknown
+          target_user_id: string
           user_agent_header?: string
         }
         Returns: Json
       }
       secure_role_assignment_with_monitoring: {
         Args: {
-          target_user_id: string
-          new_role: Database["public"]["Enums"]["app_role"]
           change_reason?: string
+          new_role: Database["public"]["Enums"]["app_role"]
           requester_ip?: unknown
+          target_user_id: string
           user_agent_header?: string
         }
         Returns: Json
       }
       validate_secure_session: {
         Args: {
-          p_session_token: string
           p_device_fingerprint?: string
           p_ip_address?: unknown
+          p_session_token: string
         }
         Returns: Json
       }
       validate_session_security: {
         Args: {
-          p_session_id: string
           p_device_fingerprint: string
           p_ip_address: unknown
+          p_session_id: string
           p_user_agent: string
         }
         Returns: Json
