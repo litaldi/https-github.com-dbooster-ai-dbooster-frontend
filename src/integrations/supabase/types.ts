@@ -228,6 +228,7 @@ export type Database = {
           category: string | null
           created_at: string
           id: string
+          is_public: boolean | null
           key: string
           updated_at: string
           value: Json | null
@@ -236,6 +237,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           id?: string
+          is_public?: boolean | null
           key: string
           updated_at?: string
           value?: Json | null
@@ -244,6 +246,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           id?: string
+          is_public?: boolean | null
           key?: string
           updated_at?: string
           value?: Json | null
@@ -295,6 +298,30 @@ export type Database = {
           severity?: string
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      csp_violation_reports: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          report_data: Json
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          report_data: Json
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          report_data?: Json
+          user_agent?: string | null
         }
         Relationships: []
       }
