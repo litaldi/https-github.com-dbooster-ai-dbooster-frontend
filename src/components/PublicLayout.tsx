@@ -2,9 +2,11 @@
 import { Outlet } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { EnhancedMegaMenu } from '@/components/navigation/EnhancedMegaMenu';
+import { EnhancedMobileNavigation } from '@/components/ui/enhanced-mobile-navigation';
 import { EnhancedFooter } from '@/components/navigation/EnhancedFooter';
 import { EnhancedSearch } from '@/components/ui/enhanced-search';
 import { StandardizedCTAButton } from '@/components/ui/standardized-cta-button';
+import { SkipLink } from '@/components/ui/enhanced-accessibility';
 import { megaMenuNavigation } from '@/config/navigation';
 import { useNavigate } from 'react-router-dom';
 import { Zap } from 'lucide-react';
@@ -20,8 +22,13 @@ export function PublicLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Skip Link for Accessibility */}
+      <SkipLink href="#main-content">
+        Skip to main content
+      </SkipLink>
+      
       {/* Enhanced Header with Global Search */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" role="banner">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
@@ -36,8 +43,11 @@ export function PublicLayout() {
               </div>
             </div>
 
-            {/* Mega Menu Navigation - Categories on the left */}
+            {/* Desktop Mega Menu Navigation */}
             <EnhancedMegaMenu items={megaMenuNavigation} />
+            
+            {/* Mobile Navigation */}
+            <EnhancedMobileNavigation items={megaMenuNavigation} />
 
             {/* Global Search Bar - Moved to the right */}
             <div className="flex items-center gap-3">
@@ -60,7 +70,7 @@ export function PublicLayout() {
         </div>
       </header>
       
-      <main className="flex-1">
+      <main id="main-content" className="flex-1" role="main">
         <Outlet />
       </main>
       
