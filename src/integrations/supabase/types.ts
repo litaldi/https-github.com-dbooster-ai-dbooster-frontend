@@ -1055,6 +1055,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_csp_violation_rate_limit: {
+        Args: { p_ip_address: unknown }
+        Returns: boolean
+      }
       cleanup_expired_sessions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
