@@ -34,6 +34,8 @@ export class ProductionSecurityManager {
   }
 
   private getProductionCSP(): string {
+    const reportUri = `https://sxcbpmqsbcpsljwwwwyv.supabase.co/functions/v1/csp-violation-report`;
+    
     return [
       "default-src 'self'",
       "script-src 'self'", // Removed unsafe-eval for production
@@ -46,8 +48,9 @@ export class ProductionSecurityManager {
       "form-action 'self'",
       "object-src 'none'",
       "media-src 'self'",
-      "worker-src 'self'",
+      "worker-src 'self'", 
       "manifest-src 'self'",
+      `report-uri ${reportUri}`,
       "upgrade-insecure-requests",
       "block-all-mixed-content"
     ].join('; ');

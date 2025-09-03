@@ -804,6 +804,7 @@ export type Database = {
           metadata: Json | null
           security_score: number | null
           session_token: string
+          session_token_hash: string | null
           user_agent: string | null
           user_id: string
         }
@@ -818,6 +819,7 @@ export type Database = {
           metadata?: Json | null
           security_score?: number | null
           session_token: string
+          session_token_hash?: string | null
           user_agent?: string | null
           user_id: string
         }
@@ -832,6 +834,7 @@ export type Database = {
           metadata?: Json | null
           security_score?: number | null
           session_token?: string
+          session_token_hash?: string | null
           user_agent?: string | null
           user_id?: string
         }
@@ -957,31 +960,37 @@ export type Database = {
       user_mfa_config: {
         Row: {
           backup_codes: string[] | null
+          backup_codes_hashed: string[] | null
           created_at: string | null
           id: string
           is_mfa_enabled: boolean | null
           recovery_codes_used: number | null
           totp_secret: string | null
+          totp_secret_encrypted: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           backup_codes?: string[] | null
+          backup_codes_hashed?: string[] | null
           created_at?: string | null
           id?: string
           is_mfa_enabled?: boolean | null
           recovery_codes_used?: number | null
           totp_secret?: string | null
+          totp_secret_encrypted?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           backup_codes?: string[] | null
+          backup_codes_hashed?: string[] | null
           created_at?: string | null
           id?: string
           is_mfa_enabled?: boolean | null
           recovery_codes_used?: number | null
           totp_secret?: string | null
+          totp_secret_encrypted?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -1040,7 +1049,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_mfa_status: {
+        Row: {
+          backup_codes_remaining: number | null
+          created_at: string | null
+          is_mfa_enabled: boolean | null
+          recovery_codes_used: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          backup_codes_remaining?: never
+          created_at?: string | null
+          is_mfa_enabled?: boolean | null
+          recovery_codes_used?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          backup_codes_remaining?: never
+          created_at?: string | null
+          is_mfa_enabled?: boolean | null
+          recovery_codes_used?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       approve_role_assignment_request: {
@@ -1062,6 +1097,21 @@ export type Database = {
       cleanup_expired_sessions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      create_secure_session_with_hash: {
+        Args: {
+          p_device_fingerprint?: string
+          p_ip_address?: unknown
+          p_is_demo?: boolean
+          p_session_token: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      enable_mfa_secure: {
+        Args: { user_backup_codes: string[]; user_totp_secret: string }
+        Returns: Json
       }
       enhanced_secure_role_assignment: {
         Args: {
@@ -1104,6 +1154,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      report_csp_violation: {
+        Args: { violation_data: Json }
+        Returns: Json
+      }
       secure_admin_bootstrap: {
         Args: {
           bootstrap_token: string
@@ -1141,7 +1195,19 @@ export type Database = {
         }
         Returns: Json
       }
+      validate_backup_code_secure: {
+        Args: { backup_code: string }
+        Returns: Json
+      }
       validate_secure_session: {
+        Args: {
+          p_device_fingerprint?: string
+          p_ip_address?: unknown
+          p_session_token: string
+        }
+        Returns: Json
+      }
+      validate_secure_session_by_hash: {
         Args: {
           p_device_fingerprint?: string
           p_ip_address?: unknown

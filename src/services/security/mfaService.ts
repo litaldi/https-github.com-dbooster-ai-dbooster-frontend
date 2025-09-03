@@ -6,6 +6,7 @@ export interface MFAConfig {
   backupCodes?: string[];
   isMfaEnabled: boolean;
   recoveryCodesUsed: number;
+  backupCodesRemaining?: number;
 }
 
 export class MFAService {
@@ -20,8 +21,9 @@ export class MFAService {
 
   async getMFAConfig(userId: string): Promise<MFAConfig | null> {
     try {
+      // Use safe view that doesn't expose secrets
       const { data, error } = await supabase
-        .from('user_mfa_config')
+        .from('user_mfa_status')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
@@ -36,10 +38,9 @@ export class MFAService {
       }
 
       return {
-        totpSecret: data.totp_secret,
-        backupCodes: data.backup_codes,
         isMfaEnabled: data.is_mfa_enabled,
-        recoveryCodesUsed: data.recovery_codes_used
+        recoveryCodesUsed: data.recovery_codes_used,
+        backupCodesRemaining: data.backup_codes_remaining || 0
       };
     } catch (error) {
       productionLogger.error('Failed to get MFA config', error, 'MFAService.getMFAConfig');
@@ -49,20 +50,16 @@ export class MFAService {
 
   async enableMFA(userId: string, totpSecret: string, backupCodes: string[]): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('user_mfa_config')
-        .upsert({
-          user_id: userId,
-          totp_secret: totpSecret,
-          backup_codes: backupCodes,
-          is_mfa_enabled: true,
-          recovery_codes_used: 0
-        });
+      // Use secure function to enable MFA
+      const { data, error } = await supabase.rpc('enable_mfa_secure', {
+        user_totp_secret: totpSecret,
+        user_backup_codes: backupCodes
+      });
 
       if (error) throw error;
 
       productionLogger.info('MFA enabled for user', { userId }, 'MFAService.enableMFA');
-      return true;
+      return (data as { success: boolean })?.success || false;
     } catch (error) {
       productionLogger.error('Failed to enable MFA', error, 'MFAService.enableMFA');
       return false;
@@ -75,8 +72,8 @@ export class MFAService {
         .from('user_mfa_config')
         .update({
           is_mfa_enabled: false,
-          totp_secret: null,
-          backup_codes: null
+          totp_secret_encrypted: null,
+          backup_codes_hashed: null
         })
         .eq('user_id', userId);
 
@@ -112,27 +109,15 @@ export class MFAService {
 
   async validateBackupCode(userId: string, code: string): Promise<boolean> {
     try {
-      const config = await this.getMFAConfig(userId);
-      if (!config || !config.backupCodes) return false;
-
-      const codeIndex = config.backupCodes.indexOf(code);
-      if (codeIndex === -1) return false;
-
-      // Remove used backup code
-      const updatedCodes = config.backupCodes.filter(c => c !== code);
-      
-      const { error } = await supabase
-        .from('user_mfa_config')
-        .update({
-          backup_codes: updatedCodes,
-          recovery_codes_used: config.recoveryCodesUsed + 1
-        })
-        .eq('user_id', userId);
+      // Use secure function to validate backup code
+      const { data, error } = await supabase.rpc('validate_backup_code_secure', {
+        backup_code: code
+      });
 
       if (error) throw error;
 
-      productionLogger.info('Backup code used', { userId }, 'MFAService.validateBackupCode');
-      return true;
+      productionLogger.info('Backup code validation attempt', { userId, valid: (data as { valid: boolean })?.valid }, 'MFAService.validateBackupCode');
+      return (data as { valid: boolean })?.valid || false;
     } catch (error) {
       productionLogger.error('Failed to validate backup code', error, 'MFAService.validateBackupCode');
       return false;
