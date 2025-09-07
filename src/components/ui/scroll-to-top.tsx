@@ -1,23 +1,17 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { useState, useEffect } from 'react';
-import { ArrowUp } from 'lucide-react';
-import { Button } from './button';
-import { cn } from '@/lib/utils';
-
-export function ScrollToTop({ className }: { className?: string }) {
+export function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const toggleVisibility = () => {
-      if (window.pageYOffset > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      setIsVisible(window.pageYOffset > 300);
     };
 
     window.addEventListener('scroll', toggleVisibility);
-
     return () => window.removeEventListener('scroll', toggleVisibility);
   }, []);
 
@@ -29,24 +23,30 @@ export function ScrollToTop({ className }: { className?: string }) {
   };
 
   return (
-    <div
-      className={cn(
-        'fixed bottom-8 right-8 z-50 transition-all duration-300',
-        isVisible 
-          ? 'opacity-100 translate-y-0 pointer-events-auto' 
-          : 'opacity-0 translate-y-2 pointer-events-none',
-        className
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.5, y: 20 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="fixed bottom-8 right-8 z-50"
+        >
+          <Button
+            size="icon"
+            onClick={scrollToTop}
+            className="h-12 w-12 rounded-full bg-primary/90 hover:bg-primary shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20 transition-all duration-300"
+          >
+            <motion.div
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronUp className="h-5 w-5" />
+            </motion.div>
+          </Button>
+        </motion.div>
       )}
-    >
-      <Button
-        onClick={scrollToTop}
-        size="icon"
-        variant="default"
-        className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
-        aria-label="Scroll to top"
-      >
-        <ArrowUp className="h-5 w-5" />
-      </Button>
-    </div>
+    </AnimatePresence>
   );
 }

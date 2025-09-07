@@ -3,9 +3,11 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { StandardizedCTAButton } from '@/components/ui/standardized-cta-button';
 import { Zap, Shield, TrendingUp, Users } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 export function EnhancedCTASection() {
+  const shouldReduceMotion = useReducedMotion();
+  
   const features = [
     {
       icon: Zap,
@@ -29,19 +31,77 @@ export function EnhancedCTASection() {
     }
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: shouldReduceMotion ? 0 : 0.1,
+        delayChildren: shouldReduceMotion ? 0 : 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0.01 : 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
   return (
     <section className="relative py-20 md:py-32 overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-blue-500/5 to-purple-600/10" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]" />
       
+      {/* Floating elements for visual interest */}
+      {!shouldReduceMotion && (
+        <>
+          <motion.div
+            className="absolute top-20 left-10 w-2 h-2 bg-blue-400 rounded-full opacity-60"
+            animate={{
+              y: [0, -20, 0],
+              opacity: [0.6, 1, 0.6],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.div
+            className="absolute top-40 right-20 w-3 h-3 bg-purple-400 rounded-full opacity-40"
+            animate={{
+              y: [0, 15, 0],
+              x: [0, 10, 0],
+              opacity: [0.4, 0.8, 0.4],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
+          />
+        </>
+      )}
+      
       <div className="container-fluid relative">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="max-w-4xl mx-auto text-center space-y-8"
+        >
           {/* Main Heading */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            variants={itemVariants}
             className="space-y-6"
           >
             <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-2 text-sm font-medium">
@@ -61,18 +121,18 @@ export function EnhancedCTASection() {
 
           {/* Feature Highlights */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            variants={itemVariants}
             className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
           >
             {features.map((feature, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                className="flex items-center gap-3 p-4 rounded-xl bg-background/60 border border-border/50 backdrop-blur-sm"
+                variants={itemVariants}
+                whileHover={shouldReduceMotion ? {} : { 
+                  scale: 1.05, 
+                  transition: { duration: 0.2 } 
+                }}
+                className="flex items-center gap-3 p-4 rounded-xl bg-background/60 border border-border/50 backdrop-blur-sm transition-all duration-200 hover:bg-background/80 hover:border-border/70 hover:shadow-lg cursor-default"
               >
                 <feature.icon className={`h-5 w-5 ${feature.color}`} />
                 <span className="text-sm font-medium">{feature.text}</span>
@@ -82,9 +142,7 @@ export function EnhancedCTASection() {
 
           {/* CTA Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            variants={itemVariants}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <StandardizedCTAButton
@@ -101,9 +159,7 @@ export function EnhancedCTASection() {
 
           {/* Trust Indicators */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            variants={itemVariants}
             className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-8"
           >
             <div className="flex items-center gap-2">
@@ -119,7 +175,7 @@ export function EnhancedCTASection() {
               <span>Free forever plan</span>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -1,174 +1,209 @@
-
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Loader2, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Loader2, Wifi, WifiOff, AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 interface EnhancedLoadingProps {
-  variant?: 'default' | 'full-screen' | 'overlay' | 'inline' | 'skeleton';
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'spinner' | 'dots' | 'pulse' | 'brand';
   text?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
-  showProgress?: boolean;
-  progress?: number;
-  timeout?: number;
-  onTimeout?: () => void;
-  showNetworkStatus?: boolean;
 }
 
 export function EnhancedLoading({ 
-  variant = 'default', 
-  text = 'Loading...', 
-  size = 'md',
-  className,
-  showProgress = false,
-  progress = 0,
-  timeout,
-  onTimeout,
-  showNetworkStatus = true
+  size = 'md', 
+  variant = 'spinner',
+  text,
+  className 
 }: EnhancedLoadingProps) {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [hasTimedOut, setHasTimedOut] = useState(false);
-
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',
-    lg: 'h-8 w-8',
-    xl: 'h-12 w-12'
+    lg: 'h-8 w-8'
   };
 
-  useEffect(() => {
-    if (!showNetworkStatus) return;
+  const containerClasses = {
+    sm: 'gap-2 text-sm',
+    md: 'gap-3 text-base',
+    lg: 'gap-4 text-lg'
+  };
 
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [showNetworkStatus]);
-
-  useEffect(() => {
-    if (timeout && timeout > 0) {
-      const timer = setTimeout(() => {
-        setHasTimedOut(true);
-        onTimeout?.();
-      }, timeout);
-
-      return () => clearTimeout(timer);
-    }
-  }, [timeout, onTimeout]);
-
-  if (hasTimedOut) {
+  if (variant === 'spinner') {
     return (
-      <div className="flex flex-col items-center gap-3 p-4 animate-fade-in">
-        <AlertCircle className="h-8 w-8 text-destructive" />
-        <div className="text-center">
-          <p className="text-sm font-medium text-destructive">Request timed out</p>
-          <p className="text-xs text-muted-foreground">Please check your connection and try again</p>
-        </div>
-      </div>
-    );
-  }
-
-  const spinnerElement = (
-    <div className="relative">
-      <Loader2 
-        className={cn('animate-spin text-primary', sizeClasses[size])} 
-        aria-hidden="true"
-      />
-      {showNetworkStatus && !isOnline && (
-        <WifiOff className="absolute -top-1 -right-1 h-3 w-3 text-destructive animate-pulse" />
-      )}
-    </div>
-  );
-
-  const progressBar = showProgress && (
-    <div className="w-full max-w-xs bg-secondary rounded-full h-2 overflow-hidden">
-      <div 
-        className="h-full bg-primary transition-all duration-500 ease-out rounded-full"
-        style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-        aria-label={`Loading progress: ${progress}%`}
-      />
-    </div>
-  );
-
-  const loadingContent = (
-    <div className="flex flex-col items-center gap-3">
-      {spinnerElement}
-      <div className="text-center space-y-2">
-        <span className="text-sm text-muted-foreground font-medium" role="status" aria-live="polite">
-          {showNetworkStatus && !isOnline ? 'Connecting...' : text}
-        </span>
-        {showNetworkStatus && !isOnline && (
-          <div className="flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400">
-            <WifiOff className="h-3 w-3" />
-            No internet connection
-          </div>
-        )}
-        {progressBar}
-        {showProgress && (
-          <span className="text-xs text-muted-foreground">
-            {Math.round(progress)}% complete
+      <div className={cn(
+        'flex items-center justify-center',
+        containerClasses[size],
+        className
+      )}>
+        <Loader2 className={cn(
+          'animate-spin text-primary',
+          sizeClasses[size]
+        )} />
+        {text && (
+          <span className="text-muted-foreground font-medium">
+            {text}
           </span>
         )}
       </div>
-    </div>
-  );
+    );
+  }
 
-  if (variant === 'skeleton') {
+  if (variant === 'dots') {
     return (
-      <div className={cn('animate-pulse space-y-3', className)}>
-        <div className="h-4 bg-muted rounded w-3/4"></div>
-        <div className="h-4 bg-muted rounded w-1/2"></div>
-        <div className="h-4 bg-muted rounded w-2/3"></div>
+      <div className={cn(
+        'flex items-center justify-center',
+        containerClasses[size],
+        className
+      )}>
+        <div className="flex space-x-1">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className={cn(
+                'bg-primary rounded-full',
+                size === 'sm' ? 'h-1 w-1' : size === 'md' ? 'h-2 w-2' : 'h-3 w-3'
+              )}
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.7, 1, 0.7],
+              }}
+              transition={{
+                duration: 0.8,
+                repeat: Infinity,
+                delay: i * 0.2,
+              }}
+            />
+          ))}
+        </div>
+        {text && (
+          <span className="text-muted-foreground font-medium ml-3">
+            {text}
+          </span>
+        )}
       </div>
     );
   }
 
-  if (variant === 'full-screen') {
+  if (variant === 'pulse') {
     return (
       <div className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center',
-        'bg-background/80 backdrop-blur-sm',
-        'transition-opacity duration-200',
+        'flex items-center justify-center',
+        containerClasses[size],
         className
       )}>
-        <div className="bg-card border rounded-lg p-6 shadow-lg animate-scale-in">
-          {loadingContent}
+        <motion.div
+          className={cn(
+            'bg-primary rounded-full',
+            sizeClasses[size]
+          )}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.7, 1, 0.7],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        {text && (
+          <span className="text-muted-foreground font-medium">
+            {text}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  if (variant === 'brand') {
+    return (
+      <div className={cn(
+        'flex flex-col items-center justify-center space-y-4',
+        className
+      )}>
+        <motion.div
+          animate={{
+            rotate: 360,
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        >
+          <Brain className={cn(
+            'text-primary',
+            size === 'sm' ? 'h-8 w-8' : size === 'md' ? 'h-12 w-12' : 'h-16 w-16'
+          )} />
+        </motion.div>
+        
+        {text && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-center"
+          >
+            <p className={cn(
+              'text-muted-foreground font-medium',
+              containerClasses[size].split(' ')[1]
+            )}>
+              {text}
+            </p>
+            <div className="flex justify-center mt-2">
+              <div className="flex space-x-1">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="h-1 w-1 bg-primary rounded-full"
+                    animate={{
+                      opacity: [0.3, 1, 0.3],
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      delay: i * 0.3,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// Skeleton loading components
+export function SkeletonCard({ className }: { className?: string }) {
+  return (
+    <div className={cn("rounded-lg border bg-card", className)}>
+      <div className="p-6 space-y-4">
+        <div className="h-4 bg-muted rounded animate-pulse" />
+        <div className="space-y-2">
+          <div className="h-3 bg-muted rounded animate-pulse" />
+          <div className="h-3 bg-muted rounded animate-pulse w-5/6" />
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  if (variant === 'overlay') {
-    return (
-      <div className={cn(
-        'absolute inset-0 z-10 flex items-center justify-center',
-        'bg-background/80 backdrop-blur-sm rounded-lg',
-        'transition-opacity duration-200',
-        className
-      )}>
-        {loadingContent}
-      </div>
-    );
-  }
-
-  if (variant === 'inline') {
-    return (
-      <div className={cn('flex items-center gap-2', className)}>
-        {spinnerElement}
-        <span className="text-sm text-muted-foreground">{text}</span>
-      </div>
-    );
-  }
-
+export function SkeletonText({ lines = 3, className }: { lines?: number; className?: string }) {
   return (
-    <div className={cn('flex items-center justify-center p-8', className)}>
-      {loadingContent}
+    <div className={cn("space-y-2", className)}>
+      {Array.from({ length: lines }).map((_, i) => (
+        <div
+          key={i}
+          className={cn(
+            "h-3 bg-muted rounded animate-pulse",
+            i === lines - 1 ? "w-4/6" : "w-full"
+          )}
+        />
+      ))}
     </div>
   );
 }
