@@ -1,0 +1,189 @@
+/* Developer Page Specific Enhancements */
+
+/* Grid Pattern Background */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Enhanced Card Interactions */
+.developer-feature-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.developer-feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.developer-feature-card:hover::before {
+  left: 100%;
+}
+
+/* Testimonial Animation */
+.testimonial-card {
+  transition: all 0.3s ease;
+}
+
+.testimonial-card.active {
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Code Block Enhancements */
+.code-block-wrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.code-block-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.3), transparent);
+}
+
+/* Animated Metrics */
+.metric-number {
+  background: linear-gradient(45deg, hsl(var(--primary)), hsl(217.2 91.2% 65%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 3s ease-in-out infinite alternate;
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Enhanced Button Interactions */
+.cta-button-enhanced {
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.cta-button-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.cta-button-enhanced:hover::before {
+  left: 100%;
+}
+
+/* Trust Signal Animations */
+.trust-signal {
+  animation: float 6s ease-in-out infinite;
+}
+
+.trust-signal:nth-child(2) {
+  animation-delay: -2s;
+}
+
+.trust-signal:nth-child(3) {
+  animation-delay: -4s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Enhanced Focus States */
+.developer-interactive:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .developer-feature-card::before,
+  .cta-button-enhanced::before {
+    transition: none;
+  }
+  
+  .trust-signal {
+    animation: none;
+  }
+  
+  .metric-number {
+    animation: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .developer-feature-card {
+    border: 2px solid;
+  }
+  
+  .testimonial-card {
+    border: 2px solid;
+  }
+}
+
+/* Print Optimizations */
+@media print {
+  .developer-feature-card::before,
+  .cta-button-enhanced::before {
+    display: none;
+  }
+  
+  .bg-grid-pattern {
+    background: none;
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .developer-feature-card {
+    margin-bottom: 1rem;
+  }
+  
+  .testimonial-card {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .developer-feature-card:active {
+    transform: scale(0.98);
+  }
+  
+  .cta-button-enhanced:active {
+    transform: scale(0.95);
+  }
+}

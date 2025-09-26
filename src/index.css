@@ -3,6 +3,7 @@
 @import url('./styles/design-tokens.css');
 @import url('./styles/enhanced-design-system.css');
 @import url('./styles/accessibility.css');
+@import url('./styles/developer-page-enhancements.css');
 @import url('./components/ui/enhanced-interactions.css');
 @tailwind base;
 @tailwind components;
